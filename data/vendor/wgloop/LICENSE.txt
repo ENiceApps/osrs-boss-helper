@@ -1,0 +1,12 @@
+The two JSON files in this directory (equipment.json and monsters.json) are
+copies of files from the weirdgloop/osrs-dps-calc repository at
+https://github.com/weirdgloop/osrs-dps-calc, vendored unchanged at:
+
+  https://raw.githubusercontent.com/weirdgloop/osrs-dps-calc/main/cdn/json/
+
+That upstream project is licensed under the GNU General Public License v3.0.
+Copies of the upstream LICENSE and AUTHORS files (if you need them) can be
+fetched from the same repository. Use of this data in any redistribution
+should preserve attribution to the upstream maintainers.
+
+To refresh these files, run `npm run refresh-vendor` from the project root.

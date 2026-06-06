@@ -1,0 +1,889 @@
+================================================================
+OSRS BOSS HELPER — PROJECT GUIDE
+Last updated: 2026-05-25
+================================================================
+
+Read this top-to-bottom and you'll know what every file in this
+project is for, why it exists, and what depends on what.
+
+It's structured as a tour: first a high-level overview, then the
+directory layout, then per-file notes grouped by directory, then
+a "what happens when you click X" walkthrough, then a glossary.
+
+
+================================================================
+1. WHAT THIS APP IS
+================================================================
+
+A Next.js web app that helps Old School RuneScape players pick the
+best gear and remember the right mechanics for each boss.
+
+Flow:
+  - You pick a boss from a list of 234 (HP >= 200).
+  - The app shows ranked gear loadouts ("BIS / mid / entry tier"),
+    each with computed DPS against THAT specific boss's stats.
+  - Mechanics checklist: antifire, prayer, food, special items.
+  - Paste your RuneLite bank-tag string and the app tells you which
+    items you OWN, which you can AFFORD (live GE prices via the wiki),
+    and which you'd need to buy.
+  - Enter your Wise Old Man (WOM) username and your real combat
+    stats are pulled in — DPS calc uses YOUR levels, not 99s.
+
+There are also:
+  - A boss browser at /
+  - An item browser at /items with 5,306 equippable items, sortable
+    by any stat, with live prices.
+
+The DPS engine is calibrated against the wiki's DPS calculator at
+tools.runescape.wiki/osrs-dps so the numbers match the community
+source of truth within ±0.05 DPS for the five Vorkath presets that
+have been hand-verified.
+
+
+================================================================
+2. THE BIG ARCHITECTURAL IDEAS
+================================================================
+
+These three patterns explain almost every file you'll see:
+
+  (A) VENDORED DATA + CODEGEN
+      Item stats and monster stats come from the same JSON files
+      that the official wiki DPS calculator uses. We don't try to
+      maintain item bonuses by hand. Scripts read the vendor JSON
+      and write generated TypeScript files that the app imports.
+
+  (B) UNIVERSAL LOADOUT SETS WITH PREDICATES
+      Instead of curating gear per-boss ("here's the best Cerberus
+      loadout, here's the best KBD loadout..."), we curate ~13
+      generic gear sets each tagged with a predicate like
+      "applies to dragons" or "applies vs fire-weak targets". The
+      recommender filters sets by predicate and ranks by DPS
+      against each boss's actual stats. One curated set serves
+      dozens of bosses.
+
+  (C) SLUG-KEYED REGISTRIES
+      Per-boss content (mechanics, consumables) lives in plain
+      maps keyed by URL slug. To add curated content for a new
+      boss, you add a single map entry — no new page, no new
+      route. The dynamic /boss/[slug] page renders whatever is
+      curated.
+
+
+================================================================
+3. DIRECTORY MAP
+================================================================
+
+  /                          ← project root
+  app/                       Next.js pages (every URL the user sees)
+    api/                     Server-side proxy routes to the wiki / WOM
+    boss/[slug]/             The boss page (dynamic — one page, every boss)
+    items/                   The item browser page
+    page.tsx                 Home page (boss list)
+    layout.tsx               Root HTML shell
+    globals.css              Tailwind + OSRS theme tokens
+
+  components/                React UI building blocks used by pages
+
+  lib/                       App logic: data fetching, DPS engine, helpers
+    dps/                     The combat math (calibrated to the wiki calc)
+
+  data/                      All the game data
+    vendor/wgloop/           Raw JSON copied from weirdgloop's DPS calc
+    items/                   Generated slim item catalog for /items page
+    monsters/                Generated monster catalog (234 entries)
+    loadouts/                Universal gear sets (source + generated)
+    bosses/                  Per-boss curated content (mechanics, consumables)
+    weapon-styles.ts         Hand-curated table of legal attack-style combos
+    ammo-compatibility.ts    Hand-curated weapon↔ammo tier check
+
+  scripts/                   Build-time codegen + data-refresh utilities
+
+  tests/                     Vitest unit tests + the wiki-baseline regression
+
+  types/                     Shared TypeScript type definitions
+
+  PROJECT_GUIDE.txt          ← you are here
+  AGENTS.md / CLAUDE.md      Repo instructions for AI agents
+  README.md                  Skeleton readme (not very useful yet)
+  package.json               npm scripts + dependencies
+  tsconfig.json              TypeScript config
+  next.config.ts             Next.js config (minimal)
+  postcss.config.mjs         Tailwind CSS plugin
+  eslint.config.mjs          Linting rules
+  vitest.config.ts           Test runner config
+
+
+================================================================
+4. PER-FILE NOTES
+================================================================
+
+----------------------------------------------------------------
+4.1  TOP-LEVEL CONFIG FILES
+----------------------------------------------------------------
+
+package.json
+  Declares the npm scripts and the dependency list. The scripts
+  block is the main thing to know — see section 6 for what each
+  npm command does.
+
+tsconfig.json
+  TypeScript compiler options. "@/*" path alias maps to the project
+  root so we can write `import x from "@/lib/foo"` instead of
+  `"../../lib/foo"`. Strict mode is on.
+
+next.config.ts
+  Next.js config. Currently minimal — uses defaults.
+
+postcss.config.mjs
+  Wires Tailwind v4 into Next's CSS pipeline.
+
+eslint.config.mjs
+  Linting rules (the standard Next.js + TS preset).
+
+vitest.config.ts
+  Test runner config. Sets up the "@/*" alias resolution for tests.
+
+next-env.d.ts
+  Auto-generated by Next.js. Don't edit.
+
+.env.local                        (gitignored)
+  Holds your WIKI_USER_AGENT_CONTACT email. The wiki API blocks
+  generic user agents — every request to prices.runescape.wiki
+  must identify the app + a contact email. Copy .env.local.example
+  to .env.local on a new machine and fill in your email.
+
+.env.local.example
+  Template for the above.
+
+
+----------------------------------------------------------------
+4.2  TYPES (types/)
+----------------------------------------------------------------
+
+types/osrs.ts
+  All the core domain types — what an Item is, what a Loadout is,
+  what a Skills object is, what a DpsInput looks like. If you
+  want to know the shape of "the world" the engine operates in,
+  this file is the contract. Notable types:
+    - ItemId         (branded number — prevents mixing item ids with prayer ids etc.)
+    - Skills         (attack, strength, ranged, magic, hp, prayer, defence)
+    - CombatStyle    ("melee" | "ranged" | "magic")
+    - DpsInput       (everything calculateDps() needs)
+    - SpellElement   ("fire" | "water" | "earth" | "air" | "none")
+    - MonsterWeakness ({ element, severity })
+    - PrayerSelection (multipliers from active prayers)
+    - ConditionalBonusFlags (target-conditional weapon bonuses that fire off
+                         the boss's attributes: DHCB/DHL vs dragon, Salve
+                         (ei/e ×6/5, regular/i ×7/6) vs undead, demonbane
+                         (Arclight/Emberlight) vs demon)
+
+types/loadout.ts
+  Types for the universal-loadout-set system. The big ones:
+    - LoadoutSet         (a gear configuration plus its applies-when predicate)
+    - AppliesWhen        (predicate over boss attributes/weakness)
+    - ItemBonusFlags     (which conditional weapons the set contains:
+                          DHCB, DHL, Salve(ei)/Salve, demonbane
+                          (Arclight/Emberlight), Tome of Fire, Twisted bow)
+
+types/vendor.ts
+  TypeScript shape for the vendored weirdgloop JSON. Mirrors the
+  upstream schema exactly. If weirdgloop changes their JSON shape
+  this is the only file that has to follow.
+
+
+----------------------------------------------------------------
+4.3  VENDORED DATA (data/vendor/wgloop/)
+----------------------------------------------------------------
+
+equipment.json
+  Every equippable item in OSRS (5,306 entries) with full combat
+  stats. ~3 MB. Copy of cdn/json/equipment.json from the
+  weirdgloop/osrs-dps-calc GitHub repo.
+
+monsters.json
+  Every monster with combat stats + attributes + weakness.
+  ~2.3 MB. Same provenance.
+
+LICENSE.txt
+  Attribution note. The upstream repo is GPL-3.0 — for a personal
+  / portfolio project this is fine, but if you ever monetize you'd
+  want to swap to MIT-licensed osrsreboxed-db or query the wiki
+  Cargo API directly.
+
+To update these files, run:  npm run refresh-vendor
+
+
+----------------------------------------------------------------
+4.4  HAND-WRITTEN DATA (data/...)
+----------------------------------------------------------------
+
+data/loadouts/sets.source.ts            (HAND-WRITTEN — edit this)
+  The library of universal gear sets. As of writing, 13 sets:
+    - 3 dragonbane-specific (DHCB+Salve, DHCB+Armadyl, DHL+Bandos)
+    - 1 fire-weakness (Harmonised + Tome of Fire)
+    - 9 universal (Rune cbow entry, Tbow, BoFA, Blowpipe,
+      Harmonised no-tome, Scythe, Fang, Soulreaper, Whip)
+  Each entry declares the slots (item IDs), the attackStyleChoice,
+  and an `appliesWhen` predicate. Editing this then running
+  `npm run build-loadouts` updates the generated file the app
+  reads.
+
+  Also exports BONUS_TRIGGER_ITEM_IDS — the central list of item
+  IDs the codegen scans for to populate ItemBonusFlags
+  (DHCB / DHL / Salve(ei) / Tome of Fire / Twisted bow).
+
+data/weapon-styles.ts                   (HAND-WRITTEN)
+  Maps each weapon category (e.g. "Crossbow", "Spear", "Scythe")
+  to its set of legal attack-style options. Used by codegen to
+  validate that, say, "aggressive stab on a Spear" isn't requested
+  (spears only have controlled offensive styles).
+
+data/ammo-compatibility.ts              (HAND-WRITTEN)
+  Two tables: which weapons take which ammo CLASS (bolt / arrow /
+  dart / etc.) and which tier they cap at; and which ammo items
+  are which class+tier. Codegen uses this to reject e.g. Ruby
+  DRAGON bolts on a Rune crossbow (Rune cbow tops out at runite
+  tier — dragon bolts need a Dragon crossbow or above).
+
+data/bosses/registry.ts                 (HAND-WRITTEN)
+  CURATED_BOSS_SLUGS set. A boss is "curated" if it has hand-tuned
+  mechanics/consumables/etc. Currently used by the home page to
+  show a "curated" badge — most other curation status comes from
+  whether the slug appears in MECHANICS_BY_SLUG or CONSUMABLES_BY_SLUG.
+
+data/bosses/mechanics.ts                (HAND-WRITTEN)
+  MECHANICS_BY_SLUG — per-boss mechanic checklists. 19 bosses
+  covered as of writing. Two flavours:
+    - Item-backed mechanics with satisfiedBy: { anyOf: [[id,id],...] }
+      — render as green/red ticks against the player's bank.
+    - Informational mechanics with no satisfiedBy — render as a
+      neutral note (prayer flick instructions, positional advice,
+      kill order).
+  Defines a shared WILDY_PK_WARNING reused by Vet'ion, Venenatis,
+  Callisto (and any future wilderness boss).
+
+data/bosses/consumables.ts              (HAND-WRITTEN)
+  CONSUMABLES_BY_SLUG — recommended inventory per boss
+  (food/prayer pots/antifire/etc.). 11 bosses covered, including
+  a shared GWD_TRIP constant for the four GWD generals.
+
+
+----------------------------------------------------------------
+4.5  GENERATED DATA (data/...)
+----------------------------------------------------------------
+
+These files have "GENERATED FILE — do not edit by hand" headers.
+They rebuild via `npm run build-data`. Editing them by hand is
+pointless — your changes are overwritten the next time tests or
+the prod build run.
+
+data/monsters/catalog.ts                (GENERATED)
+  234 monsters from the vendor data, filtered to HP >= 200
+  (excludes most slayer mobs but keeps every actual boss),
+  Leagues "Echo" and Nightmare Zone variants removed. Each entry
+  has slug + name + HP + defence levels + defence bonuses +
+  attributes + elemental weakness + image. The /boss/[slug]
+  page looks up monsters here.
+
+data/loadouts/sets.generated.ts         (GENERATED)
+  The hand-written sets.source.ts items + computed totals
+  (attack bonus, strength bonus, magic damage %), attack speed
+  from the weapon's vendor speed field, and itemBonusFlags
+  inferred from slot item IDs. The recommender and pages
+  import THIS file (not the source one).
+
+data/items/catalog.ts                   (GENERATED)
+  Slim version of equipment.json for client-side use. All 5,306
+  equippable items with the fields the /items page sorts/filters
+  on. ~1.8 MB — heavy but page-scoped so only loaded on /items.
+
+
+----------------------------------------------------------------
+4.6  LIBRARY CODE — DATA FETCHING (lib/)
+----------------------------------------------------------------
+
+lib/wikiApi.ts
+  Thin wrapper around fetch() that adds the required User-Agent
+  header (WIKI_USER_AGENT_CONTACT email). The wiki blocks
+  generic UAs — every request to prices.runescape.wiki MUST
+  identify the app + a contact.
+
+lib/prices.ts
+  SWR hooks for the wiki API:
+    - useMapping()    → all item id/name/icon entries
+    - usePrices()     → latest GE prices for all items
+    - priceForItem(prices, id)  → helper to pull one item's price
+  Cached in the browser via SWR; refetches periodically.
+
+lib/wom.ts
+  SWR hook for Wise Old Man (the OSRS player-tracking API).
+    - usePlayer(username) → fetches the player's combat stats.
+  When the username is empty, the hook short-circuits and
+  returns null without fetching.
+
+lib/icons.ts
+  Builds OSRS Wiki icon URLs from the icon filename field in the
+  mapping payload. The wiki hosts icons at predictable URLs of
+  the form  https://oldschool.runescape.wiki/images/<filename>.
+
+lib/parseBankTag.ts
+  Parses a RuneLite bank-tag string (which the user pastes into
+  BankInput) into a BankContents object — a Set of item IDs the
+  user owns. Handles two formats: the old `name,id1,id2,...` form
+  and the newer `banktags,1,name,id1,id2,...` form with optional
+  layout block. Has its own test file in tests/.
+
+
+----------------------------------------------------------------
+4.7  LIBRARY CODE — THE DPS ENGINE (lib/dps/)
+----------------------------------------------------------------
+
+These files implement the OSRS damage formulas. Each is small;
+together they form the engine the wiki-baseline tests calibrate.
+
+lib/dps/common.ts
+  Shared formulas:
+    - effectiveLevel(visible, prayer, styleBonus, void, baseOffset)
+        Magic uses baseOffset=9; melee/ranged use 8. A common bug
+        if you forget that distinction.
+    - npcDefenceRoll(level, bonus)  →  (level+9) * (bonus+64)
+    - hitChance(atkRoll, defRoll)   →  standard OSRS piecewise formula
+    - dpsFromHitChance(chance, max, ticks)  →  avg damage / time
+
+lib/dps/melee.ts
+lib/dps/ranged.ts
+lib/dps/magic.ts
+  Style-specific maxHit and attackRoll formulas. All implement the
+  canonical OSRS math from oldschool.runescape.wiki/w/Damage_per_second.
+
+lib/dps/conditional.ts
+  The GENERIC target-conditional multiplier module. Implements:
+    - conditionalMultipliers(flags) → list of (numerator, denominator,
+      additive?, reason) factors for DHCB / DHL / Salve / demonbane
+      given which flags are active. DHCB is asymmetric (×13/10 acc,
+      ×5/4 dmg). Demonbane (Arclight/Emberlight, +70%) is ADDITIVE,
+      not multiplicative — mirrors weirdgloop's trackAddFactor.
+    - applyFactors(value, factors) → applies them sequentially
+      (multiplicative trunc by default; additive for demonbane)
+      with Math.trunc between each (NOT a single combined product,
+      which would round wrong).
+
+lib/dps/calculate.ts
+  The orchestrator. calculateDps(scenario) is the single function
+  every consumer calls. It picks the style branch, applies prayer
+  + attack-style bonuses, computes attack roll + max hit, applies
+  Vorkath multipliers, handles magic-only conditional bonuses
+  (Tome of Fire +10%, spellement weakness, Twisted bow magic-level
+  scaling), and returns { dps, maxHit, accuracy }.
+
+
+----------------------------------------------------------------
+4.8  LIBRARY CODE — APP LOGIC (lib/)
+----------------------------------------------------------------
+
+lib/items.ts
+  Server/script-only loader for the vendored equipment.json.
+  Wrapped in a Map for O(1) findItem(id, version?) lookups.
+  Also exports sumLoadout(slotRefs, attackType) — the function
+  the loadout codegen uses to compute total bonuses for a set.
+  ⚠️ IMPORTANT: do NOT import this from anything in app/ or
+  components/. equipment.json is 3 MB and would bloat the
+  browser bundle. Server-side / build-time use only.
+
+lib/loadout.ts
+  Helpers for matching universal sets to specific targets:
+    - predicateMatches(appliesWhen, target)
+    - setAppliesTo(set, target)
+    - applicableSets(allSets, target)  → filters
+    - activeBonusesForTarget(set, target)  → resolves which
+      conditional bonuses (DHCB on dragon, Salve on undead, etc.)
+      actually fire vs this target. The conditional gating happens
+      here — the engine just blindly applies whatever it's told.
+
+lib/loadout-edit.ts
+  Client-safe loadout editing. The codegen produces immutable
+  LoadoutSet objects; this module lets the page layer per-slot
+  overrides on top and produce a fresh LoadoutSet with recomputed
+  totals/speed/itemBonusFlags. The DPS engine doesn't know the
+  difference between a codegen-set and a hand-edited one.
+    - itemsForSlot(slot)         → catalog items filtered to that slot
+    - applyOverrides(base, overrides)  → synthesised LoadoutSet
+    - hasOverrides(base, overrides)    → whether the user has edited anything
+  Uses the slim ITEM_CATALOG (client-safe), not the 3 MB vendor JSON.
+
+lib/mechanics.ts
+  evaluateMechanics(requirements, bank) → list of evaluations
+  with `satisfied: true | false | null`. null = informational
+  (no item check possible).
+
+lib/recommend.ts
+  The top-level recommendation engine. Three exports:
+    - computeSetDps(set, target, skills)
+        Pure DPS calc, no bank concerns. Used in browse mode.
+    - rankLoadoutsForBoss(sets, target, bank, gp, lookup, skills)
+        Full mode — filters by applicability, scores ownership/
+        affordability, ranks by DPS. Returns LoadoutEvaluation[].
+    - previewLoadoutsForBoss(sets, target, skills)
+        Browse-mode preview when there's no bank yet.
+    - SKILLS_AT_99 constant for fallback when WOM hasn't returned.
+  Also exports DEFAULT_PRAYERS — the assumed-active prayer for
+  each combat style (Piety for melee, Rigour for ranged, Augury
+  for magic, with the +4% magic damage modeled correctly).
+
+
+----------------------------------------------------------------
+4.9  COMPONENTS (components/)
+----------------------------------------------------------------
+
+components/BankInput.tsx
+  Textarea where the user pastes their bank-tag string. On change,
+  parses via lib/parseBankTag and emits the BankContents to the
+  parent via onParsed callback.
+
+components/PlayerSetup.tsx
+  Small form: WOM username + GP amount + preferred combat style.
+  Emits all three via onSubmit when the form is submitted.
+
+components/PlayerStatsPanel.tsx
+  Renders the player's combat stats returned by WOM. Shows
+  loading / error / success states.
+
+components/EquipmentPanel.tsx
+  Visual OSRS-style equipment grid showing the selected loadout's
+  items. Slot icons are only faded when the user has actually
+  pasted a bank tag AND doesn't own that item — before a bank
+  is pasted, everything renders full-colour (ownership unknown).
+  Slots are clickable when the page passes `onSlotClick` — that's
+  what powers the gear editor: clicking opens the ItemPickerModal
+  for that slot.
+
+components/ItemPickerModal.tsx
+  Modal opened by clicking any equipment slot. Searchable list of
+  all items that fit that slot, sorted by the most-relevant stat
+  (e.g. weapon slot ranks by max attack bonus across styles).
+  Each list item shows icon + name + key bonuses inline so you
+  can compare without leaving the modal. Click an item to apply
+  it — the page state updates and DPS recomputes live. "Clear slot"
+  empties the slot entirely. Closes on Escape or backdrop click.
+
+components/DpsResultsPanel.tsx
+  Prominent 4-tile scorecard for the selected loadout's DPS,
+  modelled on the wgloop calculator's "Results" panel. Shows DPS
+  (highlighted, slightly larger), max hit, accuracy %, and average
+  TTK (target HP / DPS). Below the tiles: a meta row with style /
+  attack speed in seconds / total bonuses, then a line listing
+  which conditional bonuses fire vs the target (DHCB / DHL /
+  Salve / Tome / Tbow), then the loadout's notes if any.
+
+components/InventoryPanel.tsx
+  Recommended consumables (food / prayer pots / antifire / etc.)
+  for the boss. Reads from data/bosses/consumables.ts.
+
+components/PresetList.tsx
+  Ranked list of loadouts for the boss. Each card shows DPS,
+  max hit, accuracy, and either "owned / affordable / missing"
+  status. Clicking a card selects that loadout (drives the
+  equipment grid). NOTE: no longer used by the dynamic page —
+  superseded by SetupComparisonPanel. Kept around for potential
+  reuse.
+
+components/SetupComparisonPanel.tsx
+  Three-column comparison (Ranged | Melee | Magic) showing the
+  top loadouts per style for the current target. Inspired by the
+  wgloop calc but in a single view so you can answer "should I
+  bring ranged or melee here, and what's the upgrade path within
+  my budget?" Each card shows DPS / max hit / accuracy and the
+  cost to complete (if any). Clicking a card selects that loadout.
+
+components/MechanicsPanel.tsx
+  Renders the mechanic checklist. Item-backed mechanics get
+  green (owned) / red (missing) ticks; informational ones get a
+  neutral grey indicator.
+
+components/ItemIcon.tsx
+  Item icon renderer. Uses a fixed-size container with the icon
+  sized via object-fit: contain — same approach as the wgloop
+  calc — so non-square OSRS sprites keep their aspect ratio.
+  Uses plain <img> instead of next/image because next/image
+  with fixed width+height force-stretches. imageRendering:
+  pixelated preserves the sharp 32-bit OSRS pixel look at
+  larger zooms. Falls back to constructing the wiki image URL
+  from the item's display name (`<name>.png`) when the GE
+  mapping payload doesn't include the item id — happens for
+  charged/imbued variants (Toxic blowpipe (Charged), Slayer
+  helmet (i), etc.) and during the brief window before mapping
+  loads. onError handler hides a broken icon if the constructed
+  URL 404s, so the tooltip carries the meaning.
+
+
+----------------------------------------------------------------
+4.10 APP PAGES (app/)
+----------------------------------------------------------------
+
+app/layout.tsx
+  Root HTML layout — sets fonts, the parchment theme background,
+  imports globals.css.
+
+app/globals.css
+  Tailwind directives + OSRS theme tokens (osrs-gold, parchment,
+  osrs-brown, etc.) defined via Tailwind v4's @theme CSS-only
+  config. No tailwind.config.ts file exists — Tailwind v4 reads
+  config from CSS now.
+
+app/page.tsx
+  Home page — searchable boss list. Renders MONSTER_CATALOG as
+  cards, each linking to /boss/<slug>. Has a search input that
+  filters by name / slug / attribute.
+
+app/boss/[slug]/page.tsx
+  THE boss page. One dynamic route serves every monster in the
+  catalog (234 of them). Uses Next.js 16's Promise-wrapped params
+  consumed via React's use() hook. Looks up the monster, renders:
+    - Left column: BankInput, PlayerSetup, PlayerStatsPanel
+    - Middle: EquipmentPanel + DPS diagnostic + InventoryPanel
+    - Right: PresetList + MechanicsPanel
+  Smart about state: with no bank, it uses previewLoadoutsForBoss
+  (just DPS ranking at 99 stats); with a bank pasted, it uses
+  rankLoadoutsForBoss (owned/affordable/missing flags). When a
+  WOM player loads, switches from 99-stat fallback to real stats.
+  The SetupComparisonPanel spans full width below the 3-column
+  grid so all 3 style columns get room; PresetList is no longer
+  used here (the comparison covers it).
+
+app/items/page.tsx
+  Item browser. Renders the 5,306-item catalog as a sortable
+  table. Filters: name search, slot dropdown, max price (parses
+  "50m" / "1b" shorthand). Sort by any combat stat or price.
+  Limited to top 100 rows for perf. Live prices via usePrices().
+
+
+----------------------------------------------------------------
+4.11 API ROUTES (app/api/)
+----------------------------------------------------------------
+
+These are server-side endpoints. They proxy external APIs so the
+WIKI_USER_AGENT_CONTACT email isn't exposed to the browser.
+
+app/api/mapping/route.ts
+  GET /api/mapping → forwards to the wiki's /mapping endpoint
+  (every item id + name + icon). Cached with `force-dynamic` so
+  Next doesn't try to pre-render.
+
+app/api/prices/route.ts
+  GET /api/prices → forwards to the wiki's /latest endpoint
+  (current GE buy/sell prices).
+
+app/api/player/[username]/route.ts
+  GET /api/player/<name> → fetches player data from Wise Old Man.
+  Triggers a WOM refresh if the player's data is stale.
+
+
+----------------------------------------------------------------
+4.12 TESTS (tests/)
+----------------------------------------------------------------
+
+tests/dps.test.ts
+  Unit tests for the DPS engine. Sanity checks for individual
+  formulas (effectiveLevel, meleeMaxHit, hitChance, etc.) plus
+  some end-to-end calculateDps scenarios. These guard the math
+  primitives.
+
+tests/parseBankTag.test.ts
+  Unit tests for the bank-tag parser. Covers both the old format
+  and the newer banktags format.
+
+tests/ammo-compatibility.test.ts
+  Unit tests for checkAmmoCompat — covers the "Ruby dragon bolts
+  on Rune crossbow" failure case + happy path + class mismatch.
+
+tests/vorkath-presets.verify.test.ts
+  ⭐ The most important test file. Locks in the 5 wiki-verified
+  DPS numbers for Vorkath's loadouts:
+
+      Set                                maxHit   accuracy    DPS
+      ranged-end-dragonbane-undead         56     83.20%    7.771
+      ranged-mid-dragonbane                43     77.14%    5.534
+      ranged-entry-universal               34     66.25%    3.761
+      magic-end-fire                       47     41.48%    4.065
+      melee-end-dragonbane                 46     62.58%    6.003
+
+  These match the wiki DPS calculator within ±0.05. If the engine
+  math regresses, these tests fail loudly.
+
+
+----------------------------------------------------------------
+4.13 SCRIPTS (scripts/)
+----------------------------------------------------------------
+
+These are codegen utilities run via tsx (a TypeScript-aware Node
+runner). They're invoked by npm scripts.
+
+scripts/refresh-vendor-data.ts
+  Downloads fresh copies of equipment.json + monsters.json from
+  weirdgloop's GitHub. Run when you want to pick up upstream
+  changes:    npm run refresh-vendor
+
+scripts/build-monster-catalog.ts
+  Reads vendor monsters.json, applies the HP >= 200 filter,
+  picks one primary version per name (prefers "Post-quest" >
+  "Normal" > highest HP), slugifies, writes data/monsters/catalog.ts.
+
+scripts/build-item-catalog.ts
+  Reads vendor equipment.json, slims to the fields needed for
+  /items, writes data/items/catalog.ts. Coerces null bonuses
+  defensively (one item — Wilderness champion amulet — has null
+  fields in vendor data).
+
+scripts/build-loadouts.ts
+  Reads data/loadouts/sets.source.ts + vendor equipment.json.
+  Validates each set's:
+    1. Slot labels (must match vendor item names — typo guard)
+    2. Weapon style choice (must be a legal combo for the weapon
+       category per data/weapon-styles.ts)
+    3. Ammo↔weapon compatibility (per data/ammo-compatibility.ts)
+  Computes totals via sumLoadout, infers itemBonusFlags from the
+  slot item IDs, writes data/loadouts/sets.generated.ts.
+
+All three of build-monster-catalog / build-item-catalog /
+build-loadouts run automatically before `npm test` and
+`npm run build` via the pretest / prebuild hooks. You rarely
+need to run them by hand — but `npm run build-data` runs all
+three if you want.
+
+
+================================================================
+5. WHAT HAPPENS WHEN YOU VISIT A BOSS PAGE
+================================================================
+
+Walking through a request to /boss/cerberus, top to bottom:
+
+  1. Next.js 16 routes the request to app/boss/[slug]/page.tsx
+     with params = { slug: "cerberus" } (a Promise).
+
+  2. The page is a client component. It reads slug via React's
+     use(params) hook.
+
+  3. It looks up MONSTER_BY_SLUG["cerberus"] (from the generated
+     monster catalog). If null, calls notFound() → 404. Otherwise
+     it has the monster's HP, defence levels, attributes ("demon",
+     "fiery"), weakness ("water" +50%), etc.
+
+  4. Three useState hooks track bank (null until pasted),
+     username (empty until submitted), and the selected loadout.
+
+  5. usePrices() and useMapping() fire — SWR fetches the wiki
+     GE prices and item mapping in the background.
+
+  6. usePlayer(username) is called with empty string — the WOM
+     hook short-circuits and returns null. Falls back to SKILLS_AT_99.
+
+  7. evaluations is computed: since no bank, calls
+     previewLoadoutsForBoss(LOADOUT_SETS, cerberus, SKILLS_AT_99).
+     This:
+       a. Filters the 13 sets to those whose appliesWhen matches
+          (Cerberus is "demon" + "fiery" not "dragon" or "undead",
+          so DHCB sets don't apply). Result: ~7 universal sets.
+       b. For each, computes DPS via computeSetDps which:
+          - Builds a DpsScenario from the set's totals + Cerberus's
+            stats + the default prayer for the style.
+          - Asks activeBonusesForTarget which conditional bonuses
+            fire (none for Cerberus — no dragonbane, no undead, no
+            fire weakness).
+          - Calls calculateDps.
+       c. Sorts by DPS descending.
+
+  8. mechanicEvaluations is computed: MECHANICS_BY_SLUG["cerberus"]
+     exists, so we map each requirement to satisfied=null (no bank).
+
+  9. selectedSet defaults to evaluations[0].set (highest DPS).
+     selectedDps recomputes for the selected set.
+
+ 10. Render: left column with empty BankInput / PlayerSetup;
+     middle with EquipmentPanel showing the top loadout's items
+     (all faded since nothing is "owned" yet) + DPS diagnostic +
+     consumables; right column with the PresetList + mechanics
+     panel (all neutral grey indicators).
+
+When the user pastes a bank tag:
+  - BankInput parses it → calls setBank with the parsed bank.
+  - useMemo deps change → evaluations re-computed, this time
+    via rankLoadoutsForBoss (owned/affordable/missing flags).
+  - mechanicEvaluations re-evaluates with the bank (item-backed
+    mechanics get green/red ticks).
+  - EquipmentPanel unfades icons for items now in the bank.
+
+When the user submits the PlayerSetup form:
+  - setUsername fires → usePlayer fetches the WOM data.
+  - When the player data arrives, skills changes → evaluations
+    recompute with the player's REAL stats instead of 99s.
+  - DPS numbers drop or rise to match.
+
+
+================================================================
+6. NPM SCRIPTS — WHAT EACH COMMAND DOES
+================================================================
+
+(Use `npm.cmd` instead of `npm` on this Windows machine — the
+default PowerShell exec policy blocks the npm.ps1 wrapper.)
+
+  npm run dev
+      Start the dev server at http://localhost:3000. Live-reloads
+      on every file change.
+
+  npm run build
+      Production build. Runs prebuild (which runs build-data)
+      then `next build`. Outputs to .next/.
+
+  npm test
+      Runs vitest once. Also runs build-data via the pretest hook,
+      so generated files are always fresh.
+
+  npm run test:watch
+      Vitest in watch mode.
+
+  npm run build-data
+      Runs all three codegens: monster catalog, item catalog,
+      loadouts. Use this when you've edited a source file under
+      data/loadouts/ or data/vendor/.
+
+  npm run build-monster-catalog
+  npm run build-item-catalog
+  npm run build-loadouts
+      Individual codegens. Rarely needed in isolation.
+
+  npm run refresh-vendor
+      Re-download equipment.json + monsters.json from weirdgloop's
+      GitHub. Run when you want to pick up upstream OSRS updates.
+
+  npm run lint
+      Runs ESLint over the project.
+
+
+================================================================
+7. GLOSSARY
+================================================================
+
+OSRS terms:
+  DPS                Damage per second.
+  BIS                "Best in slot" — the strongest item for a slot
+                     in a given scenario.
+  DHCB               Dragon hunter crossbow. +30% acc, +25% dmg
+                     vs dragon-classified monsters. Asymmetric.
+  DHL                Dragon hunter lance. +20% acc, +20% dmg vs
+                     dragons. Symmetric.
+  Salve (ei)         "Enchanted imbued" salve amulet — +20% acc
+                     and dmg vs undead (ranged + magic + melee).
+                     The non-(ei) versions are weaker.
+  Tbow               Twisted bow. Damage and accuracy scale with
+                     the target's magic level (formula in
+                     calculate.ts). BIS vs high-magic targets.
+  BoFA               Bow of Faerdhinen. Universal endgame ranged
+                     bow. Self-fires crystal arrows (no ammo slot).
+  Scythe             Scythe of Vitur. Slash melee weapon, hits up
+                     to 3 targets on size-3+ monsters in-game
+                     (we model single-target only).
+  Fang               Osmumten's fang. Stab melee. Has a passive
+                     that re-rolls low accuracy hits (not modelled).
+  Sang               Sanguinesti staff. Magic, heals on cast.
+  Tome of Fire       Magic shield. +10% damage to fire spells
+                     (NOT +50% as the wiki strategy page implies
+                     — the +50% is a different proc).
+  Augury             Magic prayer. +25% accuracy, +25% defence,
+                     +4% magic damage (the +4% is easy to miss).
+  Rigour             Ranged prayer. +20% atk, +23% str, +25% def.
+  Piety              Melee prayer. +20% atk, +23% str, +25% def.
+  Bank tag           A RuneLite-exported string listing item IDs
+                     in your bank. We parse it to know what gear
+                     the player owns.
+  WOM                Wise Old Man. Third-party OSRS player tracker
+                     (wiseoldman.net). We use their API to fetch
+                     a player's current combat stats.
+  GE                 Grand Exchange. OSRS's player auction market.
+                     Prices fluctuate; we read live values from
+                     the wiki's real-time prices API.
+  Dragonbane         Items with bonuses vs dragon-classified
+                     enemies — DHCB, DHL, and the Dragon hunter
+                     wand (which isn't in our library yet).
+  Spellement         The element of a spell (fire / water / earth
+                     / air). Used for weakness matching — Vorkath
+                     is "weak to fire spells +40%".
+
+Project terms:
+  Catalog            A generated TS file listing all of one entity
+                     (monsters, items). Read by client pages.
+  Loadout set        A gear configuration tagged with an applies-
+                     when predicate. Multiple sets per boss; the
+                     recommender ranks them by DPS.
+  appliesWhen        Predicate over a monster's attributes/weakness
+                     determining whether a set is applicable.
+                     Empty predicate = universal (applies to all).
+  ItemBonusFlags     The boolean flags a set carries about which
+                     conditional weapons it contains. The recommender
+                     resolves whether each bonus actually FIRES vs
+                     a target (DHCB only matters vs dragons, etc.).
+  activeBonuses      The result of resolving ItemBonusFlags vs a
+                     target's attributes — used at DPS calc time.
+  Wiki baselines     The 5 hand-verified DPS numbers in
+                     tests/vorkath-presets.verify.test.ts that
+                     lock the engine math against the wiki calc.
+  Codegen            A script in scripts/ that reads source files
+                     and writes generated files into data/.
+
+
+================================================================
+8. KNOWN LIMITATIONS / NOT YET MODELED
+================================================================
+
+  - Scythe of Vitur's 3-target multi-hit on size-3+ monsters
+  - Osmumten's fang re-roll accuracy passive
+  - Soulreaper axe stack mechanic (+6% per stack, max 5)
+  - Toxic blowpipe's 25% damage-as-heal passive
+  - Bolt special-effect procs (Ruby (e) Blood Forfeit etc.)
+  - Slayer helmet (i) on-task +15% bonus
+  - Tumeken's Shadow (has its own scaling formula)
+  - Sanguinesti staff's heal-on-cast
+  - The dynamic page treats Tbow's "Xerician" cap by checking
+    the boss's attributes for "xerician" — this works for Olm but
+    might miss other CoX monsters tagged differently
+  - Powered staves' custom max-hit formula (Trident, Sang) —
+    we treat them as standard magic weapons; numbers will be off
+  - Special attacks (BGS spec, DWH spec, AGS spec, etc.)
+
+Each of these is a contained engine change — usually a new flag
+on DpsScenario + a check in calculate.ts.
+
+
+================================================================
+9. WHERE THINGS GO WHEN YOU ADD CONTENT
+================================================================
+
+To add a new universal gear set:
+  1. Edit data/loadouts/sets.source.ts — append to LOADOUT_SETS_SOURCE.
+  2. npm run build-loadouts (or just npm test — the pretest hook runs it).
+  3. Visit any boss matching your appliesWhen predicate to see it.
+
+To curate mechanics for a new boss:
+  1. Edit data/bosses/mechanics.ts — add a new const array, then
+     add the slug to MECHANICS_BY_SLUG.
+  2. Visit /boss/<slug> to see the panel.
+
+To curate consumables for a new boss:
+  1. Edit data/bosses/consumables.ts — same shape.
+
+To add a new weapon category (e.g. a new raid weapon type):
+  1. Edit data/weapon-styles.ts — add the category and its style options.
+  2. Run codegen — it will validate against your new entry.
+
+To support a new item ID for a conditional bonus
+(e.g. some future Salve variant):
+  1. Add to BONUS_TRIGGER_ITEM_IDS in data/loadouts/sets.source.ts.
+  2. Update ItemBonusFlags in types/loadout.ts and the inference
+     in scripts/build-loadouts.ts.
+  3. Update activeBonusesForTarget in lib/loadout.ts to gate it
+     on the right monster attribute.
+  4. Update calculate.ts to apply the multiplier.
+
+
+================================================================
+END OF GUIDE
+================================================================

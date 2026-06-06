@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #2b1f10;
+  --foreground: #f4e4bd;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-parchment: #e8d5a3;
+  --color-parchment-dark: #c9b079;
+  --color-osrs-brown: #3e2f1c;
+  --color-osrs-brown-light: #5c4528;
+  --color-osrs-gold: #b89752;
+  --color-osrs-gold-light: #d4b76a;
+  --color-osrs-blood: #8b1a1a;
+
+  --color-status-owned: #4a7c2a;
+  --color-status-affordable: #c9a227;
+  --color-status-missing: #8b1a1a;
+
+  --font-sans: var(--font-sans, system-ui, sans-serif);
+  --font-display: var(--font-display, ui-serif, Georgia, serif);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.osrs-panel {
+  background: var(--color-parchment);
+  color: var(--color-osrs-brown);
+  border: 2px solid var(--color-osrs-brown);
+  box-shadow: inset 0 0 0 1px var(--color-osrs-gold);
+}
+
+.osrs-slot {
+  background: linear-gradient(180deg, #4a3823 0%, #2d2010 100%);
+  border: 2px solid #1a1208;
+  box-shadow: inset 1px 1px 0 #6b5236, inset -1px -1px 0 #1a1208;
+}
+
+.osrs-slot-empty {
+  opacity: 0.4;
+}

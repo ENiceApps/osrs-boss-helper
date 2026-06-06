@@ -1,0 +1,191 @@
+// Ammo ↔ weapon compatibility check. Used by the preset codegen to catch
+// authoring errors like "Ruby dragon bolts (e) on a Rune crossbow" (dragon
+// bolts require a Dragon-tier crossbow or higher, but the bug we hit was
+// the bolt was accepted silently because vendor data doesn't encode the
+// ammo-class / tier rules).
+//
+// Schema:
+//   WEAPON_AMMO: keyed by weapon item name → { class, maxTier }
+//   AMMO_TYPES:  keyed by ammo item name   → { class, tier }
+//   class:       which ammo family this weapon takes (bolt / arrow / dart / etc).
+//   tier:        1..7 ladder mirroring metal tiers (Bronze=1 … Runite=6, Dragon=7).
+//
+// Coverage is intentionally narrow — just enough to validate our current and
+// near-future presets. Extend as new weapons / ammo show up in source presets.
+
+export type AmmoClass =
+  | "bolt"
+  | "arrow"
+  | "dart"
+  | "javelin"
+  | "knife"
+  | "chinchompa"
+  | "throwing-axe";
+
+// Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
+// but we model the dart in the ammo slot so its strength bonus participates
+// in the totals. The class system here treats blowpipe ↔ dart as a sibling
+// pairing to crossbow ↔ bolt and bow ↔ arrow.
+
+export interface WeaponAmmoSpec {
+  class: AmmoClass;
+  maxTier: number;
+}
+
+export interface AmmoSpec {
+  class: AmmoClass;
+  tier: number;
+}
+
+/**
+ * Weapons that consume ammo. A weapon NOT in this map is treated as
+ * "doesn't use the ammo slot" (e.g. swords, staves, blowpipes that contain
+ * their own darts) — the compat check is skipped for those.
+ */
+export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
+  // Crossbows — fire bolts. Tier matches the corresponding metal:
+  // bronze=1 / iron=2 / steel=3 / mithril=4 / adamant=5 / runite=6 / dragon=7.
+  // Crossbows above the Dragon tier (Armadyl, DHCB, Zaryte) still cap at
+  // dragon bolts — there is no above-dragon bolt category.
+  "Bronze crossbow": { class: "bolt", maxTier: 1 },
+  "Iron crossbow": { class: "bolt", maxTier: 2 },
+  "Steel crossbow": { class: "bolt", maxTier: 3 },
+  "Mithril crossbow": { class: "bolt", maxTier: 4 },
+  "Adamant crossbow": { class: "bolt", maxTier: 5 },
+  "Rune crossbow": { class: "bolt", maxTier: 6 },
+  "Dragon crossbow": { class: "bolt", maxTier: 7 },
+  "Armadyl crossbow": { class: "bolt", maxTier: 7 },
+  "Dragon hunter crossbow": { class: "bolt", maxTier: 7 },
+  "Zaryte crossbow": { class: "bolt", maxTier: 7 },
+
+  // Bows — fire arrows. Same metal ladder.
+  Shortbow: { class: "arrow", maxTier: 1 },
+  Longbow: { class: "arrow", maxTier: 1 },
+  "Oak shortbow": { class: "arrow", maxTier: 2 },
+  "Oak longbow": { class: "arrow", maxTier: 2 },
+  "Willow shortbow": { class: "arrow", maxTier: 3 },
+  "Maple shortbow": { class: "arrow", maxTier: 4 },
+  "Yew shortbow": { class: "arrow", maxTier: 5 },
+  "Magic shortbow": { class: "arrow", maxTier: 6 },
+  "Magic shortbow (i)": { class: "arrow", maxTier: 6 },
+  "Twisted bow": { class: "arrow", maxTier: 7 },
+  "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 }, // Self-fires crystal arrows; no separate ammo allowed.
+
+  // Ballistas — fire javelins.
+  "Light ballista": { class: "javelin", maxTier: 7 },
+  "Heavy ballista": { class: "javelin", maxTier: 7 },
+
+  // Blowpipes — fire darts (loaded into the weapon, not the ammo slot in-game,
+  // but we model them as ammo for totals).
+  "Toxic blowpipe": { class: "dart", maxTier: 7 },
+};
+
+/**
+ * Ammo items keyed by exact vendor name. "(e)" / "(p)" variants share the
+ * same tier as the base — the enchant doesn't change which weapon can fire
+ * them. Dragon-tier bolts are gated separately (require Dragon crossbow+).
+ */
+export const AMMO_TYPES: Record<string, AmmoSpec> = {
+  // Standard bolts (runite-and-below base)
+  "Bronze bolts": { class: "bolt", tier: 1 },
+  "Iron bolts": { class: "bolt", tier: 2 },
+  "Steel bolts": { class: "bolt", tier: 3 },
+  "Mithril bolts": { class: "bolt", tier: 4 },
+  "Adamant bolts": { class: "bolt", tier: 5 },
+  "Runite bolts": { class: "bolt", tier: 6 },
+
+  // Gem-tipped bolts on a runite base — fire from Rune crossbow and above.
+  "Opal bolts (e)": { class: "bolt", tier: 1 },
+  "Jade bolts (e)": { class: "bolt", tier: 2 },
+  "Pearl bolts (e)": { class: "bolt", tier: 3 },
+  "Topaz bolts (e)": { class: "bolt", tier: 4 },
+  "Sapphire bolts": { class: "bolt", tier: 5 },
+  "Sapphire bolts (e)": { class: "bolt", tier: 5 },
+  "Emerald bolts": { class: "bolt", tier: 5 },
+  "Emerald bolts (e)": { class: "bolt", tier: 5 },
+  "Ruby bolts": { class: "bolt", tier: 6 },
+  "Ruby bolts (e)": { class: "bolt", tier: 6 },
+  "Diamond bolts": { class: "bolt", tier: 6 },
+  "Diamond bolts (e)": { class: "bolt", tier: 6 },
+  "Dragonstone bolts": { class: "bolt", tier: 6 },
+  "Dragonstone bolts (e)": { class: "bolt", tier: 6 },
+  "Onyx bolts": { class: "bolt", tier: 6 },
+  "Onyx bolts (e)": { class: "bolt", tier: 6 },
+
+  // Dragon bolts — require Dragon-tier crossbow or above.
+  "Dragon bolts": { class: "bolt", tier: 7 },
+  "Dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Opal dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Jade dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Pearl dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Topaz dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Sapphire dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Emerald dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Ruby dragon bolts": { class: "bolt", tier: 7 },
+  "Ruby dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Diamond dragon bolts": { class: "bolt", tier: 7 },
+  "Diamond dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Dragonstone dragon bolts": { class: "bolt", tier: 7 },
+  "Dragonstone dragon bolts (e)": { class: "bolt", tier: 7 },
+  "Onyx dragon bolts": { class: "bolt", tier: 7 },
+  "Onyx dragon bolts (e)": { class: "bolt", tier: 7 },
+
+  // Arrows — same metal ladder.
+  "Bronze arrow": { class: "arrow", tier: 1 },
+  "Iron arrow": { class: "arrow", tier: 2 },
+  "Steel arrow": { class: "arrow", tier: 3 },
+  "Mithril arrow": { class: "arrow", tier: 4 },
+  "Adamant arrow": { class: "arrow", tier: 5 },
+  "Rune arrow": { class: "arrow", tier: 6 },
+  "Amethyst arrow": { class: "arrow", tier: 6 },
+  "Dragon arrow": { class: "arrow", tier: 7 },
+
+  // Darts — for Blowpipe. Strength bonuses are large for Dragon dart.
+  "Bronze dart": { class: "dart", tier: 1 },
+  "Iron dart": { class: "dart", tier: 2 },
+  "Steel dart": { class: "dart", tier: 3 },
+  "Mithril dart": { class: "dart", tier: 4 },
+  "Adamant dart": { class: "dart", tier: 5 },
+  "Rune dart": { class: "dart", tier: 6 },
+  "Amethyst dart": { class: "dart", tier: 6 },
+  "Dragon dart": { class: "dart", tier: 7 },
+};
+
+export type AmmoCompatResult =
+  | { ok: true }
+  | { ok: false; reason: string };
+
+/**
+ * Check whether `ammoName` can be fired by `weaponName`. Resolution rules:
+ *  - If the weapon is not in WEAPON_AMMO, it doesn't use the ammo slot —
+ *    the compat check is skipped (returns ok).
+ *  - If the ammo is not in AMMO_TYPES, treat as an authoring error — the
+ *    table needs to be extended before this preset can be trusted.
+ *  - Class mismatch (e.g. arrow on a crossbow) is always a failure.
+ *  - Tier > maxTier is a failure (the canonical "Ruby dragon bolts on Rune
+ *    crossbow" case).
+ */
+export function checkAmmoCompat(weaponName: string, ammoName: string): AmmoCompatResult {
+  const weapon = WEAPON_AMMO[weaponName];
+  if (!weapon) return { ok: true };
+  const ammo = AMMO_TYPES[ammoName];
+  if (!ammo) {
+    return {
+      ok: false,
+      reason: `Unknown ammo "${ammoName}" — add it to AMMO_TYPES in data/ammo-compatibility.ts.`,
+    };
+  }
+  if (ammo.class !== weapon.class) {
+    return {
+      ok: false,
+      reason: `"${weaponName}" fires ${weapon.class}s but "${ammoName}" is a ${ammo.class}.`,
+    };
+  }
+  if (ammo.tier > weapon.maxTier) {
+    return {
+      ok: false,
+      reason: `"${ammoName}" (tier ${ammo.tier}) exceeds "${weaponName}" max ammo tier ${weapon.maxTier}.`,
+    };
+  }
+  return { ok: true };
+}
