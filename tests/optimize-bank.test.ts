@@ -180,6 +180,39 @@ describe("optimize/bank — degenerate inputs", () => {
   });
 });
 
+describe("optimize/bank — ammo slot guarding", () => {
+  it("Thrown weapon (Dragon dart) never picks javelin as ammo — javelin stays out of the setup", () => {
+    // Dragon dart id=11230 (slot:weapon, category:Thrown). Dragon javelin
+    // id=19484 (slot:ammo, rangedStr=150). Before the fix, the greedy build
+    // would pick Dragon javelin as the best ammo since Thrown weapons weren't
+    // in WEAPON_AMMO and any ammo passed the compat check.
+    const { rankings } = optimizeForBoss({
+      bank: [11230, 19484], // Dragon dart (Unpoisoned) + Dragon javelin (Unpoisoned)
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+    });
+    // If there are rankings, none should contain Dragon javelin in any slot.
+    for (const r of rankings) {
+      const ids = Object.values(r.loadout.slots).map((s) => s.itemId);
+      expect(ids).not.toContain(19484); // Dragon javelin must never appear
+    }
+  });
+
+  it("Heavy ballista bank picks Dragon javelin as ammo (not filtered as unknown)", () => {
+    // Before the fix, javelins were missing from AMMO_TYPES → "Unknown ammo"
+    // error → all javelins rejected → ballista setups had no ammo at all.
+    const { rankings } = optimizeForBoss({
+      bank: [19481, 19484], // Heavy ballista + Dragon javelin (Unpoisoned)
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    const top = rankings[0];
+    expect(top.loadout.slots.weapon?.itemId).toBe(19481); // Heavy ballista
+    expect(top.loadout.slots.ammo?.itemId).toBe(19484);   // Dragon javelin
+  });
+});
+
 describe("optimize/bank — parity check vs Phase 1 scoreScenario", () => {
   it("optimizer's #1 DPS matches manually computed scoreScenario for the same gear", () => {
     // If we hand-pick the optimizer's top loadout's items and feed them

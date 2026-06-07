@@ -141,6 +141,9 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Dragon arrow": { class: "arrow", tier: 7 },
 
   // Darts — for Blowpipe. Strength bonuses are large for Dragon dart.
+  // Note: in the item catalog, darts have slot:"weapon" (they are thrown
+  // weapons). They appear here so the preset codegen can validate blowpipe
+  // presets that explicitly model the dart in the ammo slot for DPS totals.
   "Bronze dart": { class: "dart", tier: 1 },
   "Iron dart": { class: "dart", tier: 2 },
   "Steel dart": { class: "dart", tier: 3 },
@@ -149,7 +152,30 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Rune dart": { class: "dart", tier: 6 },
   "Amethyst dart": { class: "dart", tier: 6 },
   "Dragon dart": { class: "dart", tier: 7 },
+
+  // Javelins — for Ballistas (Light / Heavy).
+  "Bronze javelin": { class: "javelin", tier: 1 },
+  "Iron javelin": { class: "javelin", tier: 2 },
+  "Steel javelin": { class: "javelin", tier: 3 },
+  "Mithril javelin": { class: "javelin", tier: 4 },
+  "Adamant javelin": { class: "javelin", tier: 5 },
+  "Rune javelin": { class: "javelin", tier: 6 },
+  "Amethyst javelin": { class: "javelin", tier: 6 },
+  "Dragon javelin": { class: "javelin", tier: 7 },
 };
+
+/**
+ * Weapon categories whose projectile is the weapon itself — they never occupy
+ * the ammo slot. The bank optimizer skips the ammo slot for these.
+ *
+ * - "Thrown": darts, knives, throwing axes, and all blowpipe variants (the
+ *   blowpipe loads darts internally; no separate ammo slot in-game).
+ * - "Chinchompas": the chinchompa IS the ammunition.
+ */
+export const SELF_AMMO_WEAPON_CATEGORIES: ReadonlySet<string> = new Set([
+  "Thrown",
+  "Chinchompas",
+]);
 
 export type AmmoCompatResult =
   | { ok: true }

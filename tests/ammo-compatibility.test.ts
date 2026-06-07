@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkAmmoCompat } from "@/data/ammo-compatibility";
+import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 
 describe("checkAmmoCompat", () => {
   it("accepts a matching tier (Ruby bolts (e) on Rune crossbow)", () => {
@@ -45,6 +45,18 @@ describe("checkAmmoCompat", () => {
     }
   });
 
+  it("accepts javelins on a ballista (now that javelins are in AMMO_TYPES)", () => {
+    expect(checkAmmoCompat("Heavy ballista", "Dragon javelin")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Heavy ballista", "Rune javelin")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Light ballista", "Adamant javelin")).toEqual({ ok: true });
+  });
+
+  it("rejects dart on a ballista (class mismatch: javelin vs dart)", () => {
+    const result = checkAmmoCompat("Heavy ballista", "Dragon dart");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/javelin/);
+  });
+
   it("skips the check for weapons that don't use the ammo slot (e.g. spear, staff)", () => {
     // The codegen passes ammoName through unconditionally when the preset has
     // an ammo slot; the compat function should silently no-op when the weapon
@@ -54,5 +66,17 @@ describe("checkAmmoCompat", () => {
     // preset itself.)
     expect(checkAmmoCompat("Dragon hunter lance", "Ruby bolts (e)")).toEqual({ ok: true });
     expect(checkAmmoCompat("Harmonised nightmare staff", "Diamond bolts (e)")).toEqual({ ok: true });
+  });
+});
+
+describe("SELF_AMMO_WEAPON_CATEGORIES", () => {
+  it("includes Thrown and Chinchompas", () => {
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Thrown")).toBe(true);
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Chinchompas")).toBe(true);
+  });
+
+  it("does not include ammo-using weapon categories", () => {
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Crossbow")).toBe(false);
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Bow")).toBe(false);
   });
 });

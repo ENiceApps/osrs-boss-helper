@@ -18,7 +18,7 @@ import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
 } from "@/data/armor-sets";
-import { checkAmmoCompat } from "@/data/ammo-compatibility";
+import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -179,6 +179,9 @@ function greedyBuild(
   const ids: number[] = [ws.weapon.id];
   for (const slot of NON_WEAPON_SLOTS) {
     if (slot === "shield" && ws.weapon.isTwoHanded) continue;
+    // Thrown weapons (darts, knives, blowpipes) and chinchompas are
+    // self-contained projectiles — they never use a separate ammo slot.
+    if (slot === "ammo" && SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category)) continue;
     let pool = bySlot.get(slot) ?? [];
     if (slot === "ammo") {
       pool = pool.filter((a) => checkAmmoCompat(ws.weapon.name, a.name).ok);
