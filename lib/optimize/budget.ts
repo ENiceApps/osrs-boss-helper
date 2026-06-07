@@ -20,7 +20,7 @@
 //     bootstrapping from catalog.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { checkAmmoCompat } from "@/data/ammo-compatibility";
+import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type {
@@ -135,10 +135,12 @@ function buildSwappedItemIds(
   slots[candidateSlot] = candidate.id;
 
   // Weapon swap fixups: clear shield if new weapon is 2H, drop ammo if new
-  // weapon is a different ammo class.
+  // weapon is self-contained (Thrown/Chinchompas) or a different ammo class.
   if (candidateSlot === "weapon") {
     if (candidate.isTwoHanded) delete slots.shield;
-    if (slots.ammo !== undefined) {
+    if (SELF_AMMO_WEAPON_CATEGORIES.has(candidate.category)) {
+      delete slots.ammo;
+    } else if (slots.ammo !== undefined) {
       const ammoItem = ITEM_BY_ID.get(slots.ammo);
       if (ammoItem) {
         const compat = checkAmmoCompat(candidate.name, ammoItem.name);
@@ -186,12 +188,14 @@ function findCandidates(
     if (!ALL_SLOTS.includes(slot)) continue;
     const price = priceLookup(item.id);
     if (price === null || price > budget) continue;
-    // Cheap pre-filter: ammo must match the current weapon to be a swap candidate.
+    // Cheap pre-filter: ammo slot items must match the current weapon's ammo
+    // class. Self-ammo weapons (Thrown, Chinchompas) never use the ammo slot.
     if (slot === "ammo") {
       const w = activeLoadout.slots.weapon;
       if (!w) continue;
       const wi = ITEM_BY_ID.get(w.itemId);
       if (!wi) continue;
+      if (SELF_AMMO_WEAPON_CATEGORIES.has(wi.category)) continue;
       if (!checkAmmoCompat(wi.name, item.name).ok) continue;
     }
 
