@@ -5,8 +5,8 @@ import {
   hitChance,
   npcDefenceRoll,
 } from "@/lib/dps/common";
-import { meleeAttackRoll, meleeMaxHit } from "@/lib/dps/melee";
-import { rangedAttackRoll, rangedMaxHit } from "@/lib/dps/ranged";
+import { meleeMaxHit } from "@/lib/dps/melee";
+import { rangedMaxHit } from "@/lib/dps/ranged";
 import { magicMaxHit } from "@/lib/dps/magic";
 import { applyFactors, conditionalMultipliers } from "@/lib/dps/conditional";
 import { calculateDps } from "@/lib/dps/calculate";

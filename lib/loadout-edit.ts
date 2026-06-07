@@ -12,7 +12,6 @@ import type {
   LoadoutSet,
   LoadoutSlotKey,
 } from "@/types/loadout";
-import type { CombatStyle } from "@/types/osrs";
 
 const ITEM_BY_ID = new Map<number, ItemCatalogEntry>(
   ITEM_CATALOG.map((it) => [it.id, it]),

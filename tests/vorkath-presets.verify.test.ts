@@ -51,7 +51,6 @@ describe("Vorkath universal loadout verification", () => {
       if (!applies) return; // Sets that don't apply to Vorkath aren't part of this verification pass.
 
       const result = computeSetDps(set, VORKATH, SKILLS_AT_99);
-      // eslint-disable-next-line no-console
       console.log(
         `[verify] ${set.id}: maxHit=${result.maxHit} accuracy=${result.accuracy.toFixed(4)} dps=${result.dps.toFixed(3)} | atkBonus=${set.totals.attackBonus} strBonus=${set.totals.strengthBonus} ticks=${set.attackSpeedTicks}`,
       );

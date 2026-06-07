@@ -17,13 +17,9 @@ import { BONUS_TRIGGER_ITEM_IDS } from "@/data/loadouts/sets.source";
 import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
-  type ArmorSetDefinition,
 } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
-import {
-  WEAPON_STYLES,
-  type WeaponStyleOption,
-} from "@/data/weapon-styles";
+import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
   AttackStyleChoice,
