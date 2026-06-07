@@ -71,9 +71,13 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Twisted bow": { class: "arrow", maxTier: 7 },
   "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 }, // Self-fires crystal arrows; no separate ammo allowed.
 
-  // Ballistas — fire javelins.
+  // Ballistas — fire javelins. Cosmetic variants share the same ammo rules;
+  // they must be listed explicitly because their category is "Crossbow" in the
+  // catalog (same as bolt-firing crossbows), so the category fallback below
+  // would incorrectly infer "bolt" for any unlisted ballista variant.
   "Light ballista": { class: "javelin", maxTier: 7 },
   "Heavy ballista": { class: "javelin", maxTier: 7 },
+  "Heavy ballista (or)": { class: "javelin", maxTier: 7 },
 
   // Blowpipes — fire darts (loaded into the weapon, not the ammo slot in-game,
   // but we model them as ammo for totals).
@@ -194,6 +198,7 @@ export type AmmoCompatResult =
 export function checkAmmoCompat(weaponName: string, ammoName: string): AmmoCompatResult {
   const weapon = WEAPON_AMMO[weaponName];
   if (!weapon) return { ok: true };
+
   const ammo = AMMO_TYPES[ammoName];
   if (!ammo) {
     return {
@@ -211,6 +216,47 @@ export function checkAmmoCompat(weaponName: string, ammoName: string): AmmoCompa
     return {
       ok: false,
       reason: `"${ammoName}" (tier ${ammo.tier}) exceeds "${weaponName}" max ammo tier ${weapon.maxTier}.`,
+    };
+  }
+  return { ok: true };
+}
+
+/**
+ * Like `checkAmmoCompat` but uses `weaponCategory` as a fallback when the
+ * weapon name isn't registered in WEAPON_AMMO. Handles the large number of
+ * unlisted bows and crossbow variants automatically:
+ *   "Bow"      → fires arrows (no tier cap for unlisted weapons)
+ *   "Crossbow" → fires bolts  (no tier cap for unlisted weapons)
+ * Anything else falls back to the same "skip check → ok" behaviour.
+ *
+ * Use this in the optimizer paths (bank / budget) where the weapon's catalog
+ * category is already available. The plain `checkAmmoCompat` stays for the
+ * preset codegen validator where only names are available.
+ */
+export function checkAmmoCompatWithCategory(
+  weaponName: string,
+  weaponCategory: string,
+  ammoName: string,
+): AmmoCompatResult {
+  // If the weapon is explicitly registered, use the full name-based check.
+  if (weaponName in WEAPON_AMMO) {
+    return checkAmmoCompat(weaponName, ammoName);
+  }
+  // Infer ammo class from weapon category.
+  let impliedClass: AmmoClass | null = null;
+  if (weaponCategory === "Bow") impliedClass = "arrow";
+  else if (weaponCategory === "Crossbow") impliedClass = "bolt";
+  if (!impliedClass) return { ok: true }; // unknown weapon type — don't filter
+  const ammo = AMMO_TYPES[ammoName];
+  if (!ammo) {
+    // Unknown ammo for an inferred weapon type — reject to avoid pairing
+    // (e.g. atlatl darts on a Crystal bow if somehow they enter the pool).
+    return { ok: false, reason: `Unknown ammo "${ammoName}" for ${weaponCategory} weapon "${weaponName}".` };
+  }
+  if (ammo.class !== impliedClass) {
+    return {
+      ok: false,
+      reason: `"${weaponName}" (${weaponCategory}) fires ${impliedClass}s but "${ammoName}" is a ${ammo.class}.`,
     };
   }
   return { ok: true };

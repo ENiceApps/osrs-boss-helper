@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import { checkAmmoCompat, checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 
 describe("checkAmmoCompat", () => {
   it("accepts a matching tier (Ruby bolts (e) on Rune crossbow)", () => {
@@ -66,6 +66,36 @@ describe("checkAmmoCompat", () => {
     // preset itself.)
     expect(checkAmmoCompat("Dragon hunter lance", "Ruby bolts (e)")).toEqual({ ok: true });
     expect(checkAmmoCompat("Harmonised nightmare staff", "Diamond bolts (e)")).toEqual({ ok: true });
+  });
+});
+
+describe("checkAmmoCompatWithCategory — category fallback", () => {
+  it("rejects bolts on an unlisted bow (Crystal bow + Ruby dragon bolts (e))", () => {
+    // Crystal bow is not in WEAPON_AMMO; before this fix it returned ok:true
+    // for any ammo, letting bolts (higher rangedStr) win the greedy pick.
+    const result = checkAmmoCompatWithCategory("Crystal bow", "Bow", "Ruby dragon bolts (e)");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/arrow/);
+  });
+
+  it("accepts arrows on an unlisted bow (Crystal bow + Dragon arrow)", () => {
+    expect(checkAmmoCompatWithCategory("Crystal bow", "Bow", "Dragon arrow")).toEqual({ ok: true });
+  });
+
+  it("accepts bolts on an unlisted crossbow variant", () => {
+    expect(checkAmmoCompatWithCategory("Dragon hunter crossbow (t)", "Crossbow", "Dragon bolts (e)")).toEqual({ ok: true });
+  });
+
+  it("rejects arrows on an unlisted crossbow variant", () => {
+    const result = checkAmmoCompatWithCategory("Dragon hunter crossbow (t)", "Crossbow", "Dragon arrow");
+    expect(result.ok).toBe(false);
+  });
+
+  it("still uses explicit WEAPON_AMMO entry when present (Heavy ballista → javelin, not bolt)", () => {
+    // Heavy ballista is category "Crossbow" but explicitly registered as javelin.
+    expect(checkAmmoCompatWithCategory("Heavy ballista", "Crossbow", "Dragon javelin")).toEqual({ ok: true });
+    const bolts = checkAmmoCompatWithCategory("Heavy ballista", "Crossbow", "Dragon bolts (e)");
+    expect(bolts.ok).toBe(false);
   });
 });
 

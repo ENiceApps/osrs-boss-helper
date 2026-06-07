@@ -18,7 +18,7 @@ import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
 } from "@/data/armor-sets";
-import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -184,7 +184,7 @@ function greedyBuild(
     if (slot === "ammo" && SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category)) continue;
     let pool = bySlot.get(slot) ?? [];
     if (slot === "ammo") {
-      pool = pool.filter((a) => checkAmmoCompat(ws.weapon.name, a.name).ok);
+      pool = pool.filter((a) => checkAmmoCompatWithCategory(ws.weapon.name, ws.weapon.category, a.name).ok);
     }
     if (pool.length === 0) continue;
     // Pick the item with the highest DPS-flavoured score for this style.

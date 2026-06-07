@@ -20,7 +20,7 @@
 //     bootstrapping from catalog.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { checkAmmoCompat, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import { checkAmmoCompat, checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type {
@@ -143,7 +143,7 @@ function buildSwappedItemIds(
     } else if (slots.ammo !== undefined) {
       const ammoItem = ITEM_BY_ID.get(slots.ammo);
       if (ammoItem) {
-        const compat = checkAmmoCompat(candidate.name, ammoItem.name);
+        const compat = checkAmmoCompatWithCategory(candidate.name, candidate.category, ammoItem.name);
         if (!compat.ok) delete slots.ammo;
       }
     }
@@ -196,7 +196,7 @@ function findCandidates(
       const wi = ITEM_BY_ID.get(w.itemId);
       if (!wi) continue;
       if (SELF_AMMO_WEAPON_CATEGORIES.has(wi.category)) continue;
-      if (!checkAmmoCompat(wi.name, item.name).ok) continue;
+      if (!checkAmmoCompatWithCategory(wi.name, wi.category, item.name).ok) continue;
     }
 
     const itemIdsAfter = buildSwappedItemIds(activeLoadout, item);
