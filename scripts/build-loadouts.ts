@@ -26,7 +26,6 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const HEADER = `// GENERATED FILE — do not edit by hand.
 // Run \`npm run build-loadouts\` to regenerate from data/loadouts/sets.source.ts
 // and the vendored weirdgloop dataset under data/vendor/wgloop/.
-// Last generated: ${new Date().toISOString()}
 `;
 
 function buildSet(source: LoadoutSetSource): LoadoutSet {

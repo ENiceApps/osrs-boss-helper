@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# graphify (knowledge-graph dev tool output). Remove this line if you want to
+# commit the graph for team sharing (graphify supports git-merge of graph.json).
+graphify-out/
+
+# Claude Code per-machine local settings (permissions etc.) — not for the repo.
+.claude/settings.local.json

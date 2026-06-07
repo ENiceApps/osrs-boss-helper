@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "pretest": "npm run build-data",
     "test": "vitest run",
     "test:watch": "vitest",

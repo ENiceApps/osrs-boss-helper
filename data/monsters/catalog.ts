@@ -1,6 +1,5 @@
 // GENERATED FILE — do not edit by hand.
 // Run `npm run build-monster-catalog` to regenerate from data/vendor/wgloop/monsters.json.
-// Last generated: 2026-06-05T14:26:24.565Z
 // Filter: HP >= 200, excluding entries tagged ["Echo","Nightmare Zone"].
 
 export interface MonsterCatalogEntry {

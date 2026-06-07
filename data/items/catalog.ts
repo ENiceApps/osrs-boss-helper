@@ -1,6 +1,5 @@
 // GENERATED FILE — do not edit by hand.
 // Run `npm run build-item-catalog` to regenerate from data/vendor/wgloop/equipment.json.
-// Last generated: 2026-06-05T14:26:24.997Z
 
 export type ItemCatalogSlot =
   | "head" | "cape" | "neck" | "ammo" | "weapon" | "body"

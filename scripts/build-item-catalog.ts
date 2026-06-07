@@ -128,7 +128,6 @@ for (const overrideId of Object.keys(STAT_OVERRIDES).map(Number)) {
 const lines: string[] = [];
 lines.push(`// GENERATED FILE — do not edit by hand.`);
 lines.push(`// Run \`npm run build-item-catalog\` to regenerate from data/vendor/wgloop/equipment.json.`);
-lines.push(`// Last generated: ${new Date().toISOString()}`);
 lines.push(``);
 lines.push(`export type ItemCatalogSlot =`);
 lines.push(`  | "head" | "cape" | "neck" | "ammo" | "weapon" | "body"`);

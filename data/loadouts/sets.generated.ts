@@ -1,7 +1,6 @@
 // GENERATED FILE — do not edit by hand.
 // Run `npm run build-loadouts` to regenerate from data/loadouts/sets.source.ts
 // and the vendored weirdgloop dataset under data/vendor/wgloop/.
-// Last generated: 2026-06-05T14:26:25.647Z
 
 import type { LoadoutSet } from "@/types/loadout";
 

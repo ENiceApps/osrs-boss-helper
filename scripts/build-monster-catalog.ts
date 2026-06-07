@@ -164,7 +164,6 @@ entries.sort((a, b) => a.name.localeCompare(b.name));
 const lines: string[] = [];
 lines.push(`// GENERATED FILE — do not edit by hand.`);
 lines.push(`// Run \`npm run build-monster-catalog\` to regenerate from data/vendor/wgloop/monsters.json.`);
-lines.push(`// Last generated: ${new Date().toISOString()}`);
 lines.push(`// Filter: HP >= ${HP_FLOOR}, excluding entries tagged ${JSON.stringify(EXCLUDED_TAGS)}.`);
 lines.push(``);
 lines.push(`export interface MonsterCatalogEntry {`);
