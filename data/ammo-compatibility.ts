@@ -69,7 +69,30 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Magic shortbow": { class: "arrow", maxTier: 6 },
   "Magic shortbow (i)": { class: "arrow", maxTier: 6 },
   "Twisted bow": { class: "arrow", maxTier: 7 },
-  "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 }, // Self-fires crystal arrows; no separate ammo allowed.
+
+  // Self-contained bows — fire their own projectiles, no ammo slot used.
+  // maxTier: 0 ensures every real ammo tier (1+) fails the tier check.
+  "Bow of faerdhinen": { class: "arrow", maxTier: 0 },      // uncharged form
+  "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 },  // charged (all clan colour variants below)
+  "Bow of faerdhinen (c) (Amlodd)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Cadarn)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Crwys)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Iorwerth)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Ithell)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Meilyr)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (Trahaearn)": { class: "arrow", maxTier: 0 },
+  "Bow of faerdhinen (c) (deadman)": { class: "arrow", maxTier: 0 },
+  // Crystal bows (regular + Gauntlet variants) — fire from charges, no arrows.
+  "Crystal bow": { class: "arrow", maxTier: 0 },
+  "Crystal bow (i)": { class: "arrow", maxTier: 0 },
+  "Crystal bow (historical)": { class: "arrow", maxTier: 0 },
+  "Crystal bow (basic)": { class: "arrow", maxTier: 0 },
+  "Crystal bow (attuned)": { class: "arrow", maxTier: 0 },
+  "Crystal bow (perfected)": { class: "arrow", maxTier: 0 },
+  // Corrupted bows (Corrupted Gauntlet) — same mechanic as Crystal bow.
+  "Corrupted bow (basic)": { class: "arrow", maxTier: 0 },
+  "Corrupted bow (attuned)": { class: "arrow", maxTier: 0 },
+  "Corrupted bow (perfected)": { class: "arrow", maxTier: 0 },
 
   // Ballistas — fire javelins. Cosmetic variants share the same ammo rules;
   // they must be listed explicitly because their category is "Crossbow" in the

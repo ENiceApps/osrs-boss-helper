@@ -70,16 +70,24 @@ describe("checkAmmoCompat", () => {
 });
 
 describe("checkAmmoCompatWithCategory — category fallback", () => {
-  it("rejects bolts on an unlisted bow (Crystal bow + Ruby dragon bolts (e))", () => {
-    // Crystal bow is not in WEAPON_AMMO; before this fix it returned ok:true
-    // for any ammo, letting bolts (higher rangedStr) win the greedy pick.
-    const result = checkAmmoCompatWithCategory("Crystal bow", "Bow", "Ruby dragon bolts (e)");
+  it("rejects bolts on an unlisted arrow-firing bow (Dark bow + Ruby dragon bolts (e))", () => {
+    // Dark bow is not in WEAPON_AMMO; the category fallback infers arrows.
+    const result = checkAmmoCompatWithCategory("Dark bow", "Bow", "Ruby dragon bolts (e)");
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/arrow/);
   });
 
-  it("accepts arrows on an unlisted bow (Crystal bow + Dragon arrow)", () => {
-    expect(checkAmmoCompatWithCategory("Crystal bow", "Bow", "Dragon arrow")).toEqual({ ok: true });
+  it("accepts arrows on an unlisted arrow-firing bow (Dark bow + Dragon arrow)", () => {
+    expect(checkAmmoCompatWithCategory("Dark bow", "Bow", "Dragon arrow")).toEqual({ ok: true });
+  });
+
+  it("rejects all ammo on Crystal bow — it fires from charges, no arrows", () => {
+    // Crystal bow is now in WEAPON_AMMO with maxTier:0 (explicit entry takes
+    // priority over the category fallback).
+    const arrow = checkAmmoCompatWithCategory("Crystal bow", "Bow", "Dragon arrow");
+    expect(arrow.ok).toBe(false);
+    const bolt = checkAmmoCompatWithCategory("Crystal bow", "Bow", "Ruby dragon bolts (e)");
+    expect(bolt.ok).toBe(false);
   });
 
   it("accepts bolts on an unlisted crossbow variant", () => {
