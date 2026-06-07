@@ -20,7 +20,8 @@ export type AmmoClass =
   | "javelin"
   | "knife"
   | "chinchompa"
-  | "throwing-axe";
+  | "throwing-axe"
+  | "bolt-rack"; // Karil's crossbow only
 
 // Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
 // but we model the dart in the ammo slot so its strength bonus participates
@@ -93,6 +94,10 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Corrupted bow (basic)": { class: "arrow", maxTier: 0 },
   "Corrupted bow (attuned)": { class: "arrow", maxTier: 0 },
   "Corrupted bow (perfected)": { class: "arrow", maxTier: 0 },
+
+  // Karil's crossbow — fires bolt racks only (unique Barrows ammo).
+  // All durability versions share the same item name, so one entry covers them.
+  "Karil's crossbow": { class: "bolt-rack", maxTier: 1 },
 
   // Ballistas — fire javelins. Cosmetic variants share the same ammo rules;
   // they must be listed explicitly because their category is "Crossbow" in the
@@ -179,6 +184,9 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Rune dart": { class: "dart", tier: 6 },
   "Amethyst dart": { class: "dart", tier: 6 },
   "Dragon dart": { class: "dart", tier: 7 },
+
+  // Bolt racks — for Karil's crossbow only.
+  "Bolt rack": { class: "bolt-rack", tier: 1 },
 
   // Javelins — for Ballistas (Light / Heavy).
   "Bronze javelin": { class: "javelin", tier: 1 },
