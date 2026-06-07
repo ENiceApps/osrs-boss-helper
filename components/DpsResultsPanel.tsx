@@ -67,8 +67,8 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
   return (
     <div className="osrs-panel rounded p-4">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="font-semibold text-osrs-brown">DPS results</h3>
-        <span className="text-[11px] text-parchment-dark">
+        <h3 className="section-title font-semibold text-osrs-brown">DPS results</h3>
+        <span className="text-[11px] text-osrs-muted">
           vs {targetHp} HP target
         </span>
       </div>
@@ -91,17 +91,17 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
       <div className="mt-3 pt-3 border-t border-osrs-brown/30 space-y-1 text-xs text-osrs-brown">
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           <span>
-            <span className="text-parchment-dark">Style:</span>{" "}
+            <span className="text-osrs-muted">Style:</span>{" "}
             <span className="capitalize">{set.style}</span> ·{" "}
             <span>{set.attackStyleChoice}</span>
           </span>
           <span>
-            <span className="text-parchment-dark">Attack:</span>{" "}
+            <span className="text-osrs-muted">Attack:</span>{" "}
             {effectiveTicks} tick{effectiveTicks === 1 ? "" : "s"} (
             {secondsPerHit.toFixed(1)}s)
           </span>
           <span>
-            <span className="text-parchment-dark">Bonuses:</span> +
+            <span className="text-osrs-muted">Bonuses:</span> +
             {set.totals.attackBonus} atk
             {set.totals.strengthBonus !== 0 &&
               ` · +${set.totals.strengthBonus} str`}
@@ -111,11 +111,11 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
         </div>
         {activeFlags.length > 0 ? (
           <div className="text-osrs-gold">
-            <span className="text-parchment-dark">Active vs this target:</span>{" "}
+            <span className="text-osrs-muted">Active vs this target:</span>{" "}
             {activeFlags.join(" · ")}
           </div>
         ) : (
-          <div className="text-parchment-dark italic">
+          <div className="text-osrs-muted italic">
             No conditional bonuses active for this target.
           </div>
         )}
@@ -142,7 +142,7 @@ function Stat({ label, value, accent = "text-osrs-brown", primary }: StatProps) 
       >
         {value}
       </div>
-      <div className="text-[10px] uppercase tracking-wider text-parchment-dark mt-0.5">
+      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-0.5">
         {label}
       </div>
     </div>

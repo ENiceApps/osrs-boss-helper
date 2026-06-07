@@ -237,7 +237,7 @@ export default function BossPage({
             </>
           )}
         </span>
-        <span className="text-parchment-dark">
+        <span className="text-osrs-muted">
           {bank.itemIds.size} items · {gp.toLocaleString()} gp wallet
         </span>
       </div>
@@ -265,12 +265,13 @@ export default function BossPage({
               setGpManual(gp);
               setStyleFilter(style);
             }}
-          />
-          <PlayerStatsPanel
-            player={player}
-            isLoading={playerLoading}
-            error={playerError}
-          />
+          >
+            <PlayerStatsPanel
+              player={player}
+              isLoading={playerLoading}
+              error={playerError}
+            />
+          </PlayerSetup>
         </aside>
 
         {/* Middle + right collapsed — context cards. Mechanics on the left
@@ -296,7 +297,7 @@ export default function BossPage({
           Compare all builds + manually tweak gear ({evaluations.length} curated)
         </summary>
         <div className="p-4 border-t border-osrs-brown/30 space-y-4">
-          <p className="text-xs text-parchment-dark">
+          <p className="text-xs text-osrs-muted">
             Pick a curated set, then click any equipment slot below to swap
             individual items. DPS recomputes against this boss as you tweak.
           </p>

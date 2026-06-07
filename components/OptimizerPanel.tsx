@@ -77,7 +77,7 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping 
   if (!bank) {
     return (
       <div className="osrs-panel p-4 rounded">
-        <h3 className="font-semibold text-osrs-brown mb-2">Bank optimizer</h3>
+        <h3 className="section-title font-semibold text-osrs-brown mb-2">Bank optimizer</h3>
         <p className="text-sm text-osrs-brown">
           Paste a bank tag on the left to see your best buildable loadout and
           ranked upgrade recommendations.
@@ -89,8 +89,8 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping 
   return (
     <div className="osrs-panel p-4 rounded space-y-4">
       <div>
-        <h3 className="font-semibold text-osrs-brown mb-1">Bank optimizer</h3>
-        <p className="text-[11px] text-parchment-dark">
+        <h3 className="section-title font-semibold text-osrs-brown mb-1">Bank optimizer</h3>
+        <p className="text-[11px] text-osrs-muted">
           {MODE_DESCRIPTIONS[mode]}
         </p>
       </div>
@@ -117,18 +117,18 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping 
       {(mode === "gp-only" || mode === "sell-to-fund") && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div className="bg-parchment border border-osrs-brown/40 rounded p-2">
-            <div className="text-parchment-dark uppercase text-[10px] tracking-wide">
+            <div className="text-osrs-muted uppercase text-[10px] tracking-wide">
               Wallet GP
             </div>
             <div className="text-osrs-brown font-bold text-lg">{fmtGp(gp)}</div>
-            <div className="text-[10px] text-parchment-dark mt-0.5">
-              Set in &ldquo;Your details&rdquo; on the left.
+            <div className="text-[10px] text-osrs-muted mt-0.5">
+              Set it in &ldquo;Your character&rdquo; below.
             </div>
           </div>
           {mode === "sell-to-fund" && (
             <div className="bg-parchment border border-osrs-brown/40 rounded p-2">
               <label className="block">
-                <span className="text-parchment-dark uppercase text-[10px] tracking-wide">
+                <span className="text-osrs-muted uppercase text-[10px] tracking-wide">
                   Sell threshold
                 </span>
                 <div className="flex items-center gap-2 mt-1">
@@ -187,9 +187,8 @@ function OptimizerResults({
             badge={`+${totalDpsDelta.toFixed(2)}`}
           />
           <Stat
-            label="DPS / GP spent"
-            value={`${fmtDpsPerM(totalDpsDelta / Math.max(1, totalCostGp))}/M`}
-            accent="text-osrs-gold"
+            label="DPS per 1M gp spent"
+            value={fmtDpsPerM(totalDpsDelta / Math.max(1, totalCostGp))}
           />
         </div>
       ) : (
@@ -203,14 +202,27 @@ function OptimizerResults({
           is the headline answer; rendering it in the same layout as the
           curated-build drawer keeps mental model consistent. */}
       <div className="bg-parchment border border-osrs-brown/40 rounded p-3">
-        <div className="text-[11px] text-parchment-dark uppercase tracking-wide mb-2 text-center">
+        <div className="text-[11px] text-osrs-muted uppercase tracking-wide mb-2 text-center">
           Best loadout {totalDpsDelta > 0 ? "after upgrades" : "from your bank"}
         </div>
         <EquipmentPanelInline
           set={upgradedBest!.loadout}
           mapping={mapping}
         />
-        <div className="text-[10px] text-parchment-dark mt-2 text-center">
+        {/* Named gear list — reading the build shouldn't require decoding
+            icons one by one. Weapon first, then the rest. */}
+        <div className="mt-3 flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 text-[11px] leading-snug text-osrs-brown">
+          {(["weapon", "head", "cape", "neck", "ammo", "body", "shield", "legs", "hands", "feet", "ring"] as const)
+            .map((slot) => upgradedBest!.loadout.slots[slot])
+            .filter((p): p is NonNullable<typeof p> => Boolean(p))
+            .map((piece, i, arr) => (
+              <span key={`${piece.itemId}-${i}`}>
+                {piece.itemName}
+                {i < arr.length - 1 && <span className="text-osrs-muted"> · </span>}
+              </span>
+            ))}
+        </div>
+        <div className="text-[10px] text-osrs-muted mt-2 text-center">
           {upgradedBest!.loadout.style} · {upgradedBest!.loadout.attackStyleChoice} · max hit {upgradedBest!.dps.maxHit} · {(upgradedBest!.dps.accuracy * 100).toFixed(1)}% accuracy
         </div>
       </div>
@@ -218,19 +230,19 @@ function OptimizerResults({
       {/* Upgrade path */}
       {upgradePath.length > 0 && (
         <div>
-          <div className="flex items-baseline justify-between mb-1">
-            <h4 className="text-sm font-semibold text-osrs-brown">
+          <div className="flex items-baseline justify-between mb-1 gap-2">
+            <h4 className="section-title text-sm font-semibold text-osrs-brown">
               Upgrade path
             </h4>
-            <span className="text-[11px] text-parchment-dark">
-              {fmtGp(totalCostGp)} total · {fmtGp(remainingGp)} left
+            <span className="text-[11px] text-osrs-muted shrink-0">
+              {fmtGp(totalCostGp)} gp total · {fmtGp(remainingGp)} left
             </span>
           </div>
           <ol className="space-y-1">
             {upgradePath.map((step, i) => (
               <li
                 key={i}
-                className="flex items-center gap-3 bg-parchment border border-osrs-brown/40 rounded p-2 text-xs"
+                className="flex items-center gap-3 bg-parchment border border-osrs-brown/40 rounded px-2 py-1.5 text-xs"
               >
                 <span className="font-bold text-osrs-gold w-5 text-right shrink-0">
                   {i + 1}.
@@ -245,18 +257,18 @@ function OptimizerResults({
                   <div className="font-semibold text-osrs-brown truncate">
                     Buy {step.bought.name}
                   </div>
-                  <div className="text-[10px] text-parchment-dark">
+                  <div className="text-[10px] text-osrs-muted">
                     {step.swappedOut
                       ? `Replaces ${step.swappedOut.name}`
                       : `Fills empty ${step.bought.slot} slot`}
                   </div>
                 </div>
                 <div className="text-right shrink-0 min-w-fit">
-                  <div className="text-osrs-brown font-semibold">
+                  <div className="text-status-owned font-semibold">
                     +{step.dpsDelta.toFixed(2)} DPS
                   </div>
-                  <div className="text-[10px] text-parchment-dark">
-                    {fmtGp(step.bought.costGp)} · {fmtDpsPerM(step.dpsPerGp)} /M
+                  <div className="text-[10px] text-osrs-muted">
+                    {fmtGp(step.bought.costGp)} gp
                   </div>
                 </div>
               </li>
@@ -268,7 +280,7 @@ function OptimizerResults({
       {/* Sell list (sell-to-fund mode only — empty array in other modes) */}
       {sellList.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-osrs-brown mb-1">
+          <h4 className="section-title text-sm font-semibold text-osrs-brown mb-1">
             Sell to fund ({fmtGp(sellList.reduce((s, i) => s + i.valueGp, 0))} total)
           </h4>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -286,7 +298,7 @@ function OptimizerResults({
                 <span className="flex-1 truncate text-osrs-brown">
                   {item.name}
                 </span>
-                <span className="text-parchment-dark">{fmtGp(item.valueGp)}</span>
+                <span className="text-osrs-muted">{fmtGp(item.valueGp)}</span>
               </li>
             ))}
           </ul>
@@ -294,7 +306,7 @@ function OptimizerResults({
       )}
 
       {upgradePath.length === 0 && (
-        <p className="text-xs text-parchment-dark italic">
+        <p className="text-xs text-osrs-muted italic">
           No profitable upgrades found within budget. Your bank is already
           optimal at this price point — try Sell-to-fund mode if you have
           items you&apos;d be willing to part with.
@@ -373,7 +385,7 @@ function Stat({
   return (
     <div className="bg-parchment border border-osrs-brown rounded p-2">
       <div className={`font-bold text-2xl leading-tight ${accent}`}>{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-parchment-dark mt-0.5">
+      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-0.5">
         {label}
       </div>
     </div>
@@ -403,7 +415,7 @@ function HeroStat({
           </span>
         )}
       </div>
-      <div className="text-[10px] uppercase tracking-wider text-parchment-dark mt-1">
+      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-1">
         {label}
       </div>
     </div>

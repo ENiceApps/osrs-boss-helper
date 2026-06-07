@@ -8,9 +8,29 @@ interface Props {
 
 export function MechanicsPanel({ evaluations }: Props) {
   if (evaluations.length === 0) return null;
+  const hasChecked = evaluations.some((e) => e.satisfied !== null);
+  const hasInfo = evaluations.some((e) => e.satisfied === null);
   return (
     <div className="osrs-panel p-4 rounded">
-      <h3 className="font-semibold text-osrs-brown mb-2">Boss mechanics</h3>
+      <h3 className="section-title font-semibold text-osrs-brown mb-2">Boss mechanics</h3>
+      {/* Legend so the colored dots read as a checklist, not errors. */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-osrs-muted mb-3">
+        {hasChecked && (
+          <>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-status-owned" /> Have it
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-status-missing" /> Missing
+            </span>
+          </>
+        )}
+        {hasInfo && (
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-osrs-brown-light" /> Info
+          </span>
+        )}
+      </div>
       <ul className="space-y-2">
         {evaluations.map(({ requirement, satisfied }) => {
           // satisfied === null → informational (no item-backed check)

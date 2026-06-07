@@ -24,10 +24,10 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds }: Props) {
 
   return (
     <div className="osrs-panel p-4 rounded">
-      <h3 className="font-semibold text-osrs-brown mb-2">
+      <h3 className="section-title font-semibold text-osrs-brown mb-2">
         Recommended spec weapons
       </h3>
-      <p className="text-[11px] text-parchment-dark mb-3">
+      <p className="text-[11px] text-osrs-muted mb-3">
         Special-attack weapons that pay off on this fight. Click to learn the
         spec mechanics.
       </p>
@@ -60,7 +60,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds }: Props) {
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-parchment-dark shrink-0">
+                  <span className="text-[10px] text-osrs-muted shrink-0">
                     {weapon.energyCost !== null ? `${weapon.energyCost}% spec` : "variable"}
                   </span>
                 </div>

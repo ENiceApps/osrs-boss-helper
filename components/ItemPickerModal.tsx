@@ -111,7 +111,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
           className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown mb-2"
         />
 
-        <div className="flex items-baseline justify-between text-xs text-parchment-dark mb-2">
+        <div className="flex items-baseline justify-between text-xs text-osrs-muted mb-2">
           <span>{filtered.length} items</span>
           {currentItemId && (
             <button
@@ -148,7 +148,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
                     <div className="font-semibold text-osrs-brown truncate">
                       {it.name}
                       {it.version && (
-                        <span className="text-[10px] font-normal text-parchment-dark ml-1">
+                        <span className="text-[10px] font-normal text-osrs-muted ml-1">
                           ({it.version})
                         </span>
                       )}
@@ -172,7 +172,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
           })}
         </ul>
         {filtered.length > 200 && (
-          <p className="text-[10px] text-parchment-dark mt-1">
+          <p className="text-[10px] text-osrs-muted mt-1">
             Showing top 200 — refine search to narrow.
           </p>
         )}

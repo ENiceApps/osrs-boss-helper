@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { CombatStyle } from "@/types/osrs";
 
 interface Props {
@@ -8,6 +8,9 @@ interface Props {
   initialUsername?: string;
   initialGp?: number;
   initialStyle?: CombatStyle;
+  /** Optional content rendered inside the same card below the button
+      (e.g. the loaded skill list) so setup + stats read as one unit. */
+  children?: ReactNode;
 }
 
 export function PlayerSetup({
@@ -15,6 +18,7 @@ export function PlayerSetup({
   initialUsername = "",
   initialGp = 0,
   initialStyle = "ranged",
+  children,
 }: Props) {
   const [username, setUsername] = useState(initialUsername);
   const [gp, setGp] = useState<string>(String(initialGp));
@@ -27,7 +31,7 @@ export function PlayerSetup({
 
   return (
     <div className="osrs-panel p-4 rounded space-y-3">
-      <h3 className="font-semibold text-osrs-brown">Your details</h3>
+      <h3 className="section-title font-semibold text-osrs-brown">Your character</h3>
       <label className="block">
         <span className="text-xs text-osrs-brown">RuneScape username</span>
         <input
@@ -74,6 +78,9 @@ export function PlayerSetup({
       >
         Update recommendations
       </button>
+      {children && (
+        <div className="pt-3 border-t border-osrs-brown/30">{children}</div>
+      )}
     </div>
   );
 }

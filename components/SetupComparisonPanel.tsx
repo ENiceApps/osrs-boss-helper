@@ -52,8 +52,8 @@ export function SetupComparisonPanel({
   return (
     <div className="osrs-panel p-4 rounded">
       <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
-        <h3 className="font-semibold text-osrs-brown">Setup comparison</h3>
-        <p className="text-[11px] text-parchment-dark">
+        <h3 className="section-title font-semibold text-osrs-brown">Setup comparison</h3>
+        <p className="text-[11px] text-osrs-muted">
           {bankPresent
             ? "Best loadout per style for your bank + budget. Click to view its equipment."
             : "Best loadout per style at 99 stats. Paste a bank tag for ownership / affordability."}
@@ -79,7 +79,7 @@ export function SetupComparisonPanel({
                 )}
               </div>
               {items.length === 0 ? (
-                <p className="text-xs text-parchment-dark italic">
+                <p className="text-xs text-osrs-muted italic">
                   No {label.toLowerCase()} sets apply to this target yet.
                 </p>
               ) : (
