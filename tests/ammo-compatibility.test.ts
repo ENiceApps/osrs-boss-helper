@@ -105,12 +105,38 @@ describe("checkAmmoCompatWithCategory — category fallback", () => {
     const bolts = checkAmmoCompatWithCategory("Heavy ballista", "Crossbow", "Dragon bolts (e)");
     expect(bolts.ok).toBe(false);
   });
+
+  it("rejects all ammo on self-firing Wilderness bows (Craw's / Webweaver)", () => {
+    expect(checkAmmoCompatWithCategory("Craw's bow", "Bow", "Dragon arrow").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Webweaver bow", "Bow", "Dragon arrow").ok).toBe(false);
+  });
+
+  it("Eclipse atlatl fires only Atlatl darts, not arrows or bolts", () => {
+    expect(checkAmmoCompatWithCategory("Eclipse atlatl", "Bow", "Atlatl dart")).toEqual({ ok: true });
+    expect(checkAmmoCompatWithCategory("Eclipse atlatl", "Bow", "Dragon arrow").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Eclipse atlatl", "Bow", "Dragon bolts (e)").ok).toBe(false);
+  });
+
+  it("caps low-tier crossbows so they cannot fire dragon bolts", () => {
+    // Basic Crossbow / Phoenix / Blurite — bronze tier only.
+    expect(checkAmmoCompatWithCategory("Crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Phoenix crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Blurite crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
+    // Dorgeshuun — adamant cap; rejects runite & dragon.
+    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Adamant bolts")).toEqual({ ok: true });
+    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Runite bolts").ok).toBe(false);
+    // Cosmetic Rune crossbow — tier 6, no dragon bolts.
+    expect(checkAmmoCompatWithCategory("Rune crossbow (or)", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Rune crossbow (or)", "Crossbow", "Onyx bolts (e)")).toEqual({ ok: true });
+  });
 });
 
 describe("SELF_AMMO_WEAPON_CATEGORIES", () => {
-  it("includes Thrown and Chinchompas", () => {
+  it("includes Thrown, Chinchompas, Salamander, and Gun", () => {
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Thrown")).toBe(true);
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Chinchompas")).toBe(true);
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Salamander")).toBe(true);
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Gun")).toBe(true);
   });
 
   it("does not include ammo-using weapon categories", () => {

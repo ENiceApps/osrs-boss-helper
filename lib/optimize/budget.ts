@@ -20,7 +20,7 @@
 //     bootstrapping from catalog.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { checkAmmoCompat, checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type {

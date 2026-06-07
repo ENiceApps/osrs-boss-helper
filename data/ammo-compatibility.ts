@@ -21,7 +21,8 @@ export type AmmoClass =
   | "knife"
   | "chinchompa"
   | "throwing-axe"
-  | "bolt-rack"; // Karil's crossbow only
+  | "bolt-rack" // Karil's crossbow only
+  | "atlatl-dart"; // Eclipse atlatl only
 
 // Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
 // but we model the dart in the ammo slot so its strength bonus participates
@@ -54,10 +55,19 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Mithril crossbow": { class: "bolt", maxTier: 4 },
   "Adamant crossbow": { class: "bolt", maxTier: 5 },
   "Rune crossbow": { class: "bolt", maxTier: 6 },
+  "Rune crossbow (or)": { class: "bolt", maxTier: 6 }, // cosmetic Rune crossbow — same cap
   "Dragon crossbow": { class: "bolt", maxTier: 7 },
   "Armadyl crossbow": { class: "bolt", maxTier: 7 },
   "Dragon hunter crossbow": { class: "bolt", maxTier: 7 },
   "Zaryte crossbow": { class: "bolt", maxTier: 7 },
+
+  // Low-tier / special crossbows. Without explicit caps the category fallback
+  // would let them fire dragon bolts (tier 7), which is wrong.
+  "Crossbow": { class: "bolt", maxTier: 1 },         // basic crossbow — bronze bolts only
+  "Phoenix crossbow": { class: "bolt", maxTier: 1 }, // starter crossbow — bronze bolts only
+  "Blurite crossbow": { class: "bolt", maxTier: 1 }, // blurite/bronze bolts only
+  "Dorgeshuun crossbow": { class: "bolt", maxTier: 5 }, // bone + standard bolts up to adamant
+  "Hunters' crossbow": { class: "bolt", maxTier: 0 },   // kebbit bolts only (not modelled) → no standard ammo
 
   // Bows — fire arrows. Same metal ladder.
   Shortbow: { class: "arrow", maxTier: 1 },
@@ -71,8 +81,14 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Magic shortbow (i)": { class: "arrow", maxTier: 6 },
   "Twisted bow": { class: "arrow", maxTier: 7 },
 
+  // Eclipse atlatl — a thrown ranged weapon (catalog category "Bow") that
+  // fires Atlatl darts specifically, NOT arrows.
+  "Eclipse atlatl": { class: "atlatl-dart", maxTier: 1 },
+
   // Self-contained bows — fire their own projectiles, no ammo slot used.
   // maxTier: 0 ensures every real ammo tier (1+) fails the tier check.
+  "Craw's bow": { class: "arrow", maxTier: 0 },   // Wilderness bow — built-in unlimited ammo
+  "Webweaver bow": { class: "arrow", maxTier: 0 }, // upgraded Craw's bow — same mechanic
   "Bow of faerdhinen": { class: "arrow", maxTier: 0 },      // uncharged form
   "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 },  // charged (all clan colour variants below)
   "Bow of faerdhinen (c) (Amlodd)": { class: "arrow", maxTier: 0 },
@@ -188,6 +204,9 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   // Bolt racks — for Karil's crossbow only.
   "Bolt rack": { class: "bolt-rack", tier: 1 },
 
+  // Atlatl darts — for the Eclipse atlatl only.
+  "Atlatl dart": { class: "atlatl-dart", tier: 1 },
+
   // Javelins — for Ballistas (Light / Heavy).
   "Bronze javelin": { class: "javelin", tier: 1 },
   "Iron javelin": { class: "javelin", tier: 2 },
@@ -200,16 +219,23 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
 };
 
 /**
- * Weapon categories whose projectile is the weapon itself — they never occupy
- * the ammo slot. The bank optimizer skips the ammo slot for these.
+ * Weapon categories whose projectile is the weapon itself, OR which draw their
+ * power from a consumable that is NOT in the ammo slot — either way they never
+ * occupy the ammo slot. The optimizer skips the ammo slot for these.
  *
  * - "Thrown": darts, knives, throwing axes, and all blowpipe variants (the
  *   blowpipe loads darts internally; no separate ammo slot in-game).
  * - "Chinchompas": the chinchompa IS the ammunition.
+ * - "Salamander": burns tar (Guam tar, etc.) consumed from the inventory, not
+ *   the ammo slot. A hybrid weapon with no ammo-slot ammunition.
+ * - "Gun": the only catalog "Gun" item ("Fixed device") is a 0-stat novelty
+ *   with no modelled ammunition.
  */
 export const SELF_AMMO_WEAPON_CATEGORIES: ReadonlySet<string> = new Set([
   "Thrown",
   "Chinchompas",
+  "Salamander",
+  "Gun",
 ]);
 
 export type AmmoCompatResult =
