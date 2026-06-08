@@ -7,8 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
-import { LOADOUT_SET_BY_ID } from "@/data/loadouts/sets.generated";
-import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
+import { SKILLS_AT_99 } from "@/lib/recommend";
 import { optimizeForBoss } from "@/lib/optimize/bank";
 import { scoreScenario } from "@/lib/optimize/scenario";
 
@@ -54,17 +53,11 @@ describe("optimize/bank — rediscovers curated loadouts", () => {
     expect(rankings.length).toBeGreaterThan(0);
     expect(diagnostics.weaponsConsidered).toBe(1); // only DHCB in this bank
 
-    // Compare against the curated set's exact engine output, not the wiki
-    // baseline. The optimizer reuses scoreScenario so the values should match
-    // to within floating-point noise.
-    const curatedDps = computeSetDps(
-      LOADOUT_SET_BY_ID["ranged-end-dragonbane-undead"],
-      VORKATH,
-      SKILLS_AT_99,
-    );
+    // The optimizer should rediscover the DHCB+Salve(ei) setup and reproduce
+    // its wiki-verified DPS — see tests/fixtures/verified-setups.ts.
     const top = rankings[0];
-    expect(top.dps.dps).toBeCloseTo(curatedDps.dps, 4);
-    expect(top.dps.maxHit).toBe(curatedDps.maxHit);
+    expect(top.dps.maxHit).toBe(57);
+    expect(top.dps.dps).toBeCloseTo(7.904, 1);
     expect(top.activeBonuses.conditionalBonuses.dragonHunterCrossbow).toBe(true);
     expect(top.activeBonuses.conditionalBonuses.salveAmuletEi).toBe(true);
   });

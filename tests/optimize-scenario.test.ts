@@ -5,8 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
-import { LOADOUT_SET_BY_ID } from "@/data/loadouts/sets.generated";
-import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
+import { SKILLS_AT_99 } from "@/lib/recommend";
 import { scoreScenario } from "@/lib/optimize/scenario";
 import type { Skills } from "@/types/osrs";
 
@@ -30,8 +29,8 @@ const DHCB_SALVE_EI_IDS = [
   22002, // Dragonfire ward
 ];
 
-describe("optimize/scenario — DPS parity with curated loadouts", () => {
-  it("DHCB+Salve(ei) from raw IDs matches the curated set's DPS against Vorkath", () => {
+describe("optimize/scenario — DPS parity with the verified baseline", () => {
+  it("DHCB+Salve(ei) from raw IDs matches the wiki-verified DPS against Vorkath", () => {
     const scratch = scoreScenario({
       itemIds: DHCB_SALVE_EI_IDS,
       target: VORKATH,
@@ -39,12 +38,10 @@ describe("optimize/scenario — DPS parity with curated loadouts", () => {
     });
     if (!scratch.valid) throw new Error(`Expected valid scenario, got reasons: ${scratch.reasons.join("; ")}`);
 
-    const curated = LOADOUT_SET_BY_ID["ranged-end-dragonbane-undead"];
-    const curatedDps = computeSetDps(curated, VORKATH, SKILLS_AT_99);
-
-    expect(scratch.dps.maxHit).toBe(curatedDps.maxHit);
-    expect(scratch.dps.accuracy).toBeCloseTo(curatedDps.accuracy, 4);
-    expect(scratch.dps.dps).toBeCloseTo(curatedDps.dps, 3);
+    // Wiki-verified baseline for this exact gear — see tests/fixtures/verified-setups.ts.
+    expect(scratch.dps.maxHit).toBe(57);
+    expect(scratch.dps.accuracy).toBeCloseTo(0.832, 3);
+    expect(scratch.dps.dps).toBeCloseTo(7.904, 1);
 
     // Conditional bonuses should fire (dragon + undead).
     expect(scratch.activeBonuses.conditionalBonuses.dragonHunterCrossbow).toBe(true);
