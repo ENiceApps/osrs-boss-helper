@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MONSTER_CATALOG } from "@/data/monsters/catalog";
-import { isBossCurated } from "@/data/bosses/registry";
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
@@ -19,8 +18,6 @@ export default function HomePage() {
     );
   }, [query]);
 
-  const curatedCount = MONSTER_CATALOG.filter((m) => isBossCurated(m.slug)).length;
-
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
       <header className="mb-6">
@@ -34,9 +31,8 @@ export default function HomePage() {
           </Link>
         </div>
         <p className="text-sm text-parchment-dark mt-1">
-          Browse {MONSTER_CATALOG.length} bosses. {curatedCount} fully curated with
-          gear presets and mechanics; the rest show monster stats only — more
-          coming soon.
+          Browse {MONSTER_CATALOG.length} bosses. Pick one to get a DPS-optimised
+          loadout built from your bank, plus mechanics and spec-weapon advice.
         </p>
       </header>
 
@@ -57,7 +53,6 @@ export default function HomePage() {
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {filtered.map((m) => {
-          const curated = isBossCurated(m.slug);
           return (
             <li key={m.slug}>
               <Link
@@ -73,11 +68,6 @@ export default function HomePage() {
                       </span>
                     )}
                   </span>
-                  {curated && (
-                    <span className="text-[10px] uppercase tracking-wider text-osrs-gold border border-osrs-gold/40 rounded px-1.5 py-0.5 flex-shrink-0">
-                      curated
-                    </span>
-                  )}
                 </div>
                 <div className="text-xs text-parchment-dark mt-1 flex gap-3">
                   <span>cb {m.combatLevel}</span>

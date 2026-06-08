@@ -1,46 +1,10 @@
-// Helpers for matching universal loadout sets to specific boss targets.
+// Conditional-bonus + defence-bucket helpers for scoring a loadout against a
+// target. (The old universal-set applicability predicates were removed with
+// the curated loadout architecture.)
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
-import type {
-  AppliesWhen,
-  LoadoutSet,
-} from "@/types/loadout";
+import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
-
-/**
- * True iff every condition in the predicate matches the target. Empty
- * predicate ⇒ always applies (universal set).
- */
-export function predicateMatches(
-  aw: AppliesWhen,
-  target: MonsterCatalogEntry,
-): boolean {
-  if (aw.requiresAttributes) {
-    for (const attr of aw.requiresAttributes) {
-      if (!target.attributes.includes(attr)) return false;
-    }
-  }
-  if (aw.excludesAttributes) {
-    for (const attr of aw.excludesAttributes) {
-      if (target.attributes.includes(attr)) return false;
-    }
-  }
-  if (aw.weaknessElement) {
-    if (target.weakness?.element !== aw.weaknessElement) return false;
-  }
-  return true;
-}
-
-export function setAppliesTo(set: LoadoutSet, target: MonsterCatalogEntry): boolean {
-  return predicateMatches(set.appliesWhen, target);
-}
-
-export function applicableSets(
-  sets: readonly LoadoutSet[],
-  target: MonsterCatalogEntry,
-): LoadoutSet[] {
-  return sets.filter((s) => setAppliesTo(s, target));
-}
 
 export interface TargetActiveBonuses {
   conditionalBonuses: ConditionalBonusFlags;

@@ -13,8 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "refresh-vendor": "tsx scripts/refresh-vendor-data.ts",
-    "build-data": "tsx scripts/build-monster-catalog.ts && tsx scripts/build-item-catalog.ts && tsx scripts/build-loadouts.ts",
-    "build-loadouts": "tsx scripts/build-loadouts.ts",
+    "build-data": "tsx scripts/build-monster-catalog.ts && tsx scripts/build-item-catalog.ts",
     "build-monster-catalog": "tsx scripts/build-monster-catalog.ts",
     "build-item-catalog": "tsx scripts/build-item-catalog.ts"
   },

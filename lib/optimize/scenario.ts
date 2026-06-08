@@ -315,7 +315,6 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     tier,
     attackType: style.attackType as LoadoutSet["attackType"],
     attackStyleChoice: style.choice,
-    appliesWhen: {},
     slots: computedSlots,
     totals: {
       attackBonus,

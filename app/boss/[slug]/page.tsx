@@ -4,14 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use, useMemo, useState } from "react";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
-import { LOADOUT_SETS } from "@/data/loadouts/sets.generated";
-import {
-  computeSetDps,
-  previewLoadoutsForBoss,
-  rankLoadoutsForBoss,
-  SKILLS_AT_99,
-  type LoadoutEvaluation,
-} from "@/lib/recommend";
+import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
+import { optimizeForBoss } from "@/lib/optimize/bank";
 import { bestBoostForStyle, bankBoostResolver } from "@/lib/dps/boost";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
@@ -23,7 +17,6 @@ import { PlayerSetup } from "@/components/PlayerSetup";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { EquipmentPanel } from "@/components/EquipmentPanel";
 import { InventoryPanel } from "@/components/InventoryPanel";
-import { SetupComparisonPanel } from "@/components/SetupComparisonPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
 import { DpsResultsPanel } from "@/components/DpsResultsPanel";
@@ -32,7 +25,7 @@ import { OptimizerPanel } from "@/components/OptimizerPanel";
 import { applyOverrides, hasOverrides } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
-import type { BankContents, CombatStyle } from "@/types/osrs";
+import type { BankContents } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
 
 // Sample bank for the optimizer demo — used until the RuneLite plugin lands.
@@ -79,10 +72,8 @@ export default function BossPage({
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
   const gp = live.gp ?? gpManual;
-  const [styleFilter, setStyleFilter] = useState<CombatStyle | "all">("all");
-  const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
-  // Per-slot gear overrides on top of the selected base loadout. Selecting
-  // a new preset (or "Reset to default") clears this map.
+  // Per-slot gear overrides on top of the optimizer's best setup. "Reset"
+  // clears this map.
   const [overrides, setOverrides] = useState<
     Partial<Record<LoadoutSlotKey, ItemCatalogEntry | null>>
   >({});
@@ -101,50 +92,23 @@ export default function BossPage({
   // loadout's style — resolved from the bank, best owned potion wins.
   const boostResolver = useMemo(() => bankBoostResolver(bank.itemIds), [bank]);
 
-  // Loadouts filtered by the optional style selector (so user can narrow to
-  // just ranged sets, for example).
-  const styleFiltered = useMemo(
-    () =>
-      styleFilter === "all"
-        ? LOADOUT_SETS
-        : LOADOUT_SETS.filter((s) => s.style === styleFilter),
-    [styleFilter],
-  );
-
-  // Two ranking modes:
-  // 1. Bank pasted: full rankLoadoutsForBoss with owned / affordable / missing
-  //    flags and DPS over the user's actual stats.
-  // 2. No bank: previewLoadoutsForBoss at 99 stats, wrapped in the same
-  //    LoadoutEvaluation shape so the UI doesn't branch on presence-of-bank.
-  const evaluations: LoadoutEvaluation[] = useMemo(() => {
-    if (bank) {
-      const lookup = (id: number) => priceForItem(prices, id);
-      return rankLoadoutsForBoss(styleFiltered, monster, bank, gp, lookup, skills, boostResolver);
-    }
-    return previewLoadoutsForBoss(styleFiltered, monster, skills, boostResolver).map((p) => ({
-      set: p.set,
-      slotStatuses: {},
-      totalCostToComplete: 0,
-      viable: true,
-      dps: p.dps,
-      activeBonuses: p.activeBonuses,
-    }));
-  }, [bank, gp, prices, styleFiltered, monster, skills, boostResolver]);
-
   const mechanicEvaluations = useMemo(() => {
     if (!mechanics) return [];
-    if (bank) return evaluateMechanics(mechanics, bank);
-    return mechanics.map((req) => ({
-      requirement: req,
-      satisfied: null as boolean | null,
-    }));
+    return evaluateMechanics(mechanics, bank);
   }, [mechanics, bank]);
 
+  // The editable base is the single best setup the bank can build right now —
+  // no premade/curated sets. Manual edits (below) layer on top of it.
   const baseSet = useMemo(() => {
-    if (evaluations.length === 0) return undefined;
-    const explicitly = evaluations.find((e) => e.set.id === selectedSetId);
-    return (explicitly ?? evaluations[0]).set;
-  }, [evaluations, selectedSetId]);
+    const { rankings } = optimizeForBoss({
+      bank: bank.itemIds,
+      target: monster,
+      skills,
+      topN: 1,
+      boostResolver,
+    });
+    return rankings[0]?.loadout;
+  }, [bank, monster, skills, boostResolver]);
 
   // Effective loadout = base + any per-slot overrides the user has applied
   // via the gear picker. Used for the equipment grid, DPS recompute, and
@@ -157,11 +121,6 @@ export default function BossPage({
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides) : false;
 
-  // Picking a new preset card or resetting clears overrides.
-  function selectSet(id: string) {
-    if (id !== selectedSetId) setOverrides({});
-    setSelectedSetId(id);
-  }
   function resetOverrides() {
     setOverrides({});
   }
@@ -277,9 +236,8 @@ export default function BossPage({
         {/* Left column — slimmed: player inputs + skills, no bank UI. */}
         <aside className="lg:col-span-3 space-y-4">
           <PlayerSetup
-            onSubmit={({ gp, style }) => {
+            onSubmit={({ gp }) => {
               setGpManual(gp);
-              setStyleFilter(style);
             }}
           >
             <PlayerStatsPanel skills={skills} isLive={live.isLive} />
@@ -301,17 +259,17 @@ export default function BossPage({
         </section>
       </div>
 
-      {/* Curated builds — demoted to a collapsible drawer. Power users who
-          want to pick a specific curated set and tweak slots can open it;
-          everyone else sees the optimizer's pick instead. */}
+      {/* Manual gear editing — start from the optimizer's best buildable setup
+          and freely swap any slot. No premade sets; full flexibility. */}
       <details className="mt-6 osrs-panel rounded">
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-osrs-brown hover:bg-parchment-dark/30 select-none">
-          Compare all builds + manually tweak gear ({evaluations.length} curated)
+          Tweak the setup — swap any slot
         </summary>
         <div className="p-4 border-t border-osrs-brown/30 space-y-4">
           <p className="text-xs text-osrs-muted">
-            Pick a curated set, then click any equipment slot below to swap
-            individual items. DPS recomputes against this boss as you tweak.
+            This starts from the best setup your bank can build, above. Click any
+            equipment slot to swap in a different item — DPS recomputes against
+            this boss as you tweak.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-4">
@@ -325,8 +283,7 @@ export default function BossPage({
                 <div className="text-xs text-osrs-brown flex items-center justify-between gap-2">
                   <span>
                     <strong>Custom loadout</strong> — {Object.keys(overrides).length} slot
-                    {Object.keys(overrides).length === 1 ? "" : "s"} edited on top of{" "}
-                    {baseSet?.name}.
+                    {Object.keys(overrides).length === 1 ? "" : "s"} edited on top of the optimizer&apos;s pick.
                   </span>
                   <button
                     type="button"
@@ -348,14 +305,6 @@ export default function BossPage({
               {consumablesWithBoost.length > 0 && (
                 <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
               )}
-            </div>
-            <div>
-              <SetupComparisonPanel
-                evaluations={evaluations}
-                selectedId={baseSet?.id}
-                onSelect={selectSet}
-                bankPresent={true}
-              />
             </div>
           </div>
         </div>
