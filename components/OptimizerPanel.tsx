@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { findUpgrades, type BudgetMode, type BudgetResult } from "@/lib/optimize/budget";
+import { setupMechanicConflicts, type SetupMechanicStatus } from "@/lib/setup-mechanics";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
-import type { MappingEntry, Skills } from "@/types/osrs";
+import type { MappingEntry, MechanicRequirement, Skills } from "@/types/osrs";
 
 interface Props {
   bank: Set<number> | null;
@@ -14,6 +15,8 @@ interface Props {
   /** From lib/prices.ts via priceForItem(prices, id) — passed in by caller. */
   priceLookup: (itemId: number) => number | null;
   mapping?: MappingEntry[];
+  /** Boss mechanics, used to flag setups that drop a required worn protection item. */
+  mechanics?: MechanicRequirement[];
 }
 
 const MODE_LABELS: Record<BudgetMode, string> = {
@@ -53,7 +56,7 @@ function fmtDpsPerM(dpsPerGp: number): string {
  * Main Phase 5 panel: pick a budget mode, configure GP / sell threshold,
  * see the optimizer's pick + upgrade path + sell list.
  */
-export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping }: Props) {
+export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping, mechanics }: Props) {
   // Default to "gp-only" when the user has a wallet — otherwise the upgrade
   // path (the headline feature) is hidden behind a click. If gp is 0 (real
   // player with nothing to spend), fall back to "own-only".
@@ -151,7 +154,14 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping 
         </div>
       )}
 
-      {result && <OptimizerResults result={result} mapping={mapping} />}
+      {result && (
+        <OptimizerResults
+          result={result}
+          mapping={mapping}
+          mechanics={mechanics}
+          bank={bank}
+        />
+      )}
     </div>
   );
 }
@@ -159,11 +169,22 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping 
 function OptimizerResults({
   result,
   mapping,
+  mechanics,
+  bank,
 }: {
   result: BudgetResult;
   mapping?: MappingEntry[];
+  mechanics?: MechanicRequirement[];
+  bank: Set<number> | null;
 }) {
   const { currentBest, upgradedBest, upgradePath, totalCostGp, totalDpsDelta, sellList, remainingGp } = result;
+
+  // Flag worn-slot mechanics the recommended setup drops (e.g. no dragonfire
+  // protection in the shield slot AND no Super antifire in the bank).
+  const setupConflicts = useMemo(
+    () => setupMechanicConflicts(upgradedBest?.loadout, mechanics, bank ?? undefined),
+    [upgradedBest, mechanics, bank],
+  );
 
   if (!currentBest) {
     return (
@@ -225,6 +246,7 @@ function OptimizerResults({
         <div className="text-[10px] text-osrs-muted mt-2 text-center">
           {upgradedBest!.loadout.style} · {upgradedBest!.loadout.attackStyleChoice} · max hit {upgradedBest!.dps.maxHit} · {(upgradedBest!.dps.accuracy * 100).toFixed(1)}% accuracy
         </div>
+        {setupConflicts.length > 0 && <SetupWarnings conflicts={setupConflicts} />}
       </div>
 
       {/* Upgrade path */}
@@ -312,6 +334,29 @@ function OptimizerResults({
           items you&apos;d be willing to part with.
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Warns that the recommended setup leaves a required worn-slot mechanic unmet
+ * (e.g. no dragonfire protection in the shield slot, and no Super antifire in
+ * the bank). This is the bridge between pure-DPS optimisation and survivability
+ * — the optimiser maximises damage but doesn't know the fight's requirements.
+ */
+function SetupWarnings({ conflicts }: { conflicts: SetupMechanicStatus[] }) {
+  return (
+    <div className="mt-3 rounded border border-status-missing/60 bg-status-missing/10 p-2 space-y-1.5">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-status-missing flex items-center gap-1">
+        <span aria-hidden>⚠</span> Setup leaves a mechanic uncovered
+      </div>
+      {conflicts.map((c) => (
+        <div key={c.requirement.id} className="text-[11px] text-osrs-brown leading-snug">
+          <span className="font-semibold">{c.requirement.label}</span>
+          {" — "}
+          {c.requirement.remediation}
+        </div>
+      ))}
     </div>
   );
 }

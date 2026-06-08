@@ -16,27 +16,26 @@ const VORKATH: MechanicRequirement[] = [
     id: "dragonfire-protection",
     label: "Dragonfire protection",
     description:
-      "Vorkath's dragonfire hits 50+ without protection. You need either a super antifire (standalone) OR a regular antifire potion combined with a dragonfire-shielding item.",
+      "Vorkath's dragonfire hits 50+ unprotected. A Super antifire (or Extended super antifire) fully protects on its own and leaves your shield slot free for DPS. Otherwise equip a dragonfire shield/ward AND drink a regular antifire — a regular antifire alone is not enough.",
+    // Inventory route: a super antifire fully covers it and frees the shield slot.
     satisfiedBy: {
       anyOf: [
         [id(21978), id(21981), id(21984), id(21987)], // Super antifire (1-4)
         [id(22209), id(22212), id(22215), id(22218)], // Extended super antifire (1-4)
-        [id(2452), id(2454), id(2456), id(2458)], // Regular antifire (1-4)
+      ],
+    },
+    // Worn route: a dragonfire shield/ward in the shield slot (paired with a
+    // regular antifire). Competes with DPS for the shield slot.
+    worn: {
+      slot: "shield",
+      items: [
+        id(1540), // Anti-dragon shield
+        id(11283), id(11284), // Dragonfire shield (charged / uncharged)
+        id(22002), id(22003), // Dragonfire ward (charged / uncharged)
       ],
     },
     remediation:
-      "Bring a Super antifire (4). Extended super antifire lasts longer per dose if you have it.",
-  },
-  {
-    id: "dragonfire-shield-item",
-    label: "Dragonfire-shielding item (only if using regular antifire)",
-    description:
-      "Required ONLY if using regular antifire — Anti-dragon shield, Dragonfire shield, or Dragonfire ward.",
-    satisfiedBy: {
-      anyOf: [[id(1540), id(11283), id(22002), id(11284)]],
-    },
-    remediation:
-      "Use a Super antifire to skip this requirement, OR equip a dragonfire shield/ward.",
+      "Bring a Super antifire (4) to keep the shield slot free for DPS, OR equip a Dragonfire ward/shield together with a regular antifire potion.",
   },
   {
     id: "crumble-undead",
@@ -70,17 +69,24 @@ const VORKATH: MechanicRequirement[] = [
 const KBD: MechanicRequirement[] = [
   {
     id: "dragonfire-protection",
-    label: "Super antifire or anti-fire + shield",
+    label: "Dragonfire protection",
     description:
-      "KBD breathes dragonfire AND elemental breaths (ice, lightning, poison, shock). Super antifire OR antifire+dragonfire shield reduces dragonfire to 0; the elemental breaths only need Protect from Magic.",
+      "KBD breathes dragonfire AND elemental breaths (ice, lightning, poison, shock). A Super antifire fully blocks the dragonfire and frees the shield slot; otherwise pair a dragonfire shield/ward with a regular antifire. The elemental breaths still need Protect from Magic on top.",
     satisfiedBy: {
       anyOf: [
         [id(21978), id(21981), id(21984), id(21987)], // Super antifire
         [id(22209), id(22212), id(22215), id(22218)], // Extended super antifire
-        [id(2452), id(2454), id(2456), id(2458)], // Regular antifire (needs DFS too)
       ],
     },
-    remediation: "Bring Super antifire (4), or Antifire + Dragonfire shield/ward.",
+    worn: {
+      slot: "shield",
+      items: [
+        id(1540), // Anti-dragon shield
+        id(11283), id(11284), // Dragonfire shield (charged / uncharged)
+        id(22002), id(22003), // Dragonfire ward (charged / uncharged)
+      ],
+    },
+    remediation: "Bring a Super antifire (4) to free the shield slot, or equip a Dragonfire shield/ward with a regular antifire.",
   },
   {
     id: "protect-from-magic",

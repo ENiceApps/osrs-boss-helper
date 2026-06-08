@@ -209,8 +209,21 @@ export interface MechanicRequirement {
    * contains at least one item from at least one of the `anyOf` groups.
    * Omit for informational mechanics that have no item proxy (e.g. prayer
    * flicking, kill order, positional dodges).
+   *
+   * Semantically this is the INVENTORY/consumable route — having the item in
+   * your kit is enough and it does not occupy an equipment slot (e.g. a Super
+   * antifire potion). See `worn` for the equipment-slot route.
    */
   satisfiedBy?: { anyOf: ItemId[][] };
+  /**
+   * Equipment-slot route: this mechanic can ALSO be satisfied by EQUIPPING one
+   * of `items` in `slot` (e.g. a Dragonfire ward in the shield slot). Unlike
+   * `satisfiedBy`, this competes with DPS gear for the slot, so the setup
+   * checker uses it to flag unsafe loadouts: a recommended setup that neither
+   * equips one of these items NOR has a `satisfiedBy` item in the bank leaves
+   * the mechanic unmet. See `lib/setup-mechanics.ts`.
+   */
+  worn?: { slot: Slot; items: ItemId[] };
   remediation: string;
 }
 

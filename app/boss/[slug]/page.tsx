@@ -253,6 +253,7 @@ export default function BossPage({
           gp={gp}
           priceLookup={(id) => priceForItem(prices, id)}
           mapping={mapping}
+          mechanics={mechanics}
         />
       </div>
 
