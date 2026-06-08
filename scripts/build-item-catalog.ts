@@ -11,11 +11,32 @@ import equipmentJson from "../data/vendor/wgloop/equipment.json" with { type: "j
 import requirementsJson from "../data/vendor/wiki/item-requirements.json" with { type: "json" };
 import { REQUIREMENT_OVERRIDES } from "../data/items/requirement-overrides.js";
 import { STAT_OVERRIDES } from "../data/items/stat-overrides.js";
+import { EXCLUDED_ITEM_NAMES } from "../data/items/excluded-items.js";
 import type { VendorEquipmentItem } from "../types/vendor.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const equipment = equipmentJson as VendorEquipmentItem[];
+const allEquipment = equipmentJson as VendorEquipmentItem[];
+
+// Drop league-exclusive items (see data/items/excluded-items.ts). Sanity-check
+// that every excluded name matched at least one real item, so the list can't
+// silently rot when wgloop renames or removes an item upstream.
+const excludedMatched = new Set<string>();
+const equipment = allEquipment.filter((it) => {
+  if (EXCLUDED_ITEM_NAMES.has(it.name)) {
+    excludedMatched.add(it.name);
+    return false;
+  }
+  return true;
+});
+for (const name of EXCLUDED_ITEM_NAMES) {
+  if (!excludedMatched.has(name)) {
+    throw new Error(
+      `EXCLUDED_ITEM_NAMES has "${name}" that doesn't exist in equipment.json. ` +
+        `Either a typo, or the item was renamed/removed upstream — update the list.`,
+    );
+  }
+}
 
 // Scraped combat level requirements, keyed by item id (string). Skill keys are
 // Capitalised (e.g. "Ranged"); we lower-case them for the catalog.
