@@ -111,6 +111,62 @@ describe("mechanicsForBoss — universal dragonfire injection", () => {
   });
 });
 
+describe("mechanicsForBoss — venom & poison potion mechanics", () => {
+  const mechIds = (slug: string) => mechanicsForBoss(MONSTER_BY_SLUG[slug]).map((m) => m.id);
+
+  it("venom bosses get a venom mechanic with both potion and worn-helm routes", () => {
+    for (const slug of ["zulrah", "alchemical-hydra", "araxxor"]) {
+      const venom = mechanicsForBoss(MONSTER_BY_SLUG[slug]).find((m) => m.id === "venom-protection");
+      expect(venom, slug).toBeDefined();
+      expect(venom!.satisfiedBy).toBeDefined(); // anti-venom potions (inventory route)
+      expect(venom!.worn?.slot).toBe("head"); // serpentine-family helm (worn route)
+    }
+  });
+
+  it("poison bosses get a potion-only poison mechanic (no worn route)", () => {
+    const poison = mechanicsForBoss(MONSTER_BY_SLUG["kalphite-queen"]).find((m) => m.id === "poison-protection");
+    expect(poison).toBeDefined();
+    expect(poison!.satisfiedBy).toBeDefined();
+    expect(poison!.worn).toBeUndefined(); // poison doesn't constrain gear
+  });
+
+  it("venom bosses are NOT also tagged with the redundant poison mechanic", () => {
+    expect(mechIds("zulrah")).not.toContain("poison-protection");
+  });
+
+  it("non-venom / non-poison bosses get neither", () => {
+    expect(mechIds("general-graardor")).not.toContain("venom-protection");
+    expect(mechIds("general-graardor")).not.toContain("poison-protection");
+  });
+});
+
+describe("checkSetupMechanics — venom worn-slot (Zulrah, helm slot)", () => {
+  const ZULRAH = MONSTER_BY_SLUG["zulrah"];
+  const ZULRAH_MECHANICS = mechanicsForBoss(ZULRAH);
+  const ANTI_VENOM_PLUS_4 = 12913;
+
+  it("wearing a Serpentine helm covers venom even with an empty bank", () => {
+    const s = scoreScenario({ itemIds: [12931, 21012, 9243], target: ZULRAH, skills: SKILLS_AT_99 });
+    if (!s.valid) throw new Error(s.reasons.join("; "));
+    const conflicts = setupMechanicConflicts(s.loadout, ZULRAH_MECHANICS, new Set());
+    expect(conflicts.map((c) => c.requirement.id)).not.toContain("venom-protection");
+  });
+
+  it("a non-immunity helm with an Anti-venom+ in the bank is safe", () => {
+    const s = scoreScenario({ itemIds: [27235, 21012, 9243], target: ZULRAH, skills: SKILLS_AT_99 }); // Masori mask
+    if (!s.valid) throw new Error(s.reasons.join("; "));
+    const conflicts = setupMechanicConflicts(s.loadout, ZULRAH_MECHANICS, new Set([ANTI_VENOM_PLUS_4]));
+    expect(conflicts.map((c) => c.requirement.id)).not.toContain("venom-protection");
+  });
+
+  it("a non-immunity helm with no anti-venom in the bank flags a venom conflict", () => {
+    const s = scoreScenario({ itemIds: [27235, 21012, 9243], target: ZULRAH, skills: SKILLS_AT_99 });
+    if (!s.valid) throw new Error(s.reasons.join("; "));
+    const conflicts = setupMechanicConflicts(s.loadout, ZULRAH_MECHANICS, new Set());
+    expect(conflicts.map((c) => c.requirement.id)).toContain("venom-protection");
+  });
+});
+
 describe("evaluateMechanics — checklist counts the worn route too", () => {
   const bankContents = (...ids: number[]): BankContents => ({
     tagName: "test",

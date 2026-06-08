@@ -44,9 +44,78 @@ export const DRAGONFIRE_PROTECTION: MechanicRequirement = {
     "Bring a Super antifire (4) to keep the shield slot free for DPS, or equip a Dragonfire ward/shield together with a regular antifire potion.",
 };
 
+// ---- Venom protection ---------------------------------------------------
+// Anti-venom and Anti-venom+ potions (all doses) cure and prevent venom.
+const ANTI_VENOMS = [
+  id(12905), id(12907), id(12909), id(12911), // Anti-venom (4-1)
+  id(12913), id(12915), id(12917), id(12919), // Anti-venom+ (4-1)
+];
+// Charged serpentine-family helms grant full venom immunity while worn.
+// (Uncharged variants do NOT — only the charged ids are protection.)
+const VENOM_IMMUNITY_HELMS = [
+  id(12931), // Serpentine helm (charged)
+  id(13197), // Tanzanite helm (charged)
+  id(13199), // Magma helm (charged)
+];
+
 /**
- * Worn-slot mechanics implied purely by a monster's catalog attributes. Merged
- * on top of any curated mechanics by `mechanicsForBoss`.
+ * Venom protection. Venom ramps (6→6→8→10→12…) and ignores food, so it can
+ * kill outright. An Anti-venom(+) potion is the inventory route; a charged
+ * Serpentine/Tanzanite/Magma helm is the worn route (helm slot). Because the
+ * worn route competes with DPS for the helm slot, the setup checker warns when
+ * a loadout has neither.
+ */
+export const VENOM_PROTECTION: MechanicRequirement = {
+  id: "venom-protection",
+  label: "Venom protection",
+  description:
+    "This boss inflicts venom, which ramps up and ignores your HP — it can kill through food. An Anti-venom (or Anti-venom+) potion cures and prevents it; a charged Serpentine/Tanzanite/Magma helm grants full venom immunity while worn.",
+  satisfiedBy: { anyOf: [ANTI_VENOMS] },
+  worn: { slot: "head", items: VENOM_IMMUNITY_HELMS },
+  remediation:
+    "Bring an Anti-venom+ (4), or wear a charged Serpentine/Tanzanite/Magma helm to free your inventory slot.",
+};
+
+// ---- Poison protection --------------------------------------------------
+// Any antipoison-family potion (or an anti-venom, which also cures poison).
+// Poison is a minor, non-lethal nuisance and doesn't constrain gear, so this
+// is a pure inventory/potion mechanic (no worn route → never a setup warning).
+const POISON_CURES = [
+  id(2446), id(175), id(177), id(179), // Antipoison (4-1)
+  id(2448), id(181), id(183), id(185), // Superantipoison (4-1)
+  id(5943), id(5945), id(5947), id(5949), // Antidote+ (4-1)
+  id(5952), id(5954), id(5956), id(5958), // Antidote++ (4-1)
+  ...ANTI_VENOMS, // anti-venom cures poison too
+];
+
+export const POISON_PROTECTION: MechanicRequirement = {
+  id: "poison-protection",
+  label: "Poison protection",
+  description:
+    "This boss can poison you. An Antipoison / Superantipoison / Antidote+ / Antidote++ potion cures and delays it (an Anti-venom works too). Venom-immunity gear also blocks poison.",
+  satisfiedBy: { anyOf: [POISON_CURES] },
+  remediation: "Bring an Antidote++ (or any antipoison); an Anti-venom also works.",
+};
+
+// Bosses that inflict venom / poison. Neither is a catalog attribute, so these
+// are curated by slug. Venom implies poison immunity (anti-venom cures both),
+// so a venom boss is NOT also listed for poison.
+const VENOM_BOSSES: ReadonlySet<string> = new Set([
+  "zulrah",
+  "alchemical-hydra",
+  "araxxor",
+]);
+const POISON_BOSSES: ReadonlySet<string> = new Set([
+  "kalphite-queen",
+  "sarachnis",
+  "venenatis",
+  "spindel",
+]);
+
+/**
+ * Worn-slot and consumable mechanics implied by a monster's attributes (for
+ * dragonfire) or curated slug membership (for venom/poison). Merged on top of
+ * any hand-curated mechanics by `mechanicsForBoss`.
  *
  * `dragon` + `fiery` is the precise dragonfire signal: it catches Vorkath, KBD,
  * black/metal/brutal/frost/lava dragons and Galvek, while correctly EXCLUDING
@@ -58,6 +127,11 @@ export function universalMechanicsFor(monster: MonsterCatalogEntry): MechanicReq
   const attrs = monster.attributes;
   if (attrs.includes("dragon") && attrs.includes("fiery")) {
     out.push(DRAGONFIRE_PROTECTION);
+  }
+  if (VENOM_BOSSES.has(monster.slug)) {
+    out.push(VENOM_PROTECTION);
+  } else if (POISON_BOSSES.has(monster.slug)) {
+    out.push(POISON_PROTECTION);
   }
   return out;
 }

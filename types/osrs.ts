@@ -231,5 +231,5 @@ export interface ConsumableSuggestion {
   itemId: ItemId;
   name: string;
   quantity: number;
-  role: "antifire" | "food" | "prayer" | "boost" | "runes" | "teleport" | "other";
+  role: "antifire" | "antivenom" | "food" | "prayer" | "boost" | "runes" | "teleport" | "other";
 }

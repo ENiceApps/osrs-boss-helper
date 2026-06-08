@@ -35,7 +35,7 @@ const CERBERUS: ConsumableSuggestion[] = [
 
 // ---------- Zulrah ----------
 const ZULRAH: ConsumableSuggestion[] = [
-  { itemId: id(12915), name: "Anti-venom+ (4)", quantity: 1, role: "antifire" },
+  { itemId: id(12913), name: "Anti-venom+ (4)", quantity: 1, role: "antivenom" },
   { itemId: id(6685), name: "Saradomin brew (4)", quantity: 8, role: "food" },
   { itemId: id(3024), name: "Super restore (4)", quantity: 4, role: "prayer" },
   { itemId: id(3144), name: "Cooked karambwan", quantity: 6, role: "food" },
@@ -44,7 +44,7 @@ const ZULRAH: ConsumableSuggestion[] = [
 
 // ---------- Alchemical Hydra ----------
 const HYDRA: ConsumableSuggestion[] = [
-  { itemId: id(12915), name: "Anti-venom+ (4)", quantity: 1, role: "antifire" },
+  { itemId: id(12913), name: "Anti-venom+ (4)", quantity: 1, role: "antivenom" },
   { itemId: id(2434), name: "Prayer potion (4)", quantity: 4, role: "prayer" },
   { itemId: id(391), name: "Manta ray", quantity: 20, role: "food" },
   { itemId: id(3144), name: "Cooked karambwan", quantity: 4, role: "food" },
@@ -95,7 +95,7 @@ const GORILLA_KIT: ConsumableSuggestion[] = [
 ];
 
 const ARAXXOR_KIT: ConsumableSuggestion[] = [
-  { itemId: id(12915), name: "Anti-venom+ (4)", quantity: 1, role: "antifire" },
+  { itemId: id(12913), name: "Anti-venom+ (4)", quantity: 1, role: "antivenom" },
   { itemId: id(6685), name: "Saradomin brew (4)", quantity: 6, role: "food" },
   { itemId: id(3024), name: "Super restore (4)", quantity: 3, role: "prayer" },
 ];
