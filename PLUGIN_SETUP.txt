@@ -5,6 +5,18 @@ OSRS BOSS HELPER - RUNELITE PLUGIN SETUP GUIDE
 Goal: get a working RuneLite plugin that syncs your bank to the
 boss-helper web app running on localhost:3000.
 
+------------------------------------------------------------------
+NOTE (updated): The plugin is now a COMPLETE, working project at
+  C:\Users\enune\Desktop\osrs-boss-sync-plugin
+  (GitHub: ENiceApps/osrs-boss-sync-plugin)
+That repo is the single source of truth for the plugin. The phases
+below are the original from-scratch build log; to just RUN it, open
+that repo and run `.\gradlew.bat run` (see project memory for the
+Jagex-auth recipe). The plugin source files that used to be vendored
+here under runelite-plugin/ have been removed to avoid two copies
+drifting apart — edit the source in the osrs-boss-sync-plugin repo.
+------------------------------------------------------------------
+
 This guide assumes you've never built a RuneLite plugin before
 and you're on Windows. Each phase has a clear stop-and-verify
 point - do NOT try to do all five in one sitting. If you hit

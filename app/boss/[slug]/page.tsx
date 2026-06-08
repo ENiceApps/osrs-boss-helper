@@ -19,7 +19,6 @@ import { evaluateMechanics } from "@/lib/mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank, secondsSince } from "@/lib/liveBank";
-import { usePlayer } from "@/lib/wom";
 import { PlayerSetup } from "@/components/PlayerSetup";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { EquipmentPanel } from "@/components/EquipmentPanel";
@@ -77,7 +76,6 @@ export default function BossPage({
     [],
   );
   const bank: BankContents = live.bank ?? sampleBank;
-  const [username, setUsername] = useState("");
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
   const gp = live.gp ?? gpManual;
@@ -93,10 +91,9 @@ export default function BossPage({
 
   const { data: mapping } = useMapping();
   const { data: prices } = usePrices();
-  const { player, isLoading: playerLoading, error: playerError } = usePlayer(username);
 
-  // Skill priority: plugin-reported (live) → WOM lookup → 99/99/99 fallback.
-  const skills = live.skills ?? player?.skills ?? SKILLS_AT_99;
+  // Skills come from the live RuneLite plugin when connected, else default 99s.
+  const skills = live.skills ?? SKILLS_AT_99;
   const consumables = CONSUMABLES_BY_SLUG[slug];
   const mechanics = useMemo(() => mechanicsForBoss(monster), [monster]);
 
@@ -280,17 +277,12 @@ export default function BossPage({
         {/* Left column — slimmed: player inputs + skills, no bank UI. */}
         <aside className="lg:col-span-3 space-y-4">
           <PlayerSetup
-            onSubmit={({ username, gp, style }) => {
-              setUsername(username);
+            onSubmit={({ gp, style }) => {
               setGpManual(gp);
               setStyleFilter(style);
             }}
           >
-            <PlayerStatsPanel
-              player={player}
-              isLoading={playerLoading}
-              error={playerError}
-            />
+            <PlayerStatsPanel skills={skills} isLive={live.isLive} />
           </PlayerSetup>
         </aside>
 

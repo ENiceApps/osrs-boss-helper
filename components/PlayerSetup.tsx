@@ -4,44 +4,31 @@ import { useState, type ReactNode } from "react";
 import type { CombatStyle } from "@/types/osrs";
 
 interface Props {
-  onSubmit: (data: { username: string; gp: number; style: CombatStyle }) => void;
-  initialUsername?: string;
+  onSubmit: (data: { gp: number; style: CombatStyle }) => void;
   initialGp?: number;
   initialStyle?: CombatStyle;
   /** Optional content rendered inside the same card below the button
-      (e.g. the loaded skill list) so setup + stats read as one unit. */
+      (e.g. the skill list) so setup + stats read as one unit. */
   children?: ReactNode;
 }
 
 export function PlayerSetup({
   onSubmit,
-  initialUsername = "",
   initialGp = 0,
   initialStyle = "ranged",
   children,
 }: Props) {
-  const [username, setUsername] = useState(initialUsername);
   const [gp, setGp] = useState<string>(String(initialGp));
   const [style, setStyle] = useState<CombatStyle>(initialStyle);
 
   function handleApply() {
     const gpNum = Number(gp.replace(/[^0-9]/g, ""));
-    onSubmit({ username: username.trim(), gp: Number.isFinite(gpNum) ? gpNum : 0, style });
+    onSubmit({ gp: Number.isFinite(gpNum) ? gpNum : 0, style });
   }
 
   return (
     <div className="osrs-panel p-4 rounded space-y-3">
       <h3 className="section-title font-semibold text-osrs-brown">Your character</h3>
-      <label className="block">
-        <span className="text-xs text-osrs-brown">RuneScape username</span>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 bg-parchment-dark border border-osrs-brown rounded text-osrs-brown"
-          placeholder="Zezima"
-        />
-      </label>
       <label className="block">
         <span className="text-xs text-osrs-brown">GP balance</span>
         <input

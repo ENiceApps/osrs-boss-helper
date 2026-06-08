@@ -94,12 +94,6 @@ export interface Skills {
   prayer: number;
 }
 
-export interface Player {
-  username: string;
-  skills: Skills;
-  combatLevel: number;
-}
-
 export interface MappingEntry {
   id: number;
   name: string;
