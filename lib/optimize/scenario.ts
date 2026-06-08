@@ -6,7 +6,7 @@
 
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_ITEM_IDS } from "@/data/loadouts/sets.source";
+import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem } from "@/lib/loadout-edit";
