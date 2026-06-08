@@ -44,9 +44,12 @@ import okhttp3.Response;
  *     login.
  *   - Some accounts split GP between coin pouch + bank coin slot;
  *     we sum both.
- *   - Worn equipment items are merged INTO the bank list so the optimizer
- *     can swap them. The user's actual inventory items (potions, food)
- *     are NOT sent — they're not gear.
+ *   - Bank + worn equipment + inventory are all merged into a single "owned
+ *     items" list so the optimizer can use anything the player has access to.
+ *     Non-gear inventory items (potions, food, runes) are harmlessly ignored
+ *     by the gear optimizer but ARE used by the boost-potion and mechanic
+ *     checks (e.g. a Super combat potion in your inventory now counts).
+ *     Coins are excluded here and tracked separately as GP.
  */
 @Slf4j
 @PluginDescriptor(
@@ -84,9 +87,8 @@ public class BankSyncPlugin extends Plugin {
 
     /**
      * The main trigger. Fires when the bank, inventory, or equipment
-     * container updates. We only care about bank + equipment changes
-     * for the optimizer; inventory changes are filtered out unless they
-     * touch coins (which affect GP).
+     * container updates — any of the three feeds the owned-items pool, so a
+     * change to any of them triggers a re-sync.
      */
     @Subscribe
     public void onItemContainerChanged(ItemContainerChanged event) {
@@ -110,16 +112,21 @@ public class BankSyncPlugin extends Plugin {
         if (client.getLocalPlayer() == null) return;
 
         Map<Integer, Integer> itemQty = new HashMap<>();
-        // Bank
+        // Owned-items pool = bank + worn equipment + inventory. The optimizer
+        // builds loadouts from gear in this pool; the boost-potion / mechanic
+        // checks look for consumables (potions, antidotes, runes) here too.
         ItemContainer bank = client.getItemContainer(InventoryID.BANK);
         addContainerItems(bank, itemQty);
         // Worn equipment — optimizer treats these as "owned" too
         ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
         addContainerItems(equipment, itemQty);
-
-        // GP: sum coin stacks in inventory + bank
-        int gp = 0;
+        // Inventory — potions/food/runes the player is carrying, plus any gear.
         ItemContainer inv = client.getItemContainer(InventoryID.INVENTORY);
+        addContainerItems(inv, itemQty);
+
+        // GP: sum coin stacks in inventory + bank (coins are excluded from the
+        // item pool by addContainerItems, so count them directly here).
+        int gp = 0;
         if (inv != null) {
             for (Item i : inv.getItems()) {
                 if (i.getId() == COINS_ITEM_ID) gp += i.getQuantity();

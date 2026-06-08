@@ -14,8 +14,11 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 const PayloadSchema = z.object({
-  // Bank contents — only the item IDs matter for the optimizer; qty is
-  // accepted for future use (sell value computation, stack-size display).
+  // Owned-items pool = bank + worn equipment + inventory, merged by the
+  // plugin. The optimizer builds loadouts from the gear in here; the boost-
+  // potion and mechanic checks look for consumables (potions, antidotes,
+  // antifires) in the same list. Only item IDs matter for the optimizer; qty
+  // is accepted for future use (sell value, stack-size display).
   items: z.array(
     z.object({
       id: z.number().int().nonnegative(),
