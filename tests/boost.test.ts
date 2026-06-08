@@ -13,10 +13,23 @@ import {
   SATURATED_HEART,
 } from "@/lib/dps/boost";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
-import { LOADOUT_SET_BY_ID } from "@/data/loadouts/sets.generated";
+import { scoreScenario } from "@/lib/optimize/scenario";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 
 const VORKATH = MONSTER_BY_SLUG["vorkath"];
+
+// A ranged setup (DHCB + Salve(ei) + Masori) built straight from item ids —
+// stands in for what used to be a curated loadout set.
+const RANGED_SET = (() => {
+  const scored = scoreScenario({
+    itemIds: [27235, 22109, 12018, 9243, 21012, 27238, 22002, 27241, 26235, 13237, 28310],
+    target: VORKATH,
+    skills: SKILLS_AT_99,
+    attackStyle: { attackType: "ranged", choice: "rapid" },
+  });
+  if (!scored.valid) throw new Error(`RANGED_SET invalid: ${scored.reasons.join("; ")}`);
+  return scored.loadout;
+})();
 
 describe("applyCombatBoost — boost math", () => {
   it("Super combat at 99 → attack & strength 118 (+5 +15%)", () => {
@@ -56,7 +69,7 @@ describe("applyCombatBoost — boost math", () => {
 });
 
 describe("computeSetDps — boost is opt-in", () => {
-  const set = LOADOUT_SET_BY_ID["ranged-end-dragonbane-undead"]; // ranged set
+  const set = RANGED_SET; // ranged set
 
   it("omitting the boost reproduces the unboosted baseline exactly", () => {
     const a = computeSetDps(set, VORKATH, SKILLS_AT_99);
@@ -92,7 +105,7 @@ describe("boostFromBank — resolve the owned boost from the bank", () => {
   });
 
   it("bankBoostResolver only boosts DPS when the matching potion is owned", () => {
-    const set = LOADOUT_SET_BY_ID["ranged-end-dragonbane-undead"];
+    const set = RANGED_SET;
     const withPotion = bankBoostResolver(new Set([2444])); // Ranging potion(4)
     const withoutPotion = bankBoostResolver(new Set([12695])); // a melee potion, wrong style
     const base = computeSetDps(set, VORKATH, SKILLS_AT_99);
