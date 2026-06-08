@@ -31,6 +31,7 @@ import type {
 } from "@/types/osrs";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
+import type { BoostResolver } from "@/lib/dps/boost";
 
 const ITEM_BY_ID = new Map<number, ItemCatalogEntry>(
   ITEM_CATALOG.map((it) => [it.id, it]),
@@ -47,8 +48,8 @@ export interface BankOptimizerInput {
   baseSpellMaxHit?: number;
   /** Magic-only: cast spell element. */
   spellElement?: SpellElement;
-  /** When true, DPS reflects the standard boost potion for each loadout's style. */
-  applyBoost?: boolean;
+  /** Resolves the boost potion the player owns for a given style (from the bank). */
+  boostResolver?: BoostResolver;
 }
 
 export interface BankOptimizerResult {
@@ -356,7 +357,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       attackStyle: { attackType: c.ws.attackType, choice: c.ws.choice },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
-      applyBoost: input.applyBoost,
+      boostResolver: input.boostResolver,
     });
     if (scored.valid) valid.push(scored);
   }

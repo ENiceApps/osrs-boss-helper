@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { findUpgrades, type BudgetMode, type BudgetResult } from "@/lib/optimize/budget";
 import { setupMechanicConflicts, type SetupMechanicStatus } from "@/lib/setup-mechanics";
-import { bestBoostForStyle } from "@/lib/dps/boost";
+import { bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { MappingEntry, MechanicRequirement, Skills } from "@/types/osrs";
 
@@ -75,7 +75,8 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping,
       mode,
       sellThreshold,
       priceLookup,
-      applyBoost: true, // DPS reflects a standard boost potion (super combat / ranging / saturated heart)
+      // DPS reflects a boost potion only if the player owns one for the style.
+      boostResolver: bankBoostResolver(bank),
     });
   }, [bank, target, skills, gp, mode, sellThreshold, priceLookup]);
 
@@ -248,9 +249,16 @@ function OptimizerResults({
         <div className="text-[10px] text-osrs-muted mt-2 text-center">
           {upgradedBest!.loadout.style} · {upgradedBest!.loadout.attackStyleChoice} · max hit {upgradedBest!.dps.maxHit} · {(upgradedBest!.dps.accuracy * 100).toFixed(1)}% accuracy
         </div>
-        <div className="text-[10px] text-osrs-muted mt-0.5 text-center italic">
-          DPS assumes {bestBoostForStyle(upgradedBest!.loadout.style).name}
-        </div>
+        {(() => {
+          const ownedBoost = bank ? boostFromBank(upgradedBest!.loadout.style, bank) : undefined;
+          return (
+            <div className="text-[10px] text-osrs-muted mt-0.5 text-center italic">
+              {ownedBoost
+                ? `DPS includes ${ownedBoost.name} from your bank`
+                : "Unboosted — no combat potion for this style in your bank"}
+            </div>
+          );
+        })()}
         {setupConflicts.length > 0 && <SetupWarnings conflicts={setupConflicts} />}
       </div>
 

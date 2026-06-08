@@ -13,7 +13,7 @@ import type {
 } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
-import { applyCombatBoost, bestBoostForStyle, type CombatBoost } from "@/lib/dps/boost";
+import { applyCombatBoost, type BoostResolver, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import {
@@ -141,13 +141,13 @@ export function previewLoadoutsForBoss(
   sets: readonly LoadoutSet[],
   target: MonsterCatalogEntry,
   skills: Skills,
-  /** When true, DPS reflects the standard boost potion for each set's style. */
-  applyBoost = false,
+  /** Resolves the boost potion the player owns for a given style (from the bank). */
+  boostResolver?: BoostResolver,
 ): LoadoutPreview[] {
   return applicableSets(sets, target)
     .map((set) => ({
       set,
-      dps: computeSetDps(set, target, skills, applyBoost ? bestBoostForStyle(set.style) : undefined),
+      dps: computeSetDps(set, target, skills, boostResolver?.(set.style)),
       activeBonuses: activeBonusesForTarget(set, target),
     }))
     .sort((a, b) => b.dps.dps - a.dps.dps);
@@ -160,7 +160,7 @@ export function evaluateLoadout(
   gp: number,
   priceLookup: LatestPriceLookup,
   skills: Skills,
-  applyBoost = false,
+  boostResolver?: BoostResolver,
 ): LoadoutEvaluation {
   const slotStatuses: Partial<Record<LoadoutSlotKey, SlotStatus>> = {};
   let totalCostToComplete = 0;
@@ -188,7 +188,7 @@ export function evaluateLoadout(
 
   const activeBonuses = activeBonusesForTarget(set, target);
   const dps: DpsResult | undefined = viable
-    ? computeSetDps(set, target, skills, applyBoost ? bestBoostForStyle(set.style) : undefined)
+    ? computeSetDps(set, target, skills, boostResolver?.(set.style))
     : undefined;
 
   return { set, slotStatuses, totalCostToComplete, viable, dps, activeBonuses };
@@ -201,11 +201,11 @@ export function rankLoadoutsForBoss(
   gp: number,
   priceLookup: LatestPriceLookup,
   skills: Skills,
-  applyBoost = false,
+  boostResolver?: BoostResolver,
 ): LoadoutEvaluation[] {
   const applicable = applicableSets(sets, target);
   return applicable
-    .map((s) => evaluateLoadout(s, target, bank.itemIds, gp, priceLookup, skills, applyBoost))
+    .map((s) => evaluateLoadout(s, target, bank.itemIds, gp, priceLookup, skills, boostResolver))
     .sort((a, b) => {
       if (a.viable !== b.viable) return a.viable ? -1 : 1;
       const aDps = a.dps?.dps ?? 0;

@@ -31,6 +31,7 @@ import type {
 } from "@/types/osrs";
 import { optimizeForBoss } from "@/lib/optimize/bank";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
+import type { BoostResolver } from "@/lib/dps/boost";
 
 const ITEM_BY_ID = new Map<number, ItemCatalogEntry>(
   ITEM_CATALOG.map((it) => [it.id, it]),
@@ -59,8 +60,8 @@ export interface FindUpgradesInput {
   /** Magic-only — passed through to scoreScenario. */
   baseSpellMaxHit?: number;
   spellElement?: SpellElement;
-  /** When true, DPS reflects the standard boost potion for each loadout's style. */
-  applyBoost?: boolean;
+  /** Resolves the boost potion the player owns for a given style (from the bank). */
+  boostResolver?: BoostResolver;
 }
 
 export interface UpgradeStep {
@@ -176,7 +177,7 @@ function findCandidates(
   priceLookup: PriceLookup,
   baseSpellMaxHit?: number,
   spellElement?: SpellElement,
-  applyBoost = false,
+  boostResolver?: BoostResolver,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -212,7 +213,7 @@ function findCandidates(
       attackStyle,
       baseSpellMaxHit,
       spellElement,
-      applyBoost,
+      boostResolver,
     });
     if (!scored.valid) continue;
     const dpsDelta = scored.dps.dps - activeDps;
@@ -255,7 +256,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     topN: 1,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
-    applyBoost: input.applyBoost,
+    boostResolver: input.boostResolver,
   });
   const currentBest = rankings[0] ?? null;
 
@@ -322,7 +323,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       input.priceLookup,
       input.baseSpellMaxHit,
       input.spellElement,
-      input.applyBoost,
+      input.boostResolver,
     );
     if (candidates.length === 0) break;
 
@@ -380,7 +381,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
-      applyBoost: input.applyBoost,
+      boostResolver: input.boostResolver,
     });
     if (!rescored.valid) break; // shouldn't happen — we just scored it above
     activeLoadout = rescored.loadout;
@@ -401,7 +402,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
-      applyBoost: input.applyBoost,
+      boostResolver: input.boostResolver,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }

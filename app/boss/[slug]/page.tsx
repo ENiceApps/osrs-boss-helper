@@ -12,7 +12,7 @@ import {
   SKILLS_AT_99,
   type LoadoutEvaluation,
 } from "@/lib/recommend";
-import { bestBoostForStyle } from "@/lib/dps/boost";
+import { bestBoostForStyle, bankBoostResolver } from "@/lib/dps/boost";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
@@ -51,6 +51,7 @@ const SAMPLE_BANK: ReadonlySet<number> = new Set([
   6737,  // Berserker ring
   837,   // Crossbow (basic)
   877,   // Bronze bolts
+  2444,  // Ranging potion (4) — so the demo shows the auto-applied combat boost
 ]);
 
 // Per Next.js 16 dynamic-routes docs: `params` is now a Promise. Client
@@ -99,6 +100,10 @@ export default function BossPage({
   const consumables = CONSUMABLES_BY_SLUG[slug];
   const mechanics = useMemo(() => mechanicsForBoss(monster), [monster]);
 
+  // DPS reflects a boost potion ONLY if the player actually owns one for the
+  // loadout's style — resolved from the bank, best owned potion wins.
+  const boostResolver = useMemo(() => bankBoostResolver(bank.itemIds), [bank]);
+
   // Loadouts filtered by the optional style selector (so user can narrow to
   // just ranged sets, for example).
   const styleFiltered = useMemo(
@@ -117,9 +122,9 @@ export default function BossPage({
   const evaluations: LoadoutEvaluation[] = useMemo(() => {
     if (bank) {
       const lookup = (id: number) => priceForItem(prices, id);
-      return rankLoadoutsForBoss(styleFiltered, monster, bank, gp, lookup, skills, true);
+      return rankLoadoutsForBoss(styleFiltered, monster, bank, gp, lookup, skills, boostResolver);
     }
-    return previewLoadoutsForBoss(styleFiltered, monster, skills, true).map((p) => ({
+    return previewLoadoutsForBoss(styleFiltered, monster, skills, boostResolver).map((p) => ({
       set: p.set,
       slotStatuses: {},
       totalCostToComplete: 0,
@@ -127,7 +132,7 @@ export default function BossPage({
       dps: p.dps,
       activeBonuses: p.activeBonuses,
     }));
-  }, [bank, gp, prices, styleFiltered, monster, skills]);
+  }, [bank, gp, prices, styleFiltered, monster, skills, boostResolver]);
 
   const mechanicEvaluations = useMemo(() => {
     if (!mechanics) return [];
@@ -178,8 +183,8 @@ export default function BossPage({
 
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
-    return computeSetDps(selectedSet, monster, skills, bestBoostForStyle(selectedSet.style));
-  }, [selectedSet, monster, skills]);
+    return computeSetDps(selectedSet, monster, skills, boostResolver(selectedSet.style));
+  }, [selectedSet, monster, skills, boostResolver]);
 
   // Augment the curated consumables with the boost potion that matches the
   // selected loadout's combat style — the same potion baked into the DPS above.

@@ -3,7 +3,15 @@
 // untouched).
 
 import { describe, expect, it } from "vitest";
-import { applyCombatBoost, bestBoostForStyle, SUPER_COMBAT, RANGING_POTION, SATURATED_HEART } from "@/lib/dps/boost";
+import {
+  applyCombatBoost,
+  bestBoostForStyle,
+  boostFromBank,
+  bankBoostResolver,
+  SUPER_COMBAT,
+  RANGING_POTION,
+  SATURATED_HEART,
+} from "@/lib/dps/boost";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { LOADOUT_SET_BY_ID } from "@/data/loadouts/sets.generated";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
@@ -62,5 +70,35 @@ describe("computeSetDps — boost is opt-in", () => {
     const boosted = computeSetDps(set, VORKATH, SKILLS_AT_99, bestBoostForStyle("ranged"));
     expect(boosted.maxHit).toBeGreaterThan(base.maxHit);
     expect(boosted.dps).toBeGreaterThan(base.dps);
+  });
+});
+
+describe("boostFromBank — resolve the owned boost from the bank", () => {
+  it("returns the matching potion when any dose is in the bank", () => {
+    expect(boostFromBank("ranged", new Set([171]))?.id).toBe("ranging-potion"); // Ranging potion(2)
+    expect(boostFromBank("melee", new Set([12695]))?.id).toBe("super-combat");
+    expect(boostFromBank("magic", new Set([27641]))?.id).toBe("saturated-heart");
+  });
+
+  it("returns undefined when the bank has no boost potion for the style", () => {
+    expect(boostFromBank("melee", new Set([2444]))).toBeUndefined(); // only a ranging potion
+    expect(boostFromBank("ranged", new Set())).toBeUndefined();
+  });
+
+  it("prefers the stronger potion when the bank has several", () => {
+    // Divine super combat outranks Combat potion in the melee priority list.
+    const b = boostFromBank("melee", new Set([9739, 23685])); // Combat potion(4) + Divine super combat(4)
+    expect(b?.id).toBe("divine-super-combat");
+  });
+
+  it("bankBoostResolver only boosts DPS when the matching potion is owned", () => {
+    const set = LOADOUT_SET_BY_ID["ranged-end-dragonbane-undead"];
+    const withPotion = bankBoostResolver(new Set([2444])); // Ranging potion(4)
+    const withoutPotion = bankBoostResolver(new Set([12695])); // a melee potion, wrong style
+    const base = computeSetDps(set, VORKATH, SKILLS_AT_99);
+    const boosted = computeSetDps(set, VORKATH, SKILLS_AT_99, withPotion(set.style));
+    const unboosted = computeSetDps(set, VORKATH, SKILLS_AT_99, withoutPotion(set.style));
+    expect(boosted.dps).toBeGreaterThan(base.dps);
+    expect(unboosted.dps).toBe(base.dps); // no ranged potion owned → unboosted
   });
 });
