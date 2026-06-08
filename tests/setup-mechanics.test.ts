@@ -4,7 +4,7 @@
 // Super antifire inventory route).
 
 import { describe, expect, it } from "vitest";
-import { MECHANICS_BY_SLUG } from "@/data/bosses/mechanics";
+import { MECHANICS_BY_SLUG, mechanicsForBoss } from "@/data/bosses/mechanics";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import { scoreScenario } from "@/lib/optimize/scenario";
@@ -81,6 +81,33 @@ describe("checkSetupMechanics — Vorkath dragonfire", () => {
     // worn route — they must not appear in the setup check.
     expect(statuses.every((s) => s.requirement.worn !== undefined)).toBe(true);
     expect(statuses.some((s) => s.requirement.id === "food")).toBe(false);
+  });
+});
+
+describe("mechanicsForBoss — universal dragonfire injection", () => {
+  const fire = (slug: string) =>
+    mechanicsForBoss(MONSTER_BY_SLUG[slug]).find((m) => m.id === "dragonfire-protection");
+
+  it("injects dragonfire protection for a fire-breathing dragon with no curated mechanics (black dragon)", () => {
+    expect(MECHANICS_BY_SLUG["black-dragon"]).toBeUndefined(); // not hand-curated
+    const m = fire("black-dragon");
+    expect(m).toBeDefined();
+    expect(m!.worn?.slot).toBe("shield");
+  });
+
+  it("does NOT inject dragonfire for dragon-typed but non-fiery monsters", () => {
+    // Wyverns breathe ice (super antifire is useless); hydras don't breathe fire.
+    expect(fire("skeletal-wyvern")).toBeUndefined();
+    expect(fire("hydra")).toBeUndefined();
+    expect(fire("alchemical-hydra")).toBeUndefined();
+  });
+
+  it("de-dupes: a curated boss keeps exactly one dragonfire mechanic (Vorkath)", () => {
+    const all = mechanicsForBoss(MONSTER_BY_SLUG["vorkath"]);
+    const fires = all.filter((m) => m.id === "dragonfire-protection");
+    expect(fires).toHaveLength(1);
+    // Curated entries are still present alongside the (deduped) dragonfire one.
+    expect(all.some((m) => m.id === "food")).toBe(true);
   });
 });
 

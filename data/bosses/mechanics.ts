@@ -7,6 +7,8 @@
 
 import type { MechanicRequirement } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
+import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { universalMechanicsFor } from "@/data/bosses/universal-mechanics";
 
 const id = (n: number) => asItemId(n);
 
@@ -1111,3 +1113,20 @@ export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   "tormented-demon": TORMENTED_DEMON,
   scurrius: SCURRIUS,
 };
+
+/**
+ * Resolve the full mechanic list for a boss: hand-curated entries
+ * (MECHANICS_BY_SLUG) merged with universal worn-slot mechanics implied by the
+ * monster's attributes (e.g. dragonfire for `dragon` + `fiery` monsters).
+ *
+ * Curated entries win: if a boss already curates a mechanic with the same id
+ * (e.g. Vorkath's boss-specific dragonfire note), the universal one is dropped.
+ * This is what the boss page should call instead of indexing MECHANICS_BY_SLUG
+ * directly, so every fire-breathing dragon gets setup-aware dragonfire checks.
+ */
+export function mechanicsForBoss(monster: MonsterCatalogEntry): MechanicRequirement[] {
+  const curated = MECHANICS_BY_SLUG[monster.slug] ?? [];
+  const curatedIds = new Set(curated.map((m) => m.id));
+  const universal = universalMechanicsFor(monster).filter((m) => !curatedIds.has(m.id));
+  return [...curated, ...universal];
+}

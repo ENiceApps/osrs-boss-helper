@@ -12,7 +12,7 @@ import {
   SKILLS_AT_99,
   type LoadoutEvaluation,
 } from "@/lib/recommend";
-import { MECHANICS_BY_SLUG } from "@/data/bosses/mechanics";
+import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
@@ -96,7 +96,7 @@ export default function BossPage({
   // Skill priority: plugin-reported (live) → WOM lookup → 99/99/99 fallback.
   const skills = live.skills ?? player?.skills ?? SKILLS_AT_99;
   const consumables = CONSUMABLES_BY_SLUG[slug];
-  const mechanics = MECHANICS_BY_SLUG[slug];
+  const mechanics = useMemo(() => mechanicsForBoss(monster), [monster]);
 
   // Loadouts filtered by the optional style selector (so user can narrow to
   // just ranged sets, for example).
