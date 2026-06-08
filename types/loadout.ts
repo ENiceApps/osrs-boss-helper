@@ -1,8 +1,7 @@
-// Universal loadout-set types. A LoadoutSet is a gear configuration tagged
-// with an `appliesWhen` predicate over the target's catalog attributes. The
-// recommender filters sets by applicability and ranks the rest by DPS at the
-// boss's actual stats — so one set ("DHCB + Masori, vs dragons") serves
-// every dragon-classified boss instead of being curated per-boss.
+// LoadoutSet — the synthesized gear-configuration shape the DPS engine scores.
+// Produced by the bank optimizer (lib/optimize/scenario.ts) and the manual gear
+// editor (lib/loadout-edit.ts) from a pile of item ids. (The old curated
+// premade-set source types + appliesWhen predicates were removed.)
 
 import type { AttackStyleChoice, CombatStyle, SpellElement } from "@/types/osrs";
 
@@ -21,48 +20,6 @@ export type LoadoutSlotKey =
   | "weapon"
   | "ammo"
   | "shield";
-
-export interface LoadoutSlotRef {
-  itemId: number;
-  /** Disambiguates vendor entries with multiple variants (e.g. "Charged"). */
-  version?: string;
-}
-
-/**
- * Predicate over a monster's catalog entry. All conditions must match. An
- * empty predicate means the set applies to every target.
- */
-export interface AppliesWhen {
-  /** Target attributes must include every entry here (intersection). */
-  requiresAttributes?: readonly string[];
-  /** Target must NOT include any of these attributes. */
-  excludesAttributes?: readonly string[];
-  /** Target's weakness element must match (e.g. "fire" for tome-of-fire setups). */
-  weaknessElement?: SpellElement;
-}
-
-export interface LoadoutSetSource {
-  /** Stable identifier used for URLs and persistence. */
-  id: string;
-  /** Display name surfaced in the UI. */
-  name: string;
-  style: CombatStyle;
-  tier: LoadoutTier;
-  attackType: AttackType;
-  attackStyleChoice: AttackStyleChoice;
-  appliesWhen: AppliesWhen;
-  slots: Partial<Record<LoadoutSlotKey, LoadoutSlotRef>>;
-  /** Item-name labels per slot — codegen verifies these match the vendor data. */
-  slotLabels: Partial<Record<LoadoutSlotKey, string>>;
-  /** Magic-only: base spell max hit (e.g. Fire Surge = 24). */
-  baseSpellMaxHit?: number;
-  /** Magic-only: cast spell's element, for tome and weakness gating. */
-  spellElement?: SpellElement;
-  /** Override the weapon's raw `speed` (e.g. Harmonised staff reduces standard spells 5→4 ticks). */
-  attackSpeedTicksOverride?: number;
-  ammoQuantity?: number;
-  notes?: string;
-}
 
 export interface LoadoutSlotComputed {
   itemId: number;
@@ -92,7 +49,6 @@ export interface LoadoutSet {
   tier: LoadoutTier;
   attackType: AttackType;
   attackStyleChoice: AttackStyleChoice;
-  appliesWhen: AppliesWhen;
   slots: Partial<Record<LoadoutSlotKey, LoadoutSlotComputed>>;
   totals: {
     attackBonus: number;

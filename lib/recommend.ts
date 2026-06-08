@@ -5,37 +5,16 @@
 // specific target's stats. One curated set serves every boss that matches
 // its predicate — no per-boss preset curation needed.
 
-import type {
-  DpsResult,
-  ItemId,
-  Skills,
-  BankContents,
-} from "@/types/osrs";
-import { asItemId } from "@/types/osrs";
+import type { DpsResult, Skills } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
-import { applyCombatBoost, type BoostResolver, type CombatBoost } from "@/lib/dps/boost";
-import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
+import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
+import type { LoadoutSet } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import {
   activeBonusesForTarget,
-  applicableSets,
   defenceBonusForAttackType,
   rangedDefenceBonusFor,
 } from "@/lib/loadout";
-
-type LatestPriceLookup = (itemId: number) => number | null;
-
-export type SlotStatus = "owned" | "affordable" | "missing";
-
-export interface LoadoutEvaluation {
-  set: LoadoutSet;
-  slotStatuses: Partial<Record<LoadoutSlotKey, SlotStatus>>;
-  totalCostToComplete: number;
-  viable: boolean;
-  dps?: DpsResult;
-  /** Diagnostic — which conditional bonuses actually fired against this target. */
-  activeBonuses: ReturnType<typeof activeBonusesForTarget>;
-}
 
 const DEFAULT_PRAYERS = {
   melee: {
@@ -124,94 +103,6 @@ export function computeSetDps(
         }
       : undefined,
   });
-}
-
-export interface LoadoutPreview {
-  set: LoadoutSet;
-  dps: DpsResult;
-  activeBonuses: ReturnType<typeof activeBonusesForTarget>;
-}
-
-/**
- * Browse-mode: show every loadout that applies to this target, ranked by DPS
- * at the supplied skill levels (typically the 99-across-the-board fallback
- * on the dynamic boss page). No bank / GP / ownership considered.
- */
-export function previewLoadoutsForBoss(
-  sets: readonly LoadoutSet[],
-  target: MonsterCatalogEntry,
-  skills: Skills,
-  /** Resolves the boost potion the player owns for a given style (from the bank). */
-  boostResolver?: BoostResolver,
-): LoadoutPreview[] {
-  return applicableSets(sets, target)
-    .map((set) => ({
-      set,
-      dps: computeSetDps(set, target, skills, boostResolver?.(set.style)),
-      activeBonuses: activeBonusesForTarget(set, target),
-    }))
-    .sort((a, b) => b.dps.dps - a.dps.dps);
-}
-
-export function evaluateLoadout(
-  set: LoadoutSet,
-  target: MonsterCatalogEntry,
-  owned: Set<ItemId>,
-  gp: number,
-  priceLookup: LatestPriceLookup,
-  skills: Skills,
-  boostResolver?: BoostResolver,
-): LoadoutEvaluation {
-  const slotStatuses: Partial<Record<LoadoutSlotKey, SlotStatus>> = {};
-  let totalCostToComplete = 0;
-  let viable = true;
-
-  for (const [slotKey, piece] of Object.entries(set.slots) as Array<[
-    LoadoutSlotKey,
-    { itemId: number; itemName: string; version?: string },
-  ]>) {
-    if (!piece) continue;
-    const branded = asItemId(piece.itemId);
-    if (owned.has(branded)) {
-      slotStatuses[slotKey] = "owned";
-      continue;
-    }
-    const price = priceLookup(piece.itemId);
-    if (price !== null && price <= gp - totalCostToComplete) {
-      slotStatuses[slotKey] = "affordable";
-      totalCostToComplete += price;
-    } else {
-      slotStatuses[slotKey] = "missing";
-      viable = false;
-    }
-  }
-
-  const activeBonuses = activeBonusesForTarget(set, target);
-  const dps: DpsResult | undefined = viable
-    ? computeSetDps(set, target, skills, boostResolver?.(set.style))
-    : undefined;
-
-  return { set, slotStatuses, totalCostToComplete, viable, dps, activeBonuses };
-}
-
-export function rankLoadoutsForBoss(
-  sets: readonly LoadoutSet[],
-  target: MonsterCatalogEntry,
-  bank: BankContents,
-  gp: number,
-  priceLookup: LatestPriceLookup,
-  skills: Skills,
-  boostResolver?: BoostResolver,
-): LoadoutEvaluation[] {
-  const applicable = applicableSets(sets, target);
-  return applicable
-    .map((s) => evaluateLoadout(s, target, bank.itemIds, gp, priceLookup, skills, boostResolver))
-    .sort((a, b) => {
-      if (a.viable !== b.viable) return a.viable ? -1 : 1;
-      const aDps = a.dps?.dps ?? 0;
-      const bDps = b.dps?.dps ?? 0;
-      return bDps - aDps;
-    });
 }
 
 /** Convenience for pages that just want recommendations at default level-99 skills. */
