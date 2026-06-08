@@ -135,3 +135,38 @@ describe("optimize/scenario — validation rejects malformed loadouts", () => {
     expect(result.reasons.some((r) => r.includes("Slot collision") && r.includes("neck"))).toBe(true);
   });
 });
+
+describe("optimize/scenario — Eclipse atlatl uses melee strength for ranged damage", () => {
+  // The Eclipse atlatl (29000, str 40, rangedStr 0) is a ranged weapon whose
+  // max hit scales off the MELEE strength bonus, not ranged strength.
+  // Gear: Ava's assembler (22109, rangedStr 2), Berserker ring (6737, str 4),
+  // Amulet of torture (19553, str 10).
+  const ATLATL_LOADOUT = [29000, 22109, 6737, 19553];
+
+  it("strengthBonus is the summed melee str (54), not the ranged str (2)", () => {
+    const result = scoreScenario({
+      itemIds: ATLATL_LOADOUT,
+      target: GRAARDOR,
+      skills: SKILLS_AT_99,
+    });
+    if (!result.valid) throw new Error(`Expected valid, got: ${result.reasons.join("; ")}`);
+    expect(result.loadout.style).toBe("ranged");
+    // Melee str: 40 (atlatl) + 4 (zerk ring) + 10 (torture) = 54.
+    expect(result.loadout.totals.strengthBonus).toBe(54);
+  });
+
+  it("a normal bow with the same gear would instead use ranged str (regression guard)", () => {
+    // Twisted bow (20997) + Dragon arrow (11212) so the loadout is valid;
+    // gear's melee str must NOT leak into a normal bow's strength bonus.
+    const result = scoreScenario({
+      itemIds: [20997, 11212, 22109, 6737, 19553],
+      target: GRAARDOR,
+      skills: SKILLS_AT_99,
+    });
+    if (!result.valid) throw new Error(`Expected valid, got: ${result.reasons.join("; ")}`);
+    expect(result.loadout.style).toBe("ranged");
+    // Ranged str: 20 (tbow) + 2 (assembler) + 60 (dragon arrow) = 82; the
+    // gear's melee str (14) is correctly ignored for a normal bow.
+    expect(result.loadout.totals.strengthBonus).toBe(82);
+  });
+});

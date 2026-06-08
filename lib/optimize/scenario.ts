@@ -5,6 +5,7 @@
 // as the scorer.
 
 import type { ItemCatalogEntry } from "@/data/items/catalog";
+import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { BONUS_TRIGGER_ITEM_IDS } from "@/data/loadouts/sets.source";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
@@ -278,7 +279,8 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   let magicDamagePct: number | undefined;
   switch (combatStyle) {
     case "melee": strengthBonus = melStr; break;
-    case "ranged": strengthBonus = rngStr; break;
+    // Eclipse atlatl scales ranged damage off the MELEE strength bonus.
+    case "ranged": strengthBonus = rangedDamageUsesMeleeStrength(weapon.id) ? melStr : rngStr; break;
     case "magic": magicDamagePct = magStr / 10; break;
   }
 

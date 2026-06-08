@@ -13,6 +13,7 @@
 // few dozen candidates per boss, scored in <100ms.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
+import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { BONUS_TRIGGER_ITEM_IDS } from "@/data/loadouts/sets.source";
 import {
   availableArmorSetsInBank,
@@ -89,13 +90,21 @@ function strengthFor(item: ItemCatalogEntry, style: CombatStyle): number {
  * are weighted higher than accuracy because str grows max-hit linearly while
  * accuracy plateaus near 1.0. The 2:1 weight is a starting heuristic — see
  * project memory for the rationale; we can tune later.
+ *
+ * `meleeStrForRanged` handles the Eclipse atlatl: its ranged damage scales off
+ * the MELEE strength bonus, so rank gear by `str` even though the style is
+ * ranged — otherwise the greedy fills slots with useless ranged-strength gear.
  */
 function itemScore(
   item: ItemCatalogEntry,
   attackType: WeaponAttackType,
   style: CombatStyle,
+  meleeStrForRanged = false,
 ): number {
-  return 2 * strengthFor(item, style) + offensiveFor(item, attackType);
+  const str = style === "ranged" && meleeStrForRanged
+    ? item.str
+    : strengthFor(item, style);
+  return 2 * str + offensiveFor(item, attackType);
 }
 
 /** True iff the player can equip the item given their skills. */
@@ -177,6 +186,7 @@ function greedyBuild(
   bySlot: Map<LoadoutSlotKey, ItemCatalogEntry[]>,
 ): number[] {
   const ids: number[] = [ws.weapon.id];
+  const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
   for (const slot of NON_WEAPON_SLOTS) {
     if (slot === "shield" && ws.weapon.isTwoHanded) continue;
     // Thrown weapons (darts, knives, blowpipes) and chinchompas are
@@ -189,9 +199,9 @@ function greedyBuild(
     if (pool.length === 0) continue;
     // Pick the item with the highest DPS-flavoured score for this style.
     let best = pool[0];
-    let bestScore = itemScore(best, ws.attackType, ws.combatStyle);
+    let bestScore = itemScore(best, ws.attackType, ws.combatStyle, meleeStrForRanged);
     for (let i = 1; i < pool.length; i++) {
-      const s = itemScore(pool[i], ws.attackType, ws.combatStyle);
+      const s = itemScore(pool[i], ws.attackType, ws.combatStyle, meleeStrForRanged);
       if (s > bestScore) { best = pool[i]; bestScore = s; }
     }
     ids.push(best.id);

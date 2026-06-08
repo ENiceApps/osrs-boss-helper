@@ -4,6 +4,7 @@
 // a set came from codegen or live-edit — it gets a normal LoadoutSet shape.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
+import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { BONUS_TRIGGER_ITEM_IDS } from "@/data/loadouts/sets.source";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import type {
@@ -109,7 +110,10 @@ export function applyOverrides(
       strengthBonus = melStr;
       break;
     case "ranged":
-      strengthBonus = rngStr;
+      // Eclipse atlatl scales ranged damage off the MELEE strength bonus.
+      strengthBonus = rangedDamageUsesMeleeStrength(resolved.weapon?.itemId)
+        ? melStr
+        : rngStr;
       break;
     case "magic":
       strengthBonus = 0;
