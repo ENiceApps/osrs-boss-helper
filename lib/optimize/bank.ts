@@ -47,6 +47,8 @@ export interface BankOptimizerInput {
   baseSpellMaxHit?: number;
   /** Magic-only: cast spell element. */
   spellElement?: SpellElement;
+  /** When true, DPS reflects the standard boost potion for each loadout's style. */
+  applyBoost?: boolean;
 }
 
 export interface BankOptimizerResult {
@@ -354,6 +356,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       attackStyle: { attackType: c.ws.attackType, choice: c.ws.choice },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
+      applyBoost: input.applyBoost,
     });
     if (scored.valid) valid.push(scored);
   }

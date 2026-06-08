@@ -59,6 +59,8 @@ export interface FindUpgradesInput {
   /** Magic-only — passed through to scoreScenario. */
   baseSpellMaxHit?: number;
   spellElement?: SpellElement;
+  /** When true, DPS reflects the standard boost potion for each loadout's style. */
+  applyBoost?: boolean;
 }
 
 export interface UpgradeStep {
@@ -174,6 +176,7 @@ function findCandidates(
   priceLookup: PriceLookup,
   baseSpellMaxHit?: number,
   spellElement?: SpellElement,
+  applyBoost = false,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -209,6 +212,7 @@ function findCandidates(
       attackStyle,
       baseSpellMaxHit,
       spellElement,
+      applyBoost,
     });
     if (!scored.valid) continue;
     const dpsDelta = scored.dps.dps - activeDps;
@@ -251,6 +255,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     topN: 1,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
+    applyBoost: input.applyBoost,
   });
   const currentBest = rankings[0] ?? null;
 
@@ -317,6 +322,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       input.priceLookup,
       input.baseSpellMaxHit,
       input.spellElement,
+      input.applyBoost,
     );
     if (candidates.length === 0) break;
 
@@ -374,6 +380,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
+      applyBoost: input.applyBoost,
     });
     if (!rescored.valid) break; // shouldn't happen — we just scored it above
     activeLoadout = rescored.loadout;
@@ -394,6 +401,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       },
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
+      applyBoost: input.applyBoost,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }

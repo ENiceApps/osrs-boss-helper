@@ -16,6 +16,7 @@ import {
 } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { computeSetDps } from "@/lib/recommend";
+import { bestBoostForStyle } from "@/lib/dps/boost";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import type {
   ItemBonusFlags,
@@ -43,6 +44,8 @@ export interface ScenarioInput {
   baseSpellMaxHit?: number;
   /** Magic-only: cast spell element — gates Tome of Fire and target weakness. */
   spellElement?: SpellElement;
+  /** When true, DPS reflects the standard boost potion for the loadout's style. */
+  applyBoost?: boolean;
 }
 
 export type ScoredScenario =
@@ -327,7 +330,12 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     armorSetBonus,
   };
 
-  const dps = computeSetDps(loadout, target, skills);
+  const dps = computeSetDps(
+    loadout,
+    target,
+    skills,
+    input.applyBoost ? bestBoostForStyle(combatStyle) : undefined,
+  );
   const activeBonuses = activeBonusesForTarget(loadout, target);
   return { valid: true, loadout, dps, activeBonuses };
 }

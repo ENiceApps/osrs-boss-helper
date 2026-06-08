@@ -12,6 +12,7 @@ import {
   SKILLS_AT_99,
   type LoadoutEvaluation,
 } from "@/lib/recommend";
+import { bestBoostForStyle } from "@/lib/dps/boost";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
@@ -116,9 +117,9 @@ export default function BossPage({
   const evaluations: LoadoutEvaluation[] = useMemo(() => {
     if (bank) {
       const lookup = (id: number) => priceForItem(prices, id);
-      return rankLoadoutsForBoss(styleFiltered, monster, bank, gp, lookup, skills);
+      return rankLoadoutsForBoss(styleFiltered, monster, bank, gp, lookup, skills, true);
     }
-    return previewLoadoutsForBoss(styleFiltered, monster, skills).map((p) => ({
+    return previewLoadoutsForBoss(styleFiltered, monster, skills, true).map((p) => ({
       set: p.set,
       slotStatuses: {},
       totalCostToComplete: 0,
@@ -177,8 +178,21 @@ export default function BossPage({
 
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
-    return computeSetDps(selectedSet, monster, skills);
+    return computeSetDps(selectedSet, monster, skills, bestBoostForStyle(selectedSet.style));
   }, [selectedSet, monster, skills]);
+
+  // Augment the curated consumables with the boost potion that matches the
+  // selected loadout's combat style — the same potion baked into the DPS above.
+  const consumablesWithBoost = useMemo(() => {
+    const base = consumables ?? [];
+    if (!selectedSet) return base;
+    const boost = bestBoostForStyle(selectedSet.style);
+    if (base.some((c) => c.itemId === boost.itemId)) return base;
+    return [
+      { itemId: asItemId(boost.itemId), name: boost.name, quantity: 1, role: "boost" as const },
+      ...base,
+    ];
+  }, [consumables, selectedSet]);
 
   const ownedItemIds = useMemo(
     () =>
@@ -334,8 +348,8 @@ export default function BossPage({
                   targetHp={monster.hp}
                 />
               )}
-              {consumables && consumables.length > 0 && (
-                <InventoryPanel consumables={consumables} mapping={mapping} />
+              {consumablesWithBoost.length > 0 && (
+                <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
               )}
             </div>
             <div>

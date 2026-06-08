@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { findUpgrades, type BudgetMode, type BudgetResult } from "@/lib/optimize/budget";
 import { setupMechanicConflicts, type SetupMechanicStatus } from "@/lib/setup-mechanics";
+import { bestBoostForStyle } from "@/lib/dps/boost";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { MappingEntry, MechanicRequirement, Skills } from "@/types/osrs";
 
@@ -74,6 +75,7 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping,
       mode,
       sellThreshold,
       priceLookup,
+      applyBoost: true, // DPS reflects a standard boost potion (super combat / ranging / saturated heart)
     });
   }, [bank, target, skills, gp, mode, sellThreshold, priceLookup]);
 
@@ -245,6 +247,9 @@ function OptimizerResults({
         </div>
         <div className="text-[10px] text-osrs-muted mt-2 text-center">
           {upgradedBest!.loadout.style} · {upgradedBest!.loadout.attackStyleChoice} · max hit {upgradedBest!.dps.maxHit} · {(upgradedBest!.dps.accuracy * 100).toFixed(1)}% accuracy
+        </div>
+        <div className="text-[10px] text-osrs-muted mt-0.5 text-center italic">
+          DPS assumes {bestBoostForStyle(upgradedBest!.loadout.style).name}
         </div>
         {setupConflicts.length > 0 && <SetupWarnings conflicts={setupConflicts} />}
       </div>

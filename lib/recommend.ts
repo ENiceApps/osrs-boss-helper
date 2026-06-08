@@ -13,6 +13,7 @@ import type {
 } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
+import { applyCombatBoost, bestBoostForStyle, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import {
@@ -92,13 +93,16 @@ export function computeSetDps(
   set: LoadoutSet,
   target: MonsterCatalogEntry,
   skills: Skills,
+  /** Optional combat-boost potion. Applied to the visible level before the engine. */
+  boost?: CombatBoost,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
+  const effectiveSkills = applyCombatBoost(skills, boost);
   return calculateDps({
     style: set.style,
     attackStyle: set.attackStyleChoice,
     prayers: DEFAULT_PRAYERS[set.style],
-    skills,
+    skills: effectiveSkills,
     attackBonus: set.totals.attackBonus,
     strengthBonus: set.totals.strengthBonus,
     magicDamagePercent: set.totals.magicDamagePct,
@@ -137,11 +141,13 @@ export function previewLoadoutsForBoss(
   sets: readonly LoadoutSet[],
   target: MonsterCatalogEntry,
   skills: Skills,
+  /** When true, DPS reflects the standard boost potion for each set's style. */
+  applyBoost = false,
 ): LoadoutPreview[] {
   return applicableSets(sets, target)
     .map((set) => ({
       set,
-      dps: computeSetDps(set, target, skills),
+      dps: computeSetDps(set, target, skills, applyBoost ? bestBoostForStyle(set.style) : undefined),
       activeBonuses: activeBonusesForTarget(set, target),
     }))
     .sort((a, b) => b.dps.dps - a.dps.dps);
@@ -154,6 +160,7 @@ export function evaluateLoadout(
   gp: number,
   priceLookup: LatestPriceLookup,
   skills: Skills,
+  applyBoost = false,
 ): LoadoutEvaluation {
   const slotStatuses: Partial<Record<LoadoutSlotKey, SlotStatus>> = {};
   let totalCostToComplete = 0;
@@ -181,7 +188,7 @@ export function evaluateLoadout(
 
   const activeBonuses = activeBonusesForTarget(set, target);
   const dps: DpsResult | undefined = viable
-    ? computeSetDps(set, target, skills)
+    ? computeSetDps(set, target, skills, applyBoost ? bestBoostForStyle(set.style) : undefined)
     : undefined;
 
   return { set, slotStatuses, totalCostToComplete, viable, dps, activeBonuses };
@@ -194,10 +201,11 @@ export function rankLoadoutsForBoss(
   gp: number,
   priceLookup: LatestPriceLookup,
   skills: Skills,
+  applyBoost = false,
 ): LoadoutEvaluation[] {
   const applicable = applicableSets(sets, target);
   return applicable
-    .map((s) => evaluateLoadout(s, target, bank.itemIds, gp, priceLookup, skills))
+    .map((s) => evaluateLoadout(s, target, bank.itemIds, gp, priceLookup, skills, applyBoost))
     .sort((a, b) => {
       if (a.viable !== b.viable) return a.viable ? -1 : 1;
       const aDps = a.dps?.dps ?? 0;
