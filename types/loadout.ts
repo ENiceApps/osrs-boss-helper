@@ -58,6 +58,12 @@ export interface LoadoutSet {
     prayerBonus: number;
   };
   attackSpeedTicks: number;
+  /**
+   * Dart loaded inside a blowpipe. Distinct from the ammo slot — blowpipes
+   * hold darts internally, leaving the ammo slot free for a blessing. The
+   * dart's rangedStr is already folded into totals.strengthBonus.
+   */
+  internalAmmo?: { itemId: number; itemName: string };
   baseSpellMaxHit?: number;
   spellElement?: SpellElement;
   ammoQuantity?: number;

@@ -46,6 +46,12 @@ export interface ScenarioInput {
   spellElement?: SpellElement;
   /** Resolves the boost potion the player owns for the loadout's style (from the bank). */
   boostResolver?: BoostResolver;
+  /**
+   * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
+   * it lives inside the weapon, leaving the ammo slot free for a blessing.
+   * Its rangedStr is added to the ranged-strength total here.
+   */
+  internalAmmoId?: number;
 }
 
 export type ScoredScenario =
@@ -287,6 +293,19 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
 
+  // Weapon-internal ammo (blowpipe dart). The dart lives inside the weapon
+  // and is NOT in the slot list — add its rangedStr separately so DPS reflects
+  // the correct dart tier (dragon dart = +35 rangedStr on top of the blowpipe's
+  // own +20, for a true total of +55).
+  let internalAmmo: LoadoutSet["internalAmmo"];
+  if (input.internalAmmoId !== undefined) {
+    const dartItem = findCatalogItem(input.internalAmmoId);
+    if (dartItem) {
+      rngStr += dartItem.rangedStr;
+      internalAmmo = { itemId: dartItem.id, itemName: dartItem.name };
+    }
+  }
+
   let strengthBonus = 0;
   let magicDamagePct: number | undefined;
   switch (combatStyle) {
@@ -332,6 +351,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
       ...(magicDamagePct !== undefined ? { magicDamagePct } : {}),
     },
     attackSpeedTicks,
+    internalAmmo,
     baseSpellMaxHit: combatStyle === "magic" ? input.baseSpellMaxHit : undefined,
     spellElement: combatStyle === "magic" ? input.spellElement : undefined,
     itemBonusFlags,

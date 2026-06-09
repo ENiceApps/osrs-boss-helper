@@ -108,6 +108,12 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
             {set.totals.prayerBonus > 0 &&
               ` · +${set.totals.prayerBonus} pray`}
           </span>
+          {set.internalAmmo && (
+            <span>
+              <span className="text-osrs-muted">Loaded:</span>{" "}
+              {set.internalAmmo.itemName}
+            </span>
+          )}
         </div>
         {activeFlags.length > 0 ? (
           <div className="text-osrs-gold">

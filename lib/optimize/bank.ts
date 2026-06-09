@@ -19,7 +19,8 @@ import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
 } from "@/data/armor-sets";
-import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES, AMMO_TYPES } from "@/data/ammo-compatibility";
+import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -182,14 +183,31 @@ function enumerateWeaponStyles(
 /**
  * Pick the best item per non-weapon slot for a (weapon, style) combo. Skips
  * the shield slot when the weapon is 2H. For ammo, filters by weapon compat
- * first. Returns the item IDs of the chosen loadout including the weapon.
+ * first.
+ *
+ * Returns both the chosen item IDs AND, for blowpipe weapons, the best dart
+ * found in the bank (`internalAmmoId`). The dart is NOT in `ids` — it lives
+ * inside the blowpipe and its rangedStr is folded in by scoreScenario via the
+ * separate `internalAmmoId` field.
  */
 function greedyBuild(
   ws: WeaponStyleCandidate,
   bySlot: Map<LoadoutSlotKey, ItemCatalogEntry[]>,
-): number[] {
+): { ids: number[]; internalAmmoId?: number } {
   const ids: number[] = [ws.weapon.id];
   const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
+
+  // Blowpipe — find the best dart in the bank. Darts have slot:"weapon" in
+  // the catalog (they're thrown weapons), so they live in the weapon pool.
+  let internalAmmoId: number | undefined;
+  if (INTERNAL_AMMO_WEAPONS.has(ws.weapon.id)) {
+    const weaponPool = bySlot.get("weapon") ?? [];
+    const bestDart = weaponPool
+      .filter((i) => AMMO_TYPES[i.name]?.class === "dart")
+      .sort((a, b) => b.rangedStr - a.rangedStr)[0];
+    if (bestDart) internalAmmoId = bestDart.id;
+  }
+
   for (const slot of NON_WEAPON_SLOTS) {
     if (slot === "shield" && ws.weapon.isTwoHanded) continue;
     // The ammo slot is "free" whenever the weapon doesn't fire a separate
@@ -223,7 +241,7 @@ function greedyBuild(
     }
     ids.push(best.id);
   }
-  return ids;
+  return { ids, internalAmmoId };
 }
 
 /**
@@ -276,11 +294,12 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   // benefit is the conditional ×7/6 or ×6/5, which the per-slot scorer can't
   // see. We handle amulets by force-overriding the neck pick in a custom build.
   const forceIds = applicableForceIncludes(bankSet, input.target);
-  type Candidate = { itemIds: number[]; ws: WeaponStyleCandidate };
+  type Candidate = { itemIds: number[]; internalAmmoId?: number; ws: WeaponStyleCandidate };
   const allCandidates: Candidate[] = [];
 
   for (const ws of baseCandidates) {
-    allCandidates.push({ itemIds: greedyBuild(ws, bySlot), ws });
+    const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
+    allCandidates.push({ itemIds: ids, internalAmmoId, ws });
   }
 
   for (const forcedId of forceIds) {
@@ -299,7 +318,8 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
           choice: opt.choice,
           combatStyle: combatStyleFor(opt.attackType),
         };
-        allCandidates.push({ itemIds: greedyBuild(ws, bySlot), ws });
+        const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
+        allCandidates.push({ itemIds: ids, internalAmmoId, ws });
       }
     } else {
       // Non-weapon force (Salve, Tome of Fire). Build a greedy loadout for
@@ -307,7 +327,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       for (const ws of baseCandidates) {
         // Only force a Tome of Fire branch when this weapon-style is magic.
         if (forcedId === BONUS_TRIGGER_ITEM_IDS.TOME_OF_FIRE_CHARGED && ws.combatStyle !== "magic") continue;
-        const ids = greedyBuild(ws, bySlot);
+        const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
         // Replace any item in the forced slot with the forced item.
         const filtered = ids.filter((id) => {
           const it = ITEM_BY_ID.get(id);
@@ -315,7 +335,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
           return loadoutSlotFor(it) !== forcedSlot;
         });
         filtered.push(forcedId);
-        allCandidates.push({ itemIds: filtered, ws });
+        allCandidates.push({ itemIds: filtered, internalAmmoId, ws });
       }
     }
   }
@@ -339,14 +359,14 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       if (setDef.requiredWeaponIds && !setDef.requiredWeaponIds.includes(ws.weapon.id)) continue;
       // Build greedy for this weapon-style, then replace any slot the set
       // covers with the set's piece.
-      const ids = greedyBuild(ws, bySlot);
+      const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
       const filtered = ids.filter((id) => {
         const it = ITEM_BY_ID.get(id);
         if (!it) return true;
         return !setSlotsLocked.has(loadoutSlotFor(it));
       });
       for (const p of setPieces) filtered.push(p.itemId);
-      allCandidates.push({ itemIds: filtered, ws });
+      allCandidates.push({ itemIds: filtered, internalAmmoId, ws });
     }
   }
 
@@ -366,6 +386,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   for (const c of unique) {
     const scored = scoreScenario({
       itemIds: c.itemIds,
+      internalAmmoId: c.internalAmmoId,
       target: input.target,
       skills: input.skills,
       attackStyle: { attackType: c.ws.attackType, choice: c.ws.choice },
