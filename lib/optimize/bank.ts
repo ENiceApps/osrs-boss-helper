@@ -195,6 +195,19 @@ function greedyBuild(
     // Thrown weapons (darts, knives, blowpipes) and chinchompas are
     // self-contained projectiles — they never use a separate ammo slot.
     if (slot === "ammo" && SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category)) continue;
+    // For melee and magic weapons the ammo slot is "free" — no projectile is
+    // consumed, so DPS score is always 0 for every candidate. Fill with the
+    // highest-prayer item instead (blessings, god blessings, Rada's blessing)
+    // to maximise prayer bonus at zero DPS cost. Skip the slot entirely if
+    // nothing in the bank has a positive prayer bonus.
+    if (slot === "ammo" && ws.combatStyle !== "ranged") {
+      const prayerPool = (bySlot.get("ammo") ?? []).filter((a) => a.prayer > 0);
+      if (prayerPool.length > 0) {
+        const bestPrayer = prayerPool.reduce((b, a) => (a.prayer > b.prayer ? a : b));
+        ids.push(bestPrayer.id);
+      }
+      continue;
+    }
     let pool = bySlot.get(slot) ?? [];
     if (slot === "ammo") {
       pool = pool.filter((a) => checkAmmoCompatWithCategory(ws.weapon.name, ws.weapon.category, a.name).ok);

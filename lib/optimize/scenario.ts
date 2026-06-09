@@ -262,6 +262,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   let melStr = 0;
   let rngStr = 0;
   let magStr = 0;
+  let prayerBonus = 0;
   let attackSpeedTicks = 0;
   const computedSlots: LoadoutSet["slots"] = {};
   for (const { item, slot } of resolved) {
@@ -275,6 +276,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     melStr += item.str;
     rngStr += item.rangedStr;
     magStr += item.magicStr;
+    prayerBonus += item.prayer;
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
 
@@ -319,6 +321,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     totals: {
       attackBonus,
       strengthBonus,
+      prayerBonus,
       ...(magicDamagePct !== undefined ? { magicDamagePct } : {}),
     },
     attackSpeedTicks,

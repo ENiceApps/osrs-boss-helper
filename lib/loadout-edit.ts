@@ -79,6 +79,7 @@ export function applyOverrides(
   let melStr = 0;
   let rngStr = 0;
   let magStr = 0;
+  let prayerBonus = 0;
   let attackSpeedTicks = 0;
   const slotKeys: LoadoutSlotKey[] = [
     "head", "cape", "neck", "ammo", "weapon", "body",
@@ -99,6 +100,7 @@ export function applyOverrides(
     melStr += item.str;
     rngStr += item.rangedStr;
     magStr += item.magicStr;
+    prayerBonus += item.prayer;
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
 
@@ -156,6 +158,7 @@ export function applyOverrides(
     totals: {
       attackBonus,
       strengthBonus,
+      prayerBonus,
       ...(magicDamagePct !== undefined ? { magicDamagePct } : {}),
     },
     attackSpeedTicks: attackSpeedTicks > 0 ? attackSpeedTicks : base.attackSpeedTicks,

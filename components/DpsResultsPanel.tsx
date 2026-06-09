@@ -105,6 +105,8 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
               ` · +${set.totals.strengthBonus} str`}
             {set.totals.magicDamagePct !== undefined &&
               ` · ${set.totals.magicDamagePct.toFixed(1)}% mag dmg`}
+            {set.totals.prayerBonus > 0 &&
+              ` · +${set.totals.prayerBonus} pray`}
           </span>
         </div>
         {activeFlags.length > 0 ? (
