@@ -192,15 +192,16 @@ function greedyBuild(
   const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
   for (const slot of NON_WEAPON_SLOTS) {
     if (slot === "shield" && ws.weapon.isTwoHanded) continue;
-    // Thrown weapons (darts, knives, blowpipes) and chinchompas are
-    // self-contained projectiles — they never use a separate ammo slot.
-    if (slot === "ammo" && SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category)) continue;
-    // For melee and magic weapons the ammo slot is "free" — no projectile is
-    // consumed, so DPS score is always 0 for every candidate. Fill with the
-    // highest-prayer item instead (blessings, god blessings, Rada's blessing)
-    // to maximise prayer bonus at zero DPS cost. Skip the slot entirely if
-    // nothing in the bank has a positive prayer bonus.
-    if (slot === "ammo" && ws.combatStyle !== "ranged") {
+    // The ammo slot is "free" whenever the weapon doesn't fire a separate
+    // projectile from it. That covers:
+    //   • Melee and magic weapons (combatStyle !== "ranged")
+    //   • Self-ammo ranged weapons: blowpipes load darts internally, thrown
+    //     weapons ARE the weapon, chinchompas and salamanders use inventory
+    //     consumables — none of them occupy the ammo slot in-game.
+    // In all these cases fill the slot with the highest-prayer item in the
+    // bank (Rada's blessing 4 > god blessings > Rada's 2/3 etc.) at zero DPS
+    // cost. Leave the slot empty only if nothing in the bank has prayer > 0.
+    if (slot === "ammo" && (SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category) || ws.combatStyle !== "ranged")) {
       const prayerPool = (bySlot.get("ammo") ?? []).filter((a) => a.prayer > 0);
       if (prayerPool.length > 0) {
         const bestPrayer = prayerPool.reduce((b, a) => (a.prayer > b.prayer ? a : b));

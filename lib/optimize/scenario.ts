@@ -218,10 +218,17 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   }
 
   // Step 6: ammo ↔ weapon compat.
+  // Blessings (prayer > 0, no offensive stats) are decorative ammo-slot items
+  // that can be worn alongside ANY weapon — skip the projectile compat check for
+  // them. Real ammo (bolts, arrows, darts) still goes through the full check.
   const ammoItems = bySlot.get("ammo") ?? [];
   if (weapon && ammoItems[0]) {
-    const compat = checkAmmoCompat(weapon.name, ammoItems[0].name);
-    if (!compat.ok) reasons.push(compat.reason);
+    const ammo = ammoItems[0];
+    const isBlessingItem = ammo.prayer > 0 && ammo.rangedStr === 0 && ammo.attackRanged === 0;
+    if (!isBlessingItem) {
+      const compat = checkAmmoCompat(weapon.name, ammo.name);
+      if (!compat.ok) reasons.push(compat.reason);
+    }
   }
 
   // Step 7: weapon style. Honour caller override if legal; else default.
