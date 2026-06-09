@@ -11,6 +11,10 @@
 
   --color-parchment: #e8d5a3;
   --color-parchment-dark: #c9b079;
+  /* A lighter parchment for content that should read as ELEVATED above a
+     panel (raised stat cards, the hero answer). Pairs with --color-parchment
+     (panel base) and the recessed `.osrs-well` to give three clear z-levels. */
+  --color-parchment-raised: #f2e3ba;
   --color-osrs-brown: #3e2f1c;
   --color-osrs-brown-light: #5c4528;
   --color-osrs-gold: #b89752;
@@ -70,4 +74,43 @@ body {
   flex-shrink: 0;
   background: var(--color-osrs-gold);
   border-radius: 1px;
+}
+
+/* ---------------------------------------------------------------------------
+   Type scale (foundation)
+   The codebase had scattered `text-[10px]` / `text-[11px]` with ad-hoc
+   uppercase+tracking, which read inconsistently. These two utilities
+   consolidate the two recurring "small text" roles so captions and labels
+   share one rhythm everywhere.
+   --------------------------------------------------------------------------- */
+
+/* Secondary/supporting copy under a primary value or heading. */
+.text-caption {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1rem;
+}
+
+/* The small uppercase label that sits under a stat value or above a group.
+   Replaces the repeated `text-[10px] uppercase tracking-wider` pattern. */
+.label-eyebrow {
+  font-size: 0.625rem; /* 10px */
+  line-height: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-osrs-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Recessed surface (foundation)
+   The old pattern nested `bg-parchment` inside `osrs-panel` (also parchment),
+   so sub-sections had almost no contrast against their container — the weak
+   figure/ground that flattened the hierarchy. `.osrs-well` is a slightly
+   darker, inset-shadowed surface that reads as "recessed into the panel",
+   giving nested groups (loadout box, upgrade list, stat rows) a clear edge
+   without leaving the parchment palette.
+   --------------------------------------------------------------------------- */
+.osrs-well {
+  background: #dcc78f;
+  border: 1px solid color-mix(in srgb, var(--color-osrs-brown) 35%, transparent);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--color-osrs-brown) 22%, transparent);
 }
