@@ -12,7 +12,7 @@ import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
-import { useLiveBank, secondsSince } from "@/lib/liveBank";
+import { useLiveBank } from "@/lib/liveBank";
 import { PlayerSetup } from "@/components/PlayerSetup";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { EquipmentPanel } from "@/components/EquipmentPanel";
@@ -164,13 +164,9 @@ export default function BossPage({
 
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
-      <nav className="mb-4 text-sm">
-        <Link href="/" className="text-osrs-gold hover:underline">
+      <nav className="mb-3 text-sm">
+        <Link href="/bosses" className="text-osrs-gold hover:underline">
           ← All bosses
-        </Link>
-        <span className="mx-2 text-parchment-dark">·</span>
-        <Link href="/items" className="text-osrs-gold hover:underline">
-          Item browser
         </Link>
       </nav>
 
@@ -210,32 +206,14 @@ export default function BossPage({
         </div>
       </header>
 
-      {/* Bank-source notice — shows live status when the RuneLite plugin
-          has pushed, falls back to sample data otherwise. */}
-      <div
-        className={`osrs-panel rounded p-3 mb-4 text-xs flex items-center justify-between gap-3 flex-wrap ${
-          live.isLive ? "border-l-4 border-status-owned text-osrs-brown" : "text-osrs-brown"
-        }`}
-      >
-        <span>
-          {live.isLive ? (
-            <>
-              <strong className="text-status-owned">● Live bank</strong>
-              {live.playerName && <> · <span>{live.playerName}</span></>}
-              {" · "}synced {secondsSince(live.receivedAt) ?? 0}s ago via RuneLite plugin
-            </>
-          ) : (
-            <>
-              <strong>Sample bank in use.</strong> Showing optimizer output for
-              a representative mid-tier ranged kit. Install the RuneLite plugin
-              and POST to <code>/api/bank</code> for live sync.
-            </>
-          )}
-        </span>
-        <span className="text-osrs-muted">
-          {bank.itemIds.size} items · {gp.toLocaleString()} gp wallet
-        </span>
-      </div>
+      {/* Compact context line — full connection status lives in the app
+          header. Here we only note the pool + wallet feeding this boss's
+          optimisation. */}
+      <p className="text-caption text-osrs-muted mb-4">
+        {live.isLive
+          ? `Optimising from your live bank — ${bank.itemIds.size} items · ${gp.toLocaleString()} gp wallet.`
+          : `Sample bank — ${bank.itemIds.size} items · ${gp.toLocaleString()} gp wallet. Run the RuneLite plugin to optimise from your own.`}
+      </p>
 
       {/* HERO — Phase 5 v1 promotes the optimizer to the top of the page.
           The big DPS number + upgrade path is the answer to "what should I do?",
