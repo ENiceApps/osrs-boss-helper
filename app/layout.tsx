@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
+import { AppHeader } from "@/components/AppHeader";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -28,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${cinzel.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AppHeader />
+        <main className="flex-1">{children}</main>
+      </body>
     </html>
   );
 }
