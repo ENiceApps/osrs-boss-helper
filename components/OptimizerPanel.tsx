@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
+import { StatCard } from "@/components/ui";
 import { findUpgrades, type BudgetMode, type BudgetResult } from "@/lib/optimize/budget";
 import { setupMechanicConflicts, type SetupMechanicStatus } from "@/lib/setup-mechanics";
 import { bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
@@ -203,20 +204,22 @@ function OptimizerResults({
           (big "after" number, gain badge); collapses to a single stat when
           there's nothing to upgrade. */}
       {totalDpsDelta > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center items-stretch">
-          <Stat label="Current DPS" value={currentBest.dps.dps.toFixed(2)} />
-          <HeroStat
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-stretch">
+          <StatCard label="Current DPS" value={currentBest.dps.dps.toFixed(2)} />
+          <StatCard
+            hero
             label="After upgrades"
             value={upgradedBest!.dps.dps.toFixed(2)}
             badge={`+${totalDpsDelta.toFixed(2)}`}
           />
-          <Stat
+          <StatCard
             label="DPS per 1M gp spent"
             value={fmtDpsPerM(totalDpsDelta / Math.max(1, totalCostGp))}
           />
         </div>
       ) : (
-        <HeroStat
+        <StatCard
+          hero
           label="Best DPS from your bank"
           value={currentBest.dps.dps.toFixed(2)}
         />
@@ -431,52 +434,4 @@ function EquipmentPanelInline({
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent = "text-osrs-brown",
-}: {
-  label: string;
-  value: string;
-  accent?: string;
-}) {
-  return (
-    <div className="bg-parchment border border-osrs-brown rounded p-2">
-      <div className={`font-bold text-2xl leading-tight ${accent}`}>{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-0.5">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-/**
- * Bigger Stat for the headline "answer" — the single number the user came
- * to this page for. Optional `badge` shows the delta vs current (green pill).
- */
-function HeroStat({
-  label,
-  value,
-  badge,
-}: {
-  label: string;
-  value: string;
-  badge?: string;
-}) {
-  return (
-    <div className="bg-parchment border-2 border-osrs-gold rounded p-3 flex flex-col items-center justify-center">
-      <div className="font-bold text-5xl leading-none text-osrs-brown">
-        {value}
-        {badge && (
-          <span className="ml-2 text-base align-top text-status-owned font-semibold">
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-1">
-        {label}
-      </div>
-    </div>
-  );
-}
 

@@ -3,6 +3,7 @@
 import type { DpsResult } from "@/types/osrs";
 import type { LoadoutSet } from "@/types/loadout";
 import type { TargetActiveBonuses } from "@/lib/loadout";
+import { StatCard } from "@/components/ui";
 
 interface Props {
   set: LoadoutSet;
@@ -74,18 +75,15 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Stat
+        <StatCard
           label="DPS"
           value={dps.dps.toFixed(2)}
           accent="text-status-owned"
-          primary
+          size="md"
         />
-        <Stat label="Max hit" value={String(dps.maxHit)} />
-        <Stat
-          label="Accuracy"
-          value={`${(dps.accuracy * 100).toFixed(1)}%`}
-        />
-        <Stat label="Avg. TTK" value={formatSeconds(avgTtkSeconds)} />
+        <StatCard label="Max hit" value={String(dps.maxHit)} />
+        <StatCard label="Accuracy" value={`${(dps.accuracy * 100).toFixed(1)}%`} />
+        <StatCard label="Avg. TTK" value={formatSeconds(avgTtkSeconds)} />
       </div>
 
       <div className="mt-3 pt-3 border-t border-osrs-brown/30 space-y-1 text-xs text-osrs-brown">
@@ -122,28 +120,6 @@ export function DpsResultsPanel({ set, dps, activeBonuses, targetHp }: Props) {
         {set.notes && (
           <p className="text-osrs-brown-light italic pt-1">{set.notes}</p>
         )}
-      </div>
-    </div>
-  );
-}
-
-interface StatProps {
-  label: string;
-  value: string;
-  accent?: string;
-  primary?: boolean;
-}
-
-function Stat({ label, value, accent = "text-osrs-brown", primary }: StatProps) {
-  return (
-    <div className="bg-parchment border border-osrs-brown rounded p-2 text-center">
-      <div
-        className={`font-bold ${accent} ${primary ? "text-3xl" : "text-2xl"} leading-tight`}
-      >
-        {value}
-      </div>
-      <div className="text-[10px] uppercase tracking-wider text-osrs-muted mt-0.5">
-        {label}
       </div>
     </div>
   );
