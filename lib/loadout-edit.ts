@@ -104,6 +104,14 @@ export function applyOverrides(
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
 
+  // Weapon-internal ammo (blowpipe dart). Not in any slot, so the loop above
+  // won't have picked it up — add its rangedStr back here so the totals stay
+  // correct when the user edits other slots without touching the dart.
+  if (base.internalAmmo) {
+    const dartItem = ITEM_BY_ID.get(base.internalAmmo.itemId);
+    if (dartItem) rngStr += dartItem.rangedStr;
+  }
+
   // Style-specific strength selection (mirrors scripts/build-loadouts.ts).
   let strengthBonus = 0;
   let magicDamagePct: number | undefined;
