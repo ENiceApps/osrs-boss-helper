@@ -54,6 +54,8 @@ export interface LoadoutSet {
     attackBonus: number;
     strengthBonus: number;
     magicDamagePct?: number;
+    /** Sum of prayer bonuses across all equipped items. */
+    prayerBonus: number;
   };
   attackSpeedTicks: number;
   baseSpellMaxHit?: number;
