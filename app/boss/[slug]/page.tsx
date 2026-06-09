@@ -22,6 +22,7 @@ import { ItemPickerModal } from "@/components/ItemPickerModal";
 import { DpsResultsPanel } from "@/components/DpsResultsPanel";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
 import { OptimizerPanel } from "@/components/OptimizerPanel";
+import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 import { applyOverrides, hasOverrides } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
@@ -182,12 +183,31 @@ export default function BossPage({
             </span>
           )}
         </h1>
-        <p className="text-sm text-parchment-dark mt-1">
-          Combat level {monster.combatLevel} · {monster.hp} HP · size {monster.size}
-          {monster.weakness &&
-            ` · weak to ${monster.weakness.element} +${monster.weakness.severity}%`}
-          {monster.attributes.length > 0 && ` · ${monster.attributes.join(", ")}`}
-        </p>
+        {/* Meta strip — chips + colour-coded weakness/attribute pills on a
+            parchment surface (the pills' tints are tuned for parchment, not
+            the dark page background). Gives the boss identity real weight and
+            makes the weakness scannable at a glance. */}
+        <div className="osrs-panel rounded mt-2 px-3 py-2 flex flex-wrap items-center gap-2">
+          <MetaChip label="CB">{monster.combatLevel}</MetaChip>
+          <MetaChip label="HP">{monster.hp}</MetaChip>
+          <MetaChip label="Size">{monster.size}</MetaChip>
+          {monster.weakness && (
+            <span className="inline-flex items-center gap-1">
+              <span className="label-eyebrow">weak to</span>
+              <WeaknessBadge
+                element={monster.weakness.element}
+                severity={monster.weakness.severity}
+              />
+            </span>
+          )}
+          {monster.attributes.length > 0 && (
+            <span className="flex flex-wrap items-center gap-1">
+              {monster.attributes.map((a) => (
+                <AttributePill key={a} attribute={a} />
+              ))}
+            </span>
+          )}
+        </div>
       </header>
 
       {/* Bank-source notice — shows live status when the RuneLite plugin
