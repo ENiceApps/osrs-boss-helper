@@ -26,26 +26,15 @@ import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 import { applyOverrides, hasOverrides } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
-import type { BankContents } from "@/types/osrs";
+import type { BankContents, ItemId } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
 
-// Sample bank for the optimizer demo — used until the RuneLite plugin lands.
-// Mid-tier ranged kit that gives the optimizer real headroom to show off:
-// basic crossbow → DHCB, bronze bolts → diamond, etc. Phase 5 v1 ships
-// without bank-tag paste UI; this stand-in keeps the optimizer panel useful.
-const SAMPLE_BANK: ReadonlySet<number> = new Set([
-  11826, // Armadyl helmet
-  22109, // Ava's assembler
-  12018, // Salve amulet(ei)
-  11828, // Armadyl chestplate
-  11830, // Armadyl chainskirt
-  7462,  // Barrows gloves
-  13237, // Pegasian boots
-  6737,  // Berserker ring
-  837,   // Crossbow (basic)
-  877,   // Bronze bolts
-  2444,  // Ranging potion (4) — so the demo shows the auto-applied combat boost
-]);
+// Stable empty pools for the "not connected" state. We deliberately show an
+// EMPTY equipment/optimizer state until the plugin syncs, rather than invent a
+// loadout from sample data — a first-time visitor should never see gear or DPS
+// that isn't really theirs.
+const EMPTY_ITEM_IDS = new Set<ItemId>();
+const EMPTY_BANK: BankContents = { tagName: "", itemIds: EMPTY_ITEM_IDS };
 
 // Per Next.js 16 dynamic-routes docs: `params` is now a Promise. Client
 // components consume it via React's `use`.
@@ -58,18 +47,11 @@ export default function BossPage({
   const monster = MONSTER_BY_SLUG[slug];
   if (!monster) notFound();
 
-  // Live RuneLite plugin sync — see lib/liveBank.ts. When nothing has been
-  // posted by the plugin yet, fall back to the sample bank so the optimizer
-  // panel still has data to show.
+  // Live RuneLite plugin sync — see lib/liveBank.ts. Until the plugin pushes,
+  // `bank` is null and the page shows an empty/connect state (no fabricated
+  // loadout from sample data).
   const live = useLiveBank();
-  const sampleBank: BankContents = useMemo(
-    () => ({
-      tagName: "Sample",
-      itemIds: new Set(Array.from(SAMPLE_BANK).map(asItemId)),
-    }),
-    [],
-  );
-  const bank: BankContents = live.bank ?? sampleBank;
+  const bank: BankContents | null = live.bank;
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
   const gp = live.gp ?? gpManual;
@@ -91,16 +73,21 @@ export default function BossPage({
 
   // DPS reflects a boost potion ONLY if the player actually owns one for the
   // loadout's style — resolved from the bank, best owned potion wins.
-  const boostResolver = useMemo(() => bankBoostResolver(bank.itemIds), [bank]);
+  const boostResolver = useMemo(
+    () => bankBoostResolver(bank?.itemIds ?? EMPTY_ITEM_IDS),
+    [bank],
+  );
 
   const mechanicEvaluations = useMemo(() => {
     if (!mechanics) return [];
-    return evaluateMechanics(mechanics, bank);
+    return evaluateMechanics(mechanics, bank ?? EMPTY_BANK);
   }, [mechanics, bank]);
 
   // The editable base is the single best setup the bank can build right now —
-  // no premade/curated sets. Manual edits (below) layer on top of it.
+  // no premade/curated sets. Manual edits (below) layer on top of it. Null
+  // when not connected → equipment renders empty.
   const baseSet = useMemo(() => {
+    if (!bank) return undefined;
     const { rankings } = optimizeForBoss({
       bank: bank.itemIds,
       target: monster,
@@ -210,9 +197,9 @@ export default function BossPage({
           header. Here we only note the pool + wallet feeding this boss's
           optimisation. */}
       <p className="text-caption text-osrs-muted mb-4">
-        {live.isLive
+        {bank
           ? `Optimising from your live bank — ${bank.itemIds.size} items · ${gp.toLocaleString()} gp wallet.`
-          : `Sample bank — ${bank.itemIds.size} items · ${gp.toLocaleString()} gp wallet. Run the RuneLite plugin to optimise from your own.`}
+          : "Not connected — run the osrs-boss-sync RuneLite plugin to load your bank, inventory, worn gear, and skills. Until then, equipment is empty."}
       </p>
 
       {/* HERO — Phase 5 v1 promotes the optimizer to the top of the page.
@@ -220,7 +207,7 @@ export default function BossPage({
           so it leads. Curated builds and manual tweaking moved below. */}
       <div className="mb-4">
         <OptimizerPanel
-          bank={ownedItemIds}
+          bank={bank ? ownedItemIds : null}
           target={monster}
           skills={skills}
           gp={gp}
@@ -264,47 +251,56 @@ export default function BossPage({
           Tweak the setup — swap any slot
         </summary>
         <div className="p-4 border-t border-osrs-brown/30 space-y-4">
-          <p className="text-xs text-osrs-muted">
-            This starts from the best setup your bank can build, above. Click any
-            equipment slot to swap in a different item — DPS recomputes against
-            this boss as you tweak.
-          </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <EquipmentPanel
-                set={selectedSet}
-                ownedItemIds={ownedItemIds}
-                mapping={mapping}
-                onSlotClick={(slot) => setPickerSlot(slot)}
-              />
-              {overridesActive && (
-                <div className="text-xs text-osrs-brown flex items-center justify-between gap-2">
-                  <span>
-                    <strong>Custom loadout</strong> — {Object.keys(overrides).length} slot
-                    {Object.keys(overrides).length === 1 ? "" : "s"} edited on top of the optimizer&apos;s pick.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={resetOverrides}
-                    className="text-osrs-gold hover:underline text-[11px]"
-                  >
-                    Reset
-                  </button>
+          {baseSet ? (
+            <>
+              <p className="text-xs text-osrs-muted">
+                This starts from the best setup your bank can build, above. Click
+                any equipment slot to swap in a different item — DPS recomputes
+                against this boss as you tweak.
+              </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <EquipmentPanel
+                    set={selectedSet}
+                    ownedItemIds={ownedItemIds}
+                    mapping={mapping}
+                    onSlotClick={(slot) => setPickerSlot(slot)}
+                  />
+                  {overridesActive && (
+                    <div className="text-xs text-osrs-brown flex items-center justify-between gap-2">
+                      <span>
+                        <strong>Custom loadout</strong> — {Object.keys(overrides).length} slot
+                        {Object.keys(overrides).length === 1 ? "" : "s"} edited on top of the optimizer&apos;s pick.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={resetOverrides}
+                        className="text-osrs-gold hover:underline text-[11px]"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  )}
+                  {selectedSet && selectedDps && (
+                    <DpsResultsPanel
+                      set={selectedSet}
+                      dps={selectedDps}
+                      activeBonuses={selectedActiveBonuses}
+                      targetHp={monster.hp}
+                    />
+                  )}
+                  {consumablesWithBoost.length > 0 && (
+                    <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
+                  )}
                 </div>
-              )}
-              {selectedSet && selectedDps && (
-                <DpsResultsPanel
-                  set={selectedSet}
-                  dps={selectedDps}
-                  activeBonuses={selectedActiveBonuses}
-                  targetHp={monster.hp}
-                />
-              )}
-              {consumablesWithBoost.length > 0 && (
-                <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-osrs-brown">
+              Connect your bank via the osrs-boss-sync RuneLite plugin to build
+              and tweak a loadout for this boss.
+            </p>
+          )}
         </div>
       </details>
 

@@ -86,8 +86,10 @@ export function OptimizerPanel({ bank, target, skills, gp, priceLookup, mapping,
       <div className="osrs-panel p-4 rounded">
         <h3 className="section-title font-semibold text-osrs-brown mb-2">Bank optimizer</h3>
         <p className="text-sm text-osrs-brown">
-          Paste a bank tag on the left to see your best buildable loadout and
-          ranked upgrade recommendations.
+          Connect the <strong>osrs-boss-sync</strong> RuneLite plugin to sync
+          your bank, inventory, and worn gear. Then this builds your best
+          loadout for <strong>{target.name}</strong> and a ranked upgrade path
+          — all from items you actually own.
         </p>
       </div>
     );
