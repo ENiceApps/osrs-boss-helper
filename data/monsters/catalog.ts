@@ -5493,7 +5493,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "version": "Post-quest",
     "combatLevel": 784,
     "hp": 700,
-    "defenceLevel": 0,
+    "defenceLevel": 200,
     "magicLevel": 215,
     "defenceBonuses": {
       "stab": 215,
