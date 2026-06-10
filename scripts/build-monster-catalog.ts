@@ -71,7 +71,28 @@ function pickPrimaryVersion(candidates: VendorMonster[]): VendorMonster {
   );
 }
 
-const monsters = monstersJson as VendorMonster[];
+// ---------------------------------------------------------------------------
+// Stat overrides for monsters where the weirdgloop vendor data is wrong.
+// Keyed by "name|version" (empty version = "") → partial skill/defensive patch.
+// Always cite the OSRS Wiki as source so future maintainers can verify.
+// ---------------------------------------------------------------------------
+const STAT_OVERRIDES: Record<string, Partial<{ def: number; magic: number }>> = {
+  // Weirdgloop exports def=0 for all Vardorvis versions.
+  // Wiki: https://oldschool.runescape.wiki/w/Vardorvis (Post-quest defence level = 200)
+  "Vardorvis|Post-quest": { def: 200 },
+  "Vardorvis|Awakened":   { def: 200 },
+  "Vardorvis|Quest":      { def: 200 },
+};
+
+const monsters = (monstersJson as VendorMonster[]).map((m) => {
+  const key = `${m.name}|${m.version ?? ""}`;
+  const patch = STAT_OVERRIDES[key];
+  if (!patch) return m;
+  return {
+    ...m,
+    skills: { ...m.skills, ...(patch.def != null ? { def: patch.def } : {}) },
+  };
+});
 
 const eligible = monsters.filter((m) => {
   if (!m.name) return false;
