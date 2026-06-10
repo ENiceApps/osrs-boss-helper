@@ -9,14 +9,17 @@ import type { ReactNode } from "react";
 export function MetaChip({
   label,
   children,
+  valueClassName,
 }: {
   label?: string;
   children: ReactNode;
+  /** Optional class override for the value span — use for colour accents. */
+  valueClassName?: string;
 }) {
   return (
     <span className="inline-flex items-baseline gap-1 rounded border border-osrs-brown/30 bg-parchment-raised px-2 py-0.5 text-caption text-osrs-brown">
       {label && <span className="label-eyebrow">{label}</span>}
-      <span className="font-semibold">{children}</span>
+      <span className={`font-semibold ${valueClassName ?? ""}`}>{children}</span>
     </span>
   );
 }
