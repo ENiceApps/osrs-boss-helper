@@ -1081,6 +1081,376 @@ const SCURRIUS: MechanicRequirement[] = [
   },
 ];
 
+// ---------------- Corporeal Beast ----------------
+const CORPOREAL_BEAST: MechanicRequirement[] = [
+  {
+    id: "corp-stab-weapon",
+    label: "Stab weapon required — all others deal half damage",
+    description:
+      "The Corporeal Beast halves all damage from non-spear, non-halberd weapons. Ranged and magic are equally penalised. The Zamorakian spear is the standard; Abyssal bludgeon is the budget alternative.",
+    satisfiedBy: {
+      anyOf: [
+        [id(11824)], // Zamorakian spear
+        [id(13263)], // Abyssal bludgeon
+      ],
+    },
+    remediation:
+      "Buy a Zamorakian spear before the trip — it deals full damage and is the most cost-efficient option.",
+  },
+  {
+    id: "corp-no-specs",
+    label: "Special attacks deal 0 damage",
+    description:
+      "All special attacks against the Corporeal Beast hit for exactly 0. Never use your spec bar here.",
+    remediation: "Don't waste your spec bar — auto-attacks only.",
+  },
+  {
+    id: "corp-dark-core",
+    label: "Dark core spawns — stay still or it doubles hits",
+    description:
+      "Corp periodically spawns a Dark core that follows you. If it reaches you while you're moving it hits for massive damage. Staying in the same spot causes it to attack you for a small, tankable hit instead.",
+    remediation: "Stop moving when you see the Dark core spawn — let it siphon you for ~1, not ~50.",
+  },
+  {
+    id: "food",
+    label: "Brews + super restores",
+    description: "2,000 HP boss that hits 40+ with melee.",
+    satisfiedBy: { anyOf: [[id(6685)], [id(3024)], [id(391)]] },
+    remediation: "Sara brews + Super restores. Bring 10+ brews for a solo.",
+  },
+];
+
+// ---------------- Skotizo ----------------
+const SKOTIZO: MechanicRequirement[] = [
+  {
+    id: "skotizo-arclight",
+    label: "Arclight / Emberlight required — ~4× DPS vs demons",
+    description:
+      "Skotizo is a demon. Arclight's Demonbane modifier deals ~4× damage. Without it the fight takes many minutes; with it it's under 30 seconds.",
+    satisfiedBy: { anyOf: [[id(19675)], [id(29589)]] }, // Arclight, Emberlight
+    remediation: "Charge an Arclight before entering — it's essentially the whole fight.",
+  },
+  {
+    id: "skotizo-dark-totem",
+    label: "Dark totem consumed on entry",
+    description:
+      "Each Skotizo kill requires one Dark totem assembled from three dark totem pieces (base, middle, top), which drop from Catacombs of Kourend monsters.",
+    remediation: "Farm dark totem pieces inside the Catacombs between kills — they drop from many monsters.",
+  },
+  {
+    id: "skotizo-altars",
+    label: "Kill all 4 Altars — they heal and spawn dark ankou",
+    description:
+      "Four Altars around the room heal Skotizo for ~10 HP/tick and continuously spawn Dark ankou. Destroy all four Altars immediately on entry, then focus Skotizo.",
+    remediation: "Run the perimeter and Arclight the Altars (1–2 hits each), then finish the boss.",
+  },
+  {
+    id: "food",
+    label: "Food",
+    description: "Quick fight with Arclight but he hits 30+ through prayer.",
+    satisfiedBy: { anyOf: [[id(385)], [id(391)], [id(2434)]] },
+    remediation: "A dozen Sharks is plenty for a clean run.",
+  },
+];
+
+// ---------------- TzTok-Jad ----------------
+const TZTOK_JAD: MechanicRequirement[] = [
+  {
+    id: "jad-prayer-flick",
+    label: "Pray-flick Magic ↔ Ranged on every attack",
+    description:
+      "Jad kills you in one hit if you pray wrong. He alternates: a slow stomp (orange ground glow) = Protect from Magic; a quick ranged spit = Protect from Missiles. Switch prayer to match EACH attack — not once at the start.",
+    remediation:
+      "Watch the animation closely. If you hesitate, eat fast and correct the prayer. Practice the flick before the 62-wave attempt.",
+  },
+  {
+    id: "jad-healers",
+    label: "Attack each Yt-HurKot healer once at 50% HP",
+    description:
+      "At 50% HP, four healers spawn and repair Jad back toward full. Click each healer once to draw aggro away from Jad, then return to Jad. Do NOT kill the healers — re-aggro is the goal.",
+    remediation:
+      "Run to each of the 4 healers and tag it, then re-focus Jad. Healers left alone will undo your entire damage phase.",
+  },
+  {
+    id: "jad-supplies",
+    label: "Prayer pots for 62 waves + food",
+    description:
+      "The Fight Cave has 62 waves with no banking. You need Prayer potions throughout.",
+    satisfiedBy: { anyOf: [[id(2434)], [id(3024)]] }, // Prayer potion (4), Super restore (4)
+    remediation:
+      "Bring 20+ Prayer potions (or Super restores) and 10–15 Saradomin brews. No banking.",
+  },
+];
+
+// ---------------- TzKal-Zuk (Inferno) ----------------
+const TZKAL_ZUK: MechanicRequirement[] = [
+  {
+    id: "zuk-prayer-switch",
+    label: "Constant prayer-switching across 69 waves",
+    description:
+      "The Inferno is 69 waves requiring constant switches between Protect from Magic and Protect from Missiles (and melee for certain spawns). Prayer flicking is near-mandatory — you will drain prayer if you hold a single prayer all fight.",
+    remediation:
+      "Learn the wave order from the wiki before entering. Twisted bow is BiS for most waves; Blood barrage AoEs groups.",
+  },
+  {
+    id: "zuk-shield-phase",
+    label: "Stand in Zuk's moving shield shadow — always",
+    description:
+      "During the Zuk encounter, a giant shield slides back and forth. You must stand in its shadow at all times — any tile outside takes 70+ damage per tick. JalMej-Rak healers emerge from pillars when the shield passes.",
+    remediation:
+      "Walk with the shield's edge. Kill healers only when the shield is between you and the pillar.",
+  },
+  {
+    id: "zuk-nibblers",
+    label: "Kill Nibblers — they destroy your pillars",
+    description:
+      "Nibbler spawns run toward and eat your three pillars. Once all pillars are destroyed you lose safe spots for future waves. Kill Nibblers immediately on spawn from behind a pillar.",
+    remediation: "Ignore the pillar's wave mobs briefly to kill Nibblers — they path predictably to the nearest pillar.",
+  },
+  {
+    id: "zuk-supplies",
+    label: "Full inventory of brews + restores — no banking",
+    description:
+      "Even at high gear levels expect to brew heavily. 20 Saradomin brews + 8 Super restores is baseline; add Stamina potions for movement-heavy waves.",
+    satisfiedBy: { anyOf: [[id(6685)], [id(3024)]] },
+    remediation: "Refill every attempt. Supplies used in waves carry into the Zuk encounter.",
+  },
+];
+
+// ---------------- Nex ----------------
+const NEX: MechanicRequirement[] = [
+  {
+    id: "nex-entry",
+    label: "Wear a Zarosian item to pass Blood Reavers",
+    description:
+      "Blood Reavers guard the entrance and will attack on sight unless you're wearing a Zarosian-aligned item (Torva, Pernix, Virtus, Ancient ceremonial, Zaryte crossbow, etc.).",
+    satisfiedBy: {
+      anyOf: [
+        [id(26221)], // Ancient ceremonial top
+        [id(26223)], // Ancient ceremonial legs
+        [id(26225)], // Ancient ceremonial mask
+        [id(26374)], // Zaryte crossbow
+      ],
+    },
+    remediation:
+      "Buy the full Ancient ceremonial set (cheap on GE) and wear it to enter — you can swap gear inside before the fight starts.",
+  },
+  {
+    id: "nex-smoke",
+    label: "Smoke phase: don't walk through smoke clouds",
+    description:
+      "Smoke phase fills the arena with drifting clouds. Walking through one inflicts 50+ poison ticks. Stay still and let them pass.",
+    remediation: "Remain stationary and let smoke clouds pass around you. Keep Protect from Ranged up.",
+  },
+  {
+    id: "nex-shadow",
+    label: "Shadow phase: stand in lit areas only",
+    description:
+      "Dark shadows appear under your character. Standing in shadow drains 20% of your max HP per game tick. Hug the lit corridor walls.",
+    remediation: "Move to a lit tile immediately when the shadow phase starts.",
+  },
+  {
+    id: "nex-blood",
+    label: "Blood phase: don't attack Nex — she heals from hits",
+    description:
+      "During Blood phase Nex heals from damage you deal to her. She spawns Blood Reavers — attack them instead until the phase ends.",
+    remediation: "Stop attacking Nex as soon as she enters Blood phase; switch to the Blood Reavers.",
+  },
+  {
+    id: "nex-ice",
+    label: "Ice phase: pray Magic, move away from Ice Fiends",
+    description:
+      "Ice phase attacks are magic-based and can freeze you. Keep Protect from Magic up and ignore Ice Fiends where possible.",
+    remediation: "Pray Magic and eat through Ice Fiend ticks.",
+  },
+  {
+    id: "food",
+    label: "Brews + super restores",
+    description: "5,000 HP across phases. Very high damage output.",
+    satisfiedBy: { anyOf: [[id(6685)], [id(3024)]] },
+    remediation: "12–16 Saradomin brews + 6–8 Super restores. Scale up if your gear is weaker.",
+  },
+];
+
+// ---------------- The Nightmare ----------------
+const THE_NIGHTMARE: MechanicRequirement[] = [
+  {
+    id: "nightmare-husks",
+    label: "Kill all 4 Husks immediately when they spawn",
+    description:
+      "The Nightmare charges 4 Husks (one per cardinal direction). If you don't kill them all before she reclaims them, she heals ~50 HP per Husk. They have low HP — kill them fast.",
+    remediation: "Drop everything and kill all 4 Husks the moment they appear. Then return to the boss.",
+  },
+  {
+    id: "nightmare-pray-switch",
+    label: "Switch pray Magic ↔ Ranged on her attack animations",
+    description:
+      "The Nightmare alternates between magic and ranged attacks. A wrong prayer lets through 60+ damage per hit.",
+    remediation:
+      "Default Protect from Magic; switch to Protect from Missiles when you see her ranged animation windup.",
+  },
+  {
+    id: "nightmare-flowers",
+    label: "Spores: click the correct flower colour",
+    description:
+      "She periodically spawns glowing flowers (spores). Clicking the wrong colour damages you; the correct colour boosts you. Match the colour shown in the visual effect.",
+    remediation: "Watch the screen indicator for which colour to click — misclicks hurt.",
+  },
+  {
+    id: "food",
+    label: "Brews + super restores",
+    description: "3,400 HP with hits up to 65.",
+    satisfiedBy: { anyOf: [[id(6685)], [id(3024)], [id(391)]] },
+    remediation: "16–20 Saradomin brews + 6 Super restores for a typical kill.",
+  },
+];
+
+// Phosani's Nightmare is the solo version — mechanically identical but harder stats (5,000 HP, higher max hit).
+const PHOSANIS_NIGHTMARE: MechanicRequirement[] = THE_NIGHTMARE.map((m) => ({
+  ...m,
+  id: `phosani-${m.id}`,
+  description: m.description.replace(
+    "The Nightmare",
+    "Phosani's Nightmare (solo — harder stats, 5,000 HP)",
+  ),
+}));
+
+// ---------------- Giant Mole ----------------
+const GIANT_MOLE: MechanicRequirement[] = [
+  {
+    id: "mole-tracking",
+    label: "Falador shield 2+ to track tunnel location",
+    description:
+      "The Mole tunnels away after taking damage. Without the Falador shield (medium diary reward), you have to manually search the large tunnel network for her spawn point. With it her location shows on the minimap.",
+    satisfiedBy: { anyOf: [[id(13118), id(13119), id(13120)]] }, // Falador shield 2/3/4
+    remediation:
+      "Complete the Falador medium diary to unlock the Falador shield 2 — it halves the time spent hunting tunnels.",
+  },
+  {
+    id: "mole-spade",
+    label: "Bring a spade to enter the lair",
+    description: "The Mole's lair entrance requires digging with a spade in Falador Park.",
+    satisfiedBy: { anyOf: [[id(952)]] }, // Spade
+    remediation: "Grab a spade from the GE (< 100 gp) or from Farmer Fred's shed.",
+  },
+  {
+    id: "food",
+    label: "Food",
+    description: "Easy low-level boss. A handful of sharks finishes any trip comfortably.",
+    satisfiedBy: { anyOf: [[id(385)], [id(391)], [id(2434)]] },
+    remediation: "A dozen sharks.",
+  },
+];
+
+// ---------------- Moon bosses (Varlamore) ----------------
+// Each Moon has a set of armour pieces that dramatically reduce her
+// corresponding special attack damage. All three share the same fight
+// structure — just with melee / magic / ranged combat styles respectively.
+
+const BLOOD_MOON: MechanicRequirement[] = [
+  {
+    id: "blood-moon-armour",
+    label: "Blood Moon armour reduces her special attack damage",
+    description:
+      "Equipping Blood Moon helm, chestplate, or tassets reduces the damage dealt by Blood Moon's special attacks by ~75% per piece. Without any Blood Moon gear those specials can one-shot you.",
+    satisfiedBy: {
+      anyOf: [
+        [id(29028), id(29047), id(29073)], // Blood moon helm (all variants)
+        [id(29022), id(29043), id(29067)], // Blood moon chestplate (all variants)
+        [id(29025), id(29045), id(29070)], // Blood moon tassets (all variants)
+      ],
+    },
+    remediation:
+      "Farm Blood Moon set pieces from the boss itself — the helm is the biggest upgrade per kill.",
+  },
+  {
+    id: "blood-moon-pray",
+    label: "Pray Melee — primary auto-attack is melee",
+    description: "Blood Moon's auto-attacks are melee. Protect from Melee tanks the bulk of incoming damage.",
+    remediation: "Keep Protect from Melee up throughout.",
+  },
+];
+
+const BLUE_MOON: MechanicRequirement[] = [
+  {
+    id: "blue-moon-armour",
+    label: "Blue Moon armour reduces her special attack damage",
+    description:
+      "Equipping Blue Moon set pieces reduces Blue Moon's special attack damage by ~75% per piece worn.",
+    satisfiedBy: {
+      anyOf: [
+        [id(29019), id(29041), id(29064)], // Blue moon helm (all variants)
+        [id(29013), id(29037), id(29058)], // Blue moon chestplate (all variants)
+        [id(29016), id(29039), id(29061)], // Blue moon tassets (all variants)
+      ],
+    },
+    remediation: "Farm Blue Moon set pieces from the boss — any piece worn reduces special damage.",
+  },
+  {
+    id: "blue-moon-pray",
+    label: "Pray Magic — primary auto-attack is magic",
+    description: "Blue Moon's auto-attacks are magic. Protect from Magic tanks the bulk of incoming damage.",
+    remediation: "Keep Protect from Magic up throughout.",
+  },
+];
+
+const ECLIPSE_MOON: MechanicRequirement[] = [
+  {
+    id: "eclipse-moon-armour",
+    label: "Eclipse Moon armour reduces her special attack damage",
+    description:
+      "Equipping Eclipse Moon set pieces reduces Eclipse Moon's special attack damage by ~75% per piece worn.",
+    satisfiedBy: {
+      anyOf: [
+        [id(29010), id(29035), id(29055)], // Eclipse moon helm (all variants)
+        [id(29004), id(29031), id(29049)], // Eclipse moon chestplate (all variants)
+        [id(29007), id(29033), id(29052)], // Eclipse moon tassets (all variants)
+      ],
+    },
+    remediation: "Farm Eclipse Moon set pieces from the boss — any piece worn reduces special damage.",
+  },
+  {
+    id: "eclipse-moon-pray",
+    label: "Pray Ranged — primary auto-attack is ranged",
+    description: "Eclipse Moon's auto-attacks are ranged. Protect from Missiles tanks the bulk of incoming damage.",
+    remediation: "Keep Protect from Missiles up throughout.",
+  },
+];
+
+// ---------------- Sol Heredit (Fortis Colosseum) ----------------
+const SOL_HEREDIT: MechanicRequirement[] = [
+  {
+    id: "sol-heredit-waves",
+    label: "Complete all 11 Colosseum waves first — no banking",
+    description:
+      "Sol Heredit is the Fortis Colosseum's final boss, reached only after completing waves 1–11 with no banking. Whatever supplies you have left going in is all you get.",
+    remediation:
+      "Practice the 11 waves with 0–2 Invocations before adding difficulty. Learn which waves drain the most supplies.",
+  },
+  {
+    id: "sol-heredit-mechanics",
+    label: "Dodge telegraphed spear throws and ground slams",
+    description:
+      "Sol Heredit has multiple telegraphed mechanics: a spear throw (step sideways off the target tile), a ground slam (run off his target tile), and prayer-switching phases. He also spawns a clone that mimics his attacks.",
+    remediation:
+      "Watch for ground-glow indicators — they telegraph where to NOT stand. Spear throw requires a 1-tile sidestep.",
+  },
+  {
+    id: "sol-heredit-invocations",
+    label: "Invocations increase difficulty for higher rewards",
+    description:
+      "The Colosseum has Invocations (modifiers) that boost monster stats for better loot. Start with 0 Invocations to learn the mechanics, then add them once you can clear consistently.",
+    remediation: "Don't attempt high Invocations until you can consistently reach Sol with full supplies.",
+  },
+  {
+    id: "food",
+    label: "Full supplies going in — no banking",
+    description: "Enter Sol with whatever survived the 11 waves. Brew heavily for both waves and the boss.",
+    satisfiedBy: { anyOf: [[id(6685)], [id(3024)]] },
+    remediation: "Start a Colosseum run with 20 Sara brews + 8 Super restores + Stamina potions.",
+  },
+];
+
 export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   vorkath: VORKATH,
   "king-black-dragon": KBD,
@@ -1112,6 +1482,22 @@ export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   araxxor: ARAXXOR,
   "tormented-demon": TORMENTED_DEMON,
   scurrius: SCURRIUS,
+  // Standalone endgame bosses
+  "corporeal-beast": CORPOREAL_BEAST,
+  skotizo: SKOTIZO,
+  "giant-mole": GIANT_MOLE,
+  nex: NEX,
+  "the-nightmare": THE_NIGHTMARE,
+  "phosanis-nightmare": PHOSANIS_NIGHTMARE,
+  // TzHaar instances
+  "tztok-jad": TZTOK_JAD,
+  "tzkal-zuk": TZKAL_ZUK,
+  // Varlamore moon bosses
+  "blood-moon": BLOOD_MOON,
+  "blue-moon": BLUE_MOON,
+  "eclipse-moon": ECLIPSE_MOON,
+  // Fortis Colosseum
+  "sol-heredit": SOL_HEREDIT,
 };
 
 /**
