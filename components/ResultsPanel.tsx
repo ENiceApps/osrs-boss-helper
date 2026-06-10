@@ -20,6 +20,8 @@ interface Props {
   /** True when manual slot edits are active (the upgrade path then refers to
       the optimizer's pick, not the edited loadout, so it's hidden). */
   edited: boolean;
+  /** Enchanted-bolt proc description, when the active loadout's ammo procs. */
+  boltProcFlag?: string;
   mapping?: MappingEntry[];
 }
 
@@ -77,6 +79,7 @@ export function ResultsPanel({
   activeBonuses,
   result,
   edited,
+  boltProcFlag,
   mapping,
 }: Props) {
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
@@ -85,6 +88,7 @@ export function ResultsPanel({
     set?.attackStyleChoice === "rapid" && set?.style === "ranged" ? -1 : 0;
   const effectiveTicks = set ? Math.max(1, set.attackSpeedTicks + rapidRangedAdjust) : 0;
   const activeFlags = set ? buildActiveFlags(set, activeBonuses) : [];
+  if (set && boltProcFlag) activeFlags.push(boltProcFlag);
 
   const upgradePath = result?.upgradePath ?? [];
   const showUpgrades = !edited && result !== null && upgradePath.length > 0;

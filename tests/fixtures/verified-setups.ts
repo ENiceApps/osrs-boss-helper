@@ -28,27 +28,36 @@ export interface VerifiedSetup {
 // ⚠️ Summer Sweep-Up 2026 stat patch shifted some engine outputs; entries tagged
 // "post-patch (engine)" reflect the NEW engine value but weren't re-checked
 // against the wiki tool. Re-verify and tighten verifiedOn next time.
+//
+// ⚠️ 2026-06-10: enchanted-bolt procs are now modelled (always on, mirroring
+// the wiki calc — Kandarin diary ON, its default). The three bolt setups'
+// dps baselines were recomputed and hand-checked against the wgloop formulas;
+// pre-proc values for reference: 7.904 / 5.785 / 3.761. When re-verifying in
+// the wiki tool, keep "Kandarin Hard Diary" checked.
 export const VERIFIED_SETUPS: VerifiedSetup[] = [
   {
     id: "ranged-end-dragonbane-undead",
     attackType: "ranged",
     choice: "rapid",
     itemIds: [27235, 22109, 12018, 9243, 21012, 27238, 22002, 27241, 26235, 13237, 28310],
-    baseline: { maxHit: 57, accuracy: 0.832, dps: 7.904, verifiedOn: "post-patch (engine)" },
+    // Diamond bolts (e): 11% defence-ignoring proc at +15% max hit.
+    baseline: { maxHit: 57, accuracy: 0.832, dps: 8.227, verifiedOn: "2026-06-10 (engine, bolt procs)" },
   },
   {
     id: "ranged-mid-dragonbane",
     attackType: "ranged",
     choice: "rapid",
     itemIds: [11826, 22109, 19547, 9243, 21012, 11828, 11283, 11830, 7462, 13237, 6733],
-    baseline: { maxHit: 45, accuracy: 0.7714, dps: 5.785, verifiedOn: "post-patch (engine)" },
+    baseline: { maxHit: 45, accuracy: 0.7714, dps: 6.084, verifiedOn: "2026-06-10 (engine, bolt procs)" },
   },
   {
     id: "ranged-entry-universal",
     attackType: "ranged",
     choice: "rapid",
     itemIds: [11865, 10499, 6585, 9242, 9185, 2503, 1540, 2497, 2491, 6328, 6733],
-    baseline: { maxHit: 34, accuracy: 0.6625, dps: 3.761, verifiedOn: "2026-05-21" },
+    // Ruby bolts (e): 6.6% proc dealing 20% of current HP (capped 100) that
+    // ignores accuracy — transformative on a 750 HP target at entry accuracy.
+    baseline: { maxHit: 34, accuracy: 0.6625, dps: 5.706, verifiedOn: "2026-06-10 (engine, bolt procs)" },
   },
   {
     id: "magic-end-fire",

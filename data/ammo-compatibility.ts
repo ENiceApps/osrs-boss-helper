@@ -22,7 +22,8 @@ export type AmmoClass =
   | "chinchompa"
   | "throwing-axe"
   | "bolt-rack" // Karil's crossbow only
-  | "atlatl-dart"; // Eclipse atlatl only
+  | "atlatl-dart" // Eclipse atlatl only
+  | "antler-bolt"; // Hunters' sunlight crossbow only
 
 // Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
 // but we model the dart in the ammo slot so its strength bonus participates
@@ -68,6 +69,10 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Blurite crossbow": { class: "bolt", maxTier: 1 }, // blurite/bronze bolts only
   "Dorgeshuun crossbow": { class: "bolt", maxTier: 5 }, // bone + standard bolts up to adamant
   "Hunters' crossbow": { class: "bolt", maxTier: 0 },   // kebbit bolts only (not modelled) → no standard ammo
+  // Fires ONLY antler bolts — without this entry the category fallback let it
+  // fire dragon bolts, and once bolt procs were modelled its 4-tick speed +
+  // Ruby dragon bolts (e) became a bogus top recommendation vs Vorkath.
+  "Hunters' sunlight crossbow": { class: "antler-bolt", maxTier: 2 },
 
   // Bows — fire arrows. Same metal ladder.
   Shortbow: { class: "arrow", maxTier: 1 },
@@ -206,6 +211,10 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
 
   // Atlatl darts — for the Eclipse atlatl only.
   "Atlatl dart": { class: "atlatl-dart", tier: 1 },
+
+  // Antler bolts — for the Hunters' sunlight crossbow only.
+  "Sunlight antler bolts": { class: "antler-bolt", tier: 1 },
+  "Moonlight antler bolts": { class: "antler-bolt", tier: 2 },
 
   // Javelins — for Ballistas (Light / Heavy).
   "Bronze javelin": { class: "javelin", tier: 1 },
