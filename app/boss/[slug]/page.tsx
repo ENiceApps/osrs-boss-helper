@@ -6,6 +6,7 @@ import { use, useMemo, useState } from "react";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, type BudgetMode } from "@/lib/optimize/budget";
+import { optimizeForBoss } from "@/lib/optimize/bank";
 import { bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
@@ -28,8 +29,12 @@ import { wikiIconUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
-import type { BankContents, ItemId } from "@/types/osrs";
+import type { BankContents, CombatStyle, ItemId } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
+
+// Comparison-tab ids: the budget-mode best, or the best build per style.
+type LoadoutTabId = "best" | CombatStyle;
+const STYLE_TABS: CombatStyle[] = ["melee", "ranged", "magic"];
 
 // Stable empty pools for the "not connected" state. We deliberately show an
 // EMPTY equipment/optimizer state until the plugin syncs, rather than invent a
@@ -113,9 +118,61 @@ export default function BossPage({
     });
   }, [bank, ownedItemIds, monster, skills, gp, mode, sellThresholdM, prices, boostResolver]);
 
-  // The editable base is the optimizer's pick for the current budget mode
-  // (== best-from-bank when there are no upgrades). Manual edits layer on top.
-  const baseSet = budgetResult?.upgradedBest?.loadout;
+  // Best buildable loadout PER ATTACK STYLE, for the comparison tabs. One
+  // uncapped run: topN only caps how many ranked scenarios are returned (the
+  // default 10 can be a single style entirely), so ask for all of them and
+  // keep the first occurrence of each style — rankings are DPS-descending.
+  const styleBests = useMemo(() => {
+    if (!bank) return null;
+    const { rankings } = optimizeForBoss({
+      bank: ownedItemIds,
+      target: monster,
+      skills,
+      topN: Number.MAX_SAFE_INTEGER,
+      boostResolver,
+    });
+    const bests: Partial<Record<CombatStyle, (typeof rankings)[number]>> = {};
+    for (const r of rankings) {
+      // A zero-DPS scenario (e.g. magic with no castable spell modelled) is
+      // "valid" to the optimizer but useless as a comparison tab.
+      if (r.dps.dps <= 0) continue;
+      if (!bests[r.loadout.style]) bests[r.loadout.style] = r;
+      if (bests.melee && bests.ranged && bests.magic) break;
+    }
+    return bests;
+  }, [bank, ownedItemIds, monster, skills, boostResolver]);
+
+  // Which comparison tab is active. A style tab can disappear if the bank
+  // changes (e.g. last melee weapon removed) — fall back to "best" then.
+  const [activeTabRaw, setActiveTab] = useState<LoadoutTabId>("best");
+  const activeTab: LoadoutTabId =
+    activeTabRaw !== "best" && !styleBests?.[activeTabRaw] ? "best" : activeTabRaw;
+
+  const loadoutTabs = useMemo(() => {
+    if (!bank) return [];
+    const tabs: Array<{ id: LoadoutTabId; label: string; dps?: number }> = [];
+    if (budgetResult?.upgradedBest) {
+      tabs.push({ id: "best", label: "Best", dps: budgetResult.upgradedBest.dps.dps });
+    }
+    for (const style of STYLE_TABS) {
+      const r = styleBests?.[style];
+      if (r) {
+        tabs.push({
+          id: style,
+          label: style.charAt(0).toUpperCase() + style.slice(1),
+          dps: r.dps.dps,
+        });
+      }
+    }
+    return tabs;
+  }, [bank, budgetResult, styleBests]);
+
+  // The editable base is the active tab's scenario: the optimizer's pick for
+  // the current budget mode (== best-from-bank when there are no upgrades),
+  // or the best own-bank build of one style. Manual edits layer on top.
+  const activeScenario =
+    activeTab === "best" ? budgetResult?.upgradedBest : styleBests?.[activeTab];
+  const baseSet = activeScenario?.loadout;
 
   // Effective loadout = base + any per-slot overrides the user has applied
   // via the gear picker. Used for the equipment grid, DPS recompute, and
@@ -131,6 +188,12 @@ export default function BossPage({
   function resetOverrides() {
     setOverrides({});
   }
+  // Each tab is its own starting point — carrying slot edits across tabs
+  // would silently mix setups, so switching discards them.
+  function handleTabChange(id: LoadoutTabId) {
+    setActiveTab(id);
+    setOverrides({});
+  }
   function onPickerSelect(item: ItemCatalogEntry | null) {
     if (!pickerSlot) return;
     setOverrides((prev) => ({ ...prev, [pickerSlot]: item }));
@@ -144,13 +207,13 @@ export default function BossPage({
     return activeBonusesForTarget(selectedSet, monster);
   }, [selectedSet, monster]);
 
-  // When untouched, reuse the optimizer's own DPS so the hero number always
-  // matches the upgrade-path arithmetic; recompute only for manual edits.
+  // When untouched, reuse the active scenario's own DPS so the hero number
+  // always matches the tab/upgrade-path arithmetic; recompute only for edits.
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
-    if (!overridesActive) return budgetResult?.upgradedBest?.dps;
+    if (!overridesActive) return activeScenario?.dps;
     return computeSetDps(selectedSet, monster, skills, boostResolver(selectedSet.style));
-  }, [selectedSet, overridesActive, budgetResult, monster, skills, boostResolver]);
+  }, [selectedSet, overridesActive, activeScenario, monster, skills, boostResolver]);
 
   // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
   // protection in the shield slot AND no Super antifire in the bank) — reacts
@@ -178,9 +241,11 @@ export default function BossPage({
   }, [consumables, selectedSet]);
 
   const sourceLabel =
-    mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
-      ? "after upgrades — see results"
-      : "best from your bank";
+    activeTab !== "best"
+      ? `best ${activeTab} from your bank`
+      : mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
+        ? "after upgrades — see results"
+        : "best from your bank";
 
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
@@ -274,6 +339,9 @@ export default function BossPage({
 
         <section className="lg:col-span-5">
           <LoadoutPanel
+            tabs={loadoutTabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
             set={selectedSet}
             dps={selectedDps}
             connected={bank !== null}
@@ -295,7 +363,9 @@ export default function BossPage({
             set={selectedSet}
             dps={selectedDps}
             activeBonuses={selectedActiveBonuses}
-            result={budgetResult}
+            // The upgrade path describes the budget-mode pick — it doesn't
+            // apply to the per-style tabs, so they get stats only.
+            result={activeTab === "best" ? budgetResult : null}
             edited={overridesActive}
             mapping={mapping}
           />
