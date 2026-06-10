@@ -6,7 +6,18 @@ import type { SetupMechanicStatus } from "@/lib/setup-mechanics";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, MappingEntry } from "@/types/osrs";
 
-interface Props {
+export interface LoadoutTab<Id extends string = string> {
+  id: Id;
+  label: string;
+  /** Shown small inside the tab so setups compare at a glance. */
+  dps?: number;
+}
+
+interface Props<TabId extends string> {
+  /** Comparison tabs: the optimizer's best plus one per attack style. */
+  tabs?: Array<LoadoutTab<TabId>>;
+  activeTab?: TabId;
+  onTabChange?: (id: TabId) => void;
   /** The active loadout (optimizer pick + any manual slot edits). */
   set?: LoadoutSet;
   dps?: DpsResult;
@@ -46,7 +57,10 @@ const SLOT_ORDER: LoadoutSlotKey[] = [
  * "Tweak the setup" drawer into one surface — click a slot, the picker opens,
  * and DPS in the results rail recomputes immediately.
  */
-export function LoadoutPanel({
+export function LoadoutPanel<TabId extends string>({
+  tabs,
+  activeTab,
+  onTabChange,
   set,
   dps,
   connected,
@@ -58,7 +72,7 @@ export function LoadoutPanel({
   onResetEdits,
   conflicts,
   boostName,
-}: Props) {
+}: Props<TabId>) {
   const edited = editedSlots.length > 0;
   return (
     <div className="osrs-panel p-4 rounded">
@@ -70,6 +84,48 @@ export function LoadoutPanel({
           </span>
         )}
       </div>
+
+      {/* Comparison tabs — the optimizer's overall pick plus the best setup
+          per attack style, each with its DPS so they compare at a glance.
+          Switching tabs discards manual edits (the page resets overrides). */}
+      {(tabs?.length ?? 0) > 1 && (
+        <div role="tablist" aria-label="Loadout setups" className="flex flex-wrap gap-1.5 mt-1 mb-3">
+          {tabs!.map((tab) => {
+            const active = tab.id === activeTab;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => onTabChange?.(tab.id)}
+                className={`px-2.5 py-1 rounded border text-center ${
+                  active
+                    ? "bg-osrs-brown border-osrs-gold"
+                    : "bg-parchment-dark/40 border-osrs-brown/40 hover:border-osrs-brown"
+                }`}
+              >
+                <span
+                  className={`block text-xs font-semibold ${
+                    active ? "text-parchment" : "text-osrs-brown"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                {tab.dps !== undefined && (
+                  <span
+                    className={`block text-caption ${
+                      active ? "text-parchment-dark" : "text-osrs-muted"
+                    }`}
+                  >
+                    {tab.dps.toFixed(2)} dps
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {!connected && (
         <p className="text-sm text-osrs-brown mb-3">
