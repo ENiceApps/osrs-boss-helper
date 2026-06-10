@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
-import { StatCard } from "@/components/ui";
+import { StatCard, MetaChip } from "@/components/ui";
 import { findUpgrades, type BudgetMode, type BudgetResult } from "@/lib/optimize/budget";
 import { setupMechanicConflicts, type SetupMechanicStatus } from "@/lib/setup-mechanics";
 import { bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
@@ -251,16 +251,24 @@ function OptimizerResults({
               </span>
             ))}
         </div>
-        <div className="text-[10px] text-osrs-muted mt-2 text-center">
-          {upgradedBest!.loadout.style} · {upgradedBest!.loadout.attackStyleChoice} · max hit {upgradedBest!.dps.maxHit} · {(upgradedBest!.dps.accuracy * 100).toFixed(1)}% accuracy
-        </div>
+        {/* Stat chip row — scannable at a glance, matches the boss header strip. */}
         {(() => {
+          const accuracyPct = upgradedBest!.dps.accuracy * 100;
+          const accuracyClass = accuracyPct >= 75 ? "text-status-owned" : accuracyPct >= 50 ? "text-osrs-brown" : "text-status-missing";
           const ownedBoost = bank ? boostFromBank(upgradedBest!.loadout.style, bank) : undefined;
+          const prayerBonus = upgradedBest!.loadout.totals.prayerBonus;
+          const internalAmmo = upgradedBest!.loadout.internalAmmo;
           return (
-            <div className="text-[10px] text-osrs-muted mt-0.5 text-center italic">
-              {ownedBoost
-                ? `DPS includes ${ownedBoost.name} from your bank`
-                : "Unboosted — no combat potion for this style in your bank"}
+            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+              <MetaChip label="style">{upgradedBest!.loadout.style}</MetaChip>
+              <MetaChip label="choice">{upgradedBest!.loadout.attackStyleChoice}</MetaChip>
+              <MetaChip label="max hit" valueClassName="text-status-owned">{upgradedBest!.dps.maxHit}</MetaChip>
+              <MetaChip label="accuracy" valueClassName={accuracyClass}>{accuracyPct.toFixed(1)}%</MetaChip>
+              {prayerBonus > 0 && <MetaChip label="prayer">+{prayerBonus}</MetaChip>}
+              {internalAmmo && <MetaChip label="loaded">{internalAmmo.itemName}</MetaChip>}
+              <MetaChip label="boost" valueClassName={ownedBoost ? "text-status-owned" : "text-osrs-muted"}>
+                {ownedBoost ? ownedBoost.name : "none"}
+              </MetaChip>
             </div>
           );
         })()}
