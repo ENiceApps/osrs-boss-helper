@@ -27,9 +27,9 @@ interface StatCardProps {
 }
 
 /**
- * The canonical "big number + small label" tile. Replaces three near-identical
- * local implementations (OptimizerPanel's Stat/HeroStat and DpsResultsPanel's
- * Stat) so every stat reads with one rhythm — the Gestalt similarity fix.
+ * The canonical "big number + small label" tile, so every stat reads with one
+ * rhythm — the Gestalt similarity fix. Hero variant carries the page's single
+ * headline answer (the DPS number in the results rail).
  */
 export function StatCard({
   label,

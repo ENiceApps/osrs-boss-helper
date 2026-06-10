@@ -5,23 +5,23 @@ import { notFound } from "next/navigation";
 import { use, useMemo, useState } from "react";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
-import { optimizeForBoss } from "@/lib/optimize/bank";
-import { bestBoostForStyle, bankBoostResolver } from "@/lib/dps/boost";
+import { findUpgrades, type BudgetMode } from "@/lib/optimize/budget";
+import { bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
+import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
-import { PlayerSetup } from "@/components/PlayerSetup";
+import { SetupPanel } from "@/components/SetupPanel";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
-import { EquipmentPanel } from "@/components/EquipmentPanel";
+import { LoadoutPanel } from "@/components/LoadoutPanel";
+import { ResultsPanel } from "@/components/ResultsPanel";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
-import { DpsResultsPanel } from "@/components/DpsResultsPanel";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
-import { OptimizerPanel } from "@/components/OptimizerPanel";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
 import { wikiIconUrl } from "@/lib/icons";
@@ -57,6 +57,11 @@ export default function BossPage({
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
   const gp = live.gp ?? gpManual;
+  // Budget mode + sell threshold drive the optimizer; they live here (not in
+  // a panel) because the setup rail sets them and the loadout/results columns
+  // consume the output. Every change recomputes immediately — no apply button.
+  const [mode, setMode] = useState<BudgetMode>("gp-only");
+  const [sellThresholdM, setSellThresholdM] = useState(1); // millions
   // Per-slot gear overrides on top of the optimizer's best setup. "Reset"
   // clears this map.
   const [overrides, setOverrides] = useState<
@@ -85,20 +90,32 @@ export default function BossPage({
     return evaluateMechanics(mechanics, bank ?? EMPTY_BANK);
   }, [mechanics, bank]);
 
-  // The editable base is the single best setup the bank can build right now —
-  // no premade/curated sets. Manual edits (below) layer on top of it. Null
-  // when not connected → equipment renders empty.
-  const baseSet = useMemo(() => {
-    if (!bank) return undefined;
-    const { rankings } = optimizeForBoss({
-      bank: bank.itemIds,
+  const ownedItemIds = useMemo(
+    () =>
+      bank ? new Set(Array.from(bank.itemIds).map((id) => Number(id))) : new Set<number>(),
+    [bank],
+  );
+
+  // The single optimizer run feeding the whole cockpit: best buildable
+  // loadout, plus the budget-mode upgrade path / sell list. (Previously the
+  // page ran optimizeForBoss separately for the tweak drawer — one run now.)
+  const budgetResult = useMemo(() => {
+    if (!bank) return null;
+    return findUpgrades({
+      bank: ownedItemIds,
       target: monster,
       skills,
-      topN: 1,
+      gp,
+      mode,
+      sellThreshold: sellThresholdM * 1_000_000,
+      priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
     });
-    return rankings[0]?.loadout;
-  }, [bank, monster, skills, boostResolver]);
+  }, [bank, ownedItemIds, monster, skills, gp, mode, sellThresholdM, prices, boostResolver]);
+
+  // The editable base is the optimizer's pick for the current budget mode
+  // (== best-from-bank when there are no upgrades). Manual edits layer on top.
+  const baseSet = budgetResult?.upgradedBest?.loadout;
 
   // Effective loadout = base + any per-slot overrides the user has applied
   // via the gear picker. Used for the equipment grid, DPS recompute, and
@@ -120,17 +137,32 @@ export default function BossPage({
     setPickerSlot(null);
   }
 
-  // Diagnostic line under the selected loadout listing which conditional
-  // bonuses are firing — DHCB vs dragon, Salve(ei) vs undead, Tbow scaling, etc.
+  // Diagnostic line in the results rail listing which conditional bonuses are
+  // firing — DHCB vs dragon, Salve(ei) vs undead, Tbow scaling, etc.
   const selectedActiveBonuses = useMemo(() => {
     if (!selectedSet) return null;
     return activeBonusesForTarget(selectedSet, monster);
   }, [selectedSet, monster]);
 
+  // When untouched, reuse the optimizer's own DPS so the hero number always
+  // matches the upgrade-path arithmetic; recompute only for manual edits.
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
+    if (!overridesActive) return budgetResult?.upgradedBest?.dps;
     return computeSetDps(selectedSet, monster, skills, boostResolver(selectedSet.style));
-  }, [selectedSet, monster, skills, boostResolver]);
+  }, [selectedSet, overridesActive, budgetResult, monster, skills, boostResolver]);
+
+  // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
+  // protection in the shield slot AND no Super antifire in the bank) — reacts
+  // to manual edits too.
+  const setupConflicts = useMemo(
+    () => setupMechanicConflicts(selectedSet, mechanics, bank ? ownedItemIds : undefined),
+    [selectedSet, mechanics, bank, ownedItemIds],
+  );
+
+  const ownedBoost = selectedSet
+    ? boostFromBank(selectedSet.style, ownedItemIds)
+    : undefined;
 
   // Augment the curated consumables with the boost potion that matches the
   // selected loadout's combat style — the same potion baked into the DPS above.
@@ -145,11 +177,10 @@ export default function BossPage({
     ];
   }, [consumables, selectedSet]);
 
-  const ownedItemIds = useMemo(
-    () =>
-      bank ? new Set(Array.from(bank.itemIds).map((id) => Number(id))) : new Set<number>(),
-    [bank],
-  );
+  const sourceLabel =
+    mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
+      ? "after upgrades — see results"
+      : "best from your bank";
 
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
@@ -222,116 +253,70 @@ export default function BossPage({
         </div>
       </header>
 
-      {/* Compact context line — full connection status lives in the app
-          header. Here we only note the pool + wallet feeding this boss's
-          optimisation. */}
-      <p className="text-caption text-osrs-muted mb-4">
-        {bank
-          ? `Optimising from your live bank — ${bank.itemIds.size} items · ${gp.toLocaleString()} gp wallet.`
-          : "Not connected — run the osrs-boss-sync RuneLite plugin to load your bank, inventory, worn gear, and skills. Until then, equipment is empty."}
-      </p>
-
-      {/* HERO — Phase 5 v1 promotes the optimizer to the top of the page.
-          The big DPS number + upgrade path is the answer to "what should I do?",
-          so it leads. Curated builds and manual tweaking moved below. */}
-      <div className="mb-4">
-        <OptimizerPanel
-          bank={bank ? ownedItemIds : null}
-          target={monster}
-          skills={skills}
-          gp={gp}
-          priceLookup={(id) => priceForItem(prices, id)}
-          mapping={mapping}
-          mechanics={mechanics}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left column — slimmed: player inputs + skills, no bank UI. */}
-        <aside className="lg:col-span-3 space-y-4">
-          <PlayerSetup
-            onSubmit={({ gp }) => {
-              setGpManual(gp);
-            }}
+      {/* The cockpit: setup rail (inputs) → loadout (the editable answer) →
+          results (outcome + upgrade path). Inputs sit beside the outputs they
+          drive, and everything recomputes on change — no apply button, no
+          drawer. Connection status lives in the app header, said once. */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <aside className="lg:col-span-3 lg:sticky lg:top-16">
+          <SetupPanel
+            mode={mode}
+            onModeChange={setMode}
+            gp={gp}
+            gpIsLive={live.gp != null}
+            onGpChange={setGpManual}
+            sellThresholdM={sellThresholdM}
+            onSellThresholdChange={setSellThresholdM}
           >
             <PlayerStatsPanel skills={skills} isLive={live.isLive} />
-          </PlayerSetup>
+          </SetupPanel>
         </aside>
 
-        {/* Middle + right collapsed — context cards. Mechanics on the left
-            of this section, spec weapons on the right. Equal weight; both
-            are reference info rather than headline answers. */}
-        <section className="lg:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {mechanicEvaluations.length > 0 && (
-            <MechanicsPanel evaluations={mechanicEvaluations} />
-          )}
-          <SpecWeaponsPanel
-            slug={slug}
-            mapping={mapping}
+        <section className="lg:col-span-5">
+          <LoadoutPanel
+            set={selectedSet}
+            dps={selectedDps}
+            connected={bank !== null}
+            sourceLabel={sourceLabel}
             ownedItemIds={ownedItemIds}
+            mapping={mapping}
+            onSlotClick={(slot) => setPickerSlot(slot)}
+            editedSlots={overridesActive ? (Object.keys(overrides) as LoadoutSlotKey[]) : []}
+            onResetEdits={resetOverrides}
+            conflicts={setupConflicts}
+            boostName={ownedBoost?.name}
+          />
+        </section>
+
+        <section className="lg:col-span-4">
+          <ResultsPanel
+            bossName={monster.name}
+            bossHp={monster.hp}
+            set={selectedSet}
+            dps={selectedDps}
+            activeBonuses={selectedActiveBonuses}
+            result={budgetResult}
+            edited={overridesActive}
+            mapping={mapping}
           />
         </section>
       </div>
 
-      {/* Manual gear editing — start from the optimizer's best buildable setup
-          and freely swap any slot. No premade sets; full flexibility. */}
-      <details className="mt-6 osrs-panel rounded">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-osrs-brown hover:bg-parchment-dark/30 select-none">
-          Tweak the setup — swap any slot
-        </summary>
-        <div className="p-4 border-t border-osrs-brown/30 space-y-4">
-          {baseSet ? (
-            <>
-              <p className="text-xs text-osrs-muted">
-                This starts from the best setup your bank can build, above. Click
-                any equipment slot to swap in a different item — DPS recomputes
-                against this boss as you tweak.
-              </p>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <EquipmentPanel
-                    set={selectedSet}
-                    ownedItemIds={ownedItemIds}
-                    mapping={mapping}
-                    onSlotClick={(slot) => setPickerSlot(slot)}
-                  />
-                  {overridesActive && (
-                    <div className="text-xs text-osrs-brown flex items-center justify-between gap-2">
-                      <span>
-                        <strong>Custom loadout</strong> — {Object.keys(overrides).length} slot
-                        {Object.keys(overrides).length === 1 ? "" : "s"} edited on top of the optimizer&apos;s pick.
-                      </span>
-                      <button
-                        type="button"
-                        onClick={resetOverrides}
-                        className="text-osrs-gold hover:underline text-[11px]"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  )}
-                  {selectedSet && selectedDps && (
-                    <DpsResultsPanel
-                      set={selectedSet}
-                      dps={selectedDps}
-                      activeBonuses={selectedActiveBonuses}
-                      targetHp={monster.hp}
-                    />
-                  )}
-                  {consumablesWithBoost.length > 0 && (
-                    <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
-                  )}
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-osrs-brown">
-              Connect your bank via the osrs-boss-sync RuneLite plugin to build
-              and tweak a loadout for this boss.
-            </p>
-          )}
-        </div>
-      </details>
+      {/* Reference row — fight knowledge that doesn't change as you tweak
+          gear: mechanics checklist, spec weapons, consumables. */}
+      <section className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+        {mechanicEvaluations.length > 0 && (
+          <MechanicsPanel evaluations={mechanicEvaluations} />
+        )}
+        <SpecWeaponsPanel
+          slug={slug}
+          mapping={mapping}
+          ownedItemIds={ownedItemIds}
+        />
+        {consumablesWithBoost.length > 0 && (
+          <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
+        )}
+      </section>
 
       {pickerSlot && (
         <ItemPickerModal
