@@ -13,6 +13,7 @@ import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
+import { explainSlots } from "@/lib/loadout-explain";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
 import { SetupPanel } from "@/components/SetupPanel";
@@ -227,6 +228,20 @@ export default function BossPage({
     ? boostFromBank(selectedSet.style, ownedItemIds)
     : undefined;
 
+  // Per-slot "why this item" details for the doll's hover tooltips: stat
+  // contribution, marginal DPS with the slot emptied, conditional bonuses.
+  const slotDetails = useMemo(() => {
+    if (!selectedSet || !selectedDps) return undefined;
+    return explainSlots(
+      selectedSet,
+      selectedDps,
+      monster,
+      skills,
+      boostResolver(selectedSet.style),
+      selectedActiveBonuses,
+    );
+  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses]);
+
   // Augment the curated consumables with the boost potion that matches the
   // selected loadout's combat style — the same potion baked into the DPS above.
   const consumablesWithBoost = useMemo(() => {
@@ -349,6 +364,7 @@ export default function BossPage({
             ownedItemIds={ownedItemIds}
             mapping={mapping}
             onSlotClick={(slot) => setPickerSlot(slot)}
+            slotDetails={slotDetails}
             editedSlots={overridesActive ? (Object.keys(overrides) as LoadoutSlotKey[]) : []}
             onResetEdits={resetOverrides}
             conflicts={setupConflicts}

@@ -2,6 +2,7 @@
 
 import { EquipmentGrid } from "@/components/EquipmentGrid";
 import { MetaChip } from "@/components/ui";
+import type { SlotExplanation } from "@/lib/loadout-explain";
 import type { SetupMechanicStatus } from "@/lib/setup-mechanics";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, MappingEntry } from "@/types/osrs";
@@ -28,6 +29,8 @@ interface Props<TabId extends string> {
   ownedItemIds: Set<number>;
   mapping?: MappingEntry[];
   onSlotClick?: (slot: LoadoutSlotKey) => void;
+  /** Per-slot "why this item" details for the hover tooltips. */
+  slotDetails?: Partial<Record<LoadoutSlotKey, SlotExplanation>>;
   /** Slots the user has manually overridden. */
   editedSlots: LoadoutSlotKey[];
   onResetEdits: () => void;
@@ -68,6 +71,7 @@ export function LoadoutPanel<TabId extends string>({
   ownedItemIds,
   mapping,
   onSlotClick,
+  slotDetails,
   editedSlots,
   onResetEdits,
   conflicts,
@@ -142,7 +146,7 @@ export function LoadoutPanel<TabId extends string>({
       )}
       {connected && set && (
         <p className="text-caption text-osrs-muted mb-3">
-          Click any slot to swap items — results update instantly.
+          Hover a slot to see why it was picked — click to swap items.
         </p>
       )}
 
@@ -153,6 +157,7 @@ export function LoadoutPanel<TabId extends string>({
         onSlotClick={set ? onSlotClick : undefined}
         slotSize={56}
         editedSlots={new Set(editedSlots)}
+        slotDetails={slotDetails}
       />
 
       {set && (
