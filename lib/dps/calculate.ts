@@ -22,6 +22,7 @@ import { meleeAttackRoll, meleeMaxHit } from "./melee";
 import { rangedAttackRoll, rangedMaxHit } from "./ranged";
 import { magicAttackRoll, magicMaxHit } from "./magic";
 import { applyFactors, conditionalMultipliers } from "./conditional";
+import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
 
 export interface DpsScenario {
   style: CombatStyle;
@@ -54,6 +55,13 @@ export interface DpsScenario {
    * — per wgloop's PlayerVsNPCCalc order of operations.
    */
   armorSetBonus?: ArmorSetBonus;
+  /**
+   * Ranged-only: enchanted-bolt proc, resolved upstream (lib/dps/bolts.ts)
+   * where the loadout, target immunities, and boosted ranged level are known.
+   * Folded into expected damage AFTER every max-hit multiplier, mirroring
+   * wgloop's transform order (bolts apply to the final hit distribution).
+   */
+  boltProc?: BoltProcSpec;
 }
 
 interface StyleBonuses {
@@ -197,7 +205,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
 
   const accuracy = hitChance(attackRoll, defenceRoll);
-  const dps = dpsFromHitChance(accuracy, maxHit, effectiveAttackSpeed);
+  let dps = dpsFromHitChance(accuracy, maxHit, effectiveAttackSpeed);
+
+  if (scenario.boltProc && scenario.style === "ranged") {
+    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc);
+    dps = expected / (effectiveAttackSpeed * 0.6);
+  }
 
   return { dps, maxHit, accuracy };
 }

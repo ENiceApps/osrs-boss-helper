@@ -7,6 +7,7 @@
 
 import type { DpsResult, Skills } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
+import { resolveBoltProc } from "@/lib/dps/bolts";
 import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -77,6 +78,17 @@ export function computeSetDps(
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
   const effectiveSkills = applyCombatBoost(skills, boost);
+  // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
+  // visible ranged level and the target's immunities are both in scope.
+  const boltProc = set.style === "ranged"
+    ? resolveBoltProc({
+        ammoItemId: set.slots.ammo?.itemId,
+        weaponItemId: set.slots.weapon?.itemId,
+        weaponCategory: set.weaponCategory,
+        visibleRangedLevel: effectiveSkills.ranged,
+        target: { hp: target.hp, attributes: target.attributes, slug: target.slug },
+      })
+    : undefined;
   return calculateDps({
     style: set.style,
     attackStyle: set.attackStyleChoice,
@@ -96,6 +108,7 @@ export function computeSetDps(
     targetMonsterMagicLevel: activeBonuses.targetMonsterMagicLevel,
     targetIsXerician: activeBonuses.targetIsXerician,
     armorSetBonus: set.armorSetBonus,
+    boltProc,
     targetWeakness: target.weakness
       ? {
           element: target.weakness.element as never,

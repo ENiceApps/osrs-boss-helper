@@ -20,6 +20,8 @@ import {
   piecesToEquipForSet,
 } from "@/data/armor-sets";
 import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES, AMMO_TYPES } from "@/data/ammo-compatibility";
+import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
+import { boltEffectApplies } from "@/lib/dps/bolts";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -369,6 +371,42 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       allCandidates.push({ itemIds: filtered, internalAmmoId, ws });
     }
   }
+
+  // Step 2c: enchanted-bolt branches. The greedy ammo pick ranks by raw
+  // rangedStr, where proc bolts tie with (or lose to) their plain variants —
+  // but the engine now prices their procs (Ruby's 20%-of-HP hit, Diamond's
+  // defence-ignoring hit). For every crossbow candidate, branch once per
+  // distinct applicable bolt effect in the bank; scoreScenario ranks them
+  // honestly and dedupe drops any branch the greedy already produced.
+  const boltBranches: Candidate[] = [];
+  for (const c of allCandidates) {
+    if (c.ws.weapon.category !== "Crossbow" || c.ws.combatStyle !== "ranged") continue;
+    const procBolts = (bySlot.get("ammo") ?? []).filter((a) => {
+      const effect = BOLT_EFFECT_BY_ITEM_ID.get(a.id);
+      if (!effect) return false;
+      if (!boltEffectApplies(effect, input.target.attributes)) return false;
+      return checkAmmoCompatWithCategory(c.ws.weapon.name, c.ws.weapon.category, a.name).ok;
+    });
+    if (procBolts.length === 0) continue;
+    const bestPerEffect = new Map<BoltEffect, ItemCatalogEntry>();
+    for (const bolt of procBolts) {
+      const effect = BOLT_EFFECT_BY_ITEM_ID.get(bolt.id)!;
+      const current = bestPerEffect.get(effect);
+      if (!current || bolt.rangedStr > current.rangedStr) bestPerEffect.set(effect, bolt);
+    }
+    for (const bolt of bestPerEffect.values()) {
+      const withoutAmmo = c.itemIds.filter((id) => {
+        const it = ITEM_BY_ID.get(id);
+        return !it || loadoutSlotFor(it) !== "ammo";
+      });
+      boltBranches.push({
+        itemIds: [...withoutAmmo, bolt.id],
+        internalAmmoId: c.internalAmmoId,
+        ws: c.ws,
+      });
+    }
+  }
+  allCandidates.push(...boltBranches);
 
   // Step 3: dedupe by (sorted itemIds + style signature). Same gear with
   // different attack styles is still distinct (different DPS).

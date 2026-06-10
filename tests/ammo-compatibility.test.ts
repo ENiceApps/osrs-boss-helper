@@ -36,6 +36,15 @@ describe("checkAmmoCompat", () => {
     }
   });
 
+  it("Hunters' sunlight crossbow fires antler bolts ONLY (the bolt-proc bug: it paired with Ruby dragon bolts)", () => {
+    expect(checkAmmoCompat("Hunters' sunlight crossbow", "Sunlight antler bolts")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Hunters' sunlight crossbow", "Moonlight antler bolts")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Hunters' sunlight crossbow", "Ruby dragon bolts (e)").ok).toBe(false);
+    expect(checkAmmoCompat("Hunters' sunlight crossbow", "Diamond bolts (e)").ok).toBe(false);
+    // And the antler bolts don't load into normal crossbows.
+    expect(checkAmmoCompat("Rune crossbow", "Sunlight antler bolts").ok).toBe(false);
+  });
+
   it("flags unknown ammo as an authoring error to extend the table", () => {
     const result = checkAmmoCompat("Rune crossbow", "Made up bolts");
     expect(result.ok).toBe(false);

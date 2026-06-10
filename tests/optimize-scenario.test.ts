@@ -38,10 +38,11 @@ describe("optimize/scenario — DPS parity with the verified baseline", () => {
     });
     if (!scratch.valid) throw new Error(`Expected valid scenario, got reasons: ${scratch.reasons.join("; ")}`);
 
-    // Wiki-verified baseline for this exact gear — see tests/fixtures/verified-setups.ts.
+    // Baseline for this exact gear — see tests/fixtures/verified-setups.ts.
+    // Includes the Diamond bolts (e) proc (bolt effects modelled 2026-06-10).
     expect(scratch.dps.maxHit).toBe(57);
     expect(scratch.dps.accuracy).toBeCloseTo(0.832, 3);
-    expect(scratch.dps.dps).toBeCloseTo(7.904, 1);
+    expect(scratch.dps.dps).toBeCloseTo(8.227, 1);
 
     // Conditional bonuses should fire (dragon + undead).
     expect(scratch.activeBonuses.conditionalBonuses.dragonHunterCrossbow).toBe(true);

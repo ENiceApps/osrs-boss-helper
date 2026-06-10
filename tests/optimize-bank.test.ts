@@ -54,10 +54,12 @@ describe("optimize/bank — rediscovers curated loadouts", () => {
     expect(diagnostics.weaponsConsidered).toBe(1); // only DHCB in this bank
 
     // The optimizer should rediscover the DHCB+Salve(ei) setup and reproduce
-    // its wiki-verified DPS — see tests/fixtures/verified-setups.ts.
+    // its baseline DPS — see tests/fixtures/verified-setups.ts. 8.227 includes
+    // the Diamond bolts (e) proc (11% defence-ignoring hit at +15% max),
+    // matching the wiki calc's always-on bolt modelling.
     const top = rankings[0];
     expect(top.dps.maxHit).toBe(57);
-    expect(top.dps.dps).toBeCloseTo(7.904, 1);
+    expect(top.dps.dps).toBeCloseTo(8.227, 1);
     expect(top.activeBonuses.conditionalBonuses.dragonHunterCrossbow).toBe(true);
     expect(top.activeBonuses.conditionalBonuses.salveAmuletEi).toBe(true);
   });
@@ -74,24 +76,26 @@ describe("optimize/bank — rediscovers curated loadouts", () => {
     expect(top.activeBonuses.twistedBowEquipped).toBe(true);
   });
 
-  it("Combined DHCB + Tbow bank on Vorkath → Tbow + Salve(ei) wins (Tbow's per-shot damage × Salve multiplier beats DHCB)", () => {
-    // Counter-intuitive but correct: Tbow scaling at Vorkath's magic 150
-    // combined with Salve(ei) ×6/5 outperforms DHCB+Salve(ei). The engine
-    // applies Tbow scaling AFTER Salve per wgloop's order of operations
-    // (see lib/dps/calculate.ts comments). Worth surfacing to users — this
-    // is exactly the kind of hidden-synergy finding the optimizer is for.
+  it("Combined DHCB + Tbow bank on Vorkath → DHCB + Diamond (e) + Salve(ei) wins now that bolt procs are modelled", () => {
+    // History: before bolt procs were modelled, Tbow+Salve(ei) (8.06) edged
+    // out DHCB+Salve(ei) (7.90) here. With the Diamond bolts (e) proc priced
+    // in (11% defence-ignoring hit at +15% max), DHCB reaches 8.23 and takes
+    // the top spot back — matching the wiki calc, where bolt effects are
+    // always on. Tbow can't use bolts, so its number is unchanged.
     const { rankings } = optimizeForBoss({
       bank: [...DHCB_SALVE_EI_IDS, ...TBOW_SET_IDS],
       target: VORKATH,
       skills: SKILLS_AT_99,
     });
     const top = rankings[0];
-    expect(top.loadout.slots.weapon?.itemId).toBe(20997); // Tbow
-    expect(top.activeBonuses.twistedBowEquipped).toBe(true);
+    expect(top.loadout.slots.weapon?.itemId).toBe(21012); // DHCB
+    expect(top.loadout.slots.ammo?.itemId).toBe(9243); // Diamond bolts (e)
+    expect(top.activeBonuses.conditionalBonuses.dragonHunterCrossbow).toBe(true);
     expect(top.activeBonuses.conditionalBonuses.salveAmuletEi).toBe(true);
-    // DHCB+Salve should still appear (force-include guarantee).
-    const hasDhcb = rankings.some((r) => r.loadout.slots.weapon?.itemId === 21012);
-    expect(hasDhcb).toBe(true);
+    // The Tbow build should still appear right behind (force-include guarantee).
+    const tbow = rankings.find((r) => r.loadout.slots.weapon?.itemId === 20997);
+    expect(tbow).toBeDefined();
+    expect(tbow!.dps.dps).toBeCloseTo(8.058, 1);
   });
 });
 

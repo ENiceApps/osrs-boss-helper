@@ -7,7 +7,8 @@ import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, type BudgetMode } from "@/lib/optimize/budget";
 import { optimizeForBoss } from "@/lib/optimize/bank";
-import { bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
+import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
+import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
@@ -228,6 +229,20 @@ export default function BossPage({
     ? boostFromBank(selectedSet.style, ownedItemIds)
     : undefined;
 
+  // Enchanted-bolt proc on the active loadout (e.g. Ruby bolts' 20%-of-HP
+  // hit), surfaced in the results rail's "active vs this target" line.
+  const boltProcFlag = useMemo(() => {
+    if (!selectedSet || selectedSet.style !== "ranged") return undefined;
+    const spec = resolveBoltProc({
+      ammoItemId: selectedSet.slots.ammo?.itemId,
+      weaponItemId: selectedSet.slots.weapon?.itemId,
+      weaponCategory: selectedSet.weaponCategory,
+      visibleRangedLevel: applyCombatBoost(skills, boostResolver(selectedSet.style)).ranged,
+      target: { hp: monster.hp, attributes: monster.attributes, slug: monster.slug },
+    });
+    return spec ? describeBoltProc(spec) : undefined;
+  }, [selectedSet, skills, boostResolver, monster]);
+
   // Per-slot "why this item" details for the doll's hover tooltips: stat
   // contribution, marginal DPS with the slot emptied, conditional bonuses.
   const slotDetails = useMemo(() => {
@@ -383,6 +398,7 @@ export default function BossPage({
             // apply to the per-style tabs, so they get stats only.
             result={activeTab === "best" ? budgetResult : null}
             edited={overridesActive}
+            boltProcFlag={boltProcFlag}
             mapping={mapping}
           />
         </section>

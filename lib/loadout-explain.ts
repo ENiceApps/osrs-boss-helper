@@ -5,6 +5,8 @@
 
 import { applyOverrides, findCatalogItem } from "@/lib/loadout-edit";
 import { computeSetDps } from "@/lib/recommend";
+import { applyCombatBoost } from "@/lib/dps/boost";
+import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -121,6 +123,16 @@ export function explainSlots(
   activeBonuses: TargetActiveBonuses | null,
 ): Partial<Record<LoadoutSlotKey, SlotExplanation>> {
   const out: Partial<Record<LoadoutSlotKey, SlotExplanation>> = {};
+  // Enchanted-bolt proc on the ammo slot — same resolution the engine uses.
+  const boltProc = set.style === "ranged"
+    ? resolveBoltProc({
+        ammoItemId: set.slots.ammo?.itemId,
+        weaponItemId: set.slots.weapon?.itemId,
+        weaponCategory: set.weaponCategory,
+        visibleRangedLevel: applyCombatBoost(skills, boost).ranged,
+        target: { hp: monster.hp, attributes: monster.attributes, slug: monster.slug },
+      })
+    : undefined;
   for (const slot of SLOT_KEYS) {
     const piece = set.slots[slot];
     if (!piece) continue;
@@ -129,6 +141,9 @@ export function explainSlots(
       bonusLine: item ? buildBonusLine(item, set) : undefined,
       reasons: buildReasons(slot, set, activeBonuses),
     };
+    if (slot === "ammo" && boltProc) {
+      explanation.reasons.push(describeBoltProc(boltProc));
+    }
     if (slot !== "weapon" && dps.dps > 0) {
       const without = applyOverrides(set, { [slot]: null });
       const dpsWithout = computeSetDps(without, monster, skills, boost);
