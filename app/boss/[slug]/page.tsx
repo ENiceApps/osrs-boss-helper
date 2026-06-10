@@ -23,6 +23,8 @@ import { DpsResultsPanel } from "@/components/DpsResultsPanel";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
 import { OptimizerPanel } from "@/components/OptimizerPanel";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
+import { BossStatsPanel } from "@/components/BossStatsPanel";
+import { wikiIconUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
@@ -158,38 +160,65 @@ export default function BossPage({
       </nav>
 
       <header className="mb-4">
-        <h1 className="text-3xl font-bold text-osrs-gold">
-          {monster.name}
-          {monster.version && (
-            <span className="text-base font-normal text-parchment-dark ml-2">
-              ({monster.version})
-            </span>
-          )}
-        </h1>
-        {/* Meta strip — chips + colour-coded weakness/attribute pills on a
-            parchment surface (the pills' tints are tuned for parchment, not
-            the dark page background). Gives the boss identity real weight and
-            makes the weakness scannable at a glance. */}
-        <div className="osrs-panel rounded mt-2 px-3 py-2 flex flex-wrap items-center gap-2">
-          <MetaChip label="CB">{monster.combatLevel}</MetaChip>
-          <MetaChip label="HP">{monster.hp}</MetaChip>
-          <MetaChip label="Size">{monster.size}</MetaChip>
-          {monster.weakness && (
-            <span className="inline-flex items-center gap-1">
-              <span className="label-eyebrow">weak to</span>
-              <WeaknessBadge
-                element={monster.weakness.element}
-                severity={monster.weakness.severity}
+        <div className="flex items-start gap-4">
+          {/* Boss NPC image — sourced from the OSRS wiki CDN. The image field
+              in the catalog is the exact wiki filename (e.g. "Vardorvis.png").
+              We cap the display box so oversized renders don't blow the layout. */}
+          {monster.image && (
+            <div className="shrink-0 osrs-panel rounded flex items-center justify-center"
+              style={{ width: 96, height: 96 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={wikiIconUrl(monster.image)}
+                alt={monster.name}
+                className="max-w-full max-h-full object-contain"
+                style={{ imageRendering: "pixelated" }}
+                onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
               />
-            </span>
+            </div>
           )}
-          {monster.attributes.length > 0 && (
-            <span className="flex flex-wrap items-center gap-1">
-              {monster.attributes.map((a) => (
-                <AttributePill key={a} attribute={a} />
-              ))}
-            </span>
-          )}
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold text-osrs-gold">
+              {monster.name}
+              {monster.version && (
+                <span className="text-base font-normal text-parchment-dark ml-2">
+                  ({monster.version})
+                </span>
+              )}
+            </h1>
+            {/* Meta strip — chips + colour-coded weakness/attribute pills on a
+                parchment surface (the pills' tints are tuned for parchment, not
+                the dark page background). Gives the boss identity real weight and
+                makes the weakness scannable at a glance. */}
+            <div className="osrs-panel rounded mt-2 px-3 py-2 flex flex-wrap items-center gap-2">
+              <MetaChip label="CB">{monster.combatLevel}</MetaChip>
+              <MetaChip label="HP">{monster.hp}</MetaChip>
+              <MetaChip label="Size">{monster.size}</MetaChip>
+              {monster.weakness && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="label-eyebrow">weak to</span>
+                  <WeaknessBadge
+                    element={monster.weakness.element}
+                    severity={monster.weakness.severity}
+                  />
+                </span>
+              )}
+              {monster.attributes.length > 0 && (
+                <span className="flex flex-wrap items-center gap-1">
+                  {monster.attributes.map((a) => (
+                    <AttributePill key={a} attribute={a} />
+                  ))}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Defence stat table — lets the player immediately see why the
+            optimizer recommended a particular combat style. */}
+        <div className="mt-2">
+          <BossStatsPanel monster={monster} />
         </div>
       </header>
 
