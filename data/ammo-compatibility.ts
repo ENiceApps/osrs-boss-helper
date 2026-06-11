@@ -60,6 +60,8 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Dragon crossbow": { class: "bolt", maxTier: 7 },
   "Armadyl crossbow": { class: "bolt", maxTier: 7 },
   "Dragon hunter crossbow": { class: "bolt", maxTier: 7 },
+  "Dragon hunter crossbow (t)": { class: "bolt", maxTier: 7 }, // cosmetic kit
+  "Dragon hunter crossbow (b)": { class: "bolt", maxTier: 7 }, // cosmetic kit
   "Zaryte crossbow": { class: "bolt", maxTier: 7 },
 
   // Low-tier / special crossbows. Without explicit caps the category fallback
