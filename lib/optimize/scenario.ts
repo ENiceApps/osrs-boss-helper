@@ -6,7 +6,7 @@
 
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
+import { hasTrigger } from "@/data/bonus-trigger-items";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem } from "@/lib/loadout-edit";
@@ -315,16 +315,17 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     case "magic": magicDamagePct = magStr / 10; break;
   }
 
+  // Variant-aware (hasTrigger): cosmetic kits and minigame re-imbues carry
+  // distinct ids but the same bonus — e.g. Salve amulet(ei) (Emir's Arena).
   const slotItemIds = new Set(itemIds);
-  const B = BONUS_TRIGGER_ITEM_IDS;
   const itemBonusFlags: ItemBonusFlags = {
-    dragonHunterCrossbow: slotItemIds.has(B.DRAGON_HUNTER_CROSSBOW),
-    dragonHunterLance: slotItemIds.has(B.DRAGON_HUNTER_LANCE),
-    salveAmuletEi: slotItemIds.has(B.SALVE_AMULET_EI) || slotItemIds.has(B.SALVE_AMULET_E),
-    salveAmulet: slotItemIds.has(B.SALVE_AMULET) || slotItemIds.has(B.SALVE_AMULET_I),
-    demonbane: slotItemIds.has(B.ARCLIGHT) || slotItemIds.has(B.EMBERLIGHT),
-    tomeOfFire: slotItemIds.has(B.TOME_OF_FIRE_CHARGED),
-    twistedBow: slotItemIds.has(B.TWISTED_BOW),
+    dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
+    dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
+    salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
+    salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
+    demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
+    twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
   };
 
   // Tier is purely informational on the recommend path; mark scratch loadouts

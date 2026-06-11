@@ -5,7 +5,7 @@
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
+import { hasTrigger } from "@/data/bonus-trigger-items";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import type {
   AttackType,
@@ -131,19 +131,19 @@ export function applyOverrides(
       break;
   }
 
-  // Item-implied conditional bonus flags — same logic as codegen.
+  // Item-implied conditional bonus flags — same logic as scenario.ts, and
+  // variant-aware (Salve Soul Wars/Emir's Arena imbues, DHCB (t)/(b) kits).
   const slotItemIds = new Set(
     Object.values(resolved).map((s) => s?.itemId).filter((n): n is number => typeof n === "number"),
   );
-  const B = BONUS_TRIGGER_ITEM_IDS;
   const itemBonusFlags: ItemBonusFlags = {
-    dragonHunterCrossbow: slotItemIds.has(B.DRAGON_HUNTER_CROSSBOW),
-    dragonHunterLance: slotItemIds.has(B.DRAGON_HUNTER_LANCE),
-    salveAmuletEi: slotItemIds.has(B.SALVE_AMULET_EI) || slotItemIds.has(B.SALVE_AMULET_E),
-    salveAmulet: slotItemIds.has(B.SALVE_AMULET) || slotItemIds.has(B.SALVE_AMULET_I),
-    demonbane: slotItemIds.has(B.ARCLIGHT) || slotItemIds.has(B.EMBERLIGHT),
-    tomeOfFire: slotItemIds.has(B.TOME_OF_FIRE_CHARGED),
-    twistedBow: slotItemIds.has(B.TWISTED_BOW),
+    dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
+    dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
+    salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
+    salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
+    demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
+    twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
   };
 
   // Respect the base's speed override (e.g. Harmonised's 5→4 reduction).

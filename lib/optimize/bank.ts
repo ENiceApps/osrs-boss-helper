@@ -14,7 +14,7 @@
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
+import { BONUS_TRIGGER_VARIANTS, ownedTriggerIds } from "@/data/bonus-trigger-items";
 import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
@@ -260,17 +260,21 @@ function applicableForceIncludes(
   const isDemon = target.attributes.includes("demon");
   const isFireWeak = target.weakness?.element === "fire";
   const out: number[] = [];
-  const B = BONUS_TRIGGER_ITEM_IDS;
-  if (isDragon && bank.has(B.DRAGON_HUNTER_CROSSBOW)) out.push(B.DRAGON_HUNTER_CROSSBOW);
-  if (isDragon && bank.has(B.DRAGON_HUNTER_LANCE)) out.push(B.DRAGON_HUNTER_LANCE);
-  if (isUndead && bank.has(B.SALVE_AMULET_EI)) out.push(B.SALVE_AMULET_EI);
-  if (isUndead && bank.has(B.SALVE_AMULET_E)) out.push(B.SALVE_AMULET_E);
-  if (isUndead && bank.has(B.SALVE_AMULET_I)) out.push(B.SALVE_AMULET_I);
-  if (isUndead && bank.has(B.SALVE_AMULET)) out.push(B.SALVE_AMULET);
-  if (isDemon && bank.has(B.ARCLIGHT)) out.push(B.ARCLIGHT);
-  if (isDemon && bank.has(B.EMBERLIGHT)) out.push(B.EMBERLIGHT);
-  if (bank.has(B.TWISTED_BOW)) out.push(B.TWISTED_BOW); // always relevant (scales with target magic)
-  if (isFireWeak && bank.has(B.TOME_OF_FIRE_CHARGED)) out.push(B.TOME_OF_FIRE_CHARGED);
+  // Variant-aware (ownedTriggerIds): force-include the id the player actually
+  // owns — a Salve(ei) Soul Wars/Emir's Arena imbue or DHCB (t)/(b) kit
+  // carries the same bonus under a different item id.
+  if (isDragon) out.push(...ownedTriggerIds(bank, "DRAGON_HUNTER_CROSSBOW"));
+  if (isDragon) out.push(...ownedTriggerIds(bank, "DRAGON_HUNTER_LANCE"));
+  if (isUndead) {
+    out.push(...ownedTriggerIds(bank, "SALVE_AMULET_EI"));
+    out.push(...ownedTriggerIds(bank, "SALVE_AMULET_E"));
+    out.push(...ownedTriggerIds(bank, "SALVE_AMULET_I"));
+    out.push(...ownedTriggerIds(bank, "SALVE_AMULET"));
+  }
+  if (isDemon) out.push(...ownedTriggerIds(bank, "ARCLIGHT"));
+  if (isDemon) out.push(...ownedTriggerIds(bank, "EMBERLIGHT"));
+  out.push(...ownedTriggerIds(bank, "TWISTED_BOW")); // always relevant (scales with target magic)
+  if (isFireWeak) out.push(...ownedTriggerIds(bank, "TOME_OF_FIRE_CHARGED"));
   return out;
 }
 
@@ -307,38 +311,20 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   for (const forcedId of forceIds) {
     const forced = ITEM_BY_ID.get(forcedId);
     if (!forced) continue;
-    const forcedSlot = loadoutSlotFor(forced);
-    if (forcedSlot === "weapon") {
-      // Force this weapon — enumerate its styles, build greedily.
-      const opts = WEAPON_STYLES[forced.category];
-      if (!opts) continue;
-      for (const opt of opts) {
-        if (opt.defensive) continue;
-        const ws: WeaponStyleCandidate = {
-          weapon: forced,
-          attackType: opt.attackType,
-          choice: opt.choice,
-          combatStyle: combatStyleFor(opt.attackType),
-        };
-        const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
-        allCandidates.push({ itemIds: ids, internalAmmoId, ws });
-      }
-    } else {
-      // Non-weapon force (Salve, Tome of Fire). Build a greedy loadout for
-      // every base weapon-style combo, then override the forced slot.
-      for (const ws of baseCandidates) {
-        // Only force a Tome of Fire branch when this weapon-style is magic.
-        if (forcedId === BONUS_TRIGGER_ITEM_IDS.TOME_OF_FIRE_CHARGED && ws.combatStyle !== "magic") continue;
-        const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
-        // Replace any item in the forced slot with the forced item.
-        const filtered = ids.filter((id) => {
-          const it = ITEM_BY_ID.get(id);
-          if (!it) return true;
-          return loadoutSlotFor(it) !== forcedSlot;
-        });
-        filtered.push(forcedId);
-        allCandidates.push({ itemIds: filtered, internalAmmoId, ws });
-      }
+    if (loadoutSlotFor(forced) !== "weapon") continue; // non-weapon forces compose later
+    // Force this weapon — enumerate its styles, build greedily.
+    const opts = WEAPON_STYLES[forced.category];
+    if (!opts) continue;
+    for (const opt of opts) {
+      if (opt.defensive) continue;
+      const ws: WeaponStyleCandidate = {
+        weapon: forced,
+        attackType: opt.attackType,
+        choice: opt.choice,
+        combatStyle: combatStyleFor(opt.attackType),
+      };
+      const { ids, internalAmmoId } = greedyBuild(ws, bySlot);
+      allCandidates.push({ itemIds: ids, internalAmmoId, ws });
     }
   }
 
@@ -372,7 +358,39 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
     }
   }
 
-  // Step 2c: enchanted-bolt branches. The greedy ammo pick ranks by raw
+  // Step 2c: non-weapon force overrides (Salve neck, Tome of Fire shield),
+  // applied over a snapshot of EVERY candidate so far — base greedy builds,
+  // forced-weapon builds, AND armor-set builds. Iterating only the base
+  // candidates here was a real bug: "Elite Void + Salve(ei)" was never
+  // generated, so a Void-owning player got Void + blood fury recommended vs
+  // undead targets even though the Salve multiplier dwarfs any neck's stats.
+  const nonWeaponForces = forceIds.filter((id) => {
+    const it = ITEM_BY_ID.get(id);
+    return it !== undefined && loadoutSlotFor(it) !== "weapon";
+  });
+  if (nonWeaponForces.length > 0) {
+    const snapshot = [...allCandidates];
+    for (const forcedId of nonWeaponForces) {
+      const forced = ITEM_BY_ID.get(forcedId)!;
+      const forcedSlot = loadoutSlotFor(forced);
+      const isTome = BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.includes(forcedId);
+      for (const c of snapshot) {
+        // Only force a Tome of Fire branch when this weapon-style is magic,
+        // and never onto a 2H weapon's (absent) shield slot.
+        if (isTome && c.ws.combatStyle !== "magic") continue;
+        if (forcedSlot === "shield" && c.ws.weapon.isTwoHanded) continue;
+        const filtered = c.itemIds.filter((id) => {
+          const it = ITEM_BY_ID.get(id);
+          if (!it) return true;
+          return loadoutSlotFor(it) !== forcedSlot;
+        });
+        filtered.push(forcedId);
+        allCandidates.push({ itemIds: filtered, internalAmmoId: c.internalAmmoId, ws: c.ws });
+      }
+    }
+  }
+
+  // Step 2d: enchanted-bolt branches. The greedy ammo pick ranks by raw
   // rangedStr, where proc bolts tie with (or lose to) their plain variants —
   // but the engine now prices their procs (Ruby's 20%-of-HP hit, Diamond's
   // defence-ignoring hit). For every crossbow candidate, branch once per

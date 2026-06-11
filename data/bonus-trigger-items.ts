@@ -14,3 +14,42 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   TOME_OF_FIRE_CHARGED: 20714,
   TWISTED_BOW: 20997,
 } as const;
+
+export type BonusTriggerKey = keyof typeof BONUS_TRIGGER_ITEM_IDS;
+
+/**
+ * ALL item ids that carry each trigger's bonus. Cosmetic kits and minigame
+ * re-imbues get distinct item ids in-game; a variant missing from this table
+ * silently turns the bonus off — the bug that hid a player's Salve amulet(ei)
+ * (Emir's Arena) from the optimizer. Ids verified against
+ * data/vendor/wgloop/equipment.json.
+ */
+export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> = {
+  DRAGON_HUNTER_CROSSBOW: [21012, 25916, 25918], // + (t), (b) cosmetic kits
+  DRAGON_HUNTER_LANCE: [22978],
+  SALVE_AMULET_EI: [12018, 25278, 26782], // + Soul Wars, Emir's Arena imbues
+  SALVE_AMULET_E: [10588],
+  SALVE_AMULET: [4081],
+  SALVE_AMULET_I: [12017, 25250, 26763], // + Soul Wars, Emir's Arena imbues
+  ARCLIGHT: [19675], // Charged only — Inactive (30305) has no demonbane
+  EMBERLIGHT: [29589],
+  TOME_OF_FIRE_CHARGED: [20714], // Empty (20716) gives no bonus
+  TWISTED_BOW: [20997],
+};
+
+/** True iff any variant of the trigger is present (worn-slot flag derivation). */
+export function hasTrigger(
+  itemIds: ReadonlySet<number>,
+  key: BonusTriggerKey,
+): boolean {
+  return BONUS_TRIGGER_VARIANTS[key].some((id) => itemIds.has(id));
+}
+
+/** Every owned variant of a trigger — force-include branches equip the real
+    owned id, not the canonical one the player may not have. */
+export function ownedTriggerIds(
+  bank: ReadonlySet<number>,
+  key: BonusTriggerKey,
+): number[] {
+  return BONUS_TRIGGER_VARIANTS[key].filter((id) => bank.has(id));
+}
