@@ -73,7 +73,7 @@ export function BossSearch() {
         // Delay close so a click on an option registers first.
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={onKeyDown}
-        placeholder="Which boss are you tackling? (e.g. Vorkath, Zulrah…)"
+        placeholder="Which boss are you tackling? (e.g. Zulrah, Araxxor…)"
         className="w-full osrs-panel rounded px-4 py-3 text-lg text-osrs-brown placeholder:text-osrs-muted"
         autoFocus
       />

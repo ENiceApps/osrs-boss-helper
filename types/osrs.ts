@@ -128,8 +128,9 @@ export interface DpsInput {
   spellElement?: SpellElement;
   /** Monster's elemental weakness, if any. severity is percentage points (40 = +40%). */
   targetWeakness?: MonsterWeakness;
-  /** True when Tome of Fire is in the loadout (we model the +50% on fire spells separately from magic_str). */
   tomeOfFireEquipped?: boolean;
+  tomeOfWaterEquipped?: boolean;
+  tomeOfEarthEquipped?: boolean;
 }
 
 export interface PrayerSelection {
@@ -145,6 +146,8 @@ export interface PrayerSelection {
 export interface ConditionalBonusFlags {
   dragonHunterCrossbow: boolean;
   dragonHunterLance: boolean;
+  /** Dragon hunter wand vs dragon → ×7/4 accuracy, ×7/5 damage. Does NOT stack with Salve. */
+  dragonHunterWand: boolean;
   /** Salve amulet (ei)/(e) vs undead → ×6/5. */
   salveAmuletEi: boolean;
   /** Salve amulet (regular)/(i) vs undead → ×7/6. */

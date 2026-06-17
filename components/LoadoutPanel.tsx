@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { EquipmentGrid } from "@/components/EquipmentGrid";
 import { MetaChip } from "@/components/ui";
+import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import type { SlotExplanation } from "@/lib/loadout-explain";
 import type { SetupMechanicStatus } from "@/lib/setup-mechanics";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
@@ -29,6 +31,8 @@ interface Props<TabId extends string> {
   ownedItemIds: Set<number>;
   mapping?: MappingEntry[];
   onSlotClick?: (slot: LoadoutSlotKey) => void;
+  /** Opens the spell picker. Only wired for magic loadouts without a powered staff. */
+  onSpellClick?: () => void;
   /** Per-slot "why this item" details for the hover tooltips. */
   slotDetails?: Partial<Record<LoadoutSlotKey, SlotExplanation>>;
   /** Slots the user has manually overridden. */
@@ -38,6 +42,8 @@ interface Props<TabId extends string> {
   conflicts: SetupMechanicStatus[];
   /** Name of the owned boost potion baked into the DPS, if any. */
   boostName?: string;
+  /** Called when the user clicks "Open in Wiki Calc". Async — shows a spinner while the shortlink is created. */
+  onWikiExport?: () => Promise<void>;
 }
 
 const SLOT_ORDER: LoadoutSlotKey[] = [
@@ -71,13 +77,32 @@ export function LoadoutPanel<TabId extends string>({
   ownedItemIds,
   mapping,
   onSlotClick,
+  onSpellClick,
   slotDetails,
   editedSlots,
   onResetEdits,
   conflicts,
   boostName,
+  onWikiExport,
 }: Props<TabId>) {
   const edited = editedSlots.length > 0;
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function handleWikiExport() {
+    if (!onWikiExport) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      await onWikiExport();
+    } catch (e) {
+      setExportError("Couldn't create shortlink — try again.");
+      console.error("[wiki-export]", e);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="osrs-panel p-4 rounded">
       <div className="flex items-baseline justify-between gap-2 mb-1">
@@ -180,6 +205,25 @@ export function LoadoutPanel<TabId extends string>({
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
             <MetaChip label="style">{set.style}</MetaChip>
             <MetaChip label="choice">{set.attackStyleChoice}</MetaChip>
+            {/* Spell chip. For magic loadouts that aren't using a powered staff
+                (Trident/Sang/Shadow auto-cast their own formula), it's a button
+                that opens the spell picker. Shown even with no auto-spell yet so
+                there's an affordance to choose one. */}
+            {set.style === "magic" &&
+            !POWERED_STAFF_FORMULA.has(set.slots.weapon?.itemId ?? -1) ? (
+              <button
+                type="button"
+                onClick={onSpellClick}
+                title="Change combat spell"
+                className="rounded hover:ring-1 hover:ring-osrs-gold/60 cursor-pointer"
+              >
+                <MetaChip label="spell">{set.autoSpellName ?? "auto"}</MetaChip>
+              </button>
+            ) : (
+              set.autoSpellName && (
+                <MetaChip label="spell">{set.autoSpellName}</MetaChip>
+              )
+            )}
             {set.totals.prayerBonus > 0 && (
               <MetaChip label="prayer">+{set.totals.prayerBonus}</MetaChip>
             )}
@@ -195,7 +239,7 @@ export function LoadoutPanel<TabId extends string>({
           </div>
 
           {edited && (
-            <div className="mt-3 text-xs text-osrs-brown flex items-center justify-between gap-2 bg-parchment-raised border border-osrs-gold/60 rounded px-2 py-1.5">
+            <div className="mt-3 text-caption text-osrs-brown flex items-center justify-between gap-2 bg-parchment-raised border border-osrs-gold/60 rounded px-2 py-1.5">
               <span>
                 <strong>Custom loadout</strong> — {editedSlots.length} slot
                 {editedSlots.length === 1 ? "" : "s"} edited on top of the
@@ -217,6 +261,24 @@ export function LoadoutPanel<TabId extends string>({
             <p className="mt-3 text-caption text-osrs-muted italic text-center">
               Computing DPS…
             </p>
+          )}
+
+          {onWikiExport && (
+            <div className="mt-3 border-t border-osrs-brown/20 pt-3">
+              <button
+                type="button"
+                onClick={handleWikiExport}
+                disabled={exporting}
+                className="w-full text-caption text-osrs-brown hover:text-osrs-gold border border-osrs-brown/40 hover:border-osrs-gold/60 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
+              >
+                {exporting ? "Opening…" : "Open in Wiki DPS Calc ↗"}
+              </button>
+              {exportError && (
+                <p className="mt-1 text-caption text-status-missing text-center">
+                  {exportError}
+                </p>
+              )}
+            </div>
           )}
         </>
       )}

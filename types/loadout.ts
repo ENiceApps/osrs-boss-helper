@@ -31,6 +31,8 @@ export interface LoadoutSlotComputed {
 export interface ItemBonusFlags {
   dragonHunterCrossbow: boolean;
   dragonHunterLance: boolean;
+  /** Dragon hunter wand — magic dragonbane (×7/4 acc, ×7/5 dmg vs dragons). */
+  dragonHunterWand: boolean;
   /** Salve amulet (ei)/(e) — ×6/5 vs undead. */
   salveAmuletEi: boolean;
   /** Salve amulet (regular)/(i) — ×7/6 vs undead. */
@@ -38,8 +40,16 @@ export interface ItemBonusFlags {
   /** Arclight / Emberlight — demonbane vs demons. */
   demonbane: boolean;
   tomeOfFire: boolean;
+  /** Tome of Water (charged) — ×6/5 accuracy + ×6/5 damage on water spells. */
+  tomeOfWater: boolean;
+  /** Tome of Earth (charged) — ×11/10 accuracy + ×11/10 damage on earth spells. */
+  tomeOfEarth: boolean;
   /** Twisted bow — always active when equipped; scaling pulled from target magic level. */
   twistedBow: boolean;
+  /** Osmumten's fang — double accuracy roll; only fires on a stab attack style. */
+  fang: boolean;
+  /** Imbued black mask / slayer helmet — on-task acc+dmg bonus (gated by the UI on-task toggle). */
+  slayerHelmImbued: boolean;
 }
 
 export interface LoadoutSet {
@@ -66,6 +76,8 @@ export interface LoadoutSet {
   internalAmmo?: { itemId: number; itemName: string };
   baseSpellMaxHit?: number;
   spellElement?: SpellElement;
+  /** Name of the selected combat spell (e.g. "Fire Surge", "Ice Barrage") — auto-picked by the optimizer or chosen via the spell picker. Undefined for powered staves. */
+  autoSpellName?: string;
   ammoQuantity?: number;
   notes?: string;
   /** Which conditional item bonuses the set's gear can grant — see `activeBonusesForTarget`. */

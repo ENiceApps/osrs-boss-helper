@@ -206,3 +206,44 @@ describe("Obsidian armour — TzHaar-weapon constraint", () => {
     expect(found).toContain("obsidian-melee");
   });
 });
+
+// ============ Crystal armour (crystal-bow / BoFA-only) ============
+const CRYSTAL_HELM = 23971;
+const CRYSTAL_BODY = 23975;
+const CRYSTAL_LEGS = 23979;
+const CRYSTAL_BOW = 23983;
+const BOFA = 25865; // regular Bow of faerdhinen
+const BOFA_CORRUPTED = 25867; // (c) — does NOT benefit from crystal armour
+const MAGIC_SHORTBOW = 861; // ordinary bow — should never fire crystal
+
+describe("Crystal armour — crystal-weapon constraint", () => {
+  it("fires with the crystal bow (+30% acc / +15% dmg)", () => {
+    const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, CRYSTAL_BOW]);
+    const bonus = detectArmorSetBonus(ids, "ranged", { attackType: "ranged", weaponId: CRYSTAL_BOW });
+    expect(bonus?.id).toBe("crystal-armour");
+    expect(bonus?.accuracyFactor).toEqual([13, 10]);
+    expect(bonus?.damageFactor).toEqual([23, 20]);
+  });
+
+  it("fires with the regular Bow of faerdhinen", () => {
+    const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, BOFA]);
+    expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA })?.id).toBe("crystal-armour");
+  });
+
+  it("does NOT fire with the corrupted Bow of faerdhinen (c)", () => {
+    const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, BOFA_CORRUPTED]);
+    expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA_CORRUPTED })).toBeUndefined();
+  });
+
+  it("does NOT fire with an ordinary bow", () => {
+    const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, MAGIC_SHORTBOW]);
+    expect(detectArmorSetBonus(ids, "ranged", { weaponId: MAGIC_SHORTBOW })).toBeUndefined();
+  });
+
+  it("availableArmorSetsInBank surfaces crystal only when a crystal weapon is in the bank", () => {
+    const armorOnly = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS]);
+    expect(availableArmorSetsInBank(armorOnly).find((s) => s.id === "crystal-armour")).toBeUndefined();
+    const withBow = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, CRYSTAL_BOW]);
+    expect(availableArmorSetsInBank(withBow).map((s) => s.id)).toContain("crystal-armour");
+  });
+});

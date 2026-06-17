@@ -43,7 +43,7 @@ export function InventoryPanel({ consumables, mapping }: Props) {
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-osrs-brown-light mt-2 text-center">
+      <p className="label-eyebrow text-osrs-brown-light mt-2 text-center">
         Quantities are recommendations; bank tag exports don&rsquo;t include stack sizes.
       </p>
     </div>

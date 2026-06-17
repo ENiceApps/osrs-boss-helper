@@ -7,6 +7,7 @@
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { hasTrigger } from "@/data/bonus-trigger-items";
+import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem } from "@/lib/loadout-edit";
@@ -44,8 +45,12 @@ export interface ScenarioInput {
   baseSpellMaxHit?: number;
   /** Magic-only: cast spell element — gates Tome of Fire and target weakness. */
   spellElement?: SpellElement;
+  /** Magic-only: name of the auto-selected standard spellbook spell, for UI display. */
+  autoSpellName?: string;
   /** Resolves the boost potion the player owns for the loadout's style (from the bank). */
   boostResolver?: BoostResolver;
+  /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
+  onTask?: boolean;
   /**
    * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
    * it lives inside the weapon, leaving the ammo slot free for a blessing.
@@ -321,11 +326,16 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   const itemBonusFlags: ItemBonusFlags = {
     dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
     dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
+    dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
+    tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
+    tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
     twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
+    fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
+    slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
   };
 
   // Tier is purely informational on the recommend path; mark scratch loadouts
@@ -355,12 +365,19 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     internalAmmo,
     baseSpellMaxHit: combatStyle === "magic" ? input.baseSpellMaxHit : undefined,
     spellElement: combatStyle === "magic" ? input.spellElement : undefined,
+    autoSpellName: combatStyle === "magic" ? input.autoSpellName : undefined,
     itemBonusFlags,
     weaponCategory: weapon.category,
     armorSetBonus,
   };
 
-  const dps = computeSetDps(loadout, target, skills, input.boostResolver?.(combatStyle));
+  const dps = computeSetDps(
+    loadout,
+    target,
+    skills,
+    input.boostResolver?.(combatStyle),
+    input.onTask ?? false,
+  );
   const activeBonuses = activeBonusesForTarget(loadout, target);
   return { valid: true, loadout, dps, activeBonuses };
 }

@@ -42,7 +42,7 @@ const NON_WEAPON_SLOTS: LoadoutSlotKey[] = [
 ];
 const ALL_SLOTS: LoadoutSlotKey[] = ["weapon", ...NON_WEAPON_SLOTS];
 
-export type BudgetMode = "own-only" | "gp-only" | "sell-to-fund";
+export type BudgetMode = "own-only" | "gp-only" | "sell-to-fund" | "budget";
 export type PriceLookup = (itemId: number) => number | null;
 
 export interface FindUpgradesInput {
@@ -51,8 +51,12 @@ export interface FindUpgradesInput {
   skills: Skills;
   gp: number;
   mode: BudgetMode;
-  /** sell-to-fund only: items below this GE-price threshold are kept (not sold). 0 = sell all. */
-  sellThreshold?: number;
+  /**
+   * sell-to-fund only: ids of bank items the user chose to liquidate. Their
+   * summed GE value is added to the budget. Selling is fully user-driven —
+   * see recommendedSellToFund for the default-checked set.
+   */
+  sellItemIds?: number[];
   /** Caller wires this from /api/prices or test fixtures. */
   priceLookup: PriceLookup;
   /** Cap on iterations to avoid runaway when no upgrade is meaningfully better. Default 8. */
@@ -62,6 +66,8 @@ export interface FindUpgradesInput {
   spellElement?: SpellElement;
   /** Resolves the boost potion the player owns for a given style (from the bank). */
   boostResolver?: BoostResolver;
+  /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
+  onTask?: boolean;
 }
 
 export interface UpgradeStep {
@@ -88,10 +94,14 @@ export interface BudgetResult {
   upgradePath: UpgradeStep[];
   totalCostGp: number;
   totalDpsDelta: number;
-  /** sell-to-fund mode: items recommended for liquidation to fund the path. */
+  /** sell-to-fund mode: items the user chose to liquidate to fund the path. */
   sellList: ItemValue[];
   /** GP left over after applying every step in upgradePath and selling sellList. */
   remainingGp: number;
+  /** Budget (from-scratch) mode: every item to purchase for the built loadout. */
+  shoppingList?: ItemValue[];
+  /** True when built from scratch ignoring the bank (Budget mode). */
+  fromScratch?: boolean;
 }
 
 /** Strict equip check — mirrors lib/optimize/bank.ts and scenario.ts. */
@@ -246,7 +256,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     input.bank instanceof Set ? input.bank : input.bank,
   );
   const maxIterations = input.maxIterations ?? 8;
-  const sellThreshold = input.sellThreshold ?? 0;
+  const sellItemIds = input.sellItemIds ?? [];
 
   // Step 1: best loadout from the original bank.
   const { rankings } = optimizeForBoss({
@@ -257,6 +267,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
     boostResolver: input.boostResolver,
+    onTask: input.onTask,
   });
   const currentBest = rankings[0] ?? null;
 
@@ -285,21 +296,17 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     };
   }
 
-  // Step 2: determine starting budget + sell list. Items in the bank that
-  // aren't in currentBest's loadout are candidates for sale (sell-to-fund).
-  const activeItemIds = new Set(
-    Object.values(currentBest.loadout.slots).map((s) => s.itemId),
-  );
+  // Step 2: determine starting budget + sell list. In sell-to-fund mode the
+  // player explicitly picks which bank items to liquidate; their summed GE
+  // value tops up the budget. (recommendedSellToFund seeds the default picks.)
   const sellList: ItemValue[] = [];
   let budget = input.gp;
   if (input.mode === "sell-to-fund") {
-    for (const id of originalBank) {
-      if (activeItemIds.has(id)) continue;
+    for (const id of sellItemIds) {
       const item = ITEM_BY_ID.get(id);
       if (!item) continue;
       const price = input.priceLookup(id);
       if (price === null) continue;
-      if (price < sellThreshold) continue;
       sellList.push({ itemId: id, name: item.name, valueGp: price });
       budget += price;
     }
@@ -313,6 +320,16 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
   const effectiveBank = new Set(originalBank);
 
   for (let iter = 0; iter < maxIterations; iter++) {
+    // Spell info: prefer caller-supplied, fall back to the active loadout's
+    // computed values so powered-staff formulas and auto-selected standard
+    // spells are preserved when evaluating non-weapon slot upgrades.
+    const upgradeSpellMaxHit =
+      input.baseSpellMaxHit ??
+      (activeLoadout.style === "magic" ? activeLoadout.baseSpellMaxHit : undefined);
+    const upgradeSpellElement =
+      input.spellElement ??
+      (activeLoadout.style === "magic" ? activeLoadout.spellElement : undefined);
+
     const candidates = findCandidates(
       activeLoadout,
       activeDps,
@@ -321,8 +338,8 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       input.skills,
       budget,
       input.priceLookup,
-      input.baseSpellMaxHit,
-      input.spellElement,
+      upgradeSpellMaxHit,
+      upgradeSpellElement,
       input.boostResolver,
     );
     if (candidates.length === 0) break;
@@ -353,22 +370,6 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     effectiveBank.add(best.item.id);
     budget -= best.costGp;
 
-    // sell-to-fund: if the swap displaced a bank item we haven't already
-    // earmarked for sale, sell it now and add its value to budget.
-    if (
-      input.mode === "sell-to-fund" &&
-      best.swappedOutItemId !== null &&
-      originalBank.has(best.swappedOutItemId) &&
-      !sellList.some((s) => s.itemId === best.swappedOutItemId)
-    ) {
-      const displaced = ITEM_BY_ID.get(best.swappedOutItemId);
-      const price = input.priceLookup(best.swappedOutItemId);
-      if (displaced && price !== null && price >= sellThreshold) {
-        sellList.push({ itemId: best.swappedOutItemId, name: displaced.name, valueGp: price });
-        budget += price;
-      }
-    }
-
     // Update the active loadout. Re-score the new gear from scratch so the
     // loadout shape is consistent with optimizeForBoss's output.
     const rescored = scoreScenario({
@@ -382,6 +383,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
+    onTask: input.onTask,
     });
     if (!rescored.valid) break; // shouldn't happen — we just scored it above
     activeLoadout = rescored.loadout;
@@ -403,6 +405,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
+    onTask: input.onTask,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }
@@ -419,4 +422,128 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     sellList,
     remainingGp: budget,
   };
+}
+
+export interface RecommendSellInput {
+  bank: Set<number> | number[];
+  target: MonsterCatalogEntry;
+  skills: Skills;
+  /** Wallet GP the player can spend before any sales. */
+  gp: number;
+  priceLookup: PriceLookup;
+  maxIterations?: number;
+  baseSpellMaxHit?: number;
+  spellElement?: SpellElement;
+  boostResolver?: BoostResolver;
+  onTask?: boolean;
+}
+
+/**
+ * Sell-as-needed recommender for Sell-to-fund mode's default-checked set.
+ *
+ * Returns the *minimal* set of unused, tradeable bank items the player should
+ * liquidate to fund the worthwhile upgrade path. Unlike "sell everything over a
+ * threshold", an item is only earmarked once an upgrade actually needs its GP —
+ * and we sell the priciest unused items first so the fewest checkboxes are
+ * pre-ticked. Only items absent from the best buildable loadout are eligible,
+ * so the recommendation never tells you to sell gear you're wearing.
+ */
+export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds: number[] } {
+  const originalBank = new Set<number>(
+    input.bank instanceof Set ? input.bank : input.bank,
+  );
+  const maxIterations = input.maxIterations ?? 8;
+
+  const { rankings } = optimizeForBoss({
+    bank: originalBank,
+    target: input.target,
+    skills: input.skills,
+    topN: 1,
+    baseSpellMaxHit: input.baseSpellMaxHit,
+    spellElement: input.spellElement,
+    boostResolver: input.boostResolver,
+    onTask: input.onTask,
+  });
+  const currentBest = rankings[0];
+  if (!currentBest) return { sellItemIds: [] };
+
+  const activeItemIds = new Set(
+    Object.values(currentBest.loadout.slots).map((s) => s.itemId),
+  );
+  // Unused, tradeable bank items are the only things eligible to sell — priciest
+  // first, so each purchase is covered by selling as few items as possible.
+  const unusedSellable = [...originalBank]
+    .filter((id) => !activeItemIds.has(id))
+    .map((id) => ({ id, item: ITEM_BY_ID.get(id), price: input.priceLookup(id) }))
+    .filter(
+      (x): x is { id: number; item: ItemCatalogEntry; price: number } =>
+        x.item !== undefined && x.price !== null,
+    )
+    .sort((a, b) => b.price - a.price);
+
+  const recommended = new Set<number>();
+  let cash = input.gp;
+  let availableFromSales = unusedSellable.reduce((s, x) => s + x.price, 0);
+
+  let activeLoadout = currentBest.loadout;
+  let activeDps = currentBest.dps.dps;
+  const effectiveBank = new Set(originalBank);
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    const upgradeSpellMaxHit =
+      input.baseSpellMaxHit ??
+      (activeLoadout.style === "magic" ? activeLoadout.baseSpellMaxHit : undefined);
+    const upgradeSpellElement =
+      input.spellElement ??
+      (activeLoadout.style === "magic" ? activeLoadout.spellElement : undefined);
+
+    // Hypothetical max budget if we sold every remaining unused item — lets the
+    // candidate scan surface upgrades we could afford after selling.
+    const candidates = findCandidates(
+      activeLoadout,
+      activeDps,
+      effectiveBank,
+      input.target,
+      input.skills,
+      cash + availableFromSales,
+      input.priceLookup,
+      upgradeSpellMaxHit,
+      upgradeSpellElement,
+      input.boostResolver,
+    );
+    if (candidates.length === 0) break;
+    candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);
+    const best = candidates[0];
+
+    // Sell unused items until this upgrade is affordable, recording each sale.
+    while (cash < best.costGp && unusedSellable.length > 0) {
+      const sold = unusedSellable.shift()!;
+      recommended.add(sold.id);
+      cash += sold.price;
+      availableFromSales -= sold.price;
+    }
+    if (cash < best.costGp) break; // unaffordable even after selling everything
+
+    cash -= best.costGp;
+    effectiveBank.add(best.item.id);
+
+    const rescored = scoreScenario({
+      itemIds: best.itemIdsAfter,
+      target: input.target,
+      skills: input.skills,
+      attackStyle: {
+        attackType: activeLoadout.attackType as WeaponAttackType,
+        choice: activeLoadout.attackStyleChoice as AttackStyleChoice,
+      },
+      baseSpellMaxHit: input.baseSpellMaxHit,
+      spellElement: input.spellElement,
+      boostResolver: input.boostResolver,
+      onTask: input.onTask,
+    });
+    if (!rescored.valid) break;
+    activeLoadout = rescored.loadout;
+    activeDps = rescored.dps.dps;
+  }
+
+  return { sellItemIds: [...recommended] };
 }

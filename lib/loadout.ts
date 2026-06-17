@@ -9,8 +9,12 @@ import type { ConditionalBonusFlags } from "@/types/osrs";
 export interface TargetActiveBonuses {
   conditionalBonuses: ConditionalBonusFlags;
   tomeOfFireEquipped: boolean;
+  tomeOfWaterEquipped: boolean;
+  tomeOfEarthEquipped: boolean;
   /** True iff this loadout's weapon is Twisted bow. */
   twistedBowEquipped: boolean;
+  /** True iff Osmumten's fang is the weapon AND it's swung on a stab style. */
+  fangEquipped: boolean;
   /** Target's effective magic level for Tbow scaling. */
   targetMonsterMagicLevel: number;
   /** Whether target is in Chambers of Xeric (350 cap vs 250). */
@@ -30,19 +34,33 @@ export function activeBonusesForTarget(
   const isDragon = target.attributes.includes("dragon");
   const isUndead = target.attributes.includes("undead");
   const isDemon = target.attributes.includes("demon");
-  const isFireWeak = target.weakness?.element === "fire";
-  const castsFire = set.spellElement === "fire";
+  // Dragon hunter wand's dragonbane is active vs dragons AND does NOT stack with
+  // Salve (unlike DHCB/DHL, which do). On an undead dragon (e.g. Vorkath) the
+  // wand wins (+75/+40 ≫ Salve's +20/+20), so suppress Salve when it's active.
+  const wandActive = set.itemBonusFlags.dragonHunterWand && isDragon;
   const isXerician = target.attributes.includes("xerician");
+  const castsFire = set.spellElement === "fire";
+  const castsWater = set.spellElement === "water";
+  const castsEarth = set.spellElement === "earth";
   return {
     conditionalBonuses: {
       dragonHunterCrossbow: set.itemBonusFlags.dragonHunterCrossbow && isDragon,
       dragonHunterLance: set.itemBonusFlags.dragonHunterLance && isDragon,
-      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead,
-      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead,
+      dragonHunterWand: wandActive,
+      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive,
+      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive,
       demonbane: set.itemBonusFlags.demonbane && isDemon,
     },
-    tomeOfFireEquipped: set.itemBonusFlags.tomeOfFire && castsFire && isFireWeak,
+    // Tomes boost their element's spells vs all NPCs — not just element-weak
+    // targets. (Element weakness is a separate accuracy+damage bonus modelled
+    // in calculate.ts; the tome multiplier stacks on top of it.)
+    tomeOfFireEquipped: set.itemBonusFlags.tomeOfFire && castsFire,
+    tomeOfWaterEquipped: set.itemBonusFlags.tomeOfWater && castsWater,
+    tomeOfEarthEquipped: set.itemBonusFlags.tomeOfEarth && castsEarth,
     twistedBowEquipped: set.itemBonusFlags.twistedBow,
+    // Fang's double accuracy roll only fires on stab styles (Stab/Lunge/Block);
+    // its slash style is a vanilla swing. Target-independent — works on any NPC.
+    fangEquipped: set.itemBonusFlags.fang && set.attackType === "stab",
     // Per wgloop's source: M = max(skills.magic, offensive.magic). Catalog
     // only exposes skills.magic for now; offensive.magic isn't surfaced.
     // For most monsters these match; we'll plumb offensive.magic if we hit
@@ -60,12 +78,10 @@ export function rangedDefenceBonusFor(
 ): number {
   switch (weaponCategory) {
     case "Crossbow":
-    case "Two-handed Crossbow":
       return target.defenceBonuses.rangedHeavy;
-    case "Thrown":
-    case "Blowpipe":
+    case "Thrown": // includes blowpipe, darts, knives
       return target.defenceBonuses.rangedLight;
-    default:
+    default: // Bow, Chinchompas, etc.
       return target.defenceBonuses.rangedStandard;
   }
 }

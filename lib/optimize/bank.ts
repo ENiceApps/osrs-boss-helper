@@ -23,6 +23,9 @@ import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES, AMMO_TYPES } 
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
+import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
+import { autocastableSpellbooks } from "@/data/items/magic-weapon-autocast";
+import { bestSpell, spellMaxHit } from "@/data/spells/catalog";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -53,6 +56,8 @@ export interface BankOptimizerInput {
   spellElement?: SpellElement;
   /** Resolves the boost potion the player owns for a given style (from the bank). */
   boostResolver?: BoostResolver;
+  /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
+  onTask?: boolean;
 }
 
 export interface BankOptimizerResult {
@@ -65,7 +70,7 @@ export interface BankOptimizerResult {
 }
 
 /** Combat style implied by a weapon attack type. */
-function combatStyleFor(attackType: WeaponAttackType): CombatStyle {
+export function combatStyleFor(attackType: WeaponAttackType): CombatStyle {
   if (attackType === "ranged") return "ranged";
   if (attackType === "magic") return "magic";
   return "melee";
@@ -101,7 +106,7 @@ function strengthFor(item: ItemCatalogEntry, style: CombatStyle): number {
  * the MELEE strength bonus, so rank gear by `str` even though the style is
  * ranged — otherwise the greedy fills slots with useless ranged-strength gear.
  */
-function itemScore(
+export function itemScore(
   item: ItemCatalogEntry,
   attackType: WeaponAttackType,
   style: CombatStyle,
@@ -114,7 +119,7 @@ function itemScore(
 }
 
 /** True iff the player can equip the item given their skills. */
-function meetsRequirements(item: ItemCatalogEntry, skills: Skills): boolean {
+export function meetsRequirements(item: ItemCatalogEntry, skills: Skills): boolean {
   if (!item.requirements) return true;
   const r = item.requirements;
   if (r.attack !== undefined && skills.attack < r.attack) return false;
@@ -128,7 +133,7 @@ function meetsRequirements(item: ItemCatalogEntry, skills: Skills): boolean {
 }
 
 /** Catalog "2h" slot rolls up to the loadout "weapon" key. */
-function loadoutSlotFor(item: ItemCatalogEntry): LoadoutSlotKey {
+export function loadoutSlotFor(item: ItemCatalogEntry): LoadoutSlotKey {
   return item.slot === "2h" ? "weapon" : (item.slot as LoadoutSlotKey);
 }
 
@@ -150,11 +155,11 @@ function bankBySlot(
   return out;
 }
 
-const NON_WEAPON_SLOTS: LoadoutSlotKey[] = [
+export const NON_WEAPON_SLOTS: LoadoutSlotKey[] = [
   "head", "cape", "neck", "body", "legs", "hands", "feet", "ring", "ammo", "shield",
 ];
 
-interface WeaponStyleCandidate {
+export interface WeaponStyleCandidate {
   weapon: ItemCatalogEntry;
   attackType: WeaponAttackType;
   choice: AttackStyleChoice;
@@ -162,7 +167,7 @@ interface WeaponStyleCandidate {
 }
 
 /** Enumerate every legal non-defensive (weapon, attackType, choice) combo from the bank. */
-function enumerateWeaponStyles(
+export function enumerateWeaponStyles(
   weapons: ItemCatalogEntry[],
 ): WeaponStyleCandidate[] {
   const out: WeaponStyleCandidate[] = [];
@@ -274,8 +279,63 @@ function applicableForceIncludes(
   if (isDemon) out.push(...ownedTriggerIds(bank, "ARCLIGHT"));
   if (isDemon) out.push(...ownedTriggerIds(bank, "EMBERLIGHT"));
   out.push(...ownedTriggerIds(bank, "TWISTED_BOW")); // always relevant (scales with target magic)
-  if (isFireWeak) out.push(...ownedTriggerIds(bank, "TOME_OF_FIRE_CHARGED"));
+  // Tomes boost their element's spells vs all NPCs — push them unconditionally
+  // so the optimizer tries them for any magic build, not only element-weak targets.
+  out.push(...ownedTriggerIds(bank, "TOME_OF_FIRE_CHARGED"));
+  out.push(...ownedTriggerIds(bank, "TOME_OF_WATER_CHARGED"));
+  out.push(...ownedTriggerIds(bank, "TOME_OF_EARTH_CHARGED"));
   return out;
+}
+
+export interface AutoSpellResult {
+  baseSpellMaxHit?: number;
+  spellElement?: SpellElement;
+  autoSpellName?: string;
+}
+
+/**
+ * Resolve the spell info a magic loadout should be scored with. Powered staves
+ * (Trident / Sanguinesti / Shadow) embed their own damage formula keyed by
+ * weapon ID; regular staves and wands auto-select the best castable spell
+ * across all spellbooks the weapon can autocast, gated by the target's
+ * attributes and any equipped tome. Non-magic styles return the fallbacks
+ * unchanged. Shared by the bank optimizer and the from-scratch budget builder.
+ */
+export function autoPickSpell(
+  weapon: ItemCatalogEntry,
+  itemIds: number[],
+  combatStyle: CombatStyle,
+  magicLevel: number,
+  target: MonsterCatalogEntry,
+  fallbackBaseSpellMaxHit?: number,
+  fallbackSpellElement?: SpellElement,
+): AutoSpellResult {
+  const poweredFormula = POWERED_STAFF_FORMULA.get(weapon.id);
+  let baseSpellMaxHit = poweredFormula
+    ? poweredFormula(magicLevel)
+    : fallbackBaseSpellMaxHit;
+  let spellElement = fallbackSpellElement;
+  let autoSpellName: string | undefined;
+
+  if (combatStyle === "magic" && !poweredFormula && baseSpellMaxHit === undefined) {
+    const spell = bestSpell({
+      magicLevel,
+      targetAttributes: target.attributes,
+      tomeOfFire: BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.some((id) => itemIds.includes(id)),
+      tomeOfWater: BONUS_TRIGGER_VARIANTS.TOME_OF_WATER_CHARGED.some((id) => itemIds.includes(id)),
+      tomeOfEarth: BONUS_TRIGGER_VARIANTS.TOME_OF_EARTH_CHARGED.some((id) => itemIds.includes(id)),
+      twinflame: weapon.id === 30634, // Twinflame staff
+      // Never recommend a spell the equipped weapon can't autocast.
+      allowedSpellbooks: autocastableSpellbooks(weapon.id),
+    });
+    if (spell) {
+      baseSpellMaxHit = spellMaxHit(spell, magicLevel);
+      spellElement = spell.element;
+      autoSpellName = spell.name;
+    }
+  }
+
+  return { baseSpellMaxHit, spellElement, autoSpellName };
 }
 
 /**
@@ -373,10 +433,14 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
     for (const forcedId of nonWeaponForces) {
       const forced = ITEM_BY_ID.get(forcedId)!;
       const forcedSlot = loadoutSlotFor(forced);
-      const isTome = BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.includes(forcedId);
+      const isTome = (
+        BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.includes(forcedId) ||
+        BONUS_TRIGGER_VARIANTS.TOME_OF_WATER_CHARGED.includes(forcedId) ||
+        BONUS_TRIGGER_VARIANTS.TOME_OF_EARTH_CHARGED.includes(forcedId)
+      );
       for (const c of snapshot) {
-        // Only force a Tome of Fire branch when this weapon-style is magic,
-        // and never onto a 2H weapon's (absent) shield slot.
+        // Tomes only benefit magic builds — skip for melee/ranged weapon styles,
+        // and never force a shield slot onto a 2H weapon.
         if (isTome && c.ws.combatStyle !== "magic") continue;
         if (forcedSlot === "shield" && c.ws.weapon.isTwoHanded) continue;
         const filtered = c.itemIds.filter((id) => {
@@ -440,15 +504,32 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   // Step 4: score every candidate.
   const valid: Array<Extract<ScoredScenario, { valid: true }>> = [];
   for (const c of unique) {
+    // Powered staves (Trident, Sanguinesti, etc.) embed their own damage
+    // formula keyed by weapon ID — derive baseSpellMaxHit from the weapon
+    // rather than requiring the caller to supply a spell. For regular staves
+    // and wands, auto-select the best castable spell across all spellbooks
+    // (Standard / Ancient / Arceuus), gated by the target's attributes.
+    const { baseSpellMaxHit, spellElement, autoSpellName } = autoPickSpell(
+      c.ws.weapon,
+      c.itemIds,
+      c.ws.combatStyle,
+      input.skills.magic,
+      input.target,
+      input.baseSpellMaxHit,
+      input.spellElement,
+    );
+
     const scored = scoreScenario({
       itemIds: c.itemIds,
       internalAmmoId: c.internalAmmoId,
       target: input.target,
       skills: input.skills,
       attackStyle: { attackType: c.ws.attackType, choice: c.ws.choice },
-      baseSpellMaxHit: input.baseSpellMaxHit,
-      spellElement: input.spellElement,
+      baseSpellMaxHit,
+      spellElement,
+      autoSpellName,
       boostResolver: input.boostResolver,
+      onTask: input.onTask,
     });
     if (scored.valid) valid.push(scored);
   }

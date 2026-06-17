@@ -34,7 +34,7 @@ export function BankInput({ onParsed }: Props) {
     <div className="osrs-panel p-4 rounded">
       <h3 className="font-semibold text-osrs-brown mb-2">Bank tag</h3>
       <p className="text-xs mb-2 text-osrs-brown-light">
-        In RuneLite: right-click your Vorkath bank-tag tab and choose &ldquo;Export tag tab&rdquo;. Paste here.
+        In RuneLite: right-click your boss bank-tag tab and choose &ldquo;Export tag tab&rdquo;. Paste here.
       </p>
       <textarea
         value={value}
@@ -42,7 +42,7 @@ export function BankInput({ onParsed }: Props) {
         rows={4}
         spellCheck={false}
         className="w-full p-2 text-xs font-mono bg-parchment-dark text-osrs-brown border border-osrs-brown rounded resize-y"
-        placeholder="banktags,1,vorkath,21012,9242,27226,..."
+        placeholder="banktags,1,bossgear,21012,9242,27226,..."
       />
       <div className="flex items-center gap-3 mt-2">
         <button

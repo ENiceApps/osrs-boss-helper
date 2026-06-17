@@ -108,6 +108,23 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     // mixes elite/regular pieces (no elite-set tax in that case).
     bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
   },
+  {
+    id: "crystal-armour",
+    name: "Crystal armour",
+    style: "ranged",
+    pieces: [
+      { slot: "head", itemIds: [23971, 23973] }, // Crystal helm (active / inactive)
+      { slot: "body", itemIds: [23975, 23977] }, // Crystal body
+      { slot: "legs", itemIds: [23979, 23981] }, // Crystal legs
+    ],
+    // Full set: +30% accuracy, +15% damage — but ONLY for the crystal bow and
+    // the regular Bow of faerdhinen. The corrupted Bow of faerdhinen (c) (25867)
+    // does NOT benefit (it's used with regular ranged gear) and is excluded.
+    // Per-piece scaling (helm 5/2.5%, body 15/7.5%, legs 10/5%) isn't modeled —
+    // all-or-nothing, matching every other set here.
+    bonus: { accuracyFactor: [13, 10], damageFactor: [23, 20] },
+    requiredWeaponIds: [23983, 25862, 25865], // Crystal bow, Bow of faerdhinen
+  },
 
   // ============ Magic ============
   {
@@ -120,9 +137,9 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "legs", itemIds: [VOID_ROBE_ELITE] },
       { slot: "hands", itemIds: [VOID_GLOVES] },
     ],
-    // +45% accuracy + +2.5% damage. Elite adds the small damage boost on
-    // top of regular's accuracy-only bonus.
-    bonus: { accuracyFactor: [29, 20], damageFactor: [41, 40] },
+    // +45% accuracy + +5% magic damage. Bumped from 2.5% → 5% in the
+    // 29 May 2024 game update.
+    bonus: { accuracyFactor: [29, 20], damageFactor: [21, 20] },
   },
   {
     id: "void-magic",

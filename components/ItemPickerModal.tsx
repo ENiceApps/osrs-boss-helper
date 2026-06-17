@@ -111,7 +111,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
           className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown mb-2"
         />
 
-        <div className="flex items-baseline justify-between text-xs text-osrs-muted mb-2">
+        <div className="flex items-baseline justify-between text-caption text-osrs-muted mb-2">
           <span>{filtered.length} items</span>
           {currentItemId && (
             <button
@@ -132,7 +132,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
                 <button
                   type="button"
                   onClick={() => onSelect(it)}
-                  className={`w-full text-left p-1.5 rounded border text-xs flex items-center gap-2 ${
+                  className={`w-full text-left p-1.5 rounded border text-caption flex items-center gap-2 ${
                     isCurrent
                       ? "border-osrs-gold bg-parchment-dark"
                       : "border-transparent hover:border-osrs-gold/40 hover:bg-osrs-gold/5"
@@ -148,12 +148,12 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
                     <div className="font-semibold text-osrs-brown truncate">
                       {it.name}
                       {it.version && (
-                        <span className="text-[10px] font-normal text-osrs-muted ml-1">
+                        <span className="label-eyebrow font-normal text-osrs-muted ml-1">
                           ({it.version})
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-osrs-brown-light flex flex-wrap gap-x-2">
+                    <div className="label-eyebrow text-osrs-brown-light flex flex-wrap gap-x-2">
                       {it.category && <span>{it.category}</span>}
                       {it.attackStab > 0 && <span>stab+{it.attackStab}</span>}
                       {it.attackSlash > 0 && <span>slash+{it.attackSlash}</span>}
@@ -172,7 +172,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
           })}
         </ul>
         {filtered.length > 200 && (
-          <p className="text-[10px] text-osrs-muted mt-1">
+          <p className="label-eyebrow text-osrs-muted mt-1">
             Showing top 200 — refine search to narrow.
           </p>
         )}

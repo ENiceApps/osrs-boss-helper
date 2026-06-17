@@ -162,7 +162,7 @@ export function EquipmentGrid({
                   RIGHT_COLUMN.has(slot) ? "right-full mr-2" : "left-full ml-2"
                 }`}
               >
-                <div className="text-xs font-semibold text-osrs-brown leading-snug">
+                <div className="text-caption font-semibold text-osrs-brown leading-snug">
                   {piece!.itemName}
                   {hasBank && (
                     <span

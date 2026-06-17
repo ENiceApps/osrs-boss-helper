@@ -47,13 +47,17 @@ function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.demonbane) flags.push("Demonbane +70%");
   if (activeBonuses?.conditionalBonuses.dragonHunterCrossbow) flags.push("DHCB +30/+25%");
   if (activeBonuses?.conditionalBonuses.dragonHunterLance) flags.push("DHL +20%");
+  if (activeBonuses?.conditionalBonuses.dragonHunterWand) flags.push("DH wand +75/+40%");
   if (activeBonuses?.conditionalBonuses.salveAmuletEi) flags.push("Salve(ei) +20%");
   if (activeBonuses?.conditionalBonuses.salveAmulet) flags.push("Salve +16.7%");
-  if (activeBonuses?.tomeOfFireEquipped) flags.push("Tome of Fire +10%");
+  if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
+  if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc+dmg");
+  if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% acc+dmg");
   if (activeBonuses?.twistedBowEquipped)
     flags.push(
       `Tbow scaling (M=${activeBonuses.targetMonsterMagicLevel}${activeBonuses.targetIsXerician ? ", CoX cap" : ""})`,
     );
+  if (activeBonuses?.fangEquipped) flags.push("Fang 2× accuracy roll");
   return flags;
 }
 
@@ -92,6 +96,8 @@ export function ResultsPanel({
 
   const upgradePath = result?.upgradePath ?? [];
   const showUpgrades = !edited && result !== null && upgradePath.length > 0;
+  const shoppingList = result?.shoppingList ?? [];
+  const showShoppingList = !edited && (result?.fromScratch ?? false) && shoppingList.length > 0;
 
   return (
     <div className="osrs-panel p-4 rounded space-y-4">
@@ -141,6 +147,43 @@ export function ResultsPanel({
         </p>
       )}
 
+      {showShoppingList && (
+        <div>
+          <div className="flex items-baseline justify-between mb-1 gap-2">
+            <h4 className="section-title text-sm font-semibold text-osrs-brown">
+              Shopping list
+            </h4>
+            <span className="text-caption text-osrs-muted shrink-0">
+              {fmtGp(result!.totalCostGp)} gp · {fmtGp(result!.remainingGp)} left
+            </span>
+          </div>
+          <ul className="space-y-1">
+            {shoppingList.map((item) => (
+              <li
+                key={item.itemId}
+                className="flex items-center gap-2 osrs-well rounded px-2 py-1.5 text-xs"
+              >
+                <ItemIcon
+                  itemId={item.itemId}
+                  size={28}
+                  mapping={mapping}
+                  title={item.name}
+                />
+                <span className="flex-1 truncate font-semibold text-osrs-brown">
+                  {item.name}
+                </span>
+                <span className="text-osrs-muted shrink-0">
+                  {item.valueGp === 0 ? "owned" : fmtGp(item.valueGp)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-caption text-osrs-muted mt-1.5">
+            Best loadout buildable for this budget, ignoring your bank.
+          </p>
+        </div>
+      )}
+
       {showUpgrades && (
         <div>
           <div className="flex items-baseline justify-between mb-1 gap-2">
@@ -170,7 +213,7 @@ export function ResultsPanel({
                   <div className="font-semibold text-osrs-brown truncate">
                     Buy {step.bought.name}
                   </div>
-                  <div className="text-[10px] text-osrs-muted">
+                  <div className="label-eyebrow text-osrs-muted">
                     {step.swappedOut
                       ? `Replaces ${step.swappedOut.name}`
                       : `Fills empty ${step.bought.slot} slot`}
@@ -180,7 +223,7 @@ export function ResultsPanel({
                   <div className="text-status-owned font-semibold">
                     +{step.dpsDelta.toFixed(2)}
                   </div>
-                  <div className="text-[10px] text-osrs-muted">
+                  <div className="label-eyebrow text-osrs-muted">
                     {fmtGp(step.bought.costGp)} gp
                   </div>
                 </div>

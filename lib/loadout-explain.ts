@@ -92,18 +92,25 @@ function buildReasons(
     );
     if (cb?.dragonHunterCrossbow) reasons.push("+30% accuracy / +25% damage vs this dragon");
     if (cb?.dragonHunterLance) reasons.push("+20% accuracy & damage vs this dragon");
+    if (cb?.dragonHunterWand) reasons.push("+75% accuracy / +40% damage vs this dragon");
     if (cb?.demonbane) reasons.push("+70% damage vs this demon");
     if (activeBonuses?.twistedBowEquipped)
       reasons.push(
         `scales with the target's magic level (${activeBonuses.targetMonsterMagicLevel})`,
       );
+    if (activeBonuses?.fangEquipped)
+      reasons.push("rolls accuracy twice on stab — much higher hit chance");
+    if (set.slots.weapon?.itemId === 30634)
+      reasons.push("Twinflame: +10% acc/dmg on standard spells, +40% second cast on Bolt/Blast/Wave");
   }
   if (slot === "neck") {
     if (cb?.salveAmuletEi) reasons.push("+20% accuracy & damage vs this undead target");
     else if (cb?.salveAmulet) reasons.push("+16.7% accuracy & damage vs this undead target");
   }
-  if (slot === "shield" && activeBonuses?.tomeOfFireEquipped) {
-    reasons.push("+10% fire spell damage");
+  if (slot === "shield") {
+    if (activeBonuses?.tomeOfFireEquipped)  reasons.push("+10% fire spell damage");
+    if (activeBonuses?.tomeOfWaterEquipped) reasons.push("+20% water spell accuracy & damage");
+    if (activeBonuses?.tomeOfEarthEquipped) reasons.push("+10% earth spell accuracy & damage");
   }
   return reasons;
 }

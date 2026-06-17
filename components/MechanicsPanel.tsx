@@ -14,7 +14,7 @@ export function MechanicsPanel({ evaluations }: Props) {
     <div className="osrs-panel p-4 rounded">
       <h3 className="section-title font-semibold text-osrs-brown mb-2">Boss mechanics</h3>
       {/* Legend so the colored dots read as a checklist, not errors. */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-osrs-muted mb-3">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 label-eyebrow text-osrs-muted mb-3">
         {hasChecked && (
           <>
             <span className="flex items-center gap-1">
@@ -45,7 +45,7 @@ export function MechanicsPanel({ evaluations }: Props) {
               ? requirement.description
               : requirement.remediation;
           return (
-            <li key={requirement.id} className="text-xs">
+            <li key={requirement.id} className="text-caption">
               <div className="flex items-start gap-2">
                 <span
                   aria-hidden

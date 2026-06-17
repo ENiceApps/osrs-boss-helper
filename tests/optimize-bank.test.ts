@@ -4,6 +4,8 @@
 //      not in the bank (Tbow swap)
 //  (3) honour force-include branches for demonbane against demon targets
 //  (4) not crash on degenerate inputs (empty bank, weaponless bank)
+//  (5) score powered staves (Trident of the seas/swamp) with their built-in
+//      damage formula — not zero — so magic is considered for magic-weak bosses
 
 import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
@@ -234,5 +236,122 @@ describe("optimize/bank — parity check vs Phase 1 scoreScenario", () => {
     if (!direct.valid) throw new Error("Direct re-score should be valid");
     expect(top.dps.dps).toBeCloseTo(direct.dps.dps, 6);
     expect(top.dps.maxHit).toBe(direct.dps.maxHit);
+  });
+});
+
+// Dagannoth Rex: magic def 10, all physical/ranged def 255.
+// Pre-fix: powered staves scored 0 DPS (no spell passed) → ranged 2.675 won.
+// Post-fix: built-in formula fires → magic ~6.8 DPS dominates.
+const REX = MONSTER_BY_SLUG["dagannoth-rex"];
+
+describe("optimize/bank — powered staff formula (Trident fix)", () => {
+  it("Trident of the swamp alone yields non-zero magic DPS", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [12899], // Trident of the swamp
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    const top = rankings[0];
+    expect(top.loadout.style).toBe("magic");
+    expect(top.loadout.slots.weapon?.itemId).toBe(12899);
+    expect(top.dps.dps).toBeGreaterThan(0);
+  });
+
+  it("Trident of the swamp max hit at 99 magic = 30 (formula 29 + Augury +4%)", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [12899],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    // formula: floor(99/3) - 4 = 29; Augury default prayer adds +4% magic damage:
+    // floor(29 × 1.04) = floor(30.16) = 30.
+    expect(rankings[0].dps.maxHit).toBe(30);
+  });
+
+  it("Trident of the seas max hit at 99 magic = 29 (formula 28 + Augury +4%)", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [11907], // Trident of the seas
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    // formula: floor(99/3) - 5 = 28; Augury: floor(28 × 1.04) = floor(29.12) = 29.
+    expect(rankings[0].dps.maxHit).toBe(29);
+  });
+
+  it("bank with Trident of swamp + DHCB kit → optimizer picks magic on Rex (not ranged)", () => {
+    // DHCB has dragon bonus vs Vorkath but is still a strong crossbow —
+    // against Rex's 255 ranged def it would have scored 0 pre-fix (magic=0)
+    // and still loses post-fix because Rex's magic def is only 10.
+    const bank = [
+      12899, // Trident of the swamp
+      21012, // Dragon hunter crossbow
+      9243,  // Diamond bolts (e)
+      22109, // Ava's assembler
+    ];
+    const { rankings } = optimizeForBoss({
+      bank,
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    const top = rankings[0];
+    expect(top.loadout.style).toBe("magic");
+    expect(top.loadout.slots.weapon?.itemId).toBe(12899);
+    // Should be dramatically better than the pre-fix ranged result (2.675).
+    expect(top.dps.dps).toBeGreaterThan(5);
+  });
+});
+
+// Staves get cross-spellbook auto-spell selection via bestSpell, but the pick is
+// constrained to spellbooks the EQUIPPED WEAPON can autocast (see
+// data/items/magic-weapon-autocast.ts). The Staff of water is a plain elemental
+// staff — Standard-only — so it can never autocast an Ancient barrage.
+const STAFF_OF_WATER = 1383; // category: Staff, magic+10, Standard-only autocast
+const ANCIENT_STAFF = 4675;  // autocasts Ancient Magicks + Standard
+
+describe("optimize/bank — cross-spellbook auto-spell selection", () => {
+  it("Staff of water alone yields non-zero magic DPS on Rex", () => {
+    // Pre-fix: standard staves had baseSpellMaxHit = undefined → magic DPS 0.
+    const { rankings } = optimizeForBoss({
+      bank: [STAFF_OF_WATER],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    const top = rankings[0];
+    expect(top.loadout.style).toBe("magic");
+    expect(top.loadout.slots.weapon?.itemId).toBe(STAFF_OF_WATER);
+    expect(top.dps.dps).toBeGreaterThan(0);
+  });
+
+  it("Standard-only staff at magic 99 → Fire Surge (best autocastable standard spell), NOT Ice Barrage", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [STAFF_OF_WATER],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Fire Surge");
+  });
+
+  it("Standard-only staff at magic 81 → Wind Surge (best autocastable standard spell at that level)", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [STAFF_OF_WATER],
+      target: REX,
+      skills: { ...SKILLS_AT_99, magic: 81 },
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Wind Surge");
+  });
+
+  it("an Ancient-capable staff DOES auto-select Ice Barrage at magic 99", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [ANCIENT_STAFF],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    const magic = rankings.find((r) => r.loadout.style === "magic");
+    expect(magic?.loadout.autoSpellName).toBe("Ice Barrage");
   });
 });
