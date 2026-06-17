@@ -7,9 +7,20 @@ interface Props {
 }
 
 /** A compact "number + label" cell for defence bonuses. */
-function BonusStat({ label, value }: { label: string; value: number }) {
+function BonusStat({
+  label,
+  value,
+  title,
+}: {
+  label: string;
+  value: number;
+  title?: string;
+}) {
   return (
-    <div className="flex flex-col items-center rounded border border-osrs-brown/25 bg-parchment px-2 py-1.5 text-center min-w-[3.25rem]">
+    <div
+      title={title}
+      className="flex flex-col items-center rounded border border-osrs-brown/25 bg-parchment px-2 py-1.5 text-center min-w-[3.25rem]"
+    >
       <span className="text-sm font-bold text-osrs-brown leading-none">{value}</span>
       <span className="label-eyebrow mt-0.5 text-[9px]">{label}</span>
     </div>
@@ -31,9 +42,6 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
  */
 export function BossStatsPanel({ monster }: Props) {
   const b = monster.defenceBonuses;
-  // Collapse the three ranged values to one if they're identical (very common).
-  const rangedSame =
-    b.rangedHeavy === b.rangedStandard && b.rangedStandard === b.rangedLight;
 
   return (
     <div className="osrs-panel rounded px-3 py-2.5">
@@ -66,19 +74,27 @@ export function BossStatsPanel({ monster }: Props) {
           </div>
         </div>
 
-        {/* Ranged defence */}
+        {/* Ranged defence — split by ammo weight class. Many monsters share one
+            value across all three, but some differ a lot (e.g. a boss weak to
+            bolts but resistant to darts), so we always show the breakdown. */}
         <div>
           <GroupLabel>Ranged def</GroupLabel>
           <div className="flex gap-1.5">
-            {rangedSame ? (
-              <BonusStat label="Ranged" value={b.rangedStandard} />
-            ) : (
-              <>
-                <BonusStat label="Heavy" value={b.rangedHeavy} />
-                <BonusStat label="Std" value={b.rangedStandard} />
-                <BonusStat label="Light" value={b.rangedLight} />
-              </>
-            )}
+            <BonusStat
+              label="Light"
+              value={b.rangedLight}
+              title="Light ranged defence — vs thrown weapons (darts, knives, blowpipe)"
+            />
+            <BonusStat
+              label="Std"
+              value={b.rangedStandard}
+              title="Standard ranged defence — vs bows (arrows) and chinchompas"
+            />
+            <BonusStat
+              label="Heavy"
+              value={b.rangedHeavy}
+              title="Heavy ranged defence — vs crossbows (bolts) and javelins"
+            />
           </div>
         </div>
 

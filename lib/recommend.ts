@@ -7,7 +7,9 @@
 
 import type { DpsResult, Skills } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
+import { SPELLS_BY_NAME } from "@/data/spells/catalog";
 import { resolveBoltProc } from "@/lib/dps/bolts";
+import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -75,8 +77,15 @@ export function computeSetDps(
   skills: Skills,
   /** Optional combat-boost potion. Applied to the visible level before the engine. */
   boost?: CombatBoost,
+  /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
+  onTask = false,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
+  // Black mask / slayer helm (i): only on-task, and only when no Salve is active
+  // (they don't stack — Salve takes priority vs undead).
+  const salveActive =
+    activeBonuses.conditionalBonuses.salveAmulet || activeBonuses.conditionalBonuses.salveAmuletEi;
+  const slayerOnTask = set.itemBonusFlags.slayerHelmImbued && onTask && !salveActive;
   const effectiveSkills = applyCombatBoost(skills, boost);
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
@@ -89,6 +98,32 @@ export function computeSetDps(
         target: { hp: target.hp, attributes: target.attributes, slug: target.slug },
       })
     : undefined;
+  // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow, Tonalztics).
+  const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
+    targetSize: target.size,
+  });
+  // Tumeken's shadow (charged 27275 / uncharged 27277) triples worn magic bonuses.
+  const weaponId = set.slots.weapon?.itemId;
+  const shadowEquipped = weaponId === 27275 || weaponId === 27277;
+  // Twinflame staff (30634): +10% acc/dmg on any standard spell, plus a second
+  // cast (~40%) on Bolt/Blast/Wave. It casts standard spells, so the auto-/picked
+  // spell's element is elemental and its name reveals whether it qualifies.
+  const twinflameStandard =
+    weaponId === 30634 &&
+    set.style === "magic" &&
+    set.spellElement !== undefined &&
+    set.spellElement !== "none";
+  const twinflameDoubleCast =
+    twinflameStandard && /(Bolt|Blast|Wave)$/.test(set.autoSpellName ?? "");
+  // Demonbane spell accuracy (Arceuus) — fires only when the cast spell is a
+  // demonbane spell AND the target carries the "demon" attribute.
+  const castSpell = set.style === "magic" && set.autoSpellName
+    ? SPELLS_BY_NAME.get(set.autoSpellName)
+    : undefined;
+  const demonbaneSpellAccuracyPct =
+    castSpell?.vsDemonAccuracyPct && target.attributes.includes("demon")
+      ? castSpell.vsDemonAccuracyPct
+      : undefined;
   return calculateDps({
     style: set.style,
     attackStyle: set.attackStyleChoice,
@@ -104,11 +139,20 @@ export function computeSetDps(
     conditionalBonuses: activeBonuses.conditionalBonuses,
     spellElement: set.spellElement,
     tomeOfFireEquipped: activeBonuses.tomeOfFireEquipped,
+    tomeOfWaterEquipped: activeBonuses.tomeOfWaterEquipped,
+    tomeOfEarthEquipped: activeBonuses.tomeOfEarthEquipped,
+    shadowEquipped,
+    demonbaneSpellAccuracyPct,
+    twinflameStandard,
+    twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,
+    fangEquipped: activeBonuses.fangEquipped,
     targetMonsterMagicLevel: activeBonuses.targetMonsterMagicLevel,
     targetIsXerician: activeBonuses.targetIsXerician,
     armorSetBonus: set.armorSetBonus,
     boltProc,
+    hitProfile,
+    slayerOnTask,
     targetWeakness: target.weakness
       ? {
           element: target.weakness.element as never,

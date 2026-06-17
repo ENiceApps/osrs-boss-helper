@@ -27,7 +27,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds }: Props) {
       <h3 className="section-title font-semibold text-osrs-brown mb-2">
         Recommended spec weapons
       </h3>
-      <p className="text-[11px] text-osrs-muted mb-3">
+      <p className="text-caption text-osrs-muted mb-3">
         Special-attack weapons that pay off on this fight. Click to learn the
         spec mechanics.
       </p>
@@ -55,19 +55,19 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds }: Props) {
                   <div className="font-semibold text-osrs-brown text-sm truncate">
                     {weapon.name}
                     {owned && (
-                      <span className="ml-1 text-[10px] text-status-owned">
+                      <span className="ml-1 label-eyebrow text-status-owned">
                         ✓ owned
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-osrs-muted shrink-0">
+                  <span className="label-eyebrow text-osrs-muted shrink-0">
                     {weapon.energyCost !== null ? `${weapon.energyCost}% spec` : "variable"}
                   </span>
                 </div>
-                <div className="text-[11px] text-osrs-brown-light italic">
+                <div className="text-caption text-osrs-brown-light italic">
                   {weapon.specName} · {roleLabel(weapon.role)}
                 </div>
-                <p className="text-[11px] text-osrs-brown mt-1">{rec.note}</p>
+                <p className="text-caption text-osrs-brown mt-1">{rec.note}</p>
               </div>
             </li>
           );

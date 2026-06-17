@@ -1,8 +1,10 @@
 // Phase 3 acceptance tests. Verifies the iterative-greedy upgrade finder:
 //   - own-only mode = passthrough (no upgrades, no sell list)
 //   - gp-only mode buys upgrades within wallet GP
-//   - sell-to-fund mode adds inactive bank items to the budget; recursively
-//     adds displaced items as more upgrades commit
+//   - sell-to-fund mode adds the player's EXPLICITLY chosen bank items to the
+//     budget (selling is user-driven; sellList echoes the selection)
+//   - recommendedSellToFund picks the minimal sales that fund worthwhile
+//     upgrades, never recommending an item that's actually equipped
 //   - upgrades are ranked by dps-per-gp so cheap+impactful items lead
 //   - budget exhaustion halts the loop
 //   - no profitable upgrades → empty path, currentBest = upgradedBest
@@ -10,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { SKILLS_AT_99 } from "@/lib/recommend";
-import { findUpgrades } from "@/lib/optimize/budget";
+import { findUpgrades, recommendedSellToFund } from "@/lib/optimize/budget";
 
 const VORKATH = MONSTER_BY_SLUG["vorkath"];
 
@@ -143,46 +145,44 @@ describe("optimize/budget — gp-only mode", () => {
   });
 });
 
-describe("optimize/budget — sell-to-fund mode", () => {
-  it("inactive bank items become initial budget; sellList lists them", () => {
-    // Bank has an extra cape (Ava's assembler) that won't be in the basic-
-    // ranged best loadout. With sell-to-fund and gp=0, the Ava's value should
-    // bankroll some upgrades.
-    const bank = [...EARLY_GAME_BANK, 22109]; // + Ava's assembler (30M)
+describe("optimize/budget — sell-to-fund mode (explicit selection)", () => {
+  it("only the explicitly-selected items fund the budget; sellList echoes them", () => {
+    // Player chooses to sell a spare Armadyl chestplate (30M). That GP — and
+    // ONLY that GP — tops up the budget, even though the bank holds other
+    // tradeable items (bronze bolts) that were NOT selected.
+    const bank = [...EARLY_GAME_BANK, 27238]; // + Masori body (f), so Armadyl chest is spare
     const result = findUpgrades({
       bank,
       target: VORKATH,
       skills: SKILLS_AT_99,
       gp: 0,
       mode: "sell-to-fund",
-      sellThreshold: 1_000_000,
+      sellItemIds: [11828], // Armadyl chestplate (30M)
       priceLookup,
     });
-    // currentBest is from the early-game bank ignoring Ava's (Ava's IS in cape slot
-    // so it'd be the best cape; let's not assert about that).
     expect(result.currentBest).not.toBeNull();
-    // Even with gp=0, sell-to-fund should have produced budget IF Ava's wasn't
-    // used in currentBest. If Ava's ended up in currentBest (as the best cape),
-    // it wouldn't be sellable; the algorithm is honest about this.
-    // We at least confirm no crash and sell list is well-formed.
-    for (const sell of result.sellList) {
-      expect(sell.valueGp).toBeGreaterThanOrEqual(1_000_000);
-    }
+    expect(result.sellList).toEqual([
+      { itemId: 11828, name: expect.any(String), valueGp: 30_000_000 },
+    ]);
+    // Unselected tradeable items (bronze bolts) never leak into the sell list.
+    expect(result.sellList.some((s) => s.itemId === 877)).toBe(false);
+    // The 30M of sale proceeds bankrolled at least one upgrade.
+    expect(result.upgradePath.length).toBeGreaterThan(0);
+    expect(result.totalCostGp).toBeLessThanOrEqual(30_000_000);
   });
 
-  it("sell threshold filters out junk items", () => {
-    const bank = [...EARLY_GAME_BANK, 877]; // already has bronze bolts (30 gp)
+  it("no selection → behaves like gp-only at the wallet amount", () => {
     const result = findUpgrades({
-      bank,
+      bank: EARLY_GAME_BANK,
       target: VORKATH,
       skills: SKILLS_AT_99,
       gp: 0,
       mode: "sell-to-fund",
-      sellThreshold: 1_000_000, // 1M minimum
+      sellItemIds: [],
       priceLookup,
     });
-    // Bronze bolts (30gp) should never appear in sell list.
-    expect(result.sellList.some((s) => s.itemId === 877)).toBe(false);
+    expect(result.sellList).toEqual([]);
+    expect(result.upgradePath).toEqual([]); // gp=0, nothing sold → no budget
   });
 
   it("DHCB upgrade path: starting with the DHCB+Salve gear missing only Masori, optimizer buys what's affordable", () => {
@@ -214,6 +214,57 @@ describe("optimize/budget — sell-to-fund mode", () => {
       (s) => s.bought.itemId === 27238,
     );
     expect(boughtMasoriBody).toBe(true);
+  });
+});
+
+describe("optimize/budget — recommendedSellToFund", () => {
+  // Bank holds a Masori body (best body, equipped) AND an Armadyl chestplate,
+  // which is therefore a spare worth 30M sitting unused.
+  const REC_BANK = [837, 877, 27238, 11828, 6585, 6737, 3105];
+
+  it("recommends selling the spare item to fund a worthwhile upgrade", () => {
+    const { sellItemIds } = recommendedSellToFund({
+      bank: REC_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 0,
+      priceLookup,
+    });
+    // The unused 30M Armadyl chest is the obvious thing to liquidate.
+    expect(sellItemIds).toContain(11828);
+  });
+
+  it("never recommends selling an item that's actually equipped", () => {
+    const { sellItemIds } = recommendedSellToFund({
+      bank: REC_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 0,
+      priceLookup,
+    });
+    const ownOnly = findUpgrades({
+      bank: REC_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 0,
+      mode: "own-only",
+      priceLookup,
+    });
+    const equipped = new Set(
+      Object.values(ownOnly.currentBest!.loadout.slots).map((s) => s.itemId),
+    );
+    for (const id of sellItemIds) expect(equipped.has(id)).toBe(false);
+  });
+
+  it("recommends nothing when wallet GP already covers every upgrade", () => {
+    const { sellItemIds } = recommendedSellToFund({
+      bank: REC_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 1_000_000_000, // plenty — no need to sell anything
+      priceLookup,
+    });
+    expect(sellItemIds).toEqual([]);
   });
 });
 

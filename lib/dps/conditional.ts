@@ -58,6 +58,12 @@ export function conditionalMultipliers(
     accuracy.push({ numerator: 6, denominator: 5, reason: "Dragon hunter lance vs dragon" });
     damage.push({ numerator: 6, denominator: 5, reason: "Dragon hunter lance vs dragon" });
   }
+  if (flags.dragonHunterWand) {
+    // Magic dragonbane: +75% accuracy, +40% damage (buffed 2025-06-25 from 50/20).
+    // Suppresses Salve upstream (they don't stack) so this never double-counts.
+    accuracy.push({ numerator: 7, denominator: 4, reason: "Dragon hunter wand vs dragon" });
+    damage.push({ numerator: 7, denominator: 5, reason: "Dragon hunter wand vs dragon" });
+  }
   if (flags.salveAmuletEi) {
     accuracy.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
     damage.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });

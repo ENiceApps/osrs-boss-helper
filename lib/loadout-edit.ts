@@ -6,7 +6,9 @@
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { hasTrigger } from "@/data/bonus-trigger-items";
+import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
+import { spellMaxHit, type SpellEntry } from "@/data/spells/catalog";
 import type {
   AttackType,
   ItemBonusFlags,
@@ -73,6 +75,14 @@ function resolveSlot(
 export function applyOverrides(
   base: LoadoutSet,
   overrides: Partial<Record<LoadoutSlotKey, ItemCatalogEntry | null>>,
+  /**
+   * Manually chosen combat spell. `undefined` (or `null`) keeps the base set's
+   * auto-selected spell; a `SpellEntry` rewrites the set's spell fields. Magic
+   * loadouts only — ignored for other styles and powered staves.
+   */
+  spellOverride?: SpellEntry | null,
+  /** Player magic level, needed to resolve level-scaled spells (Magic Dart). */
+  magicLevel?: number,
 ): LoadoutSet {
   const resolved: LoadoutSet["slots"] = {};
   let attackBonus = 0;
@@ -139,11 +149,16 @@ export function applyOverrides(
   const itemBonusFlags: ItemBonusFlags = {
     dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
     dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
+    dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
+    tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
+    tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
     twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
+    fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
+    slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
   };
 
   // Respect the base's speed override (e.g. Harmonised's 5→4 reduction).
@@ -160,6 +175,19 @@ export function applyOverrides(
     attackType: base.attackType,
     weaponId: weaponRef?.itemId,
   });
+
+  // Manual spell override — rewrite the spell fields the DPS engine consumes.
+  // Twinflame double-cast flows automatically from autoSpellName downstream
+  // (see lib/recommend.ts), so no extra wiring is needed here.
+  const spellFields =
+    base.style === "magic" && spellOverride
+      ? {
+          baseSpellMaxHit: spellMaxHit(spellOverride, magicLevel ?? 99),
+          spellElement: spellOverride.element,
+          autoSpellName: spellOverride.name,
+        }
+      : {};
+
   return {
     ...base,
     slots: resolved,
@@ -173,14 +201,20 @@ export function applyOverrides(
     itemBonusFlags,
     weaponCategory,
     armorSetBonus,
+    ...spellFields,
   };
 }
 
-/** True iff at least one override differs from the base. */
+/** True iff at least one item or spell override differs from the base. */
 export function hasOverrides(
   base: LoadoutSet,
   overrides: Partial<Record<LoadoutSlotKey, ItemCatalogEntry | null>>,
+  spellOverride?: SpellEntry | null,
 ): boolean {
+  // A chosen spell that differs from the base's current spell is an override.
+  if (base.style === "magic" && spellOverride && spellOverride.name !== base.autoSpellName) {
+    return true;
+  }
   for (const [slot, ov] of Object.entries(overrides) as Array<[LoadoutSlotKey, ItemCatalogEntry | null]>) {
     const baseSlot = base.slots[slot];
     if (ov === null) {

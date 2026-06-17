@@ -4,6 +4,8 @@
 
 export interface MonsterCatalogEntry {
   slug: string;
+  /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */
+  wikiId: number;
   name: string;
   version: string;
   combatLevel: number;
@@ -24,11 +26,14 @@ export interface MonsterCatalogEntry {
   image: string;
   size: number;
   maxHitText: string;
+  /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */
+  isSlayerMonster: boolean;
 }
 
 export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
   {
     "slug": "abhorrent-spectre",
+    "wikiId": 7402,
     "name": "Abhorrent spectre",
     "version": "",
     "combatLevel": 253,
@@ -54,10 +59,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Abhorrent spectre.png",
     "size": 3,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": true
   },
   {
     "slug": "abomination",
+    "wikiId": 8260,
     "name": "Abomination",
     "version": "",
     "combatLevel": 149,
@@ -77,10 +84,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Abomination.png",
     "size": 2,
-    "maxHitText": "23"
+    "maxHitText": "23",
+    "isSlayerMonster": false
   },
   {
     "slug": "abyssal-portal",
+    "wikiId": 7533,
     "name": "Abyssal portal",
     "version": "Normal",
     "combatLevel": 0,
@@ -105,10 +114,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Abyssal portal.png",
     "size": 4,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": false
   },
   {
     "slug": "abyssal-sire",
+    "wikiId": 5886,
     "name": "Abyssal Sire",
     "version": "Phase 1",
     "combatLevel": 350,
@@ -130,10 +141,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Abyssal Sire (phase 1).png",
     "size": 6,
-    "maxHitText": "66 (Melee)"
+    "maxHitText": "66 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "adamant-dragon",
+    "wikiId": 8030,
     "name": "Adamant dragon",
     "version": "",
     "combatLevel": 338,
@@ -159,10 +172,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Adamant dragon.png",
     "size": 5,
-    "maxHitText": "29 (Melee)"
+    "maxHitText": "29 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "agrith-na-na",
+    "wikiId": 4880,
     "name": "Agrith-Na-Na",
     "version": "",
     "combatLevel": 146,
@@ -182,10 +197,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Agrith-Na-Na.png",
     "size": 3,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": false
   },
   {
     "slug": "akkha",
+    "wikiId": 11789,
     "name": "Akkha",
     "version": "",
     "combatLevel": 337,
@@ -205,10 +222,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Akkha.png",
     "size": 3,
-    "maxHitText": "55"
+    "maxHitText": "55",
+    "isSlayerMonster": false
   },
   {
     "slug": "alchemical-hydra",
+    "wikiId": 8619,
     "name": "Alchemical Hydra",
     "version": "Electric",
     "combatLevel": 426,
@@ -233,10 +252,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Alchemical Hydra (electric).png",
     "size": 6,
-    "maxHitText": "35 (default)"
+    "maxHitText": "35 (default)",
+    "isSlayerMonster": true
   },
   {
     "slug": "amoxliatl",
+    "wikiId": 13685,
     "name": "Amoxliatl",
     "version": "",
     "combatLevel": 263,
@@ -261,10 +282,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Amoxliatl.png",
     "size": 3,
-    "maxHitText": "22 (standard)<br>34 (Icicle Crash)"
+    "maxHitText": "22 (standard)<br>34 (Icicle Crash)",
+    "isSlayerMonster": true
   },
   {
     "slug": "ancient-custodian",
+    "wikiId": 14520,
     "name": "Ancient Custodian",
     "version": "",
     "combatLevel": 239,
@@ -287,10 +310,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Ancient Custodian.png",
     "size": 2,
-    "maxHitText": "19"
+    "maxHitText": "19",
+    "isSlayerMonster": true
   },
   {
     "slug": "ancient-wyvern",
+    "wikiId": 7795,
     "name": "Ancient Wyvern",
     "version": "",
     "combatLevel": 210,
@@ -315,10 +340,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Ancient Wyvern.png",
     "size": 5,
-    "maxHitText": "10 (Magic)"
+    "maxHitText": "10 (Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "angry-bear",
+    "wikiId": 1060,
     "name": "Angry bear",
     "version": "Level 40",
     "combatLevel": 40,
@@ -338,10 +365,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Angry bear (level 40).png",
     "size": 2,
-    "maxHitText": "5"
+    "maxHitText": "5",
+    "isSlayerMonster": false
   },
   {
     "slug": "angry-giant-rat",
+    "wikiId": 1062,
     "name": "Angry giant rat",
     "version": "Level 45",
     "combatLevel": 45,
@@ -361,10 +390,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Angry giant rat (level 45, 1).png",
     "size": 1,
-    "maxHitText": "5"
+    "maxHitText": "5",
+    "isSlayerMonster": false
   },
   {
     "slug": "angry-goblin",
+    "wikiId": 1065,
     "name": "Angry goblin",
     "version": "Level 45",
     "combatLevel": 45,
@@ -384,10 +415,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Angry goblin.png",
     "size": 1,
-    "maxHitText": "5"
+    "maxHitText": "5",
+    "isSlayerMonster": false
   },
   {
     "slug": "angry-unicorn",
+    "wikiId": 1061,
     "name": "Angry unicorn",
     "version": "Level 45",
     "combatLevel": 45,
@@ -407,10 +440,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Angry unicorn.png",
     "size": 2,
-    "maxHitText": "5"
+    "maxHitText": "5",
+    "isSlayerMonster": false
   },
   {
     "slug": "araxxor",
+    "wikiId": 13668,
     "name": "Araxxor",
     "version": "",
     "combatLevel": 890,
@@ -433,10 +468,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Araxxor.png",
     "size": 7,
-    "maxHitText": "38 (melee) <br/> 21 (magic) <br/> 34 (ranged)"
+    "maxHitText": "38 (melee) <br/> 21 (magic) <br/> 34 (ranged)",
+    "isSlayerMonster": true
   },
   {
     "slug": "arianwyn",
+    "wikiId": 8865,
     "name": "Arianwyn",
     "version": "In combat",
     "combatLevel": 212,
@@ -456,10 +493,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Arianwyn (Song of the Elves).png",
     "size": 0,
-    "maxHitText": "38"
+    "maxHitText": "38",
+    "isSlayerMonster": false
   },
   {
     "slug": "armoured-kraken",
+    "wikiId": 15210,
     "name": "Armoured kraken",
     "version": "",
     "combatLevel": 180,
@@ -482,10 +521,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Armoured kraken.png",
     "size": 4,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": false
   },
   {
     "slug": "arrav",
+    "wikiId": 14132,
     "name": "Arrav",
     "version": "",
     "combatLevel": 339,
@@ -507,10 +548,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Arrav.png",
     "size": 1,
-    "maxHitText": "30"
+    "maxHitText": "30",
+    "isSlayerMonster": false
   },
   {
     "slug": "artio",
+    "wikiId": 11992,
     "name": "Artio",
     "version": "",
     "combatLevel": 320,
@@ -530,10 +573,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Artio.png",
     "size": 3,
-    "maxHitText": "35 (Crush)"
+    "maxHitText": "35 (Crush)",
+    "isSlayerMonster": true
   },
   {
     "slug": "arzinian-avatar-of-magic",
+    "wikiId": 1233,
     "name": "Arzinian Avatar of Magic",
     "version": "Invincible",
     "combatLevel": 0,
@@ -553,10 +598,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Arzinian Avatar of Magic.png",
     "size": 1,
-    "maxHitText": "15"
+    "maxHitText": "15",
+    "isSlayerMonster": false
   },
   {
     "slug": "arzinian-avatar-of-ranging",
+    "wikiId": 1230,
     "name": "Arzinian Avatar of Ranging",
     "version": "Invincible",
     "combatLevel": 0,
@@ -576,10 +623,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Arzinian Avatar of Ranging.png",
     "size": 1,
-    "maxHitText": "17"
+    "maxHitText": "17",
+    "isSlayerMonster": false
   },
   {
     "slug": "arzinian-avatar-of-strength",
+    "wikiId": 1227,
     "name": "Arzinian Avatar of Strength",
     "version": "Invincible",
     "combatLevel": 0,
@@ -599,10 +648,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Arzinian Avatar of Strength.png",
     "size": 1,
-    "maxHitText": "14"
+    "maxHitText": "14",
+    "isSlayerMonster": false
   },
   {
     "slug": "assassin",
+    "wikiId": 12062,
     "name": "Assassin",
     "version": "",
     "combatLevel": 262,
@@ -622,10 +673,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Assassin.png",
     "size": 1,
-    "maxHitText": "39"
+    "maxHitText": "39",
+    "isSlayerMonster": false
   },
   {
     "slug": "assassin-while-guthix-sleeps",
+    "wikiId": 13514,
     "name": "Assassin (While Guthix Sleeps)",
     "version": "1",
     "combatLevel": 167,
@@ -645,10 +698,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Assassin (While Guthix Sleeps, 1).png",
     "size": 1,
-    "maxHitText": "20 (normal)"
+    "maxHitText": "20 (normal)",
+    "isSlayerMonster": false
   },
   {
     "slug": "avatar-of-creation",
+    "wikiId": 10531,
     "name": "Avatar of Creation",
     "version": "",
     "combatLevel": 525,
@@ -668,10 +723,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Avatar of Creation.png",
     "size": 5,
-    "maxHitText": "54"
+    "maxHitText": "54",
+    "isSlayerMonster": true
   },
   {
     "slug": "avatar-of-destruction",
+    "wikiId": 10532,
     "name": "Avatar of Destruction",
     "version": "",
     "combatLevel": 525,
@@ -691,10 +748,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Avatar of Destruction.png",
     "size": 5,
-    "maxHitText": "54"
+    "maxHitText": "54",
+    "isSlayerMonster": true
   },
   {
     "slug": "ba-ba",
+    "wikiId": 11778,
     "name": "Ba-Ba",
     "version": "",
     "combatLevel": 359,
@@ -714,10 +773,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ba-Ba.png",
     "size": 5,
-    "maxHitText": "24"
+    "maxHitText": "24",
+    "isSlayerMonster": false
   },
   {
     "slug": "balance-elemental",
+    "wikiId": 13530,
     "name": "Balance Elemental",
     "version": "Magic",
     "combatLevel": 524,
@@ -737,10 +798,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Balance Elemental (magic).png",
     "size": 3,
-    "maxHitText": "40 (standard)<br>89 (stat-draining)"
+    "maxHitText": "40 (standard)<br>89 (stat-draining)",
+    "isSlayerMonster": false
   },
   {
     "slug": "basilisk-knight",
+    "wikiId": 9293,
     "name": "Basilisk Knight",
     "version": "",
     "combatLevel": 204,
@@ -763,10 +826,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Basilisk Knight.png",
     "size": 3,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": true
   },
   {
     "slug": "basilisk-sentinel",
+    "wikiId": 9258,
     "name": "Basilisk Sentinel",
     "version": "",
     "combatLevel": 358,
@@ -789,10 +854,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Basilisk Sentinel.png",
     "size": 3,
-    "maxHitText": "28 (normal)"
+    "maxHitText": "28 (normal)",
+    "isSlayerMonster": true
   },
   {
     "slug": "big-evil-chicken",
+    "wikiId": 15547,
     "name": "Big Evil Chicken",
     "version": "Annihilation",
     "combatLevel": 1047,
@@ -812,10 +879,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Big Evil Chicken.png",
     "size": 3,
-    "maxHitText": "26"
+    "maxHitText": "26",
+    "isSlayerMonster": false
   },
   {
     "slug": "black-demon",
+    "wikiId": 7874,
     "name": "Black demon",
     "version": "Level 188",
     "combatLevel": 188,
@@ -840,10 +909,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Black demon.png",
     "size": 3,
-    "maxHitText": "17"
+    "maxHitText": "17",
+    "isSlayerMonster": true
   },
   {
     "slug": "black-dragon",
+    "wikiId": 7861,
     "name": "Black dragon",
     "version": "Level 247",
     "combatLevel": 247,
@@ -869,10 +940,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Black dragon (3).png",
     "size": 4,
-    "maxHitText": "22 (Melee)"
+    "maxHitText": "22 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "blood-moon",
+    "wikiId": 13011,
     "name": "Blood Moon",
     "version": "",
     "combatLevel": 329,
@@ -895,10 +968,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Blood Moon.png",
     "size": 5,
-    "maxHitText": "32 total 4+8+20"
+    "maxHitText": "32 total 4+8+20",
+    "isSlayerMonster": false
   },
   {
     "slug": "blue-moon",
+    "wikiId": 13013,
     "name": "Blue Moon",
     "version": "",
     "combatLevel": 329,
@@ -921,10 +996,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Blue Moon.png",
     "size": 5,
-    "maxHitText": "32 total 4+8+20"
+    "maxHitText": "32 total 4+8+20",
+    "isSlayerMonster": false
   },
   {
     "slug": "branda-the-fire-queen",
+    "wikiId": 12596,
     "name": "Branda the Fire Queen",
     "version": "",
     "combatLevel": 350,
@@ -949,10 +1026,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Branda the Fire Queen.png",
     "size": 3,
-    "maxHitText": "26 (Melee)"
+    "maxHitText": "26 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "brutal-black-dragon",
+    "wikiId": 7275,
     "name": "Brutal black dragon",
     "version": "",
     "combatLevel": 318,
@@ -978,10 +1057,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Brutal black dragon.png",
     "size": 4,
-    "maxHitText": "29 (Melee; Magic)"
+    "maxHitText": "29 (Melee; Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "brutal-blue-dragon",
+    "wikiId": 7273,
     "name": "Brutal blue dragon",
     "version": "Catacombs of Kourend",
     "combatLevel": 271,
@@ -1007,10 +1088,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Brutal blue dragon.png",
     "size": 4,
-    "maxHitText": "21 (Melee; Magic)"
+    "maxHitText": "21 (Melee; Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "brutal-red-dragon",
+    "wikiId": 7274,
     "name": "Brutal red dragon",
     "version": "",
     "combatLevel": 289,
@@ -1036,10 +1119,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Brutal red dragon.png",
     "size": 4,
-    "maxHitText": "22 (Melee; Magic)"
+    "maxHitText": "22 (Melee; Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "callisto",
+    "wikiId": 6609,
     "name": "Callisto",
     "version": "",
     "combatLevel": 470,
@@ -1062,10 +1147,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Callisto.png",
     "size": 5,
-    "maxHitText": "55 (Crush)"
+    "maxHitText": "55 (Crush)",
+    "isSlayerMonster": true
   },
   {
     "slug": "cerberus",
+    "wikiId": 5862,
     "name": "Cerberus",
     "version": "",
     "combatLevel": 318,
@@ -1090,10 +1177,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Cerberus.png",
     "size": 5,
-    "maxHitText": "23"
+    "maxHitText": "23",
+    "isSlayerMonster": true
   },
   {
     "slug": "champion-of-scabaras",
+    "wikiId": 11482,
     "name": "Champion of Scabaras",
     "version": "",
     "combatLevel": 379,
@@ -1118,10 +1207,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Champion of Scabaras.png",
     "size": 1,
-    "maxHitText": "24"
+    "maxHitText": "24",
+    "isSlayerMonster": false
   },
   {
     "slug": "chaos-elemental",
+    "wikiId": 2054,
     "name": "Chaos Elemental",
     "version": "",
     "combatLevel": 305,
@@ -1144,10 +1235,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Chaos Elemental.png",
     "size": 3,
-    "maxHitText": "28"
+    "maxHitText": "28",
+    "isSlayerMonster": true
   },
   {
     "slug": "chaos-fanatic",
+    "wikiId": 6619,
     "name": "Chaos Fanatic",
     "version": "",
     "combatLevel": 202,
@@ -1167,10 +1260,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Chaos Fanatic.png",
     "size": 1,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": true
   },
   {
     "slug": "choke-devil",
+    "wikiId": 7404,
     "name": "Choke devil",
     "version": "",
     "combatLevel": 264,
@@ -1193,10 +1288,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Choke devil.png",
     "size": 2,
-    "maxHitText": "24"
+    "maxHitText": "24",
+    "isSlayerMonster": true
   },
   {
     "slug": "colossal-hydra",
+    "wikiId": 10402,
     "name": "Colossal Hydra",
     "version": "",
     "combatLevel": 309,
@@ -1218,10 +1315,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Colossal Hydra.png",
     "size": 5,
-    "maxHitText": "34"
+    "maxHitText": "34",
+    "isSlayerMonster": true
   },
   {
     "slug": "combat-dummy",
+    "wikiId": 0,
     "name": "Combat dummy",
     "version": "",
     "combatLevel": 1,
@@ -1241,10 +1340,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Combat_dummy.png",
     "size": 1,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": false
   },
   {
     "slug": "commander-zilyana",
+    "wikiId": 2205,
     "name": "Commander Zilyana",
     "version": "",
     "combatLevel": 596,
@@ -1264,10 +1365,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Commander Zilyana.png",
     "size": 2,
-    "maxHitText": "27 (melee)"
+    "maxHitText": "27 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "corporeal-beast",
+    "wikiId": 319,
     "name": "Corporeal Beast",
     "version": "",
     "combatLevel": 785,
@@ -1290,10 +1393,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Corporeal Beast.png",
     "size": 5,
-    "maxHitText": "33 (Melee)"
+    "maxHitText": "33 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "corrupted-hunllef",
+    "wikiId": 9035,
     "name": "Corrupted Hunllef",
     "version": "",
     "combatLevel": 894,
@@ -1313,10 +1418,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Corrupted Hunllef.png",
     "size": 5,
-    "maxHitText": "68"
+    "maxHitText": "68",
+    "isSlayerMonster": false
   },
   {
     "slug": "crazy-archaeologist",
+    "wikiId": 6618,
     "name": "Crazy archaeologist",
     "version": "",
     "combatLevel": 204,
@@ -1336,10 +1443,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Crazy archaeologist.png",
     "size": 1,
-    "maxHitText": "14 (standard)"
+    "maxHitText": "14 (standard)",
+    "isSlayerMonster": true
   },
   {
     "slug": "cruor",
+    "wikiId": 11285,
     "name": "Cruor",
     "version": "",
     "combatLevel": 285,
@@ -1359,10 +1468,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Cruor.png",
     "size": 1,
-    "maxHitText": "29"
+    "maxHitText": "29",
+    "isSlayerMonster": false
   },
   {
     "slug": "crystalline-hunllef",
+    "wikiId": 9021,
     "name": "Crystalline Hunllef",
     "version": "",
     "combatLevel": 674,
@@ -1382,10 +1493,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Crystalline Hunllef.png",
     "size": 5,
-    "maxHitText": "50+"
+    "maxHitText": "50+",
+    "isSlayerMonster": false
   },
   {
     "slug": "dagannoth-prime",
+    "wikiId": 2266,
     "name": "Dagannoth Prime",
     "version": "",
     "combatLevel": 303,
@@ -1408,10 +1521,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dagannoth Prime.png",
     "size": 3,
-    "maxHitText": "50"
+    "maxHitText": "50",
+    "isSlayerMonster": true
   },
   {
     "slug": "dagannoth-rex",
+    "wikiId": 2267,
     "name": "Dagannoth Rex",
     "version": "",
     "combatLevel": 303,
@@ -1434,10 +1549,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dagannoth Rex.png",
     "size": 3,
-    "maxHitText": "26"
+    "maxHitText": "26",
+    "isSlayerMonster": true
   },
   {
     "slug": "dagannoth-supreme",
+    "wikiId": 2265,
     "name": "Dagannoth Supreme",
     "version": "",
     "combatLevel": 303,
@@ -1460,10 +1577,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dagannoth Supreme.png",
     "size": 3,
-    "maxHitText": "30"
+    "maxHitText": "30",
+    "isSlayerMonster": true
   },
   {
     "slug": "damien-leucurte",
+    "wikiId": 9561,
     "name": "Damien Leucurte",
     "version": "",
     "combatLevel": 204,
@@ -1485,10 +1604,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Damien Leucurte.png",
     "size": 1,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": true
   },
   {
     "slug": "damis",
+    "wikiId": 683,
     "name": "Damis",
     "version": "Second form",
     "combatLevel": 174,
@@ -1508,10 +1629,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Damis.png",
     "size": 1,
-    "maxHitText": "28"
+    "maxHitText": "28",
+    "isSlayerMonster": false
   },
   {
     "slug": "dark-beast",
+    "wikiId": 4005,
     "name": "Dark beast",
     "version": "",
     "combatLevel": 182,
@@ -1534,10 +1657,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dark beast.png",
     "size": 3,
-    "maxHitText": "17 (melee)"
+    "maxHitText": "17 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "dawn",
+    "wikiId": 7852,
     "name": "Dawn",
     "version": "",
     "combatLevel": 228,
@@ -1563,10 +1688,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dawn.png",
     "size": 4,
-    "maxHitText": "15"
+    "maxHitText": "15",
+    "isSlayerMonster": true
   },
   {
     "slug": "demonic-brutus",
+    "wikiId": 15628,
     "name": "Demonic Brutus",
     "version": "Brutus",
     "combatLevel": 1224,
@@ -1589,10 +1716,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Demonic Brutus.png",
     "size": 3,
-    "maxHitText": "43 (Melee)"
+    "maxHitText": "43 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "demonic-gorilla",
+    "wikiId": 7144,
     "name": "Demonic gorilla",
     "version": "1",
     "combatLevel": 275,
@@ -1617,10 +1746,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Demonic gorilla.png",
     "size": 2,
-    "maxHitText": "31 (normal)"
+    "maxHitText": "31 (normal)",
+    "isSlayerMonster": true
   },
   {
     "slug": "deranged-archaeologist",
+    "wikiId": 7806,
     "name": "Deranged archaeologist",
     "version": "",
     "combatLevel": 276,
@@ -1640,10 +1771,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Deranged archaeologist.png",
     "size": 1,
-    "maxHitText": "25 (melee)"
+    "maxHitText": "25 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "derwen",
+    "wikiId": 7513,
     "name": "Derwen",
     "version": "",
     "combatLevel": 235,
@@ -1663,10 +1796,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Derwen.png",
     "size": 3,
-    "maxHitText": "43 (Magic)"
+    "maxHitText": "43 (Magic)",
+    "isSlayerMonster": false
   },
   {
     "slug": "dessous",
+    "wikiId": 3459,
     "name": "Dessous",
     "version": "",
     "combatLevel": 139,
@@ -1688,10 +1823,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Dessous.png",
     "size": 1,
-    "maxHitText": "19 (Melee)"
+    "maxHitText": "19 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "dire-gryphon",
+    "wikiId": 14859,
     "name": "Dire gryphon",
     "version": "",
     "combatLevel": 209,
@@ -1714,10 +1851,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dire gryphon.png",
     "size": 3,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": true
   },
   {
     "slug": "dont-know-what",
+    "wikiId": 8439,
     "name": "Don't Know What",
     "version": "",
     "combatLevel": 163,
@@ -1740,10 +1879,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Don't Know What.png",
     "size": 3,
-    "maxHitText": "10"
+    "maxHitText": "10",
+    "isSlayerMonster": false
   },
   {
     "slug": "doom-of-mokhaiotl",
+    "wikiId": 14707,
     "name": "Doom of Mokhaiotl",
     "version": "Delve 8",
     "combatLevel": 908,
@@ -1765,10 +1906,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Doom of Mokhaiotl.png",
     "size": 5,
-    "maxHitText": "65 <br/>99 (charge)"
+    "maxHitText": "65 <br/>99 (charge)",
+    "isSlayerMonster": false
   },
   {
     "slug": "drake",
+    "wikiId": 8612,
     "name": "Drake",
     "version": "",
     "combatLevel": 192,
@@ -1793,10 +1936,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Drake.png",
     "size": 5,
-    "maxHitText": "15 (Ranged)"
+    "maxHitText": "15 (Ranged)",
+    "isSlayerMonster": true
   },
   {
     "slug": "dreadborn-araxyte",
+    "wikiId": 13680,
     "name": "Dreadborn Araxyte",
     "version": "",
     "combatLevel": 281,
@@ -1819,10 +1964,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dreadborn Araxyte.png",
     "size": 3,
-    "maxHitText": "31 (normal)"
+    "maxHitText": "31 (normal)",
+    "isSlayerMonster": true
   },
   {
     "slug": "drink-troll-queen",
+    "wikiId": 15175,
     "name": "Drink troll queen",
     "version": "",
     "combatLevel": 217,
@@ -1845,10 +1992,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Drink troll queen.png",
     "size": 5,
-    "maxHitText": "21"
+    "maxHitText": "21",
+    "isSlayerMonster": false
   },
   {
     "slug": "duke-sucellus",
+    "wikiId": 12191,
     "name": "Duke Sucellus",
     "version": "Awakened, Awake",
     "combatLevel": 1099,
@@ -1870,10 +2019,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Duke Sucellus.png",
     "size": 7,
-    "maxHitText": "81 (Melee)"
+    "maxHitText": "81 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "dusk",
+    "wikiId": 7851,
     "name": "Dusk",
     "version": "First form",
     "combatLevel": 248,
@@ -1898,10 +2049,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dusk.png",
     "size": 4,
-    "maxHitText": "15 (melee) 33 (special attack)"
+    "maxHitText": "15 (melee) 33 (special attack)",
+    "isSlayerMonster": true
   },
   {
     "slug": "eclipse-moon",
+    "wikiId": 13012,
     "name": "Eclipse Moon",
     "version": "Clone",
     "combatLevel": 329,
@@ -1924,10 +2077,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Eclipse Moon.png",
     "size": 5,
-    "maxHitText": "32 total 4+8+20"
+    "maxHitText": "32 total 4+8+20",
+    "isSlayerMonster": false
   },
   {
     "slug": "elder-aquanite",
+    "wikiId": 15502,
     "name": "Elder aquanite",
     "version": "Lure",
     "combatLevel": 305,
@@ -1947,10 +2102,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Elder aquanite (lure).png",
     "size": 3,
-    "maxHitText": "34 (normal)"
+    "maxHitText": "34 (normal)",
+    "isSlayerMonster": true
   },
   {
     "slug": "elder-custodian-stalker",
+    "wikiId": 14704,
     "name": "Elder custodian stalker",
     "version": "",
     "combatLevel": 142,
@@ -1973,10 +2130,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Elder custodian stalker.png",
     "size": 1,
-    "maxHitText": "10 (melee)"
+    "maxHitText": "10 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "eldric-the-ice-king",
+    "wikiId": 14147,
     "name": "Eldric the Ice King",
     "version": "",
     "combatLevel": 350,
@@ -1999,10 +2158,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Eldric the Ice King.png",
     "size": 3,
-    "maxHitText": "26 (Melee)"
+    "maxHitText": "26 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "elidinis-warden",
+    "wikiId": 11755,
     "name": "Elidinis' Warden",
     "version": "Core-ejected",
     "combatLevel": 489,
@@ -2025,10 +2186,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Elidinis' Warden (level-489, core-ejected).png",
     "size": 5,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": false
   },
   {
     "slug": "ennius-tullus",
+    "wikiId": 14331,
     "name": "Ennius Tullus",
     "version": "",
     "combatLevel": 306,
@@ -2048,10 +2211,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ennius Tullus (combat).png",
     "size": 1,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": false
   },
   {
     "slug": "essyllt",
+    "wikiId": 8847,
     "name": "Essyllt",
     "version": "Normal",
     "combatLevel": 236,
@@ -2071,10 +2236,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Essyllt (Song of the Elves).png",
     "size": 1,
-    "maxHitText": "40 (melee)"
+    "maxHitText": "40 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "flambeed",
+    "wikiId": 4881,
     "name": "Flambeed",
     "version": "",
     "combatLevel": 149,
@@ -2097,10 +2264,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Flambeed.png",
     "size": 5,
-    "maxHitText": "25"
+    "maxHitText": "25",
+    "isSlayerMonster": false
   },
   {
     "slug": "fragment-of-seren",
+    "wikiId": 8917,
     "name": "Fragment of Seren",
     "version": "",
     "combatLevel": 494,
@@ -2120,10 +2289,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Fragment of Seren.png",
     "size": 3,
-    "maxHitText": "12+12 (standard)"
+    "maxHitText": "12+12 (standard)",
+    "isSlayerMonster": false
   },
   {
     "slug": "frost-dragon",
+    "wikiId": 14922,
     "name": "Frost dragon",
     "version": "",
     "combatLevel": 202,
@@ -2149,10 +2320,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Frost dragon.png",
     "size": 4,
-    "maxHitText": "16 (Stab)<br/>50 (Dragonfire)"
+    "maxHitText": "16 (Stab)<br/>50 (Dragonfire)",
+    "isSlayerMonster": true
   },
   {
     "slug": "fumus",
+    "wikiId": 11283,
     "name": "Fumus",
     "version": "",
     "combatLevel": 285,
@@ -2172,10 +2345,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Fumus.png",
     "size": 1,
-    "maxHitText": "29"
+    "maxHitText": "29",
+    "isSlayerMonster": false
   },
   {
     "slug": "galvek",
+    "wikiId": 8097,
     "name": "Galvek",
     "version": "Air",
     "combatLevel": 608,
@@ -2201,10 +2376,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Galvek (air).png",
     "size": 7,
-    "maxHitText": "28 (Ranged)"
+    "maxHitText": "28 (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "gelatinnoth-mother",
+    "wikiId": 4884,
     "name": "Gelatinnoth Mother",
     "version": "",
     "combatLevel": 130,
@@ -2224,10 +2401,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Gelatinnoth Mother (air).png",
     "size": 3,
-    "maxHitText": "9 (melee)"
+    "maxHitText": "9 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "gemstone-crab",
+    "wikiId": 14779,
     "name": "Gemstone Crab",
     "version": "",
     "combatLevel": 160,
@@ -2247,10 +2426,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Gemstone Crab.png",
     "size": 5,
-    "maxHitText": "1"
+    "maxHitText": "1",
+    "isSlayerMonster": false
   },
   {
     "slug": "general-graardor",
+    "wikiId": 2215,
     "name": "General Graardor",
     "version": "",
     "combatLevel": 624,
@@ -2273,10 +2454,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "General Graardor.png",
     "size": 4,
-    "maxHitText": "60 (melee)"
+    "maxHitText": "60 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "giant-goblin",
+    "wikiId": 12452,
     "name": "Giant goblin",
     "version": "Annihilation",
     "combatLevel": 1022,
@@ -2296,10 +2479,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Giant goblin.png",
     "size": 2,
-    "maxHitText": "27"
+    "maxHitText": "27",
+    "isSlayerMonster": false
   },
   {
     "slug": "giant-mole",
+    "wikiId": 5779,
     "name": "Giant Mole",
     "version": "",
     "combatLevel": 230,
@@ -2322,10 +2507,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Giant Mole.png",
     "size": 3,
-    "maxHitText": "21"
+    "maxHitText": "21",
+    "isSlayerMonster": true
   },
   {
     "slug": "giant-roc",
+    "wikiId": 763,
     "name": "Giant Roc",
     "version": "",
     "combatLevel": 172,
@@ -2348,10 +2535,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Giant Roc.png",
     "size": 5,
-    "maxHitText": "14 (Melee)"
+    "maxHitText": "14 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "glacies",
+    "wikiId": 11286,
     "name": "Glacies",
     "version": "",
     "combatLevel": 285,
@@ -2371,10 +2560,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Glacies.png",
     "size": 1,
-    "maxHitText": "29"
+    "maxHitText": "29",
+    "isSlayerMonster": false
   },
   {
     "slug": "glough",
+    "wikiId": 7101,
     "name": "Glough",
     "version": "",
     "combatLevel": 431,
@@ -2394,10 +2585,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Glough (monster).png",
     "size": 2,
-    "maxHitText": "61"
+    "maxHitText": "61",
+    "isSlayerMonster": false
   },
   {
     "slug": "great-olm",
+    "wikiId": 7551,
     "name": "Great Olm",
     "version": "Head (Normal)",
     "combatLevel": 1043,
@@ -2423,10 +2616,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Great Olm.png",
     "size": 5,
-    "maxHitText": "27 <br/> 28 <br/> 29 (phase 4)"
+    "maxHitText": "27 <br/> 28 <br/> 29 (phase 4)",
+    "isSlayerMonster": false
   },
   {
     "slug": "great-white-shark",
+    "wikiId": 15200,
     "name": "Great white shark",
     "version": "",
     "combatLevel": 175,
@@ -2446,10 +2641,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Great white shark.png",
     "size": 4,
-    "maxHitText": "15"
+    "maxHitText": "15",
+    "isSlayerMonster": false
   },
   {
     "slug": "greater-abyssal-demon",
+    "wikiId": 7410,
     "name": "Greater abyssal demon",
     "version": "",
     "combatLevel": 342,
@@ -2471,10 +2668,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Greater abyssal demon.png",
     "size": 1,
-    "maxHitText": "27"
+    "maxHitText": "27",
+    "isSlayerMonster": true
   },
   {
     "slug": "greater-nechryael",
+    "wikiId": 7278,
     "name": "Greater Nechryael",
     "version": "Regular",
     "combatLevel": 200,
@@ -2496,10 +2695,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Greater Nechryael.png",
     "size": 1,
-    "maxHitText": "21"
+    "maxHitText": "21",
+    "isSlayerMonster": true
   },
   {
     "slug": "guardian-chambers-of-xeric",
+    "wikiId": 7569,
     "name": "Guardian (Chambers of Xeric)",
     "version": "Normal",
     "combatLevel": 0,
@@ -2521,10 +2722,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Guardian (Chambers of Xeric, female).png",
     "size": 0,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": false
   },
   {
     "slug": "guardian-drake",
+    "wikiId": 10400,
     "name": "Guardian Drake",
     "version": "",
     "combatLevel": 376,
@@ -2549,10 +2752,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Guardian Drake.png",
     "size": 5,
-    "maxHitText": "35 (melee)"
+    "maxHitText": "35 (melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "hespori",
+    "wikiId": 8583,
     "name": "Hespori",
     "version": "",
     "combatLevel": 284,
@@ -2575,10 +2780,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Hespori.png",
     "size": 3,
-    "maxHitText": "8x2 (Ranged)"
+    "maxHitText": "8x2 (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "hespori-a-night-at-the-theatre",
+    "wikiId": 11192,
     "name": "Hespori (A Night at the Theatre)",
     "version": "",
     "combatLevel": 302,
@@ -2598,10 +2805,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Hespori (A Night at the Theatre).png",
     "size": 3,
-    "maxHitText": "8 (x2) (Ranged)"
+    "maxHitText": "8 (x2) (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "hydra",
+    "wikiId": 8609,
     "name": "Hydra",
     "version": "",
     "combatLevel": 194,
@@ -2626,10 +2835,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Hydra.png",
     "size": 3,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": true
   },
   {
     "slug": "i-dscim-you",
+    "wikiId": 15553,
     "name": "I DSCIM YOU",
     "version": "",
     "combatLevel": 495,
@@ -2652,10 +2863,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "I DSCIM YOU.png",
     "size": 1,
-    "maxHitText": "21"
+    "maxHitText": "21",
+    "isSlayerMonster": false
   },
   {
     "slug": "insatiable-bloodveld",
+    "wikiId": 7397,
     "name": "Insatiable Bloodveld",
     "version": "",
     "combatLevel": 202,
@@ -2677,10 +2890,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Insatiable Bloodveld.png",
     "size": 3,
-    "maxHitText": "15"
+    "maxHitText": "15",
+    "isSlayerMonster": true
   },
   {
     "slug": "insatiable-mutated-bloodveld",
+    "wikiId": 7398,
     "name": "Insatiable mutated Bloodveld",
     "version": "",
     "combatLevel": 278,
@@ -2702,10 +2917,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Insatiable mutated Bloodveld.png",
     "size": 3,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": true
   },
   {
     "slug": "jal-zek",
+    "wikiId": 7699,
     "name": "Jal-Zek",
     "version": "",
     "combatLevel": 490,
@@ -2728,10 +2945,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Jal-Zek.png",
     "size": 4,
-    "maxHitText": "70 (Magic)"
+    "maxHitText": "70 (Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "jaltok-jad",
+    "wikiId": 7700,
     "name": "JalTok-Jad",
     "version": "",
     "combatLevel": 900,
@@ -2754,10 +2973,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "JalTok-Jad.png",
     "size": 5,
-    "maxHitText": "113"
+    "maxHitText": "113",
+    "isSlayerMonster": true
   },
   {
     "slug": "javelin-colossus",
+    "wikiId": 12817,
     "name": "Javelin Colossus",
     "version": "",
     "combatLevel": 278,
@@ -2777,10 +2998,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Javelin Colossus.png",
     "size": 3,
-    "maxHitText": "48"
+    "maxHitText": "48",
+    "isSlayerMonster": false
   },
   {
     "slug": "jhallan",
+    "wikiId": 12353,
     "name": "Jhallan",
     "version": "",
     "combatLevel": 491,
@@ -2800,10 +3023,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Jhallan.png",
     "size": 2,
-    "maxHitText": "26"
+    "maxHitText": "26",
+    "isSlayerMonster": false
   },
   {
     "slug": "judge-of-yama",
+    "wikiId": 14180,
     "name": "Judge of Yama",
     "version": "",
     "combatLevel": 168,
@@ -2828,10 +3053,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Judge of Yama.png",
     "size": 3,
-    "maxHitText": "18 (aoe)"
+    "maxHitText": "18 (aoe)",
+    "isSlayerMonster": false
   },
   {
     "slug": "judge-of-yama-a-kingdom-divided",
+    "wikiId": 10936,
     "name": "Judge of Yama (A Kingdom Divided)",
     "version": "",
     "combatLevel": 168,
@@ -2853,10 +3080,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Judge of Yama.png",
     "size": 3,
-    "maxHitText": "12"
+    "maxHitText": "12",
+    "isSlayerMonster": true
   },
   {
     "slug": "justiciar-zachariah",
+    "wikiId": 5977,
     "name": "Justiciar Zachariah",
     "version": "",
     "combatLevel": 348,
@@ -2876,10 +3105,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Justiciar Zachariah.png",
     "size": 3,
-    "maxHitText": "43 (melee)"
+    "maxHitText": "43 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "kril-tsutsaroth",
+    "wikiId": 3129,
     "name": "K'ril Tsutsaroth",
     "version": "",
     "combatLevel": 650,
@@ -2904,10 +3135,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "K'ril Tsutsaroth.png",
     "size": 5,
-    "maxHitText": "30 (magic)"
+    "maxHitText": "30 (magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "kalphite-queen",
+    "wikiId": 965,
     "name": "Kalphite Queen",
     "version": "Airborne",
     "combatLevel": 333,
@@ -2932,10 +3165,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Kalphite Queen 2nd form.png",
     "size": 5,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": true
   },
   {
     "slug": "karamel",
+    "wikiId": 4882,
     "name": "Karamel",
     "version": "",
     "combatLevel": 136,
@@ -2958,10 +3193,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Karamel.png",
     "size": 1,
-    "maxHitText": "7x2 (Magic)"
+    "maxHitText": "7x2 (Magic)",
+    "isSlayerMonster": false
   },
   {
     "slug": "kasonde",
+    "wikiId": 12262,
     "name": "Kasonde",
     "version": "",
     "combatLevel": 231,
@@ -2981,10 +3218,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Kasonde.png",
     "size": 1,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": false
   },
   {
     "slug": "kasonde-the-craven",
+    "wikiId": 12331,
     "name": "Kasonde the Craven",
     "version": "",
     "combatLevel": 221,
@@ -3006,10 +3245,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Kasonde the Craven.png",
     "size": 1,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": false
   },
   {
     "slug": "ketla-the-unworthy",
+    "wikiId": 12329,
     "name": "Ketla the Unworthy",
     "version": "Regular",
     "combatLevel": 236,
@@ -3031,10 +3272,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ketla the Unworthy.png",
     "size": 1,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": false
   },
   {
     "slug": "king-black-dragon",
+    "wikiId": 239,
     "name": "King Black Dragon",
     "version": "",
     "combatLevel": 276,
@@ -3060,10 +3303,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "King Black Dragon.png",
     "size": 5,
-    "maxHitText": "25 (Melee)"
+    "maxHitText": "25 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "king-kurask",
+    "wikiId": 7405,
     "name": "King kurask",
     "version": "",
     "combatLevel": 295,
@@ -3085,10 +3330,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "King kurask.png",
     "size": 5,
-    "maxHitText": "33"
+    "maxHitText": "33",
+    "isSlayerMonster": true
   },
   {
     "slug": "king-sand-crab",
+    "wikiId": 7266,
     "name": "King Sand Crab",
     "version": "Active",
     "combatLevel": 107,
@@ -3111,10 +3358,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "King Sand Crab.png",
     "size": 2,
-    "maxHitText": "6"
+    "maxHitText": "6",
+    "isSlayerMonster": true
   },
   {
     "slug": "kob",
+    "wikiId": 7106,
     "name": "Kob",
     "version": "",
     "combatLevel": 185,
@@ -3137,10 +3386,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Kob.png",
     "size": 2,
-    "maxHitText": "57 (normal)"
+    "maxHitText": "57 (normal)",
+    "isSlayerMonster": false
   },
   {
     "slug": "koschei-the-deathless",
+    "wikiId": 3900,
     "name": "Koschei the deathless",
     "version": "The Fremennik Trials (Form 4)",
     "combatLevel": 0,
@@ -3160,10 +3411,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Koschei the deathless.png",
     "size": 1,
-    "maxHitText": "1"
+    "maxHitText": "1",
+    "isSlayerMonster": false
   },
   {
     "slug": "kraken",
+    "wikiId": 494,
     "name": "Kraken",
     "version": "Kraken",
     "combatLevel": 291,
@@ -3186,10 +3439,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Kraken.png",
     "size": 4,
-    "maxHitText": "28"
+    "maxHitText": "28",
+    "isSlayerMonster": true
   },
   {
     "slug": "kreearra",
+    "wikiId": 3162,
     "name": "Kree'arra",
     "version": "",
     "combatLevel": 580,
@@ -3214,10 +3469,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Kree'arra.png",
     "size": 5,
-    "maxHitText": "69 (Ranged)"
+    "maxHitText": "69 (Ranged)",
+    "isSlayerMonster": true
   },
   {
     "slug": "kroy",
+    "wikiId": 9560,
     "name": "Kroy",
     "version": "",
     "combatLevel": 133,
@@ -3239,10 +3496,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Kroy.png",
     "size": 1,
-    "maxHitText": "15"
+    "maxHitText": "15",
+    "isSlayerMonster": true
   },
   {
     "slug": "kruk",
+    "wikiId": 6805,
     "name": "Kruk",
     "version": "",
     "combatLevel": 207,
@@ -3262,10 +3521,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Kruk.png",
     "size": 1,
-    "maxHitText": "33 (melee)"
+    "maxHitText": "33 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "lava-dragon",
+    "wikiId": 6593,
     "name": "Lava dragon",
     "version": "",
     "combatLevel": 252,
@@ -3291,10 +3552,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Lava dragon.png",
     "size": 4,
-    "maxHitText": "23 (Melee)"
+    "maxHitText": "23 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "long-tailed-wyvern",
+    "wikiId": 7792,
     "name": "Long-tailed Wyvern",
     "version": "",
     "combatLevel": 152,
@@ -3319,10 +3582,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Long-tailed Wyvern.png",
     "size": 3,
-    "maxHitText": "13 (Melee)"
+    "maxHitText": "13 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "magic-mark",
+    "wikiId": 13663,
     "name": "Magic Mark",
     "version": "Annihilation",
     "combatLevel": 967,
@@ -3342,10 +3607,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Magic Mark.png",
     "size": 1,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": false
   },
   {
     "slug": "magma-strykewyrm",
+    "wikiId": 15504,
     "name": "Magma strykewyrm",
     "version": "",
     "combatLevel": 249,
@@ -3370,10 +3637,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Magma strykewyrm.png",
     "size": 3,
-    "maxHitText": "26"
+    "maxHitText": "26",
+    "isSlayerMonster": true
   },
   {
     "slug": "manticore",
+    "wikiId": 12818,
     "name": "Manticore",
     "version": "",
     "combatLevel": 320,
@@ -3393,10 +3662,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Manticore.png",
     "size": 3,
-    "maxHitText": "31 (Melee)"
+    "maxHitText": "31 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "marble-gargoyle",
+    "wikiId": 7407,
     "name": "Marble gargoyle",
     "version": "",
     "combatLevel": 349,
@@ -3421,10 +3692,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Marble gargoyle.png",
     "size": 3,
-    "maxHitText": "26 (melee)\n30 (ranged)\n38 (special)"
+    "maxHitText": "26 (melee)\n30 (ranged)\n38 (special)",
+    "isSlayerMonster": true
   },
   {
     "slug": "menaphite-akh",
+    "wikiId": 11492,
     "name": "Menaphite Akh",
     "version": "",
     "combatLevel": 351,
@@ -3444,10 +3717,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Menaphite Akh.png",
     "size": 1,
-    "maxHitText": "? (melee)"
+    "maxHitText": "? (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "metzli-teokan-of-ranul",
+    "wikiId": 14318,
     "name": "Metzli, Teokan of Ranul",
     "version": "",
     "combatLevel": 396,
@@ -3470,10 +3745,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Augur Metzli.png",
     "size": 1,
-    "maxHitText": "28"
+    "maxHitText": "28",
+    "isSlayerMonster": false
   },
   {
     "slug": "minotaur-fortis-colosseum",
+    "wikiId": 12812,
     "name": "Minotaur (Fortis Colosseum)",
     "version": "Normal",
     "combatLevel": 318,
@@ -3493,10 +3770,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Minotaur (Fortis Colosseum).png",
     "size": 3,
-    "maxHitText": "74"
+    "maxHitText": "74",
+    "isSlayerMonster": false
   },
   {
     "slug": "minotaur-meat-and-greet",
+    "wikiId": 13814,
     "name": "Minotaur (Meat and Greet)",
     "version": "",
     "combatLevel": 193,
@@ -3516,10 +3795,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Minotaur (Meat and Greet).png",
     "size": 2,
-    "maxHitText": "14"
+    "maxHitText": "14",
+    "isSlayerMonster": false
   },
   {
     "slug": "mithril-dragon",
+    "wikiId": 2919,
     "name": "Mithril dragon",
     "version": "",
     "combatLevel": 304,
@@ -3545,10 +3826,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Mithril dragon.png",
     "size": 4,
-    "maxHitText": "28 (Melee)"
+    "maxHitText": "28 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "mother",
+    "wikiId": 8428,
     "name": "Mother",
     "version": "",
     "combatLevel": 198,
@@ -3568,10 +3851,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Mother.png",
     "size": 3,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": false
   },
   {
     "slug": "mutated-terrorbird",
+    "wikiId": 12464,
     "name": "Mutated Terrorbird",
     "version": "",
     "combatLevel": 178,
@@ -3591,10 +3876,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Mutated Terrorbird.png",
     "size": 3,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": true
   },
   {
     "slug": "mutated-tortoise",
+    "wikiId": 12465,
     "name": "Mutated Tortoise",
     "version": "",
     "combatLevel": 247,
@@ -3617,10 +3904,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Mutated Tortoise.png",
     "size": 4,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": true
   },
   {
     "slug": "muttadile",
+    "wikiId": 7561,
     "name": "Muttadile",
     "version": "Large",
     "combatLevel": 0,
@@ -3645,10 +3934,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Muttadile.png",
     "size": 5,
-    "maxHitText": "72 (Stomp)"
+    "maxHitText": "72 (Stomp)",
+    "isSlayerMonster": false
   },
   {
     "slug": "mysterious-figure",
+    "wikiId": 12300,
     "name": "Mysterious Figure",
     "version": "",
     "combatLevel": 271,
@@ -3668,10 +3959,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Mysterious Figure.png",
     "size": 1,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": false
   },
   {
     "slug": "nechryarch",
+    "wikiId": 7411,
     "name": "Nechryarch",
     "version": "",
     "combatLevel": 300,
@@ -3693,10 +3986,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Nechryarch.png",
     "size": 2,
-    "maxHitText": "27"
+    "maxHitText": "27",
+    "isSlayerMonster": true
   },
   {
     "slug": "nex",
+    "wikiId": 11278,
     "name": "Nex",
     "version": "",
     "combatLevel": 1001,
@@ -3716,10 +4011,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Nex.png",
     "size": 3,
-    "maxHitText": "33 (Magic)"
+    "maxHitText": "33 (Magic)",
+    "isSlayerMonster": false
   },
   {
     "slug": "night-beast",
+    "wikiId": 7409,
     "name": "Night beast",
     "version": "",
     "combatLevel": 374,
@@ -3739,10 +4036,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Night beast.png",
     "size": 4,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": true
   },
   {
     "slug": "nuclear-smoke-devil",
+    "wikiId": 7406,
     "name": "Nuclear smoke devil",
     "version": "",
     "combatLevel": 280,
@@ -3765,10 +4064,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Nuclear smoke devil.png",
     "size": 2,
-    "maxHitText": "29"
+    "maxHitText": "29",
+    "isSlayerMonster": true
   },
   {
     "slug": "nylocas-matomenos",
+    "wikiId": 10862,
     "name": "Nylocas Matomenos",
     "version": "Hard Mode Verzik",
     "combatLevel": 138,
@@ -3791,10 +4092,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Nylocas Matomenos.png",
     "size": 2,
-    "maxHitText": "11"
+    "maxHitText": "11",
+    "isSlayerMonster": false
   },
   {
     "slug": "nylocas-prinkipas",
+    "wikiId": 10805,
     "name": "Nylocas Prinkipas",
     "version": "Magic",
     "combatLevel": 400,
@@ -3817,10 +4120,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Nylocas Prinkipas (magic).png",
     "size": 3,
-    "maxHitText": "38"
+    "maxHitText": "38",
+    "isSlayerMonster": false
   },
   {
     "slug": "nylocas-vasilias",
+    "wikiId": 8354,
     "name": "Nylocas Vasilias",
     "version": "Normal",
     "combatLevel": 800,
@@ -3843,10 +4148,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Nylocas Vasilias (melee).png",
     "size": 4,
-    "maxHitText": "70"
+    "maxHitText": "70",
+    "isSlayerMonster": false
   },
   {
     "slug": "obelisk-tombs-of-amascut",
+    "wikiId": 11751,
     "name": "Obelisk (Tombs of Amascut)",
     "version": "",
     "combatLevel": 0,
@@ -3866,10 +4173,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Obelisk (Tombs of Amascut, phase 1).png",
     "size": 3,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": false
   },
   {
     "slug": "orca",
+    "wikiId": 15204,
     "name": "Orca",
     "version": "",
     "combatLevel": 205,
@@ -3889,10 +4198,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Orca.png",
     "size": 4,
-    "maxHitText": "13"
+    "maxHitText": "13",
+    "isSlayerMonster": false
   },
   {
     "slug": "penance-queen",
+    "wikiId": 5775,
     "name": "Penance Queen",
     "version": "",
     "combatLevel": 209,
@@ -3912,10 +4223,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Penance Queen.png",
     "size": 5,
-    "maxHitText": "13 (Ranged)"
+    "maxHitText": "13 (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "persten-the-deceitful",
+    "wikiId": 12333,
     "name": "Persten the Deceitful",
     "version": "",
     "combatLevel": 264,
@@ -3937,10 +4250,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Persten the Deceitful.png",
     "size": 1,
-    "maxHitText": "32"
+    "maxHitText": "32",
+    "isSlayerMonster": false
   },
   {
     "slug": "pestilent-bloat",
+    "wikiId": 8359,
     "name": "Pestilent Bloat",
     "version": "Normal",
     "combatLevel": 870,
@@ -3962,10 +4277,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Pestilent Bloat.png",
     "size": 5,
-    "maxHitText": "20 (Flies)"
+    "maxHitText": "20 (Flies)",
+    "isSlayerMonster": false
   },
   {
     "slug": "phantom-muspah",
+    "wikiId": 12078,
     "name": "Phantom Muspah",
     "version": "Melee",
     "combatLevel": 741,
@@ -3990,10 +4307,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Phantom Muspah (melee).png",
     "size": 5,
-    "maxHitText": "34"
+    "maxHitText": "34",
+    "isSlayerMonster": true
   },
   {
     "slug": "phosanis-nightmare",
+    "wikiId": 9416,
     "name": "Phosani's Nightmare",
     "version": "",
     "combatLevel": 1024,
@@ -4013,10 +4332,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Nightmare.png",
     "size": 5,
-    "maxHitText": "73 (melee)"
+    "maxHitText": "73 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "porazdir",
+    "wikiId": 7515,
     "name": "Porazdir",
     "version": "",
     "combatLevel": 235,
@@ -4038,10 +4359,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Porazdir.png",
     "size": 3,
-    "maxHitText": "43 (Magic)"
+    "maxHitText": "43 (Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "portal-pest-control",
+    "wikiId": 1740,
     "name": "Portal (Pest Control)",
     "version": "Blue, Intermediate/veteran",
     "combatLevel": 0,
@@ -4061,10 +4384,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Blue Portal.png",
     "size": 3,
-    "maxHitText": "0 (Does not attack)"
+    "maxHitText": "0 (Does not attack)",
+    "isSlayerMonster": false
   },
   {
     "slug": "prince-itzla-arkan",
+    "wikiId": 13784,
     "name": "Prince Itzla Arkan",
     "version": "",
     "combatLevel": 167,
@@ -4084,10 +4409,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Prince Itzla Arkan (disguised, sword).png",
     "size": 1,
-    "maxHitText": "12 (normal)"
+    "maxHitText": "12 (normal)",
+    "isSlayerMonster": false
   },
   {
     "slug": "rabbit-prifddinas",
+    "wikiId": 9118,
     "name": "Rabbit (Prifddinas)",
     "version": "",
     "combatLevel": 2,
@@ -4107,10 +4434,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Rabbit (Prifddinas).png",
     "size": 1,
-    "maxHitText": "40"
+    "maxHitText": "40",
+    "isSlayerMonster": false
   },
   {
     "slug": "ranging-ro",
+    "wikiId": 13664,
     "name": "Ranging Ro",
     "version": "Annihilation",
     "combatLevel": 973,
@@ -4130,10 +4459,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ranging Ro (Annihilation).png",
     "size": 1,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": false
   },
   {
     "slug": "ranis-drakan",
+    "wikiId": 8242,
     "name": "Ranis Drakan",
     "version": "A Taste of Hope",
     "combatLevel": 233,
@@ -4155,10 +4486,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ranis Drakan (A Taste of Hope).png",
     "size": 1,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": true
   },
   {
     "slug": "repugnant-spectre",
+    "wikiId": 7403,
     "name": "Repugnant spectre",
     "version": "",
     "combatLevel": 335,
@@ -4184,10 +4517,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Repugnant spectre.png",
     "size": 3,
-    "maxHitText": "39"
+    "maxHitText": "39",
+    "isSlayerMonster": true
   },
   {
     "slug": "revenant-maledictus",
+    "wikiId": 11246,
     "name": "Revenant maledictus",
     "version": "",
     "combatLevel": 397,
@@ -4210,10 +4545,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Revenant maledictus.png",
     "size": 5,
-    "maxHitText": "30"
+    "maxHitText": "30",
+    "isSlayerMonster": true
   },
   {
     "slug": "robert-the-strong",
+    "wikiId": 8057,
     "name": "Robert the Strong",
     "version": "",
     "combatLevel": 224,
@@ -4233,10 +4570,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Robert the Strong.png",
     "size": 1,
-    "maxHitText": "34 (Ranged)"
+    "maxHitText": "34 (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "rune-dragon",
+    "wikiId": 8031,
     "name": "Rune dragon",
     "version": "",
     "combatLevel": 380,
@@ -4262,10 +4601,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Rune dragon.png",
     "size": 5,
-    "maxHitText": "29 (Melee)"
+    "maxHitText": "29 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "rune-dragon-construction",
+    "wikiId": 8027,
     "name": "Rune dragon (Construction)",
     "version": "",
     "combatLevel": 380,
@@ -4290,10 +4631,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Rune dragon (Construction) built.png",
     "size": 4,
-    "maxHitText": "29 (Melee)"
+    "maxHitText": "29 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "sarachnis",
+    "wikiId": 8713,
     "name": "Sarachnis",
     "version": "",
     "combatLevel": 318,
@@ -4316,10 +4659,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Sarachnis.png",
     "size": 5,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": true
   },
   {
     "slug": "scorpia",
+    "wikiId": 6615,
     "name": "Scorpia",
     "version": "",
     "combatLevel": 225,
@@ -4342,10 +4687,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Scorpia.png",
     "size": 5,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": true
   },
   {
     "slug": "screaming-twisted-banshee",
+    "wikiId": 7391,
     "name": "Screaming twisted banshee",
     "version": "",
     "combatLevel": 144,
@@ -4371,10 +4718,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Screaming twisted banshee.png",
     "size": 3,
-    "maxHitText": "12"
+    "maxHitText": "12",
+    "isSlayerMonster": true
   },
   {
     "slug": "scurrius",
+    "wikiId": 7221,
     "name": "Scurrius",
     "version": "Group",
     "combatLevel": 250,
@@ -4396,10 +4745,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Scurrius.png",
     "size": 3,
-    "maxHitText": "13 (Melee)"
+    "maxHitText": "13 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "sea-troll-queen",
+    "wikiId": 4315,
     "name": "Sea Troll Queen",
     "version": "",
     "combatLevel": 170,
@@ -4422,10 +4773,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Sea Troll Queen.png",
     "size": 5,
-    "maxHitText": "16 (Melee)"
+    "maxHitText": "16 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "shadow-wyrm",
+    "wikiId": 10399,
     "name": "Shadow Wyrm",
     "version": "Attacking",
     "combatLevel": 259,
@@ -4450,10 +4803,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Shadow Wyrm (attacking).png",
     "size": 5,
-    "maxHitText": "28"
+    "maxHitText": "28",
+    "isSlayerMonster": true
   },
   {
     "slug": "shaeded-beast",
+    "wikiId": 8709,
     "name": "Shaeded Beast",
     "version": "",
     "combatLevel": 186,
@@ -4473,10 +4828,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Shaeded Beast.png",
     "size": 3,
-    "maxHitText": "30"
+    "maxHitText": "30",
+    "isSlayerMonster": false
   },
   {
     "slug": "shellbane-gryphon",
+    "wikiId": 14860,
     "name": "Shellbane gryphon",
     "version": "",
     "combatLevel": 235,
@@ -4499,10 +4856,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Shellbane gryphon.png",
     "size": 4,
-    "maxHitText": "22 <br/> 64 (whirlwinds) <br/> 30 (knockback)"
+    "maxHitText": "22 <br/> 64 (whirlwinds) <br/> 30 (knockback)",
+    "isSlayerMonster": true
   },
   {
     "slug": "shellbane-gryphon-troubled-tortugans",
+    "wikiId": 15010,
     "name": "Shellbane gryphon (Troubled Tortugans)",
     "version": "",
     "combatLevel": 235,
@@ -4525,10 +4884,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Shellbane gryphon (Troubled Tortugans).png",
     "size": 4,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": false
   },
   {
     "slug": "skeletal-wyvern",
+    "wikiId": 468,
     "name": "Skeletal Wyvern",
     "version": "1",
     "combatLevel": 140,
@@ -4553,10 +4914,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Skeletal Wyvern.png",
     "size": 3,
-    "maxHitText": "13 (Ranged)"
+    "maxHitText": "13 (Ranged)",
+    "isSlayerMonster": true
   },
   {
     "slug": "skotizo",
+    "wikiId": 7286,
     "name": "Skotizo",
     "version": "",
     "combatLevel": 321,
@@ -4581,10 +4944,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Skotizo.png",
     "size": 5,
-    "maxHitText": "38"
+    "maxHitText": "38",
+    "isSlayerMonster": true
   },
   {
     "slug": "sol-heredit",
+    "wikiId": 12821,
     "name": "Sol Heredit",
     "version": "",
     "combatLevel": 1563,
@@ -4604,10 +4969,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Sol Heredit.png",
     "size": 5,
-    "maxHitText": "44 (Typeless AOE)"
+    "maxHitText": "44 (Typeless AOE)",
+    "isSlayerMonster": false
   },
   {
     "slug": "sotetseg",
+    "wikiId": 8387,
     "name": "Sotetseg",
     "version": "Normal",
     "combatLevel": 995,
@@ -4627,10 +4994,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Sotetseg.png",
     "size": 5,
-    "maxHitText": "45 (Melee)"
+    "maxHitText": "45 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "spindel",
+    "wikiId": 11998,
     "name": "Spindel",
     "version": "",
     "combatLevel": 302,
@@ -4653,10 +5022,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Spindel.png",
     "size": 4,
-    "maxHitText": "14 (Melee)"
+    "maxHitText": "14 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "spitting-wyvern",
+    "wikiId": 7794,
     "name": "Spitting Wyvern",
     "version": "",
     "combatLevel": 139,
@@ -4681,10 +5052,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Spitting Wyvern.png",
     "size": 3,
-    "maxHitText": "9 (Melee)"
+    "maxHitText": "9 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "steel-dragon",
+    "wikiId": 7255,
     "name": "Steel dragon",
     "version": "Level 274",
     "combatLevel": 274,
@@ -4710,10 +5083,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Steel dragon.png",
     "size": 4,
-    "maxHitText": "24 (Melee)"
+    "maxHitText": "24 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "steel-dragon-construction",
+    "wikiId": 139,
     "name": "Steel dragon (Construction)",
     "version": "",
     "combatLevel": 246,
@@ -4736,10 +5111,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Steel dragon (Construction) built.png",
     "size": 3,
-    "maxHitText": "22 (Melee)"
+    "maxHitText": "22 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "strange-creature",
+    "wikiId": 12063,
     "name": "Strange Creature",
     "version": "Melee",
     "combatLevel": 368,
@@ -4759,10 +5136,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Strange Creature (melee).png",
     "size": 5,
-    "maxHitText": "24"
+    "maxHitText": "24",
+    "isSlayerMonster": false
   },
   {
     "slug": "strongbones",
+    "wikiId": 11273,
     "name": "Strongbones",
     "version": "",
     "combatLevel": 184,
@@ -4782,10 +5161,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Strongbones.png",
     "size": 1,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": true
   },
   {
     "slug": "surok-magis",
+    "wikiId": 13482,
     "name": "Surok Magis",
     "version": "",
     "combatLevel": 265,
@@ -4805,10 +5186,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Surok Magis (Dagon'hai).png",
     "size": 0,
-    "maxHitText": "45+ (Special)"
+    "maxHitText": "45+ (Special)",
+    "isSlayerMonster": false
   },
   {
     "slug": "taloned-wyvern",
+    "wikiId": 7793,
     "name": "Taloned Wyvern",
     "version": "",
     "combatLevel": 147,
@@ -4833,10 +5216,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Taloned Wyvern.png",
     "size": 3,
-    "maxHitText": "10 (Magic)"
+    "maxHitText": "10 (Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "tar-monster",
+    "wikiId": 7804,
     "name": "Tar Monster",
     "version": "",
     "combatLevel": 132,
@@ -4856,10 +5241,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Tar Monster.png",
     "size": 2,
-    "maxHitText": "9"
+    "maxHitText": "9",
+    "isSlayerMonster": false
   },
   {
     "slug": "tekton",
+    "wikiId": 7540,
     "name": "Tekton",
     "version": "Normal",
     "combatLevel": 0,
@@ -4881,10 +5268,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Tekton.png",
     "size": 4,
-    "maxHitText": "52"
+    "maxHitText": "52",
+    "isSlayerMonster": false
   },
   {
     "slug": "tentacle-abyssal-sire",
+    "wikiId": 5912,
     "name": "Tentacle (Abyssal Sire)",
     "version": "",
     "combatLevel": 0,
@@ -4906,10 +5295,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Tentacle (Abyssal Sire, awake).png",
     "size": 9,
-    "maxHitText": "31"
+    "maxHitText": "31",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-everlasting",
+    "wikiId": 3474,
     "name": "The Everlasting",
     "version": "",
     "combatLevel": 223,
@@ -4929,10 +5320,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Everlasting.png",
     "size": 3,
-    "maxHitText": "24"
+    "maxHitText": "24",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-forsaken-assassin",
+    "wikiId": 12328,
     "name": "The Forsaken Assassin",
     "version": "",
     "combatLevel": 252,
@@ -4957,10 +5350,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "The Forsaken Assassin.png",
     "size": 1,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-hueycoatl",
+    "wikiId": 14009,
     "name": "The Hueycoatl",
     "version": "Normal",
     "combatLevel": 642,
@@ -4985,10 +5380,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "The Hueycoatl.png",
     "size": 7,
-    "maxHitText": "14"
+    "maxHitText": "14",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-jormungand",
+    "wikiId": 9290,
     "name": "The Jormungand",
     "version": "",
     "combatLevel": 363,
@@ -5011,10 +5408,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "The Jormungand.png",
     "size": 5,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": true
   },
   {
     "slug": "the-leviathan",
+    "wikiId": 12214,
     "name": "The Leviathan",
     "version": "Post-quest",
     "combatLevel": 798,
@@ -5034,10 +5433,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Leviathan.png",
     "size": 7,
-    "maxHitText": "50 (Melee orb & Bite)"
+    "maxHitText": "50 (Melee orb & Bite)",
+    "isSlayerMonster": true
   },
   {
     "slug": "the-maiden-of-sugadinti",
+    "wikiId": 8360,
     "name": "The Maiden of Sugadinti",
     "version": "Normal",
     "combatLevel": 940,
@@ -5057,10 +5458,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Maiden of Sugadinti.png",
     "size": 6,
-    "maxHitText": "36"
+    "maxHitText": "36",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-mimic",
+    "wikiId": 8633,
     "name": "The Mimic",
     "version": "",
     "combatLevel": 186,
@@ -5080,10 +5483,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Mimic.png",
     "size": 5,
-    "maxHitText": "23"
+    "maxHitText": "23",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-nightmare",
+    "wikiId": 9425,
     "name": "The Nightmare",
     "version": "",
     "combatLevel": 814,
@@ -5103,10 +5508,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "The Nightmare.png",
     "size": 5,
-    "maxHitText": "50/60 (Melee)"
+    "maxHitText": "50/60 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "the-whisperer",
+    "wikiId": 12204,
     "name": "The Whisperer",
     "version": "Post-quest",
     "combatLevel": 791,
@@ -5129,10 +5536,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "The Whisperer.png",
     "size": 3,
-    "maxHitText": "42 (x2) (Melee)"
+    "maxHitText": "42 (x2) (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "thermonuclear-smoke-devil",
+    "wikiId": 499,
     "name": "Thermonuclear smoke devil",
     "version": "",
     "combatLevel": 301,
@@ -5155,10 +5564,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Thermonuclear smoke devil.png",
     "size": 4,
-    "maxHitText": "8"
+    "maxHitText": "8",
+    "isSlayerMonster": true
   },
   {
     "slug": "tormented-demon",
+    "wikiId": 13599,
     "name": "Tormented Demon",
     "version": "1",
     "combatLevel": 450,
@@ -5183,10 +5594,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Tormented Demon (1).png",
     "size": 3,
-    "maxHitText": "<div class=\"plainlist \" >\n*31 (auto)\n*45 (special)\n</div>"
+    "maxHitText": "<div class=\"plainlist \" >\n*31 (auto)\n*45 (special)\n</div>",
+    "isSlayerMonster": true
   },
   {
     "slug": "tortured-gorilla",
+    "wikiId": 7150,
     "name": "Tortured gorilla",
     "version": "Level 141",
     "combatLevel": 141,
@@ -5206,10 +5619,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Tortured gorilla.png",
     "size": 2,
-    "maxHitText": "13"
+    "maxHitText": "13",
+    "isSlayerMonster": true
   },
   {
     "slug": "totem-phosanis-nightmare",
+    "wikiId": 9435,
     "name": "Totem (Phosani's Nightmare)",
     "version": "",
     "combatLevel": 0,
@@ -5232,10 +5647,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Totem (Phosani's Nightmare, uncharged).png",
     "size": 3,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": false
   },
   {
     "slug": "totem-the-nightmare",
+    "wikiId": 9435,
     "name": "Totem (The Nightmare)",
     "version": "",
     "combatLevel": 0,
@@ -5258,10 +5675,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Totem (The Nightmare, uncharged).png",
     "size": 3,
-    "maxHitText": "0"
+    "maxHitText": "0",
+    "isSlayerMonster": false
   },
   {
     "slug": "tumekens-warden",
+    "wikiId": 11758,
     "name": "Tumeken's Warden",
     "version": "Core-ejected",
     "combatLevel": 489,
@@ -5284,10 +5703,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Tumeken's Warden (level-489, core-ejected).png",
     "size": 5,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": false
   },
   {
     "slug": "typhor",
+    "wikiId": 9295,
     "name": "Typhor",
     "version": "",
     "combatLevel": 218,
@@ -5307,10 +5728,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Typhor.png",
     "size": 3,
-    "maxHitText": "20"
+    "maxHitText": "20",
+    "isSlayerMonster": true
   },
   {
     "slug": "tzhaar-ket",
+    "wikiId": 7679,
     "name": "TzHaar-Ket",
     "version": "Level 221",
     "combatLevel": 221,
@@ -5333,10 +5756,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "TzHaar-Ket (level 221).png",
     "size": 1,
-    "maxHitText": "19"
+    "maxHitText": "19",
+    "isSlayerMonster": true
   },
   {
     "slug": "tzkal-zuk",
+    "wikiId": 7706,
     "name": "TzKal-Zuk",
     "version": "Normal",
     "combatLevel": 1400,
@@ -5359,10 +5784,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "TzKal-Zuk.png",
     "size": 7,
-    "maxHitText": "148&thinsp;"
+    "maxHitText": "148&thinsp;",
+    "isSlayerMonster": true
   },
   {
     "slug": "tztok-jad",
+    "wikiId": 3127,
     "name": "TzTok-Jad",
     "version": "",
     "combatLevel": 702,
@@ -5385,10 +5812,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "TzTok-Jad.png",
     "size": 5,
-    "maxHitText": "97 (Melee)"
+    "maxHitText": "97 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "tztok-jad-rek",
+    "wikiId": 15557,
     "name": "TzTok-Jad-Rek",
     "version": "",
     "combatLevel": 186,
@@ -5411,10 +5840,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "TzTok-Jad-Rek.png",
     "size": 3,
-    "maxHitText": "25 (Melee)"
+    "maxHitText": "25 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "umbra",
+    "wikiId": 11284,
     "name": "Umbra",
     "version": "",
     "combatLevel": 285,
@@ -5434,10 +5865,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Umbra.png",
     "size": 1,
-    "maxHitText": "29"
+    "maxHitText": "29",
+    "isSlayerMonster": false
   },
   {
     "slug": "vampyre-kraken",
+    "wikiId": 15212,
     "name": "Vampyre kraken",
     "version": "",
     "combatLevel": 211,
@@ -5460,10 +5893,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vampyre kraken.png",
     "size": 5,
-    "maxHitText": "22"
+    "maxHitText": "22",
+    "isSlayerMonster": false
   },
   {
     "slug": "vanstrom-klause",
+    "wikiId": 9567,
     "name": "Vanstrom Klause",
     "version": "Sins of the Father",
     "combatLevel": 459,
@@ -5485,10 +5920,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Vanstrom Klause (vampyre).png",
     "size": 1,
-    "maxHitText": "24 (Standard)"
+    "maxHitText": "24 (Standard)",
+    "isSlayerMonster": true
   },
   {
     "slug": "vardorvis",
+    "wikiId": 12223,
     "name": "Vardorvis",
     "version": "Post-quest",
     "combatLevel": 784,
@@ -5511,10 +5948,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vardorvis.png",
     "size": 2,
-    "maxHitText": "32-43 (Melee)"
+    "maxHitText": "32-43 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "vasa-nistirio",
+    "wikiId": 7566,
     "name": "Vasa Nistirio",
     "version": "Normal",
     "combatLevel": 0,
@@ -5536,10 +5975,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Vasa Nistirio.png",
     "size": 5,
-    "maxHitText": "Varies"
+    "maxHitText": "Varies",
+    "isSlayerMonster": false
   },
   {
     "slug": "veiled-kraken",
+    "wikiId": 15576,
     "name": "Veiled kraken",
     "version": "",
     "combatLevel": 210,
@@ -5559,10 +6000,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Veiled kraken.png",
     "size": 5,
-    "maxHitText": "19"
+    "maxHitText": "19",
+    "isSlayerMonster": false
   },
   {
     "slug": "venenatis",
+    "wikiId": 6610,
     "name": "Venenatis",
     "version": "",
     "combatLevel": 464,
@@ -5585,10 +6028,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Venenatis.png",
     "size": 4,
-    "maxHitText": "21 (Melee)"
+    "maxHitText": "21 (Melee)",
+    "isSlayerMonster": true
   },
   {
     "slug": "verzik-vitur",
+    "wikiId": 10850,
     "name": "Verzik Vitur",
     "version": "Hard mode, Phase 2",
     "combatLevel": 1265,
@@ -5608,10 +6053,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Verzik Vitur (flying).png",
     "size": 3,
-    "maxHitText": "44"
+    "maxHitText": "44",
+    "isSlayerMonster": false
   },
   {
     "slug": "vespula",
+    "wikiId": 7530,
     "name": "Vespula",
     "version": "Normal",
     "combatLevel": 0,
@@ -5637,10 +6084,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vespula.png",
     "size": 5,
-    "maxHitText": "14 (Ranged)"
+    "maxHitText": "14 (Ranged)",
+    "isSlayerMonster": false
   },
   {
     "slug": "vetion",
+    "wikiId": 6611,
     "name": "Vet'ion",
     "version": "Normal",
     "combatLevel": 454,
@@ -5662,10 +6111,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Vet'ion.png",
     "size": 3,
-    "maxHitText": "44"
+    "maxHitText": "44",
+    "isSlayerMonster": true
   },
   {
     "slug": "vitreous-chilled-jelly",
+    "wikiId": 15501,
     "name": "Vitreous Chilled Jelly",
     "version": "",
     "combatLevel": 241,
@@ -5688,10 +6139,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vitreous Chilled Jelly.png",
     "size": 2,
-    "maxHitText": "19"
+    "maxHitText": "19",
+    "isSlayerMonster": true
   },
   {
     "slug": "vitreous-warped-jelly",
+    "wikiId": 7400,
     "name": "Vitreous Warped Jelly",
     "version": "",
     "combatLevel": 241,
@@ -5714,10 +6167,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vitreous Warped Jelly.png",
     "size": 3,
-    "maxHitText": "19"
+    "maxHitText": "19",
+    "isSlayerMonster": true
   },
   {
     "slug": "void-knight-pest-control",
+    "wikiId": 2950,
     "name": "Void Knight (Pest Control)",
     "version": "1",
     "combatLevel": 0,
@@ -5737,10 +6192,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Void Knight (Pest Control, 1).png",
     "size": 0,
-    "maxHitText": "0 (Does not attack)"
+    "maxHitText": "0 (Does not attack)",
+    "isSlayerMonster": false
   },
   {
     "slug": "vorkath",
+    "wikiId": 8059,
     "name": "Vorkath",
     "version": "Post-quest",
     "combatLevel": 732,
@@ -5767,10 +6224,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vorkath.png",
     "size": 7,
-    "maxHitText": "30 (Magic)"
+    "maxHitText": "30 (Magic)",
+    "isSlayerMonster": true
   },
   {
     "slug": "warped-terrorbird",
+    "wikiId": 12499,
     "name": "Warped Terrorbird",
     "version": "Level 138",
     "combatLevel": 138,
@@ -5790,10 +6249,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Warped Terrorbird (lv 138).png",
     "size": 2,
-    "maxHitText": "16"
+    "maxHitText": "16",
+    "isSlayerMonster": true
   },
   {
     "slug": "warped-tortoise",
+    "wikiId": 12490,
     "name": "Warped Tortoise",
     "version": "",
     "combatLevel": 121,
@@ -5816,10 +6277,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Warped Tortoise.png",
     "size": 3,
-    "maxHitText": "12"
+    "maxHitText": "12",
+    "isSlayerMonster": true
   },
   {
     "slug": "xamphur",
+    "wikiId": 10954,
     "name": "Xamphur",
     "version": "",
     "combatLevel": 239,
@@ -5839,10 +6302,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Xamphur (monster, phantom hands).png",
     "size": 3,
-    "maxHitText": "18"
+    "maxHitText": "18",
+    "isSlayerMonster": false
   },
   {
     "slug": "xarpus",
+    "wikiId": 10772,
     "name": "Xarpus",
     "version": "Hard mode",
     "combatLevel": 1160,
@@ -5865,10 +6330,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Xarpus.png",
     "size": 5,
-    "maxHitText": "11 (50+ recoil)"
+    "maxHitText": "11 (50+ recoil)",
+    "isSlayerMonster": false
   },
   {
     "slug": "yama",
+    "wikiId": 14176,
     "name": "Yama",
     "version": "Normal",
     "combatLevel": 1238,
@@ -5893,10 +6360,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Yama.png",
     "size": 5,
-    "maxHitText": "46 (auto-attacks)"
+    "maxHitText": "46 (auto-attacks)",
+    "isSlayerMonster": false
   },
   {
     "slug": "zalcano",
+    "wikiId": 9050,
     "name": "Zalcano",
     "version": "Weakened",
     "combatLevel": 336,
@@ -5916,10 +6385,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Zalcano (weakened).png",
     "size": 5,
-    "maxHitText": "N/A"
+    "maxHitText": "N/A",
+    "isSlayerMonster": false
   },
   {
     "slug": "zebak",
+    "wikiId": 11730,
     "name": "Zebak",
     "version": "Normal",
     "combatLevel": 371,
@@ -5939,12 +6410,14 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Zebak.png",
     "size": 9,
-    "maxHitText": "38 (Melee)"
+    "maxHitText": "38 (Melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "zulrah",
+    "wikiId": 2042,
     "name": "Zulrah",
-    "version": "Magma",
+    "version": "Serpentine",
     "combatLevel": 725,
     "hp": 500,
     "defenceLevel": 300,
@@ -5953,19 +6426,20 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "stab": 0,
       "slash": 0,
       "crush": 0,
-      "magic": 0,
-      "rangedHeavy": 300,
-      "rangedStandard": 300,
-      "rangedLight": 300
+      "magic": -45,
+      "rangedHeavy": 50,
+      "rangedStandard": 50,
+      "rangedLight": 50
     },
     "attributes": [],
     "weakness": {
       "element": "fire",
       "severity": 50
     },
-    "image": "Zulrah (magma).png",
+    "image": "Zulrah (serpentine).png",
     "size": 5,
-    "maxHitText": "30"
+    "maxHitText": "41",
+    "isSlayerMonster": true
   }
 ];
 

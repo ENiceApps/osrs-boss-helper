@@ -27,7 +27,7 @@ const SKILL_KEYS: Array<keyof Skills> = [
 export function PlayerStatsPanel({ skills, isLive }: Props) {
   return (
     <div>
-      <h4 className="text-[11px] font-semibold uppercase tracking-wide text-osrs-muted mb-2">
+      <h4 className="label-eyebrow font-semibold text-osrs-muted mb-2">
         Skills
       </h4>
       <p className="text-xs text-osrs-muted mb-2">

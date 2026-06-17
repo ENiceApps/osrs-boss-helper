@@ -14,9 +14,9 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "OSRS Vorkath Helper",
+  title: "OSRS Boss Helper",
   description:
-    "Paste your bank tag and get gear, inventory, and DPS recommendations for Vorkath.",
+    "Pick any boss and get a DPS-optimised loadout built from your own bank, plus mechanics and spec weapons for the fight.",
 };
 
 export default function RootLayout({

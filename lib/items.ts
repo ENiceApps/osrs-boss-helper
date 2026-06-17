@@ -8,11 +8,7 @@
 import equipmentJson from "@/data/vendor/wgloop/equipment.json" with { type: "json" };
 import monstersJson from "@/data/vendor/wgloop/monsters.json" with { type: "json" };
 import { STAT_OVERRIDES, type StatOverride } from "@/data/items/stat-overrides";
-import type {
-  VendorEquipmentItem,
-  VendorMonster,
-  VendorMonsterDefensive,
-} from "@/types/vendor";
+import type { VendorEquipmentItem, VendorMonster } from "@/types/vendor";
 
 const EQUIPMENT: VendorEquipmentItem[] = equipmentJson as VendorEquipmentItem[];
 const MONSTERS: VendorMonster[] = monstersJson as VendorMonster[];
@@ -165,20 +161,3 @@ export function sumLoadout(
   return totals;
 }
 
-/** Pick the wiki ranged-defence bucket that matches a weapon category. */
-export function rangedDefenceBucketFor(weaponCategory: string): keyof Pick<
-  VendorMonsterDefensive,
-  "heavy" | "standard" | "light"
-> {
-  switch (weaponCategory) {
-    case "Crossbow":
-    case "Two-handed crossbow":
-      return "heavy";
-    case "Thrown":
-    case "Blowpipe":
-      return "light";
-    default:
-      // Bows, javelins, chinchompas, etc. all use standard.
-      return "standard";
-  }
-}

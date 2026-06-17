@@ -12,9 +12,9 @@ interface Props {
   /** True when GP comes from the RuneLite plugin — the input becomes read-only. */
   gpIsLive: boolean;
   onGpChange: (gp: number) => void;
-  /** Sell-to-fund threshold, in millions. */
-  sellThresholdM: number;
-  onSellThresholdChange: (millions: number) => void;
+  /** Budget-mode spend (from-scratch), independent of wallet GP. */
+  budgetGp: number;
+  onBudgetChange: (gp: number) => void;
   /** Skills block (PlayerStatsPanel), rendered inside the same card. */
   children?: ReactNode;
 }
@@ -33,15 +33,42 @@ const MODE_OPTIONS: Array<{ mode: BudgetMode; label: string; caption: string }> 
   {
     mode: "sell-to-fund",
     label: "Sell to fund",
-    caption: "Sell unused bank items to bankroll bigger upgrades.",
+    caption: "Sell chosen bank items to bankroll bigger upgrades.",
+  },
+  {
+    mode: "budget",
+    label: "Budget",
+    caption: "Best loadout for a set amount, ignoring my bank.",
   },
 ];
+
+// Budget slider runs on a log scale — most of the interesting range is below
+// 200M, so a linear slider would bunch it all into the first 10%.
+const BUDGET_MIN = 1_000_000;
+const BUDGET_MAX = 2_000_000_000;
+const SLIDER_STEPS = 1000;
+const LN_MIN = Math.log(BUDGET_MIN);
+const LN_SPAN = Math.log(BUDGET_MAX) - LN_MIN;
+
+function roundNiceGp(gp: number): number {
+  if (gp >= 100_000_000) return Math.round(gp / 5_000_000) * 5_000_000;
+  if (gp >= 10_000_000) return Math.round(gp / 1_000_000) * 1_000_000;
+  if (gp >= 1_000_000) return Math.round(gp / 100_000) * 100_000;
+  return Math.round(gp / 10_000) * 10_000;
+}
+
+function gpToSlider(gp: number): number {
+  const clamped = Math.min(BUDGET_MAX, Math.max(BUDGET_MIN, gp));
+  return Math.round(((Math.log(clamped) - LN_MIN) / LN_SPAN) * SLIDER_STEPS);
+}
+
+function sliderToGp(pos: number): number {
+  return roundNiceGp(Math.exp(LN_MIN + (pos / SLIDER_STEPS) * LN_SPAN));
+}
 
 /**
  * Left-rail setup card. Every control applies immediately — there is no
  * "update" button; the optimizer recomputes reactively as inputs change.
- * Replaces the old PlayerSetup card (whose combat-style buttons were dead
- * controls — the optimizer always auto-picks the best style).
  */
 export function SetupPanel({
   mode,
@@ -49,16 +76,25 @@ export function SetupPanel({
   gp,
   gpIsLive,
   onGpChange,
-  sellThresholdM,
-  onSellThresholdChange,
+  budgetGp,
+  onBudgetChange,
   children,
 }: Props) {
   const [gpText, setGpText] = useState(() => String(gp));
+  const [budgetText, setBudgetText] = useState(() => String(budgetGp));
+  const [budgetSlider, setBudgetSlider] = useState(() => gpToSlider(budgetGp));
   const commitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(commitTimer.current), []);
+  const budgetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(
+    () => () => {
+      clearTimeout(commitTimer.current);
+      clearTimeout(budgetTimer.current);
+    },
+    [],
+  );
 
   // Debounced commit: the optimizer run is not free, so wait for the user to
-  // stop typing rather than recomputing on every keystroke.
+  // stop typing/dragging rather than recomputing on every keystroke.
   function handleGpInput(text: string) {
     setGpText(text);
     clearTimeout(commitTimer.current);
@@ -66,6 +102,26 @@ export function SetupPanel({
       const parsed = Number(text.replace(/[^0-9]/g, ""));
       onGpChange(Number.isFinite(parsed) ? parsed : 0);
     }, 250);
+  }
+
+  function commitBudget(gpValue: number) {
+    clearTimeout(budgetTimer.current);
+    budgetTimer.current = setTimeout(() => onBudgetChange(gpValue), 250);
+  }
+
+  function handleBudgetSlider(pos: number) {
+    setBudgetSlider(pos);
+    const gpValue = sliderToGp(pos);
+    setBudgetText(String(gpValue));
+    commitBudget(gpValue);
+  }
+
+  function handleBudgetInput(text: string) {
+    setBudgetText(text);
+    const parsed = Number(text.replace(/[^0-9]/g, ""));
+    const gpValue = Number.isFinite(parsed) ? parsed : 0;
+    setBudgetSlider(gpToSlider(gpValue));
+    commitBudget(gpValue);
   }
 
   return (
@@ -110,7 +166,7 @@ export function SetupPanel({
         </div>
       </fieldset>
 
-      {mode !== "own-only" && (
+      {(mode === "gp-only" || mode === "sell-to-fund") && (
         <div>
           <label className="block">
             <span className="label-eyebrow">Wallet GP</span>
@@ -140,24 +196,33 @@ export function SetupPanel({
         </div>
       )}
 
-      {mode === "sell-to-fund" && (
-        <label className="block">
-          <span className="label-eyebrow">Sell threshold</span>
-          <div className="flex items-center gap-2 mt-1">
+      {mode === "budget" && (
+        <div>
+          <label className="block">
+            <span className="label-eyebrow">Budget</span>
             <input
               type="range"
               min={0}
-              max={50}
+              max={SLIDER_STEPS}
               step={1}
-              value={sellThresholdM}
-              onChange={(e) => onSellThresholdChange(Number(e.target.value))}
-              className="flex-1"
+              value={budgetSlider}
+              onChange={(e) => handleBudgetSlider(Number(e.target.value))}
+              className="mt-1 w-full"
+              aria-label="Loadout budget"
             />
-            <span className="text-osrs-brown font-mono text-xs w-16 text-right">
-              {sellThresholdM === 0 ? "Sell all" : `≥ ${sellThresholdM}M`}
+            <input
+              type="text"
+              inputMode="numeric"
+              value={budgetText}
+              onChange={(e) => handleBudgetInput(e.target.value)}
+              className="mt-1 w-full p-2 bg-parchment-dark border border-osrs-brown rounded text-osrs-brown"
+              placeholder="100000000"
+            />
+            <span className="block text-caption text-osrs-muted mt-1">
+              = {fmtGp(budgetGp)} to spend, ignoring your bank
             </span>
-          </div>
-        </label>
+          </label>
+        </div>
       )}
 
       {children && (

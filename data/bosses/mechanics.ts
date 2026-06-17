@@ -397,9 +397,9 @@ const ZILYANA: MechanicRequirement[] = [
   },
   {
     id: "zilyana-melee-or-tbow",
-    label: "Melee with Stab or Twisted bow",
+    label: "Melee or Twisted bow",
     description:
-      "Zilyana has high magic defence and low stab/slash defence — Scythe / Fang / Soulreaper are BIS melee. Tbow works well too due to her high magic level.",
+      "Zilyana's defence bonuses are uniform (100 to every style), so the best weapon is just whichever has the highest raw DPS. Her very high magic level (300) makes the Twisted bow scale exceptionally well; otherwise Scythe / Fang / Soulreaper lead in melee.",
     remediation: "Scythe of Vitur if you have it; otherwise Fang or Tbow.",
   },
   {
@@ -469,10 +469,10 @@ const DAGANNOTH_PRIME: MechanicRequirement[] = [
   },
   {
     id: "prime-weak-to-melee-or-ranged",
-    label: "Kill with melee (stab) or ranged",
+    label: "Kill with ranged",
     description:
-      "Prime has 10 magic defence vs heavy melee def — stab melee (Scythe, Fang, whip) or ranged (BoFA, Tbow) work well.",
-    remediation: "Scythe of Vitur or Twisted bow if you have them; Fang otherwise.",
+      "Prime tanks melee and magic (255 defence bonus to each) but has only 10 ranged defence — ranged shreds him.",
+    remediation: "Twisted bow ideal; Bow of Faerdhinen or a crossbow (DHCB/ZCB) otherwise.",
   },
   {
     id: "dks-position",
@@ -500,10 +500,10 @@ const DAGANNOTH_REX: MechanicRequirement[] = [
   },
   {
     id: "rex-weak-to-magic-and-crush",
-    label: "Kill with magic or crush",
+    label: "Kill with magic",
     description:
-      "Rex has 0 stab def, 10 slash, 255 ranged, BUT 60 magic def — wait that's high. Actually Rex is weak to MAGIC (his magic level is only 64). Use magic or crush weapon.",
-    remediation: "Trident of swamp / Sang for magic; Inquisitor's mace or BGS for crush.",
+      "Rex tanks melee and ranged (255 defence bonus to each) but has just 10 magic defence and a magic level of 0 — magic obliterates him.",
+    remediation: "Trident of the swamp / Sanguinesti / Shadow. (He attacks with melee — pray Melee.)",
   },
   {
     id: "rex-stand-under",
@@ -531,9 +531,9 @@ const DAGANNOTH_SUPREME: MechanicRequirement[] = [
   },
   {
     id: "supreme-weak-to-melee",
-    label: "Kill with stab/slash melee",
+    label: "Kill with melee",
     description:
-      "Supreme has 0 stab/slash def but ~70 magic def. Scythe, Fang, or any slash weapon shreds.",
+      "Supreme has just 10 defence to every melee style (stab/slash/crush) but huge magic (255) and ranged (550) defence — melee shreds him. Scythe, Fang, or whip all work.",
     remediation: "Scythe of Vitur > Fang > Whip.",
   },
   {
@@ -606,10 +606,10 @@ const VENENATIS: MechanicRequirement[] = [
   },
   {
     id: "venenatis-melee-distance",
-    label: "Stab/slash melee is BIS",
+    label: "Crush melee is BIS",
     description:
-      "Venenatis has 0 stab/slash def. Scythe and Fang both excel. Melee also avoids her magic-only retaliation pattern from range.",
-    remediation: "Scythe of Vitur ideal; Fang or Whip works.",
+      "Venenatis has only 10 crush def (vs 100 stab/slash, 150 ranged, 300 magic) — crush weapons shred her. Melee also avoids her magic-only retaliation pattern from range.",
+    remediation: "Inquisitor's mace ideal; Zamorakian hasta (crush style) or Saradomin sword works.",
   },
   {
     id: "food",
@@ -641,7 +641,7 @@ const CALLISTO: MechanicRequirement[] = [
     id: "callisto-magic-or-ranged",
     label: "Kill with magic or ranged",
     description:
-      "Callisto has 50 stab/slash def but only ~20 magic/ranged def. Tbow or DHCB with dragonbane synergy work great.",
+      "Callisto tanks melee (125-150 defence to stab/slash/crush) but is weak to ranged (50) and especially magic (0 bonus). Ranged (Tbow/DHCB) is the popular pick; magic is also strong.",
     remediation: "Tbow > BoFA > DHCB for ranged setups. Magic setups work but slower.",
   },
   {
@@ -829,10 +829,10 @@ const LEVIATHAN: MechanicRequirement[] = [
   },
   {
     id: "leviathan-melee-range",
-    label: "Melee from the right side",
+    label: "Ranged is BIS; melee from the east",
     description:
-      "Leviathan has very low slash defence — Scythe of Vitur is BIS. Stand on his east side to avoid the tail sweep.",
-    remediation: "Scythe > Fang > Soulreaper.",
+      "Leviathan's lowest defence by far is ranged (50 vs 190+ for every melee style), so Twisted bow / a strong crossbow lead. If you melee instead, Scythe is best in slash — stand on his east side to avoid the tail sweep.",
+    remediation: "Twisted bow / DHCB for ranged; Scythe > Fang in melee range.",
   },
   {
     id: "food",
@@ -932,9 +932,9 @@ const KRAKEN: MechanicRequirement[] = [
   },
   {
     id: "kraken-magic-only",
-    label: "Use magic — high other-style defence",
+    label: "Use magic (Trident) — the AFK standard",
     description:
-      "Kraken has 0 magic defence but >100 ranged/melee defences. Trident of swamp / Sang staff / Harmonised Surge all viable.",
+      "You fight Kraken from a fixed tile out of melee range, so magic (or ranged) is the practical choice — and its defence level is only 1, so anything hits. A powered staff is the go-to: Trident of the swamp / Sang / Harmonised Surge.",
     remediation: "Trident of swamp + Occult + Tormented bracelet is the AFK setup.",
   },
   {
@@ -1003,10 +1003,10 @@ const ARAXXOR: MechanicRequirement[] = [
   },
   {
     id: "araxxor-mage-defence",
-    label: "Low magic defence — mage works well",
+    label: "Crush/slash melee is BIS",
     description:
-      "Araxxor's magic defence is surprisingly low — Sang / Shadow / Harmonised setups are competitive with ranged here.",
-    remediation: "Magic setup viable if you don't have endgame ranged.",
+      "Araxxor's lowest defence is crush (15), then slash (75) — melee shreds him, with magic his STRONGEST defence (237). Scythe / Fang in melee range lead; ranged is the backup.",
+    remediation: "Scythe of Vitur or Fang in melee; crossbow/Tbow if you can't melee.",
   },
   {
     id: "food",

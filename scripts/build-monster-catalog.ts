@@ -29,6 +29,8 @@ const EXCLUDED_TAGS = ["Echo", "Nightmare Zone"];
 
 interface CatalogEntry {
   slug: string;
+  /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */
+  wikiId: number;
   name: string;
   version: string;
   combatLevel: number;
@@ -50,6 +52,8 @@ interface CatalogEntry {
   size: number;
   /** Free-text max hit description from the monster page (e.g. "30 (Magic)"). */
   maxHitText: string;
+  /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */
+  isSlayerMonster: boolean;
 }
 
 function slugify(name: string): string {
@@ -60,10 +64,18 @@ function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function pickPrimaryVersion(candidates: VendorMonster[]): VendorMonster {
+// Some bosses have multiple equal-HP phases; name the one that best represents
+// a typical kill for DPS benchmarking. Add entries here as needed.
+const PREFERRED_VERSION: Record<string, string> = {
+  // Serpentine is the wiki calc's default and the most-fought phase.
+  "Zulrah": "Serpentine",
+};
+
+function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMonster {
   if (candidates.length === 1) return candidates[0];
   const named = (v: string) => candidates.find((c) => c.version === v);
   return (
+    named(PREFERRED_VERSION[name]) ??
     named("Post-quest") ??
     named("Normal") ??
     named("Hard Mode") ??
@@ -113,7 +125,7 @@ for (const m of eligible) {
 const entries: CatalogEntry[] = [];
 const usedSlugs = new Set<string>();
 for (const [name, candidates] of byName) {
-  const primary = pickPrimaryVersion(candidates);
+  const primary = pickPrimaryVersion(name, candidates);
   let slug = slugify(name);
   // De-dupe slugs from naming collisions (vanishingly rare here, but cheap insurance).
   if (usedSlugs.has(slug)) {
@@ -124,6 +136,7 @@ for (const [name, candidates] of byName) {
   usedSlugs.add(slug);
   entries.push({
     slug,
+    wikiId: primary.id,
     name: primary.name,
     version: primary.version,
     // Upstream vendor data has `level` as a string for ~5 monsters (data-quality
@@ -147,6 +160,7 @@ for (const [name, candidates] of byName) {
     size: primary.size,
     // Coerce defensively — upstream has both string ("30 (Magic)") and number (0) shapes.
     maxHitText: primary.max_hit == null ? "" : String(primary.max_hit),
+    isSlayerMonster: primary.is_slayer_monster ?? false,
   });
 }
 
@@ -157,6 +171,7 @@ for (const [name, candidates] of byName) {
 // optimizer's number is the engine's raw output for whatever gear you bring).
 const COMBAT_DUMMY: CatalogEntry = {
   slug: "combat-dummy",
+  wikiId: 0,
   name: "Combat dummy",
   version: "",
   combatLevel: 1,
@@ -177,6 +192,7 @@ const COMBAT_DUMMY: CatalogEntry = {
   image: "Combat_dummy.png",
   size: 1,
   maxHitText: "0",
+  isSlayerMonster: false,
 };
 entries.push(COMBAT_DUMMY);
 
@@ -189,6 +205,8 @@ lines.push(`// Filter: HP >= ${HP_FLOOR}, excluding entries tagged ${JSON.string
 lines.push(``);
 lines.push(`export interface MonsterCatalogEntry {`);
 lines.push(`  slug: string;`);
+lines.push(`  /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */`);
+lines.push(`  wikiId: number;`);
 lines.push(`  name: string;`);
 lines.push(`  version: string;`);
 lines.push(`  combatLevel: number;`);
@@ -209,6 +227,8 @@ lines.push(`  weakness: { element: string; severity: number } | null;`);
 lines.push(`  image: string;`);
 lines.push(`  size: number;`);
 lines.push(`  maxHitText: string;`);
+lines.push(`  /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */`);
+lines.push(`  isSlayerMonster: boolean;`);
 lines.push(`}`);
 lines.push(``);
 lines.push(`export const MONSTER_CATALOG: MonsterCatalogEntry[] = ${JSON.stringify(entries, null, 2)};`);

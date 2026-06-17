@@ -5,6 +5,7 @@
 export const BONUS_TRIGGER_ITEM_IDS = {
   DRAGON_HUNTER_CROSSBOW: 21012,
   DRAGON_HUNTER_LANCE: 22978,
+  DRAGON_HUNTER_WAND: 30070,
   SALVE_AMULET_EI: 12018, // enchanted imbued → ×6/5
   SALVE_AMULET_E: 10588, // enchanted (non-imbued) → ×6/5
   SALVE_AMULET: 4081, // base → ×7/6
@@ -12,7 +13,10 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   ARCLIGHT: 19675, // Charged → demonbane
   EMBERLIGHT: 29589, // demonbane
   TOME_OF_FIRE_CHARGED: 20714,
+  TOME_OF_WATER_CHARGED: 25574,
+  TOME_OF_EARTH_CHARGED: 30064,
   TWISTED_BOW: 20997,
+  OSMUMTEN_FANG: 26219, // double accuracy roll on stab styles
 } as const;
 
 export type BonusTriggerKey = keyof typeof BONUS_TRIGGER_ITEM_IDS;
@@ -27,14 +31,18 @@ export type BonusTriggerKey = keyof typeof BONUS_TRIGGER_ITEM_IDS;
 export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> = {
   DRAGON_HUNTER_CROSSBOW: [21012, 25916, 25918], // + (t), (b) cosmetic kits
   DRAGON_HUNTER_LANCE: [22978],
+  DRAGON_HUNTER_WAND: [30070],
   SALVE_AMULET_EI: [12018, 25278, 26782], // + Soul Wars, Emir's Arena imbues
   SALVE_AMULET_E: [10588],
   SALVE_AMULET: [4081],
   SALVE_AMULET_I: [12017, 25250, 26763], // + Soul Wars, Emir's Arena imbues
   ARCLIGHT: [19675], // Charged only — Inactive (30305) has no demonbane
   EMBERLIGHT: [29589],
-  TOME_OF_FIRE_CHARGED: [20714], // Empty (20716) gives no bonus
+  TOME_OF_FIRE_CHARGED: [20714],  // Empty (20716) gives no bonus
+  TOME_OF_WATER_CHARGED: [25574], // Empty (25576) gives no bonus
+  TOME_OF_EARTH_CHARGED: [30064], // Empty (30066) gives no bonus
   TWISTED_BOW: [20997],
+  OSMUMTEN_FANG: [26219, 27246], // base + (or) ornament kit — same Stab Sword
 };
 
 /** True iff any variant of the trigger is present (worn-slot flag derivation). */
