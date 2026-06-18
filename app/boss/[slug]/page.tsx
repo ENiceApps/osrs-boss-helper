@@ -35,6 +35,7 @@ import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides, findCatalogItem } from "@/lib/loadout-edit";
 import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
 import { IMBUED_SLAYER_HELM_IDS } from "@/data/items/slayer-helm";
+import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { NON_PVE_UNTRADEABLE_IDS } from "@/data/items/non-pve-untradeables";
 import { openInWikiCalc } from "@/lib/wiki-export";
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
@@ -153,8 +154,13 @@ export default function BossPage({
         target: monster,
         skills,
         gp: budgetGp,
-        priceLookup: (id) =>
-          ownedUntradeables.has(id) ? 0 : priceForItem(prices, id),
+        priceLookup: (id) => {
+          // Charged items (Tumeken's shadow, tridents, …) are worn untradeable
+          // but bought uncharged — equip the charged item, price it uncharged.
+          const unchargedId = UNCHARGED_PRICE_ID.get(id);
+          if (unchargedId !== undefined) return priceForItem(prices, unchargedId);
+          return ownedUntradeables.has(id) ? 0 : priceForItem(prices, id);
+        },
         boostResolver,
         onTask: effectiveOnTask,
       });
@@ -224,6 +230,7 @@ export default function BossPage({
       const candidates = ITEM_CATALOG.filter((it) => {
         if (loadoutSlotFor(it) !== slot) return false;
         if (priceForItem(prices, it.id) !== null) return false; // tradeable
+        if (UNCHARGED_PRICE_ID.has(it.id)) return false; // charged — buyable uncharged
         if (NON_PVE_UNTRADEABLE_IDS.has(it.id)) return false;
         if (!meetsRequirements(it, skills)) return false;
         if (score(it) <= 0) return false; // irrelevant to this style

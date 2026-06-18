@@ -21,6 +21,7 @@ import {
   AMMO_TYPES,
 } from "@/data/ammo-compatibility";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
+import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
@@ -289,6 +290,13 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     for (const w of styleWeapons.slice(0, WEAPONS_PER_STYLE)) keptWeaponIds.add(w.id);
   }
   for (const id of forcedWeaponIds(affordableIds, input.target)) keptWeaponIds.add(id);
+  // Always consider affordable charged weapons (powered staves, tridents, the
+  // blowpipe, BoFA, wilderness weapons). Their powered-staff / fast-hit damage
+  // is invisible to the itemScore proxy, so the top-K cap would otherwise drop
+  // them — yet they're frequent budget BIS once priced at the uncharged value.
+  for (const w of weapons) {
+    if (UNCHARGED_PRICE_ID.has(w.id)) keptWeaponIds.add(w.id);
+  }
 
   const anchors = enumerateWeaponStyles(weapons.filter((w) => keptWeaponIds.has(w.id)));
 

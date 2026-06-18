@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ItemIcon } from "./ItemIcon";
+import { fmtGp } from "@/lib/format";
+import { usePrices, priceForItem } from "@/lib/prices";
 import type { SlotExplanation } from "@/lib/loadout-explain";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { MappingEntry } from "@/types/osrs";
@@ -72,6 +74,7 @@ export function EquipmentGrid({
   editedSlots,
   slotDetails,
 }: Props) {
+  const { data: prices } = usePrices();
   // Only fade missing items when we actually know what the player owns —
   // otherwise every slot would render greyed-out by default.
   const hasBank = (ownedItemIds?.size ?? 0) > 0;
@@ -174,6 +177,15 @@ export function EquipmentGrid({
                     </span>
                   )}
                 </div>
+                {(() => {
+                  const gp = priceForItem(prices, piece!.itemId);
+                  return gp !== null ? (
+                    <div className="text-caption text-osrs-muted mt-0.5">
+                      {fmtGp(gp)}{" "}
+                      <span className="text-osrs-gold/70">gp</span>
+                    </div>
+                  ) : null;
+                })()}
                 {detail?.bonusLine && (
                   <div className="text-caption text-osrs-muted mt-0.5">{detail.bonusLine}</div>
                 )}
