@@ -55,6 +55,26 @@ const STYLE_TABS: CombatStyle[] = ["melee", "ranged", "magic"];
 const EMPTY_ITEM_IDS = new Set<ItemId>();
 const EMPTY_BANK: BankContents = { tagName: "", itemIds: EMPTY_ITEM_IDS };
 
+// Some catalog entries use a degraded/variant item id (Barrows "100/75/…",
+// degrade states, ornament ids) that the GE prices don't key — yet the item IS
+// tradeable under its base id. Map catalog id → name so Budget mode can fall
+// back to the same-named tradeable GE id rather than treating it as untradeable.
+const NAME_BY_ID = new Map<number, string>(ITEM_CATALOG.map((it) => [it.id, it.name]));
+
+/** Price for a catalog id: its own GE price, else its same-named tradeable
+ *  variant's price (degraded Barrows/Moon/spear ids), else null. */
+function priceForCatalogId(
+  prices: Parameters<typeof priceForItem>[0],
+  geIdByName: Map<string, number>,
+  id: number,
+): number | null {
+  const direct = priceForItem(prices, id);
+  if (direct !== null) return direct;
+  const name = NAME_BY_ID.get(id);
+  const geId = name !== undefined ? geIdByName.get(name) : undefined;
+  return geId !== undefined && geId !== id ? priceForItem(prices, geId) : null;
+}
+
 // Per Next.js 16 dynamic-routes docs: `params` is now a Promise. Client
 // components consume it via React's `use`.
 export default function BossPage({
@@ -103,6 +123,14 @@ export default function BossPage({
 
   const { data: mapping } = useMapping();
   const { data: prices } = usePrices();
+
+  // GE id keyed by item NAME — lets Budget mode price a catalog entry whose own
+  // (degraded/variant) id has no GE price via its same-named tradeable base.
+  const geIdByName = useMemo(() => {
+    const m = new Map<string, number>();
+    if (mapping) for (const e of mapping) if (!m.has(e.name)) m.set(e.name, e.id);
+    return m;
+  }, [mapping]);
 
   // Skills come from the live RuneLite plugin when connected, else default 99s.
   const skills = live.skills ?? SKILLS_AT_99;
@@ -159,7 +187,8 @@ export default function BossPage({
           // but bought uncharged — equip the charged item, price it uncharged.
           const unchargedId = UNCHARGED_PRICE_ID.get(id);
           if (unchargedId !== undefined) return priceForItem(prices, unchargedId);
-          return ownedUntradeables.has(id) ? 0 : priceForItem(prices, id);
+          if (ownedUntradeables.has(id)) return 0;
+          return priceForCatalogId(prices, geIdByName, id);
         },
         boostResolver,
         onTask: effectiveOnTask,
@@ -177,7 +206,7 @@ export default function BossPage({
       boostResolver,
       onTask: effectiveOnTask,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, sellSelections, ownedUntradeables, prices, boostResolver, effectiveOnTask]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask]);
 
   // Budget mode: per-slot lists of non-tradeable options the player can mark as
   // owned. Ranked by the current build's combat style (stable per boss), with
@@ -229,7 +258,7 @@ export default function BossPage({
     for (const slot of SLOT_ORDER) {
       const candidates = ITEM_CATALOG.filter((it) => {
         if (loadoutSlotFor(it) !== slot) return false;
-        if (priceForItem(prices, it.id) !== null) return false; // tradeable
+        if (priceForCatalogId(prices, geIdByName, it.id) !== null) return false; // tradeable (incl. variant ids)
         if (UNCHARGED_PRICE_ID.has(it.id)) return false; // charged — buyable uncharged
         if (NON_PVE_UNTRADEABLE_IDS.has(it.id)) return false;
         if (!meetsRequirements(it, skills)) return false;
@@ -250,7 +279,7 @@ export default function BossPage({
       if (opts.length > 0) groups.push({ slot, items: opts });
     }
     return groups;
-  }, [mode, prices, refStyle, refAttackType, refWeaponId, skills]);
+  }, [mode, prices, geIdByName, refStyle, refAttackType, refWeaponId, skills]);
 
   // Sell-to-fund: the optimizer's recommended liquidations (default-checked
   // set) and the full universe of sellable spare items for the checklist.

@@ -1,40 +1,67 @@
 // Charged combat items are worn untradeable, but you buy and sell them in an
 // UNCHARGED (tradeable) form — Tumeken's shadow, the tridents, Toxic blowpipe,
-// Scythe of vitur, Bow of faerdhinen (c), the wilderness weapons, etc. For
-// Budget mode that means they shouldn't sit in the "owned untradeables" list:
-// the optimizer should be free to EQUIP the charged item (its real combat stats)
-// while pricing it at the uncharged GE value — you just buy the uncharged item
-// and charge it yourself.
+// Scythe of vitur, Bow of faerdhinen, the wilderness weapons, etc. For Budget
+// mode that means they shouldn't sit in the "owned untradeables" list: the
+// optimizer should be free to EQUIP the charged item (its real combat stats)
+// while pricing it at the uncharged GE value — you buy the uncharged item and
+// charge it yourself.
 //
 // The slim equipment catalog only contains the charged (worn) forms, so the
 // uncharged tradeable forms are referenced by their stable GE item id (verified
-// against the live GE mapping). Keyed by the charged item's catalog NAME.
+// against the live GE mapping). This is a CURATED list of genuinely charged
+// combat gear — NOT auto-derived, because the "(u)" suffix is overloaded: on
+// bows/crossbows/amulets it means *unstrung* (a fletching/crafting step), which
+// would wrongly pull every shortbow/longbow in.
 //
-// Not mapped (no tradeable uncharged form): Magma/Tanzanite helm (made from a
-// Serpentine helm + a consumed mutagen) and the Holy/Sanguine Scythe & Holy
-// Sanguinesti variants — those stay as ordinary owned-only untradeables.
+// Recolour / autocast / ornament variants ("Bow of faerdhinen (c) (Crwys)",
+// "Accursed sceptre (a)", "Trident of the swamp (e) (o)") resolve to the same
+// uncharged price by stripping a trailing parenthetical (see chargedKey).
+//
+// Not mapped (no tradeable uncharged form): Magma/Tanzanite helm (Serpentine
+// helm + a consumed mutagen), Holy/Sanguine Scythe & Holy Sanguinesti, and
+// untradeable-only weapons like Scorching bow.
 
 import { ITEM_CATALOG } from "@/data/items/catalog";
 
+// charged catalog (base) name → GE item id of the uncharged/tradeable form.
 const CHARGED_UNCHARGED_ID: Record<string, number> = {
-  "Tumeken's shadow": 27277, // Tumeken's shadow (uncharged)
-  "Sanguinesti staff": 22481, // Sanguinesti staff (uncharged)
-  "Scythe of vitur": 22486, // Scythe of vitur (uncharged)
-  "Trident of the seas": 11908, // Uncharged trident
-  "Trident of the seas (e)": 22290, // Uncharged trident (e)
-  "Trident of the swamp": 12900, // Uncharged toxic trident
-  "Trident of the swamp (e)": 22294, // Uncharged toxic trident (e)
-  "Toxic blowpipe": 12924, // Toxic blowpipe (empty)
-  "Bow of faerdhinen": 25862, // Bow of faerdhinen (inactive)
-  "Bow of faerdhinen (c)": 25862, // Bow of faerdhinen (inactive)
-  "Craw's bow": 22547, // Craw's bow (u)
-  "Webweaver bow": 27652, // Webweaver bow (u)
-  "Ursine chainmace": 27657, // Ursine chainmace (u)
-  "Viggora's chainmace": 22542, // Viggora's chainmace (u)
-  "Accursed sceptre": 27662, // Accursed sceptre (u)
-  "Thammaron's sceptre": 22552, // Thammaron's sceptre (u)
-  "Serpentine helm": 12929, // Serpentine helm (uncharged)
+  "Tumeken's shadow": 27277,
+  "Sanguinesti staff": 22481,
+  "Scythe of vitur": 22486,
+  "Trident of the seas": 11908,
+  "Trident of the seas (e)": 22290,
+  "Trident of the swamp": 12900,
+  "Trident of the swamp (e)": 22294,
+  "Toxic blowpipe": 12924,
+  "Bow of faerdhinen": 25862,
+  "Bow of faerdhinen (c)": 25862,
+  "Blade of saeldor": 23997,
+  "Blade of saeldor (c)": 23997,
+  "Craw's bow": 22547,
+  "Webweaver bow": 27652,
+  "Ursine chainmace": 27657,
+  "Viggora's chainmace": 22542,
+  "Accursed sceptre": 27662,
+  "Thammaron's sceptre": 22552,
+  "Warped sceptre": 28583,
+  "Venator bow": 27612,
+  "Tonalztics of ralos": 28919,
+  "Serpentine helm": 12929,
+  "Eye of ayak": 31115,
+  "Bryophyta's staff": 22368,
+  "Camphor blowpipe": 31577,
+  "Ironwood blowpipe": 31581,
+  "Rosewood blowpipe": 31585,
 };
+
+/** Match a catalog name to a charged key, stripping one trailing recolour/
+ *  autocast/ornament suffix so variants share their base's uncharged price. */
+function chargedKey(name: string): string | undefined {
+  if (name in CHARGED_UNCHARGED_ID) return name;
+  const stripped = name.replace(/\s*\([^()]*\)\s*$/, "");
+  if (stripped !== name && stripped in CHARGED_UNCHARGED_ID) return stripped;
+  return undefined;
+}
 
 /**
  * charged catalog item id → GE item id of its uncharged (tradeable) form.
@@ -43,7 +70,7 @@ const CHARGED_UNCHARGED_ID: Record<string, number> = {
  */
 export const UNCHARGED_PRICE_ID: ReadonlyMap<number, number> = new Map(
   ITEM_CATALOG.flatMap((it) => {
-    const unchargedId = CHARGED_UNCHARGED_ID[it.name];
-    return unchargedId !== undefined ? ([[it.id, unchargedId]] as [number, number][]) : [];
+    const key = chargedKey(it.name);
+    return key !== undefined ? ([[it.id, CHARGED_UNCHARGED_ID[key]]] as [number, number][]) : [];
   }),
 );
