@@ -3,7 +3,28 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MONSTER_CATALOG } from "@/data/monsters/catalog";
+import {
+  categoryForMonster,
+  isSlayerBoss,
+  CATEGORY_LABELS,
+  type MonsterCategory,
+} from "@/data/monsters/categories";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
+
+// "slayer" is a cross-cutting filter (a Slayer boss also has a primary tier),
+// the rest are mutually-exclusive primary categories.
+type CategoryFilter = MonsterCategory | "all" | "slayer";
+const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "early", label: CATEGORY_LABELS.early },
+  { key: "mid", label: CATEGORY_LABELS.mid },
+  { key: "late", label: CATEGORY_LABELS.late },
+  { key: "cox", label: CATEGORY_LABELS.cox },
+  { key: "tob", label: CATEGORY_LABELS.tob },
+  { key: "toa", label: CATEGORY_LABELS.toa },
+  { key: "slayer", label: "Slayer" },
+  { key: "npc", label: CATEGORY_LABELS.npc },
+];
 
 // Headline / commonly-farmed bosses. Shown as the default "calm" view so the
 // page doesn't open onto a wall of 235 slayer monsters. Filtered against the
@@ -81,13 +102,16 @@ const SORTS: { key: SortKey; label: string }[] = [
 export default function BossesPage() {
   const [query, setQuery] = useState("");
   const [activeAttrs, setActiveAttrs] = useState<Set<string>>(new Set());
-  const [slayerOnly, setSlayerOnly] = useState(false);
+  const [category, setCategory] = useState<CategoryFilter>("all");
   const [sort, setSort] = useState<SortKey>("name");
 
   // Any active facet/search means the user is exploring — show the full roster.
   // Otherwise we show the curated notable list.
   const isExploring =
-    query.trim() !== "" || activeAttrs.size > 0 || slayerOnly || sort !== "name";
+    query.trim() !== "" ||
+    activeAttrs.size > 0 ||
+    category !== "all" ||
+    sort !== "name";
 
   const attrCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -99,12 +123,27 @@ export default function BossesPage() {
     return counts;
   }, []);
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of MONSTER_CATALOG) {
+      const c = categoryForMonster(m.slug);
+      counts[c] = (counts[c] ?? 0) + 1;
+    }
+    // Slayer is a cross-cutting tag — counted separately (overlaps the tiers).
+    counts.slayer = MONSTER_CATALOG.filter((m) => isSlayerBoss(m.slug)).length;
+    return counts;
+  }, []);
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const facets = ATTR_FACETS.filter((f) => activeAttrs.has(f.key));
 
     let list = MONSTER_CATALOG.filter((m) => {
-      if (slayerOnly && !m.isSlayerMonster) return false;
+      if (category === "slayer") {
+        if (!isSlayerBoss(m.slug)) return false;
+      } else if (category !== "all" && categoryForMonster(m.slug) !== category) {
+        return false;
+      }
       // OR across selected attribute chips: dragons *or* demons, etc.
       if (facets.length > 0 && !facets.some((f) => m.attributes.some(f.match)))
         return false;
@@ -126,7 +165,7 @@ export default function BossesPage() {
       list = [...list].sort((a, b) => b.hp - a.hp);
     }
     return list;
-  }, [query, activeAttrs, slayerOnly, sort]);
+  }, [query, activeAttrs, category, sort]);
 
   const notable = useMemo(() => {
     const bySlug = new Map(MONSTER_CATALOG.map((m) => [m.slug, m]));
@@ -149,7 +188,7 @@ export default function BossesPage() {
   function reset() {
     setQuery("");
     setActiveAttrs(new Set());
-    setSlayerOnly(false);
+    setCategory("all");
     setSort("name");
   }
 
@@ -174,16 +213,6 @@ export default function BossesPage() {
             className="flex-1 min-w-[16rem] max-w-md osrs-panel p-2 rounded text-osrs-brown placeholder:text-osrs-muted"
           />
 
-          <label className="flex items-center gap-1.5 text-sm text-osrs-brown cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={slayerOnly}
-              onChange={(e) => setSlayerOnly(e.target.checked)}
-              className="accent-osrs-gold"
-            />
-            Slayer only
-          </label>
-
           <div className="flex items-center gap-1">
             <span className="label-eyebrow text-parchment-dark">Sort</span>
             {SORTS.map((s) => (
@@ -201,6 +230,30 @@ export default function BossesPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="label-eyebrow text-parchment-dark mr-1">Category</span>
+          {CATEGORY_FILTERS.map((c) => {
+            const active = category === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCategory(c.key)}
+                className={`rounded px-2 py-0.5 text-caption font-medium border transition-colors ${
+                  active
+                    ? "bg-osrs-gold/20 text-osrs-gold border-osrs-gold/50"
+                    : "text-osrs-brown border-osrs-brown/20 hover:bg-osrs-gold/10"
+                }`}
+              >
+                {c.label}
+                {c.key !== "all" && (
+                  <span className="ml-1 text-osrs-muted">{categoryCounts[c.key]}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
