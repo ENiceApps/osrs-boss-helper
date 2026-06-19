@@ -50,6 +50,13 @@ export interface ItemBonusFlags {
   fang: boolean;
   /** Imbued black mask / slayer helmet — on-task acc+dmg bonus (gated by the UI on-task toggle). */
   slayerHelmImbued: boolean;
+  /**
+   * A charged wilderness weapon (Craw's/Webweaver, Viggora's/Ursine,
+   * Thammaron's/Accursed) — ×3/2 acc+dmg vs NPCs in the Wilderness (gated by the
+   * target being a wilderness boss). Optional for back-compat with existing flag
+   * literals; absent = false.
+   */
+  wildernessWeapon?: boolean;
 }
 
 export interface LoadoutSet {

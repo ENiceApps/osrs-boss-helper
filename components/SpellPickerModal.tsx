@@ -111,7 +111,7 @@ export function SpellPickerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-osrs-brown/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       onClick={onClose}
     >
       <div
@@ -136,7 +136,7 @@ export function SpellPickerModal({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search spells…"
-          className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown mb-2"
+          className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown mb-2"
         />
 
         {/* Auto (best) — clears any manual choice and lets the optimizer pick. */}
@@ -145,7 +145,7 @@ export function SpellPickerModal({
           onClick={() => onSelect(null)}
           className={`w-full text-left p-1.5 rounded border text-caption mb-2 ${
             currentSpellName === undefined
-              ? "border-osrs-gold bg-parchment-dark"
+              ? "border-osrs-gold bg-osrs-gold/15"
               : "border-transparent hover:border-osrs-gold/40 hover:bg-osrs-gold/5"
           }`}
         >
@@ -177,7 +177,7 @@ export function SpellPickerModal({
                         disabled={!!blocked}
                         className={`w-full text-left p-1.5 rounded border text-caption flex items-center gap-2 ${
                           isCurrent
-                            ? "border-osrs-gold bg-parchment-dark"
+                            ? "border-osrs-gold bg-osrs-gold/15"
                             : "border-transparent hover:border-osrs-gold/40 hover:bg-osrs-gold/5"
                         } ${reason ? "opacity-50" : ""} ${blocked ? "cursor-not-allowed" : ""}`}
                       >

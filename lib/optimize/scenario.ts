@@ -336,6 +336,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
     fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
     slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
+    wildernessWeapon: hasTrigger(slotItemIds, "WILDERNESS_WEAPON"),
   };
 
   // Tier is purely informational on the recommend path; mark scratch loadouts

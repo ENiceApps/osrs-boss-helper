@@ -1855,6 +1855,31 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "ditto",
+    "wikiId": 0,
+    "name": "Ditto (custom boss)",
+    "version": "",
+    "combatLevel": 1,
+    "hp": 1000,
+    "defenceLevel": 100,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 0,
+      "rangedStandard": 0,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Combat_dummy.png",
+    "size": 1,
+    "maxHitText": "0",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "dont-know-what",
     "wikiId": 8439,
     "name": "Don't Know What",

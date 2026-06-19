@@ -196,6 +196,37 @@ const COMBAT_DUMMY: CatalogEntry = {
 };
 entries.push(COMBAT_DUMMY);
 
+// Synthetic "theoretical boss creator" — every stat is editable at runtime on
+// the /boss/ditto page (see components/DittoEditorPanel.tsx). These are just the
+// starting defaults: a mid-tier dummy with moderate defence and no attributes
+// or weakness, so the player tweaks from a neutral baseline.
+const DITTO: CatalogEntry = {
+  slug: "ditto",
+  wikiId: 0,
+  name: "Ditto (custom boss)",
+  version: "",
+  combatLevel: 1,
+  hp: 1000,
+  defenceLevel: 100,
+  magicLevel: 100,
+  defenceBonuses: {
+    stab: 0,
+    slash: 0,
+    crush: 0,
+    magic: 0,
+    rangedHeavy: 0,
+    rangedStandard: 0,
+    rangedLight: 0,
+  },
+  attributes: [],
+  weakness: null,
+  image: "Combat_dummy.png",
+  size: 1,
+  maxHitText: "0",
+  isSlayerMonster: false,
+};
+entries.push(DITTO);
+
 entries.sort((a, b) => a.name.localeCompare(b.name));
 
 const lines: string[] = [];

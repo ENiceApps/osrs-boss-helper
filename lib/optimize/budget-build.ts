@@ -21,6 +21,9 @@ import {
   AMMO_TYPES,
 } from "@/data/ammo-compatibility";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
+import { IMBUED_SLAYER_HELM_IDS } from "@/data/items/slayer-helm";
+import { isHalberdWeapon } from "@/data/items/halberd-weapons";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
@@ -60,6 +63,8 @@ export interface BudgetBuildInput {
   spellElement?: SpellElement;
   boostResolver?: BoostResolver;
   onTask?: boolean;
+  /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
+  requiresMeleeReach2?: boolean;
 }
 
 const STYLES: CombatStyle[] = ["melee", "ranged", "magic"];
@@ -101,6 +106,8 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
     out.push(...ownedTriggerIds(affordable, "EMBERLIGHT"));
   }
   out.push(...ownedTriggerIds(affordable, "TWISTED_BOW")); // scales with target magic
+  // Wilderness weapons: big ×3/2 vs NPCs in the Wilderness the proxy can't see.
+  if (isWildernessBoss(target.slug)) out.push(...ownedTriggerIds(affordable, "WILDERNESS_WEAPON"));
   return out;
 }
 
@@ -298,7 +305,14 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     if (UNCHARGED_PRICE_ID.has(w.id)) keptWeaponIds.add(w.id);
   }
 
-  const anchors = enumerateWeaponStyles(weapons.filter((w) => keptWeaponIds.has(w.id)));
+  let anchors = enumerateWeaponStyles(weapons.filter((w) => keptWeaponIds.has(w.id)));
+  // Reach gate: drop melee anchors that aren't a 2-tile weapon (halberd / Scythe)
+  // so a halberd-only boss never gets a normal-melee budget build.
+  if (input.requiresMeleeReach2) {
+    anchors = anchors.filter(
+      (a) => a.combatStyle !== "melee" || isHalberdWeapon(a.weapon.id),
+    );
+  }
 
   type Cand = { ids: number[]; internalAmmoId?: number; ws: WeaponStyleCandidate };
   const cands: Cand[] = [];
@@ -431,6 +445,14 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   for (const a of bySlot.get("ammo") ?? []) {
     if (BOLT_EFFECT_BY_ITEM_ID.has(a.id)) pseudoBank.add(a.id);
   }
+  // On task, make sure any affordable imbued slayer helm reaches optimizeForBoss
+  // so its on-task force-include branch can weigh the helm against head-slot
+  // armor-set pieces — the helm's raw stats rarely survive the per-slot top-K.
+  if (input.onTask) {
+    for (const h of bySlot.get("head") ?? []) {
+      if (IMBUED_SLAYER_HELM_IDS.has(h.id)) pseudoBank.add(h.id);
+    }
+  }
 
   const aRankings = optimizeForBoss({
     bank: pseudoBank,
@@ -439,6 +461,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     topN: 50,
     boostResolver: input.boostResolver,
     onTask: input.onTask,
+    requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
   }).rankings;

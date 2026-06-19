@@ -5,6 +5,11 @@ import { BossSearch } from "@/components/BossSearch";
 // A few well-known targets for one-click access. Filtered against the catalog
 // so a renamed/missing slug simply drops out rather than 404-ing.
 const QUICK_PICK_SLUGS = [
+  // Combat dummy first: a no-defence, no-mechanics baseline for raw-DPS checks
+  // and a sensible default when you haven't picked a real boss yet. Ditto next:
+  // a fully editable "theoretical boss" sandbox.
+  "combat-dummy",
+  "ditto",
   "vorkath",
   "zulrah",
   "alchemical-hydra",

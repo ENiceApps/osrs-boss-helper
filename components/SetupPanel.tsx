@@ -12,9 +12,12 @@ interface Props {
   /** True when GP comes from the RuneLite plugin — the input becomes read-only. */
   gpIsLive: boolean;
   onGpChange: (gp: number) => void;
-  /** Budget-mode spend (from-scratch), independent of wallet GP. */
+  /** Budget-mode spend (from-scratch), independent of wallet GP. Also the
+   *  risk cap reused by "wildy-risk" mode. */
   budgetGp: number;
   onBudgetChange: (gp: number) => void;
+  /** True for wilderness bosses — unlocks the "Risk it" (wildy-risk) mode. */
+  isWildernessBoss?: boolean;
   /** Skills block (PlayerStatsPanel), rendered inside the same card. */
   children?: ReactNode;
 }
@@ -41,6 +44,13 @@ const MODE_OPTIONS: Array<{ mode: BudgetMode; label: string; caption: string }> 
     caption: "Best loadout for a set amount, ignoring my bank.",
   },
 ];
+
+// Wilderness-only mode, appended when the boss is in the Wilderness.
+const WILDY_RISK_OPTION: { mode: BudgetMode; label: string; caption: string } = {
+  mode: "wildy-risk",
+  label: "Risk it (Wilderness)",
+  caption: "Best loadout worth no more than the GP I'll risk to PKers.",
+};
 
 // Budget slider runs on a log scale — most of the interesting range is below
 // 200M, so a linear slider would bunch it all into the first 10%.
@@ -78,8 +88,14 @@ export function SetupPanel({
   onGpChange,
   budgetGp,
   onBudgetChange,
+  isWildernessBoss = false,
   children,
 }: Props) {
+  const modeOptions = isWildernessBoss
+    ? [...MODE_OPTIONS, WILDY_RISK_OPTION]
+    : MODE_OPTIONS;
+  // Both "budget" and "wildy-risk" use the same GP-cap slider (spend vs risk).
+  const showCapSlider = mode === "budget" || mode === "wildy-risk";
   const [gpText, setGpText] = useState(() => String(gp));
   const [budgetText, setBudgetText] = useState(() => String(budgetGp));
   const [budgetSlider, setBudgetSlider] = useState(() => gpToSlider(budgetGp));
@@ -131,7 +147,7 @@ export function SetupPanel({
       <fieldset>
         <legend className="label-eyebrow mb-1.5">Budget mode</legend>
         <div className="space-y-1.5" role="radiogroup">
-          {MODE_OPTIONS.map((opt) => {
+          {modeOptions.map((opt) => {
             const active = mode === opt.mode;
             return (
               <button
@@ -142,20 +158,20 @@ export function SetupPanel({
                 onClick={() => onModeChange(opt.mode)}
                 className={`w-full text-left rounded border px-2.5 py-1.5 ${
                   active
-                    ? "bg-osrs-brown border-osrs-gold"
-                    : "bg-parchment-dark/40 border-osrs-brown/40 hover:border-osrs-brown"
+                    ? "bg-osrs-gold border-osrs-gold"
+                    : "bg-parchment-dark/10 border-osrs-brown/40 hover:border-osrs-gold/60"
                 }`}
               >
                 <span
                   className={`block text-sm font-semibold ${
-                    active ? "text-parchment" : "text-osrs-brown"
+                    active ? "text-background" : "text-osrs-brown"
                   }`}
                 >
                   {opt.label}
                 </span>
                 <span
                   className={`block text-caption ${
-                    active ? "text-parchment-dark" : "text-osrs-muted"
+                    active ? "text-background/80" : "text-osrs-muted"
                   }`}
                 >
                   {opt.caption}
@@ -184,7 +200,7 @@ export function SetupPanel({
                   inputMode="numeric"
                   value={gpText}
                   onChange={(e) => handleGpInput(e.target.value)}
-                  className="mt-1 w-full p-2 bg-parchment-dark border border-osrs-brown rounded text-osrs-brown"
+                  className="mt-1 w-full p-2 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown"
                   placeholder="500000000"
                 />
                 <span className="block text-caption text-osrs-muted mt-1">
@@ -196,10 +212,10 @@ export function SetupPanel({
         </div>
       )}
 
-      {mode === "budget" && (
+      {showCapSlider && (
         <div>
           <label className="block">
-            <span className="label-eyebrow">Budget</span>
+            <span className="label-eyebrow">{mode === "wildy-risk" ? "Risk cap" : "Budget"}</span>
             <input
               type="range"
               min={0}
@@ -208,18 +224,20 @@ export function SetupPanel({
               value={budgetSlider}
               onChange={(e) => handleBudgetSlider(Number(e.target.value))}
               className="mt-1 w-full"
-              aria-label="Loadout budget"
+              aria-label={mode === "wildy-risk" ? "Risk cap" : "Loadout budget"}
             />
             <input
               type="text"
               inputMode="numeric"
               value={budgetText}
               onChange={(e) => handleBudgetInput(e.target.value)}
-              className="mt-1 w-full p-2 bg-parchment-dark border border-osrs-brown rounded text-osrs-brown"
+              className="mt-1 w-full p-2 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown"
               placeholder="100000000"
             />
             <span className="block text-caption text-osrs-muted mt-1">
-              = {fmtGp(budgetGp)} to spend, ignoring your bank
+              {mode === "wildy-risk"
+                ? `= ${fmtGp(budgetGp)} max worn value to risk`
+                : `= ${fmtGp(budgetGp)} to spend, ignoring your bank`}
             </span>
           </label>
         </div>

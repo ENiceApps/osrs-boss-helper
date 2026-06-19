@@ -3,6 +3,7 @@
 // the curated loadout architecture.)
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
 
@@ -50,6 +51,9 @@ export function activeBonusesForTarget(
       salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive,
       salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive,
       demonbane: set.itemBonusFlags.demonbane && isDemon,
+      // Wilderness weapons only get their ×3/2 vs NPCs fought in the Wilderness.
+      wildernessWeapon:
+        (set.itemBonusFlags.wildernessWeapon ?? false) && isWildernessBoss(target.slug),
     },
     // Tomes boost their element's spells vs all NPCs — not just element-weak
     // targets. (Element weakness is a separate accuracy+damage bonus modelled

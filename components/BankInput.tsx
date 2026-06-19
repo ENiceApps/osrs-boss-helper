@@ -41,14 +41,14 @@ export function BankInput({ onParsed }: Props) {
         onChange={(e) => setValue(e.target.value)}
         rows={4}
         spellCheck={false}
-        className="w-full p-2 text-xs font-mono bg-parchment-dark text-osrs-brown border border-osrs-brown rounded resize-y"
+        className="w-full p-2 text-xs font-mono bg-osrs-field text-osrs-brown border border-osrs-brown/40 rounded resize-y"
         placeholder="banktags,1,bossgear,21012,9242,27226,..."
       />
       <div className="flex items-center gap-3 mt-2">
         <button
           onClick={handleParse}
           disabled={value.trim().length === 0}
-          className="px-3 py-1 bg-osrs-brown text-parchment rounded border border-osrs-gold disabled:opacity-50 hover:bg-osrs-brown-light"
+          className="px-3 py-1 bg-osrs-gold text-background rounded border border-osrs-gold disabled:opacity-50 hover:bg-osrs-gold-light"
         >
           Parse
         </button>

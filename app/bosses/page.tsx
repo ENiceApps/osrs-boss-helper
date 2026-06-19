@@ -30,6 +30,10 @@ const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
 // page doesn't open onto a wall of 235 slayer monsters. Filtered against the
 // catalog, so a renamed/missing slug simply drops out rather than 404-ing.
 const NOTABLE_SLUGS = [
+  // Baseline tools, pinned first so they're easy to find: a no-defence dummy for
+  // raw-DPS checks, and Ditto — a fully editable "theoretical boss" sandbox.
+  "combat-dummy",
+  "ditto",
   // Solo staples
   "vorkath",
   "zulrah",
