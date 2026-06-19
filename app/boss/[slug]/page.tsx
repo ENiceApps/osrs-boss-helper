@@ -7,7 +7,8 @@ import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catal
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
-import { optimizeForBoss, itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
+import { optimizeForBoss, itemScore, meetsRequirements, loadoutSlotFor, rankedSlotAlternatives } from "@/lib/optimize/bank";
+import { buildRecommendationSlots } from "@/lib/recommendation";
 import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
@@ -433,6 +434,51 @@ export default function BossPage({
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride) : false;
 
+  // Per-slot ranked alternatives around the active loadout — the optimizer's
+  // pick first, then the owned items the player could swap in. Feeds the
+  // "Copy plugin JSON" export and the live recommendation pushed to the
+  // RuneLite plugin (which highlights / filters the bank to these items).
+  const slotAlternatives = useMemo(() => {
+    const weapon = selectedSet?.slots.weapon;
+    if (!selectedSet || !weapon) return undefined;
+    const chosenBySlot: Partial<Record<LoadoutSlotKey, number>> = {};
+    for (const [slot, piece] of Object.entries(selectedSet.slots)) {
+      if (piece) chosenBySlot[slot as LoadoutSlotKey] = piece.itemId;
+    }
+    return rankedSlotAlternatives({
+      bank: ownedItemIds,
+      skills,
+      attackType: selectedSet.attackType,
+      combatStyle: selectedSet.style,
+      weaponId: weapon.itemId,
+      weaponName: weapon.itemName,
+      weaponCategory: selectedSet.weaponCategory ?? "",
+      weaponIsTwoHanded: findCatalogItem(weapon.itemId)?.isTwoHanded ?? false,
+      chosenBySlot,
+    });
+  }, [selectedSet, ownedItemIds, skills]);
+
+  // Push the active recommendation to the local server so the RuneLite plugin
+  // can pull it (GET /api/recommendation) and show the gear in the bank. Fires
+  // whenever the active loadout changes; failures are ignored (no server / no
+  // plugin is a fine, silent no-op).
+  useEffect(() => {
+    if (!selectedSet || !slotAlternatives) return;
+    const slots = buildRecommendationSlots(slotAlternatives, selectedSet.internalAmmo?.itemId);
+    const controller = new AbortController();
+    fetch("/api/recommendation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bossSlug: slug,
+        label: `${monster.name} — ${selectedSet.name}`,
+        slots,
+      }),
+      signal: controller.signal,
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [selectedSet, slotAlternatives, slug, monster.name]);
+
   function resetOverrides() {
     setOverrides({});
     setSpellOverride(null);
@@ -733,6 +779,7 @@ export default function BossPage({
             edited={overridesActive}
             boltProcFlag={boltProcFlag}
             mapping={mapping}
+            slotAlternatives={slotAlternatives}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel

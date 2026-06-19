@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
 import { ASSUMED_PRAYER } from "@/lib/recommend";
 import { fmtDpsPerM, fmtGp, formatSeconds } from "@/lib/format";
+import { buildRecommendationSlots } from "@/lib/recommendation";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
-import type { LoadoutSet } from "@/types/loadout";
+import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, MappingEntry } from "@/types/osrs";
 
 interface Props {
@@ -24,6 +27,8 @@ interface Props {
   /** Enchanted-bolt proc description, when the active loadout's ammo procs. */
   boltProcFlag?: string;
   mapping?: MappingEntry[];
+  /** Ranked owned alternatives per slot (chosen first) for the plugin export. */
+  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -63,6 +68,123 @@ function buildActiveFlags(
   return flags;
 }
 
+/** Worn-slot display order, mirroring the in-game equipment layout. */
+const GEAR_SLOT_ORDER: LoadoutSlotKey[] = [
+  "head",
+  "cape",
+  "neck",
+  "ammo",
+  "weapon",
+  "body",
+  "shield",
+  "legs",
+  "hands",
+  "feet",
+  "ring",
+];
+
+/** Ordered, de-duplicated item names of every piece in the active loadout. */
+function gearItemNames(set: LoadoutSet): string[] {
+  const names: string[] = [];
+  for (const slot of GEAR_SLOT_ORDER) {
+    const piece = set.slots[slot];
+    if (piece) names.push(piece.itemName);
+  }
+  // Blowpipe darts live inside the weapon, not the ammo slot — include them so
+  // the withdrawal checklist is complete.
+  if (set.internalAmmo) names.push(set.internalAmmo.itemName);
+  return [...new Set(names)];
+}
+
+/**
+ * Numeric item IDs grouped by worn slot — the payload a RuneLite companion
+ * plugin would consume to redraw the bank into a slot-grouped recommended view.
+ * Each slot is an array so the shape can later carry ranked alternatives per
+ * slot; today the optimizer commits to one pick, so each holds a single id.
+ */
+function gearSlotIds(set: LoadoutSet): Record<string, number[]> {
+  const slots: Record<string, number[]> = {};
+  for (const slot of GEAR_SLOT_ORDER) {
+    const piece = set.slots[slot];
+    if (piece) slots[slot] = [piece.itemId];
+  }
+  // Blowpipe darts share the ammo row in-game, so append them there.
+  if (set.internalAmmo) {
+    slots.ammo = [...(slots.ammo ?? []), set.internalAmmo.itemId];
+  }
+  return slots;
+}
+
+/**
+ * Two clipboard exports for the active loadout:
+ *  - "Copy gear list" → comma-separated item names, a withdrawal checklist the
+ *    player keeps on hand while pulling gear from the bank.
+ *  - "Copy plugin JSON" → `{ label, slots: { slot: [itemId] } }`, the payload a
+ *    future RuneLite companion plugin would read to filter/redraw the in-game
+ *    bank by slot. (A browser can't touch the bank widget itself, so the actual
+ *    redraw is the plugin's job — this is just the data bridge to it.)
+ */
+function LoadoutExport({
+  set,
+  bossName,
+  slotAlternatives,
+}: {
+  set: LoadoutSet;
+  bossName: string;
+  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
+}) {
+  const [copied, setCopied] = useState<null | "names" | "json">(null);
+  const names = gearItemNames(set);
+  if (names.length === 0) return null;
+
+  const copy = async (kind: "names" | "json", text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      setTimeout(() => setCopied((c) => (c === kind ? null : c)), 1500);
+    } catch {
+      // Clipboard unavailable (insecure context / denied permission) — fail
+      // quietly; the gear is still listed elsewhere on the page.
+    }
+  };
+
+  // When the page supplies ranked alternatives, the JSON carries every owned
+  // swap option per slot (chosen first); otherwise it falls back to the single
+  // best pick from the loadout's slots.
+  const slots = slotAlternatives
+    ? buildRecommendationSlots(slotAlternatives, set.internalAmmo?.itemId)
+    : gearSlotIds(set);
+  const pluginJson = JSON.stringify(
+    { label: `${bossName} — ${set.name}`, slots },
+    null,
+    2,
+  );
+
+  const btnClass =
+    "flex-1 osrs-well rounded px-3 py-2 text-xs font-semibold text-osrs-brown hover:text-osrs-gold transition-colors";
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => copy("names", names.join(", "))}
+          className={btnClass}
+        >
+          {copied === "names" ? "Copied!" : `Copy gear list (${names.length})`}
+        </button>
+        <button type="button" onClick={() => copy("json", pluginJson)} className={btnClass}>
+          {copied === "json" ? "Copied!" : "Copy plugin JSON"}
+        </button>
+      </div>
+      <p className="text-caption text-osrs-muted mt-1.5">
+        Names for a withdrawal checklist · JSON (item IDs by slot) for a RuneLite
+        companion plugin.
+      </p>
+    </div>
+  );
+}
+
 function StatRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-2 py-1 border-b border-osrs-brown/15 last:border-b-0">
@@ -87,6 +209,7 @@ export function ResultsPanel({
   edited,
   boltProcFlag,
   mapping,
+  slotAlternatives,
 }: Props) {
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
   // mirroring calculate.ts so the displayed cadence matches the engine.
@@ -151,6 +274,10 @@ export function ResultsPanel({
             </span>
           )}
         </div>
+      )}
+
+      {set && (
+        <LoadoutExport set={set} bossName={bossName} slotAlternatives={slotAlternatives} />
       )}
 
       {edited && (
