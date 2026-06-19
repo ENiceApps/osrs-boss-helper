@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import { optimizeForBoss } from "@/lib/optimize/bank";
+import { requiresMeleeReach2 } from "@/data/monsters/melee-reach";
 import { scoreScenario } from "@/lib/optimize/scenario";
 
 const VORKATH = MONSTER_BY_SLUG["vorkath"];
@@ -127,6 +128,109 @@ describe("optimize/bank — demonbane force-include", () => {
     const arclightHit = rankings.find((r) => r.loadout.slots.weapon?.itemId === 19675);
     expect(arclightHit).toBeDefined();
     expect(arclightHit!.activeBonuses.conditionalBonuses.demonbane).toBe(true);
+  });
+});
+
+describe("optimize/bank — slayer-helm force-include (on-task)", () => {
+  // Full Void melee set + Abyssal whip + an imbued Slayer helmet. Off task, the
+  // Void set's +10% multiplier makes the Void helm the best head. On task, the
+  // slayer helm's ×7/6 (~+16.7%) beats Void's +10%, so the optimizer should swap
+  // to the helm and DROP the now-pointless set bonus — the whole loadout
+  // re-optimizes rather than stranding the rest of the Void set.
+  const VOID_PLUS_SLAYER = [
+    11665, // Void melee helm
+    8839,  // Void knight top
+    8840,  // Void knight robe
+    8842,  // Void knight gloves
+    4151,  // Abyssal whip
+    20463, // Dragon defender
+    6570,  // Fire cape
+    6585,  // Amulet of fury
+    11840, // Dragon boots
+    6737,  // Berserker ring
+    11865, // Slayer helmet (i)
+  ];
+
+  it("off task → Void helm wins (full set bonus), slayer helm not equipped", () => {
+    const { rankings } = optimizeForBoss({
+      bank: VOID_PLUS_SLAYER,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      onTask: false,
+    });
+    const top = rankings[0];
+    expect(top.loadout.slots.head?.itemId).toBe(11665); // Void melee helm
+    expect(top.loadout.itemBonusFlags.slayerHelmImbued).toBe(false);
+    expect(top.loadout.armorSetBonus).toBeDefined(); // Void set intact
+  });
+
+  it("on task → slayer helm equipped, Void set bonus dropped", () => {
+    const { rankings } = optimizeForBoss({
+      bank: VOID_PLUS_SLAYER,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      onTask: true,
+    });
+    const top = rankings[0];
+    expect(top.loadout.slots.head?.itemId).toBe(11865); // Slayer helmet (i)
+    expect(top.loadout.itemBonusFlags.slayerHelmImbued).toBe(true);
+    // Head replaced → the Void set is no longer complete, so no set multiplier.
+    expect(top.loadout.armorSetBonus).toBeUndefined();
+  });
+});
+
+describe("melee-reach — which bosses need a 2-tile weapon", () => {
+  it("flagged for flying monsters (Kree'arra), Zulrah, and the Royal Titans", () => {
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["kreearra"])).toBe(true); // flying
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["zulrah"])).toBe(true);   // water gap
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["branda-the-fire-queen"])).toBe(true);
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["eldric-the-ice-king"])).toBe(true);
+  });
+  it("not flagged for normal adjacent-melee bosses", () => {
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["vorkath"])).toBe(false);
+    expect(requiresMeleeReach2(MONSTER_BY_SLUG["general-graardor"])).toBe(false);
+  });
+});
+
+describe("optimize/bank — halberd reach gate (requiresMeleeReach2)", () => {
+  const ZULRAH = MONSTER_BY_SLUG["zulrah"];
+  const FANG = 26219;          // Osmumten's fang — Stab Sword, 1-tile
+  const DRAGON_HALBERD = 3204; // Polearm, 2-tile
+  // A melee kit with a fang (no reach) AND a halberd (reach).
+  const MELEE_KIT = [
+    FANG, DRAGON_HALBERD,
+    11665, 8839, 8840, 8842, // Void melee (filler body/legs/gloves)
+    6570, 6585, 11840, 6737, // fire cape, fury, dboots, b-ring
+  ];
+
+  it("without the gate, the fang melee build is available", () => {
+    const { rankings } = optimizeForBoss({
+      bank: MELEE_KIT,
+      target: ZULRAH,
+      skills: SKILLS_AT_99,
+    });
+    const fangBuild = rankings.find(
+      (r) => r.loadout.style === "melee" && r.loadout.slots.weapon?.itemId === FANG,
+    );
+    expect(fangBuild).toBeDefined();
+  });
+
+  it("with the gate, NO melee build uses a non-halberd weapon", () => {
+    const { rankings } = optimizeForBoss({
+      bank: MELEE_KIT,
+      target: ZULRAH,
+      skills: SKILLS_AT_99,
+      requiresMeleeReach2: true,
+    });
+    for (const r of rankings) {
+      if (r.loadout.style !== "melee") continue;
+      // Every melee loadout that survives the gate must wield a halberd.
+      expect(r.loadout.slots.weapon?.itemId).toBe(DRAGON_HALBERD);
+    }
+    // The fang build specifically must be gone.
+    expect(
+      rankings.some((r) => r.loadout.slots.weapon?.itemId === FANG),
+    ).toBe(false);
   });
 });
 
@@ -343,6 +447,20 @@ describe("optimize/bank — cross-spellbook auto-spell selection", () => {
     });
     expect(rankings.length).toBeGreaterThan(0);
     expect(rankings[0].loadout.autoSpellName).toBe("Wind Surge");
+  });
+
+  it("elemental tie-break: Fire Surge → Staff of fire wins over equal-DPS staves", () => {
+    // The four basic elemental staves have identical stats (+10 magic), so they
+    // cast Fire Surge for identical DPS. The DPS-neutral tie-break should pick
+    // the Staff of fire because it supplies the spell's (fire) runes.
+    const { rankings } = optimizeForBoss({
+      bank: [1381, 1383, 1385, 1387], // Staff of air / water / earth / fire
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Fire Surge");
+    expect(rankings[0].loadout.slots.weapon?.itemId).toBe(1387); // Staff of fire
   });
 
   it("an Ancient-capable staff DOES auto-select Ice Barrage at magic 99", () => {

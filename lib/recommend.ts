@@ -50,6 +50,21 @@ const DEFAULT_PRAYERS = {
   },
 } as const;
 
+/**
+ * The offensive prayer the DPS calc assumes per combat style (mirrors the
+ * multipliers in DEFAULT_PRAYERS above). Surfaced in the results rail so the
+ * player knows which prayer the DPS number bakes in. `effect` is the short
+ * offensive summary — defence (+25%) is omitted since it doesn't affect DPS.
+ */
+export const ASSUMED_PRAYER: Record<
+  LoadoutSet["style"],
+  { name: string; effect: string }
+> = {
+  melee: { name: "Piety", effect: "+23% str · +20% atk" },
+  ranged: { name: "Rigour", effect: "+23% ranged str · +20% ranged atk" },
+  magic: { name: "Augury", effect: "+4% magic dmg · +25% magic acc" },
+};
+
 /** Resolve which defence-bonus number to feed the DPS calc given the loadout's attack profile. */
 function defenceBonusForSet(set: LoadoutSet, target: MonsterCatalogEntry): number {
   if (set.attackType === "ranged") {

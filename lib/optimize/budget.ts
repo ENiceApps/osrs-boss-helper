@@ -30,6 +30,7 @@ import type {
   WeaponAttackType,
 } from "@/types/osrs";
 import { optimizeForBoss } from "@/lib/optimize/bank";
+import { isHalberdWeapon } from "@/data/items/halberd-weapons";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
 import type { BoostResolver } from "@/lib/dps/boost";
 
@@ -42,7 +43,10 @@ const NON_WEAPON_SLOTS: LoadoutSlotKey[] = [
 ];
 const ALL_SLOTS: LoadoutSlotKey[] = ["weapon", ...NON_WEAPON_SLOTS];
 
-export type BudgetMode = "own-only" | "gp-only" | "sell-to-fund" | "budget";
+// "wildy-risk" is a Wilderness-only framing of "budget": build the best loadout
+// whose total worn value stays within the GP you're willing to risk to PKers.
+// Same math as bestLoadoutForBudget (value cap), shown only for wilderness bosses.
+export type BudgetMode = "own-only" | "gp-only" | "sell-to-fund" | "budget" | "wildy-risk";
 export type PriceLookup = (itemId: number) => number | null;
 
 export interface FindUpgradesInput {
@@ -68,6 +72,8 @@ export interface FindUpgradesInput {
   boostResolver?: BoostResolver;
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask?: boolean;
+  /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
+  requiresMeleeReach2?: boolean;
 }
 
 export interface UpgradeStep {
@@ -188,6 +194,7 @@ function findCandidates(
   baseSpellMaxHit?: number,
   spellElement?: SpellElement,
   boostResolver?: BoostResolver,
+  requiresMeleeReach2?: boolean,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -200,6 +207,16 @@ function findCandidates(
     if (!meetsRequirements(item, skills)) continue;
     const slot = loadoutSlotFor(item);
     if (!ALL_SLOTS.includes(slot)) continue;
+    // Reach gate: on a halberd-only boss, never suggest swapping a melee setup's
+    // weapon to a non-halberd weapon.
+    if (
+      requiresMeleeReach2 &&
+      slot === "weapon" &&
+      activeLoadout.style === "melee" &&
+      !isHalberdWeapon(item.id)
+    ) {
+      continue;
+    }
     const price = priceLookup(item.id);
     if (price === null || price > budget) continue;
     // Cheap pre-filter: ammo slot items must match the current weapon's ammo
@@ -268,6 +285,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     spellElement: input.spellElement,
     boostResolver: input.boostResolver,
     onTask: input.onTask,
+    requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0] ?? null;
 
@@ -341,6 +359,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       upgradeSpellMaxHit,
       upgradeSpellElement,
       input.boostResolver,
+      input.requiresMeleeReach2,
     );
     if (candidates.length === 0) break;
 
@@ -436,6 +455,7 @@ export interface RecommendSellInput {
   spellElement?: SpellElement;
   boostResolver?: BoostResolver;
   onTask?: boolean;
+  requiresMeleeReach2?: boolean;
 }
 
 /**
@@ -463,6 +483,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
     spellElement: input.spellElement,
     boostResolver: input.boostResolver,
     onTask: input.onTask,
+    requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0];
   if (!currentBest) return { sellItemIds: [] };
@@ -510,6 +531,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       upgradeSpellMaxHit,
       upgradeSpellElement,
       input.boostResolver,
+      input.requiresMeleeReach2,
     );
     if (candidates.length === 0) break;
     candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);

@@ -154,6 +154,13 @@ export interface ConditionalBonusFlags {
   salveAmulet: boolean;
   /** Arclight / Emberlight vs demons → +70% accuracy & damage (additive). */
   demonbane: boolean;
+  /**
+   * A charged wilderness weapon (Craw's/Webweaver bow, Viggora's/Ursine
+   * chainmace, Thammaron's/Accursed sceptre) attacking an NPC in the Wilderness
+   * → ×3/2 accuracy & damage (multiplicative). Optional so existing flag
+   * literals don't all need updating; absent = not firing.
+   */
+  wildernessWeapon?: boolean;
 }
 
 export type SpellElement = "fire" | "water" | "earth" | "air" | "none";

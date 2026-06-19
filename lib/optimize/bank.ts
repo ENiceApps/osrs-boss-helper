@@ -23,6 +23,10 @@ import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES, AMMO_TYPES } 
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
+import { IMBUED_SLAYER_HELM_IDS } from "@/data/items/slayer-helm";
+import { isHalberdWeapon } from "@/data/items/halberd-weapons";
+import { staffSuppliesElement } from "@/data/items/elemental-staves";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { autocastableSpellbooks } from "@/data/items/magic-weapon-autocast";
 import { bestSpell, spellMaxHit } from "@/data/spells/catalog";
@@ -58,6 +62,12 @@ export interface BankOptimizerInput {
   boostResolver?: BoostResolver;
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask?: boolean;
+  /**
+   * When true, the target can only be meleed with a 2-tile reach weapon
+   * (halberd / Scythe of Vitur). Melee candidates using any other weapon are
+   * dropped; ranged and magic are unaffected. See data/monsters/melee-reach.ts.
+   */
+  requiresMeleeReach2?: boolean;
 }
 
 export interface BankOptimizerResult {
@@ -284,6 +294,9 @@ function applicableForceIncludes(
   out.push(...ownedTriggerIds(bank, "TOME_OF_FIRE_CHARGED"));
   out.push(...ownedTriggerIds(bank, "TOME_OF_WATER_CHARGED"));
   out.push(...ownedTriggerIds(bank, "TOME_OF_EARTH_CHARGED"));
+  // Wilderness weapons get a big ×3/2 vs NPCs in the Wilderness that itemScore
+  // can't see — force them in for wilderness bosses so they're ranked honestly.
+  if (isWildernessBoss(target.slug)) out.push(...ownedTriggerIds(bank, "WILDERNESS_WEAPON"));
   return out;
 }
 
@@ -490,6 +503,31 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   }
   allCandidates.push(...boltBranches);
 
+  // Step 2e: slayer-helm force-include. On task, the imbued black mask / slayer
+  // helmet grants a large on-task multiplier (×7/6 melee, ×23/20 ranged & magic)
+  // that the per-slot greedy can't see — and it competes with head-slot armor-set
+  // pieces (Void / Justiciar / Inquisitor helm). Branch every candidate with the
+  // helm in the head slot so scoreScenario ranks "helm + broken set" vs "intact
+  // set" honestly and the DPS engine applies the on-task bonus. (The boss page
+  // used to patch the helm into the head slot directly, which stranded the rest
+  // of an armor set; the optimizer now owns this decision.)
+  if (input.onTask) {
+    const ownedHelmId = [...bankSet].find((id) => IMBUED_SLAYER_HELM_IDS.has(id));
+    if (ownedHelmId !== undefined) {
+      const snapshot = [...allCandidates];
+      for (const c of snapshot) {
+        if (c.itemIds.includes(ownedHelmId)) continue; // already wearing it
+        const filtered = c.itemIds.filter((id) => {
+          const it = ITEM_BY_ID.get(id);
+          if (!it) return true;
+          return loadoutSlotFor(it) !== "head";
+        });
+        filtered.push(ownedHelmId);
+        allCandidates.push({ itemIds: filtered, internalAmmoId: c.internalAmmoId, ws: c.ws });
+      }
+    }
+  }
+
   // Step 3: dedupe by (sorted itemIds + style signature). Same gear with
   // different attack styles is still distinct (different DPS).
   const seen = new Set<string>();
@@ -504,6 +542,17 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   // Step 4: score every candidate.
   const valid: Array<Extract<ScoredScenario, { valid: true }>> = [];
   for (const c of unique) {
+    // Reach gate: on bosses you can't stand next to (Zulrah), a melee setup must
+    // use a 2-tile weapon. Drop any melee candidate whose weapon isn't a halberd
+    // / Scythe — ranged & magic are unaffected. This is the single chokepoint, so
+    // it also catches force-include and armor-set branches.
+    if (
+      input.requiresMeleeReach2 &&
+      c.ws.combatStyle === "melee" &&
+      !isHalberdWeapon(c.ws.weapon.id)
+    ) {
+      continue;
+    }
     // Powered staves (Trident, Sanguinesti, etc.) embed their own damage
     // formula keyed by weapon ID — derive baseSpellMaxHit from the weapon
     // rather than requiring the caller to supply a spell. For regular staves
@@ -534,8 +583,21 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
     if (scored.valid) valid.push(scored);
   }
 
-  // Step 5: rank + take top N.
-  valid.sort((a, b) => b.dps.dps - a.dps.dps);
+  // Step 5: rank + take top N. Primary key is DPS. For exact ties, prefer a
+  // magic loadout whose staff supplies the cast spell's element — a DPS-neutral
+  // tie-break so an earth spell is shown with an earth staff rather than an
+  // equally-good staff that doesn't supply its runes. (Rune cost isn't modelled,
+  // so this only reorders identical-DPS staves; it never changes the spell.)
+  const suppliesSpellElement = (s: Extract<ScoredScenario, { valid: true }>): number =>
+    s.loadout.style === "magic" &&
+    staffSuppliesElement(s.loadout.slots.weapon?.itemId ?? -1, s.loadout.spellElement)
+      ? 1
+      : 0;
+  valid.sort((a, b) => {
+    const d = b.dps.dps - a.dps.dps;
+    if (Math.abs(d) > 1e-9) return d;
+    return suppliesSpellElement(b) - suppliesSpellElement(a);
+  });
 
   return {
     rankings: valid.slice(0, topN),

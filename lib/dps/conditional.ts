@@ -72,6 +72,13 @@ export function conditionalMultipliers(
     accuracy.push({ numerator: 7, denominator: 6, reason: "Salve amulet (regular/i) vs undead" });
     damage.push({ numerator: 7, denominator: 6, reason: "Salve amulet (regular/i) vs undead" });
   }
+  if (flags.wildernessWeapon) {
+    // Charged wilderness weapon vs an NPC in the Wilderness: +50% accuracy AND
+    // damage, multiplicative (stacks on top of Salve/Slayer). Same ×3/2 for all
+    // six weapons (Craw's/Webweaver, Viggora's/Ursine, Thammaron's/Accursed).
+    accuracy.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+    damage.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+  }
   return { accuracy, damage };
 }
 

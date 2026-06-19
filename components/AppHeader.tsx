@@ -65,7 +65,7 @@ function ConnectionStatus() {
   const live = useLiveBank();
   if (live.isLive) {
     return (
-      <span className="inline-flex items-center gap-2 text-caption text-parchment">
+      <span className="inline-flex items-center gap-2 text-caption text-foreground">
         <span
           aria-hidden
           className="w-2 h-2 rounded-full bg-status-owned"

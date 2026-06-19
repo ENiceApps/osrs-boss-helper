@@ -159,7 +159,7 @@ export default function ItemsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="dragon, masori, twisted, bow…"
-            className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown"
+            className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown"
           />
         </label>
         <label className="block">
@@ -167,7 +167,7 @@ export default function ItemsPage() {
           <select
             value={slot}
             onChange={(e) => setSlot(e.target.value as typeof slot)}
-            className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown"
+            className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown"
           >
             {SLOT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -181,7 +181,7 @@ export default function ItemsPage() {
           <select
             value={sortKey}
             onChange={(e) => toggleSort(e.target.value as SortKey)}
-            className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown"
+            className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown"
           >
             {SORT_FIELDS.map((f) => (
               <option key={f.key} value={f.key}>
@@ -199,7 +199,7 @@ export default function ItemsPage() {
             value={maxPriceText}
             onChange={(e) => setMaxPriceText(e.target.value)}
             placeholder="any"
-            className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown"
+            className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown"
           />
         </label>
       </div>
@@ -214,7 +214,7 @@ export default function ItemsPage() {
       <div className="osrs-panel p-2 rounded overflow-x-auto">
         <table className="w-full text-xs text-osrs-brown">
           <thead>
-            <tr className="border-b border-osrs-brown">
+            <tr className="border-b border-osrs-brown/40">
               <th className="text-left p-1 sticky left-0 bg-parchment">Item</th>
               <th className="text-left p-1">Slot</th>
               {SORT_FIELDS.filter((f) => f.numeric).map((f) => (

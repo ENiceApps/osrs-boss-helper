@@ -2,6 +2,7 @@
 
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
+import { ASSUMED_PRAYER } from "@/lib/recommend";
 import { fmtDpsPerM, fmtGp, formatSeconds } from "@/lib/format";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
@@ -50,6 +51,7 @@ function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.dragonHunterWand) flags.push("DH wand +75/+40%");
   if (activeBonuses?.conditionalBonuses.salveAmuletEi) flags.push("Salve(ei) +20%");
   if (activeBonuses?.conditionalBonuses.salveAmulet) flags.push("Salve +16.7%");
+  if (activeBonuses?.conditionalBonuses.wildernessWeapon) flags.push("Wilderness weapon +50%");
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc+dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% acc+dmg");
@@ -121,6 +123,17 @@ export function ResultsPanel({
           <StatRow
             label="Attack speed"
             value={`${effectiveTicks} ticks (${(effectiveTicks * TICK_SECONDS).toFixed(1)}s)`}
+          />
+          <StatRow
+            label="Prayer"
+            value={
+              <span>
+                {ASSUMED_PRAYER[set.style].name}{" "}
+                <span className="text-caption font-normal text-osrs-muted">
+                  {ASSUMED_PRAYER[set.style].effect}
+                </span>
+              </span>
+            }
           />
         </div>
       )}

@@ -130,13 +130,13 @@ export function LoadoutPanel<TabId extends string>({
                 onClick={() => onTabChange?.(tab.id)}
                 className={`px-2.5 py-1 rounded border text-center ${
                   active
-                    ? "bg-osrs-brown border-osrs-gold"
-                    : "bg-parchment-dark/40 border-osrs-brown/40 hover:border-osrs-brown"
+                    ? "bg-osrs-gold border-osrs-gold"
+                    : "bg-parchment-dark/10 border-osrs-brown/40 hover:border-osrs-gold/60"
                 }`}
               >
                 <span
                   className={`block text-xs font-semibold ${
-                    active ? "text-parchment" : "text-osrs-brown"
+                    active ? "text-background" : "text-osrs-brown"
                   }`}
                 >
                   {tab.label}
@@ -144,7 +144,7 @@ export function LoadoutPanel<TabId extends string>({
                 {tab.dps !== undefined && (
                   <span
                     className={`block text-caption ${
-                      active ? "text-parchment-dark" : "text-osrs-muted"
+                      active ? "text-background/80" : "text-osrs-muted"
                     }`}
                   >
                     {tab.dps.toFixed(2)} dps

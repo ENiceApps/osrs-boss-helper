@@ -1,35 +1,47 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   THEME: "Midnight Gilded" — dark charcoal surfaces, warm off-white text,
+   rich gold accent. (Replaced the original light parchment-on-brown theme.)
+
+   Token roles in this dark theme (kept the old names so component classes
+   didn't all have to change):
+     --color-parchment        → PANEL surface (dark)
+     --color-parchment-raised → ELEVATED surface (hero card, chips)
+     --color-osrs-field       → RECESSED surface (inputs, wells)
+     --color-osrs-brown       → primary TEXT on panels (now light) + faint
+                                 low-opacity borders read as hairlines
+     --color-osrs-muted /
+     --color-parchment-dark   → muted/secondary TEXT
+     --color-osrs-gold        → accent (borders, active controls, headings rule)
+   =========================================================================== */
 :root {
-  --background: #2b1f10;
-  --foreground: #f4e4bd;
+  --background: #0d0f12; /* page background */
+  --foreground: #ece6d8; /* primary text on the page background */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --color-parchment: #e8d5a3;
-  --color-parchment-dark: #c9b079;
-  /* A lighter parchment for content that should read as ELEVATED above a
-     panel (raised stat cards, the hero answer). Pairs with --color-parchment
-     (panel base) and the recessed `.osrs-well` to give three clear z-levels. */
-  --color-parchment-raised: #f2e3ba;
-  --color-osrs-brown: #3e2f1c;
-  --color-osrs-brown-light: #5c4528;
-  --color-osrs-gold: #b89752;
-  --color-osrs-gold-light: #d4b76a;
-  --color-osrs-blood: #8b1a1a;
+  --color-parchment: #181b21;        /* panel surface */
+  --color-parchment-dark: #9a917f;   /* muted/secondary text (warm grey) */
+  --color-parchment-raised: #20242c; /* elevated surface above a panel */
+  --color-osrs-brown: #ece6d8;       /* primary text on panels (light) */
+  --color-osrs-brown-light: #cfc8b8;
+  --color-osrs-gold: #d4af37;        /* accent */
+  --color-osrs-gold-light: #e8c869;
+  --color-osrs-blood: #c0392b;
 
-  /* Readable muted text ON parchment panels. The old pattern used
-     `text-parchment-dark` (#c9b079) for muted copy, which is near-invisible
-     on the #e8d5a3 parchment background (~1.3:1). This token is dark enough
-     to pass WCAG AA for small text (~4.7:1) while still reading as secondary. */
-  --color-osrs-muted: #6b5524;
+  /* Muted text on a dark panel — warm grey, comfortably readable (~6:1). */
+  --color-osrs-muted: #9a917f;
 
-  --color-status-owned: #4a7c2a;
-  --color-status-affordable: #c9a227;
-  --color-status-missing: #8b1a1a;
+  /* Recessed surface for form fields / wells (darker than the panel). */
+  --color-osrs-field: #11141a;
+
+  --color-status-owned: #6aa84f;
+  --color-status-affordable: #d4af37;
+  --color-status-missing: #c0392b;
 
   --font-sans: var(--font-sans, system-ui, sans-serif);
   --font-display: var(--font-display, ui-serif, Georgia, serif);
@@ -44,14 +56,14 @@ body {
 .osrs-panel {
   background: var(--color-parchment);
   color: var(--color-osrs-brown);
-  border: 2px solid var(--color-osrs-brown);
-  box-shadow: inset 0 0 0 1px var(--color-osrs-gold);
+  border: 1px solid color-mix(in srgb, var(--color-osrs-gold) 30%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-osrs-gold) 10%, transparent);
 }
 
 .osrs-slot {
-  background: linear-gradient(180deg, #4a3823 0%, #2d2010 100%);
-  border: 2px solid #1a1208;
-  box-shadow: inset 1px 1px 0 #6b5236, inset -1px -1px 0 #1a1208;
+  background: linear-gradient(180deg, #2a2f38 0%, #14171c 100%);
+  border: 2px solid #0a0c0f;
+  box-shadow: inset 1px 1px 0 #3a414c, inset -1px -1px 0 #0a0c0f;
 }
 
 .osrs-slot-empty {
@@ -77,11 +89,7 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-   Type scale (foundation)
-   The codebase had scattered `text-[10px]` / `text-[11px]` with ad-hoc
-   uppercase+tracking, which read inconsistently. These two utilities
-   consolidate the two recurring "small text" roles so captions and labels
-   share one rhythm everywhere.
+   Type scale (foundation) — two recurring "small text" roles.
    --------------------------------------------------------------------------- */
 
 /* Secondary/supporting copy under a primary value or heading. */
@@ -90,8 +98,7 @@ body {
   line-height: 1rem;
 }
 
-/* The small uppercase label that sits under a stat value or above a group.
-   Replaces the repeated `text-[10px] uppercase tracking-wider` pattern. */
+/* The small uppercase label that sits under a stat value or above a group. */
 .label-eyebrow {
   font-size: 0.625rem; /* 10px */
   line-height: 0.875rem;
@@ -101,16 +108,11 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-   Recessed surface (foundation)
-   The old pattern nested `bg-parchment` inside `osrs-panel` (also parchment),
-   so sub-sections had almost no contrast against their container — the weak
-   figure/ground that flattened the hierarchy. `.osrs-well` is a slightly
-   darker, inset-shadowed surface that reads as "recessed into the panel",
-   giving nested groups (loadout box, upgrade list, stat rows) a clear edge
-   without leaving the parchment palette.
+   Recessed surface (foundation) — a darker, inset surface that reads as
+   "recessed into the panel" for nested groups (loadout box, upgrade list).
    --------------------------------------------------------------------------- */
 .osrs-well {
-  background: #dcc78f;
-  border: 1px solid color-mix(in srgb, var(--color-osrs-brown) 35%, transparent);
-  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--color-osrs-brown) 22%, transparent);
+  background: var(--color-osrs-field);
+  border: 1px solid color-mix(in srgb, var(--color-osrs-gold) 16%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
 }

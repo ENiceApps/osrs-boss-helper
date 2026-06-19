@@ -3,14 +3,20 @@
 import { ItemIcon } from "@/components/ItemIcon";
 import { specRecommendationsForBoss } from "@/data/bosses/spec-weapons";
 import { findSpecWeapon } from "@/data/spec-weapons";
-import type { MappingEntry } from "@/types/osrs";
-import type { SpecRole } from "@/types/spec-weapons";
+import { isHalberdWeapon } from "@/data/items/halberd-weapons";
+import { asItemId, type MappingEntry } from "@/types/osrs";
+import type { BossSpecRecommendation, SpecRole } from "@/types/spec-weapons";
+
+/** Crystal halberd — the canonical spec weapon for any halberd-based setup. */
+const CRYSTAL_HALBERD_ID = 23987;
 
 interface Props {
   slug: string;
   mapping?: MappingEntry[];
   /** Item IDs the player owns. Used to show an "owned ✓" indicator per spec weapon. */
   ownedItemIds?: Set<number>;
+  /** The active loadout's weapon id — when it's a halberd, we add the Crystal halberd spec. */
+  weaponItemId?: number;
 }
 
 /**
@@ -18,8 +24,23 @@ interface Props {
  * this boss. Phase 4 data; not in the DPS math. Renders nothing if the boss
  * has no curated recommendations (most monsters).
  */
-export function SpecWeaponsPanel({ slug, mapping, ownedItemIds }: Props) {
-  const recs = specRecommendationsForBoss(slug);
+export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: Props) {
+  const recs: BossSpecRecommendation[] = [...specRecommendationsForBoss(slug)];
+
+  // Halberd-aware: a halberd setup pairs naturally with the Crystal halberd's
+  // special (extended-reach AoE / double-hit burst). Add it whenever the active
+  // weapon is a halberd and it isn't already listed for this boss.
+  if (
+    weaponItemId !== undefined &&
+    isHalberdWeapon(weaponItemId) &&
+    !recs.some((r) => r.specWeaponId === CRYSTAL_HALBERD_ID)
+  ) {
+    recs.unshift({
+      specWeaponId: asItemId(CRYSTAL_HALBERD_ID),
+      note: "With a halberd equipped, the Crystal halberd spec is your burst option — its reach hits multiple targets in a line and double-hits large monsters.",
+    });
+  }
+
   if (recs.length === 0) return null;
 
   return (

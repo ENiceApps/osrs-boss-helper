@@ -41,7 +41,7 @@ export function StatCard({
 }: StatCardProps) {
   const surface = hero
     ? "bg-parchment-raised border-2 border-osrs-gold p-3"
-    : "bg-parchment border border-osrs-brown p-2";
+    : "bg-parchment-raised border border-osrs-brown/40 p-2";
   return (
     <div className={`flex flex-col items-center justify-center rounded text-center ${surface}`}>
       <div className={`font-bold ${VALUE_SIZE[size]} ${accent}`}>

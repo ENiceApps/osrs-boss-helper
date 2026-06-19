@@ -81,7 +81,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-osrs-brown/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       onClick={onClose}
     >
       <div
@@ -108,7 +108,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Search ${SLOT_LABELS[slot].toLowerCase()} items…`}
-          className="w-full bg-parchment border border-osrs-brown rounded p-1.5 text-sm text-osrs-brown mb-2"
+          className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown mb-2"
         />
 
         <div className="flex items-baseline justify-between text-caption text-osrs-muted mb-2">
@@ -134,7 +134,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
                   onClick={() => onSelect(it)}
                   className={`w-full text-left p-1.5 rounded border text-caption flex items-center gap-2 ${
                     isCurrent
-                      ? "border-osrs-gold bg-parchment-dark"
+                      ? "border-osrs-gold bg-osrs-gold/15"
                       : "border-transparent hover:border-osrs-gold/40 hover:bg-osrs-gold/5"
                   }`}
                 >

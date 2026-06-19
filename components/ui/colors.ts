@@ -7,30 +7,31 @@
  * categories and fall back to a neutral brown for everything else, so a pill
  * always renders without needing a bespoke entry per monster.
  *
- * Hues are deliberately dark/saturated so they read as TEXT on the pale
- * parchment tint that <Badge> paints behind them (see components/ui/Badge.tsx).
+ * Hues are deliberately LIGHT/luminous so they read as TEXT on the dark tint
+ * that <Badge> paints behind them on the Midnight Gilded dark panels (see
+ * components/ui/Badge.tsx — fill is the colour at 16%, text is the colour).
  */
 
-/** osrs-muted (#6b5524) — the neutral fallback accent. */
-export const ACCENT_FALLBACK = "#6b5524";
+/** Muted warm-grey fallback accent, readable on dark panels. */
+export const ACCENT_FALLBACK = "#b8a98f";
 
 export const ATTRIBUTE_COLORS: Record<string, string> = {
-  dragon: "#b45309",
-  draconic: "#b45309",
-  demon: "#b91c1c",
-  undead: "#6d28d9",
-  fiery: "#c2410c",
-  golem: "#57534e",
-  kalphite: "#a16207",
-  leafy: "#4d7c0f",
-  vampyre: "#9f1239",
-  shade: "#4338ca",
-  spectral: "#0e7490",
-  xerician: "#a21caf",
-  icy: "#0369a1",
-  kraken: "#0f766e",
-  penance: "#0f766e",
-  flying: "#3b6fa0",
+  dragon: "#f59e0b",
+  draconic: "#f59e0b",
+  demon: "#ef4444",
+  undead: "#a78bfa",
+  fiery: "#fb923c",
+  golem: "#a8a29e",
+  kalphite: "#eab308",
+  leafy: "#84cc16",
+  vampyre: "#fb7185",
+  shade: "#818cf8",
+  spectral: "#22d3ee",
+  xerician: "#e879f9",
+  icy: "#38bdf8",
+  kraken: "#2dd4bf",
+  penance: "#2dd4bf",
+  flying: "#7dd3fc",
 };
 
 export function attributeColor(attribute: string): string {
@@ -39,10 +40,10 @@ export function attributeColor(attribute: string): string {
 
 /** Spell-weakness elements — the catalog only ever uses these four. */
 export const ELEMENT_COLORS: Record<string, string> = {
-  air: "#5a8fb5",
-  water: "#1d4e89",
-  earth: "#5a7d2a",
-  fire: "#c2410c",
+  air: "#93c5fd",
+  water: "#60a5fa",
+  earth: "#a3e635",
+  fire: "#fb923c",
 };
 
 export function elementColor(element: string): string {

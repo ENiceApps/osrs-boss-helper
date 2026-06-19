@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
+import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
@@ -11,6 +11,8 @@ import { optimizeForBoss, itemScore, meetsRequirements, loadoutSlotFor } from "@
 import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
+import { requiresMeleeReach2 } from "@/data/monsters/melee-reach";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
@@ -31,10 +33,10 @@ import { SpellPickerModal } from "@/components/SpellPickerModal";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
+import { DittoEditorPanel } from "@/components/DittoEditorPanel";
 import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides, findCatalogItem } from "@/lib/loadout-edit";
 import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
-import { IMBUED_SLAYER_HELM_IDS } from "@/data/items/slayer-helm";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { NON_PVE_UNTRADEABLE_IDS } from "@/data/items/non-pve-untradeables";
 import { openInWikiCalc } from "@/lib/wiki-export";
@@ -83,8 +85,16 @@ export default function BossPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const monster = MONSTER_BY_SLUG[slug];
-  if (!monster) notFound();
+  const baseMonster = MONSTER_BY_SLUG[slug];
+  if (!baseMonster) notFound();
+
+  // "Ditto" is the theoretical-boss sandbox: its stats are editable at runtime.
+  // We hold an editable copy in state seeded from the catalog defaults and feed
+  // THAT to the whole cockpit, so every memo recomputes as the user tweaks. For
+  // every other boss `monster` is just the static catalog entry.
+  const isDitto = slug === "ditto";
+  const [dittoMonster, setDittoMonster] = useState<MonsterCatalogEntry>(baseMonster);
+  const monster = isDitto ? dittoMonster : baseMonster;
 
   // Live RuneLite plugin sync — see lib/liveBank.ts. Until the plugin pushes,
   // `bank` is null and the page shows an empty/connect state (no fabricated
@@ -97,7 +107,7 @@ export default function BossPage({
   // Budget mode + sell threshold drive the optimizer; they live here (not in
   // a panel) because the setup rail sets them and the loadout/results columns
   // consume the output. Every change recomputes immediately — no apply button.
-  const [mode, setMode] = useState<BudgetMode>("gp-only");
+  const [modeRaw, setMode] = useState<BudgetMode>("gp-only");
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
   const [sellSelections, setSellSelections] = useState<Set<number>>(new Set());
@@ -160,12 +170,19 @@ export default function BossPage({
   // (and the bonus forced off) for non-Slayer monsters regardless of its state.
   const effectiveOnTask = onTask && monster.isSlayerMonster;
 
-  // The imbued black mask / slayer helm the player owns, if any — used to
-  // auto-equip it when the on-task box is ticked.
-  const ownedSlayerHelm = useMemo(() => {
-    const id = [...IMBUED_SLAYER_HELM_IDS].find((helmId) => ownedItemIds.has(helmId));
-    return id !== undefined ? findCatalogItem(id) : undefined;
-  }, [ownedItemIds]);
+  // Some bosses can only be meleed with a 2-tile reach weapon — flying monsters
+  // (Kree'arra, Dawn, Vespula) and terrain-gapped ones (Zulrah). The optimizer
+  // drops normal-melee weapons for them. Stable per boss.
+  const meleeReach2 = requiresMeleeReach2(monster);
+
+  // Wilderness boss → unlocks the "Risk it" budget mode. Both "budget" and
+  // "wildy-risk" build a from-scratch loadout under a GP cap (spend vs risk).
+  const wilderness = isWildernessBoss(monster.slug);
+  // "Risk it" mode only exists for wilderness bosses. If the player navigates to
+  // a non-wilderness boss while in it, fall back to the equivalent Budget mode —
+  // derived (not stored) so we never set state in an effect, mirroring activeTab.
+  const mode: BudgetMode = modeRaw === "wildy-risk" && !wilderness ? "budget" : modeRaw;
+  const fromScratchMode = mode === "budget" || mode === "wildy-risk";
 
   // The single optimizer run feeding the whole cockpit: best buildable
   // loadout, plus the budget-mode upgrade path / sell list. (Previously the
@@ -177,7 +194,7 @@ export default function BossPage({
     // non-tradeables are free (0 gp); everything else the player hasn't checked
     // stays at its GE price (or unpriced = excluded), so the builder injects a
     // buyable alternative for any slot where the player owns no non-tradeable.
-    if (mode === "budget") {
+    if (fromScratchMode) {
       return bestLoadoutForBudget({
         target: monster,
         skills,
@@ -192,6 +209,7 @@ export default function BossPage({
         },
         boostResolver,
         onTask: effectiveOnTask,
+        requiresMeleeReach2: meleeReach2,
       });
     }
     if (!bank) return null;
@@ -205,19 +223,20 @@ export default function BossPage({
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
+      requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, meleeReach2]);
 
-  // Budget mode: per-slot lists of non-tradeable options the player can mark as
-  // owned. Ranked by the current build's combat style (stable per boss), with
+  // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
+  // as owned. Ranked by the current build's combat style (stable per boss), with
   // PvP/cosmetic junk filtered out. The optimizer uses whichever owned options
   // are best; unchecked ones aren't available so a buyable item fills the slot.
-  const refLoadout = mode === "budget" ? budgetResult?.upgradedBest?.loadout : undefined;
+  const refLoadout = fromScratchMode ? budgetResult?.upgradedBest?.loadout : undefined;
   const refStyle = refLoadout?.style ?? "ranged";
   const refAttackType = refLoadout?.attackType ?? "ranged";
   const refWeaponId = refLoadout?.slots.weapon?.itemId;
   const untradeableOptionsBySlot = useMemo<UntradeableSlotGroup[]>(() => {
-    if (mode !== "budget" || !prices) return [];
+    if (!fromScratchMode || !prices) return [];
     const SLOT_ORDER = [
       "weapon", "head", "cape", "neck", "body", "legs", "hands", "feet", "ring", "ammo", "shield",
     ];
@@ -279,7 +298,7 @@ export default function BossPage({
       if (opts.length > 0) groups.push({ slot, items: opts });
     }
     return groups;
-  }, [mode, prices, geIdByName, refStyle, refAttackType, refWeaponId, skills]);
+  }, [fromScratchMode, prices, geIdByName, refStyle, refAttackType, refWeaponId, skills]);
 
   // Sell-to-fund: the optimizer's recommended liquidations (default-checked
   // set) and the full universe of sellable spare items for the checklist.
@@ -293,8 +312,9 @@ export default function BossPage({
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
+      requiresMeleeReach2: meleeReach2,
     });
-  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask]);
+  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, meleeReach2]);
 
   const sellableItems = useMemo<SellableItem[]>(() => {
     if (mode !== "sell-to-fund" || !budgetResult?.currentBest) return [];
@@ -357,6 +377,7 @@ export default function BossPage({
       topN: Number.MAX_SAFE_INTEGER,
       boostResolver,
       onTask: effectiveOnTask,
+      requiresMeleeReach2: meleeReach2,
     });
     const bests: Partial<Record<CombatStyle, (typeof rankings)[number]>> = {};
     for (const r of rankings) {
@@ -367,7 +388,7 @@ export default function BossPage({
       if (bests.melee && bests.ranged && bests.magic) break;
     }
     return bests;
-  }, [bank, ownedItemIds, monster, skills, boostResolver, effectiveOnTask]);
+  }, [bank, ownedItemIds, monster, skills, boostResolver, effectiveOnTask, meleeReach2]);
 
   // Which comparison tab is active. A style tab can disappear if the bank
   // changes (e.g. last melee weapon removed) — fall back to "best" then.
@@ -376,7 +397,7 @@ export default function BossPage({
     activeTabRaw !== "best" && !styleBests?.[activeTabRaw] ? "best" : activeTabRaw;
 
   const loadoutTabs = useMemo(() => {
-    if (!bank && mode !== "budget") return [];
+    if (!bank && !fromScratchMode) return [];
     const tabs: Array<{ id: LoadoutTabId; label: string; dps?: number }> = [];
     if (budgetResult?.upgradedBest) {
       tabs.push({ id: "best", label: "Best", dps: budgetResult.upgradedBest.dps.dps });
@@ -392,7 +413,7 @@ export default function BossPage({
       }
     }
     return tabs;
-  }, [bank, mode, budgetResult, styleBests]);
+  }, [bank, fromScratchMode, budgetResult, styleBests]);
 
   // The editable base is the active tab's scenario: the optimizer's pick for
   // the current budget mode (== best-from-bank when there are no upgrades),
@@ -432,23 +453,14 @@ export default function BossPage({
     setSpellOverride(spell);
     setSpellPickerOpen(false);
   }
-  // The head slot present before the on-task box forced the slayer helm — so we
-  // can put it back when the box is unticked. undefined = no prior override.
-  const headBeforeTaskRef = useRef<ItemCatalogEntry | null | undefined>(undefined);
+  // Toggling the task box just flips the flag — the optimizer re-runs with
+  // `effectiveOnTask` and rebuilds the WHOLE loadout (force-including the imbued
+  // slayer helm and dropping any now-pointless armor-set pieces, e.g. Void).
+  // We clear manual overrides so a stale head pick can't strand a broken set;
+  // patching only the head slot here was the old bug.
   function onToggleTask(checked: boolean) {
     setOnTask(checked);
-    if (checked) {
-      // Auto-equip the owned imbued slayer helm, remembering the prior head.
-      if (ownedSlayerHelm) {
-        setOverrides((prev) => {
-          headBeforeTaskRef.current = "head" in prev ? prev.head : undefined;
-          return { ...prev, head: ownedSlayerHelm };
-        });
-      }
-    } else {
-      // Revert to whatever head was there before (base optimizer pick if none).
-      setOverrides((prev) => ({ ...prev, head: headBeforeTaskRef.current }));
-    }
+    resetOverrides();
   }
 
   // Diagnostic line in the results rail listing which conditional bonuses are
@@ -522,11 +534,13 @@ export default function BossPage({
   const sourceLabel =
     activeTab !== "best"
       ? `best ${activeTab} from your bank`
-      : mode === "budget"
-        ? "built for your budget — ignoring your bank"
-        : mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
-          ? "after upgrades — see results"
-          : "best from your bank";
+      : mode === "wildy-risk"
+        ? "built within your risk cap — for the Wilderness"
+        : mode === "budget"
+          ? "built for your budget — ignoring your bank"
+          : mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
+            ? "after upgrades — see results"
+            : "best from your bank";
 
   return (
     <div className="min-h-screen px-4 py-4 sm:p-6 max-w-7xl mx-auto">
@@ -602,9 +616,14 @@ export default function BossPage({
         </div>
 
         {/* Defence stat table — lets the player immediately see why the
-            optimizer recommended a particular combat style. */}
+            optimizer recommended a particular combat style. For Ditto, swap in
+            the live editor instead so the player drives those stats. */}
         <div className="mt-2">
-          <BossStatsPanel monster={monster} />
+          {isDitto ? (
+            <DittoEditorPanel monster={monster} onChange={setDittoMonster} />
+          ) : (
+            <BossStatsPanel monster={monster} />
+          )}
         </div>
       </header>
 
@@ -626,6 +645,7 @@ export default function BossPage({
             onGpChange={setGpManual}
             budgetGp={budgetGp}
             onBudgetChange={setBudgetGp}
+            isWildernessBoss={wilderness}
           >
             <PlayerStatsPanel skills={skills} isLive={live.isLive} />
             <label
@@ -672,23 +692,6 @@ export default function BossPage({
               />
             </div>
           )}
-
-          {mode === "budget" && untradeableOptionsBySlot.length > 0 && (
-            <div className="mt-4">
-              <OwnedUntradeablesPanel
-                groups={untradeableOptionsBySlot}
-                owned={ownedUntradeables}
-                onToggle={toggleUntradeableOwned}
-                onSelectAll={() =>
-                  setOwnedUntradeables(
-                    new Set(untradeableOptionsBySlot.flatMap((g) => g.items.map((i) => i.itemId))),
-                  )
-                }
-                onSelectNone={() => setOwnedUntradeables(new Set())}
-                mapping={mapping}
-              />
-            </div>
-          )}
         </aside>
 
         <section className="order-1 lg:order-2 lg:col-span-5">
@@ -698,7 +701,7 @@ export default function BossPage({
             onTabChange={handleTabChange}
             set={selectedSet}
             dps={selectedDps}
-            connected={bank !== null || mode === "budget"}
+            connected={bank !== null || fromScratchMode}
             sourceLabel={sourceLabel}
             ownedItemIds={ownedItemIds}
             mapping={mapping}
@@ -717,7 +720,7 @@ export default function BossPage({
           />
         </section>
 
-        <section className="order-2 lg:order-3 lg:col-span-4">
+        <section className="order-2 lg:order-3 lg:col-span-4 space-y-4">
           <ResultsPanel
             bossName={monster.name}
             bossHp={monster.hp}
@@ -731,6 +734,20 @@ export default function BossPage({
             boltProcFlag={boltProcFlag}
             mapping={mapping}
           />
+          {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
+            <OwnedUntradeablesPanel
+              groups={untradeableOptionsBySlot}
+              owned={ownedUntradeables}
+              onToggle={toggleUntradeableOwned}
+              onSelectAll={() =>
+                setOwnedUntradeables(
+                  new Set(untradeableOptionsBySlot.flatMap((g) => g.items.map((i) => i.itemId))),
+                )
+              }
+              onSelectNone={() => setOwnedUntradeables(new Set())}
+              mapping={mapping}
+            />
+          )}
         </section>
       </div>
 
@@ -744,6 +761,7 @@ export default function BossPage({
           slug={slug}
           mapping={mapping}
           ownedItemIds={ownedItemIds}
+          weaponItemId={selectedSet?.slots.weapon?.itemId}
         />
         {consumablesWithBoost.length > 0 && (
           <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />

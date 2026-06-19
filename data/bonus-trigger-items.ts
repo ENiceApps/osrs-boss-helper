@@ -17,6 +17,7 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   TOME_OF_EARTH_CHARGED: 30064,
   TWISTED_BOW: 20997,
   OSMUMTEN_FANG: 26219, // double accuracy roll on stab styles
+  WILDERNESS_WEAPON: 22550, // Craw's bow — canonical; ×3/2 acc+dmg vs NPCs in the Wilderness
 } as const;
 
 export type BonusTriggerKey = keyof typeof BONUS_TRIGGER_ITEM_IDS;
@@ -43,6 +44,17 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   TOME_OF_EARTH_CHARGED: [30064], // Empty (30066) gives no bonus
   TWISTED_BOW: [20997],
   OSMUMTEN_FANG: [26219, 27246], // base + (or) ornament kit — same Stab Sword
+  // Both charged + uncharged ids per weapon (player charges them with ether).
+  WILDERNESS_WEAPON: [
+    22550, 22547, // Craw's bow
+    27655, 27652, // Webweaver bow
+    22545, 22542, // Viggora's chainmace
+    27660, 27657, // Ursine chainmace
+    22555, 22552, // Thammaron's sceptre
+    27665, 27662, // Accursed sceptre
+    27788, 27785, // Thammaron's sceptre (a)
+    27679, 27676, // Accursed sceptre (a)
+  ],
 };
 
 /** True iff any variant of the trigger is present (worn-slot flag derivation). */
