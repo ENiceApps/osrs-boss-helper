@@ -1,30 +1,34 @@
-// Live-bank sync endpoint for the RuneLite plugin.
+// Bank sync endpoint (Phase 6.3/6.4 — persistent, multi-account).
 //
-// POST /api/bank     ← RuneLite plugin posts current bank/skills/gp here.
-// GET  /api/bank     ← Browser polls here for the latest payload.
+// POST /api/bank        ← RuneLite plugin posts a character's bank.
+//   Auth: `Authorization: Bearer <plugin token>` (minted at /settings). The
+//   token resolves to a user id; the bank is upserted keyed (userId, rsn).
+// GET  /api/bank?rsn=   ← The web app reads the signed-in user's saved banks.
+//   Auth: the Auth.js session cookie. Returns the user's characters and the
+//   selected character's bank (defaults to the most-recently-synced one).
 //
-// Storage is in-memory (module-scope), single-tenant: this is designed for
-// the user running their own dev server on the same machine as RuneLite.
-// Surviving a server restart isn't a goal — the plugin pushes again next
-// time you open the bank. For multi-tenant / hosted use, swap the store
-// for a backing DB and add a pairing-code path.
+// No CORS headers: the browser app is same-origin, and the RuneLite plugin
+// isn't a browser, so the old `Access-Control-Allow-Origin: *` (which let any
+// site read a player's bank) is intentionally gone.
 
 import { z } from "zod";
+import { auth } from "@/lib/auth";
+import {
+  upsertCharacterBank,
+  userIdForPluginToken,
+  listCharacters,
+  getCharacterBank,
+} from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const PayloadSchema = z.object({
-  // Owned-items pool = bank + worn equipment + inventory, merged by the
-  // plugin. The optimizer builds loadouts from the gear in here; the boost-
-  // potion and mechanic checks look for consumables (potions, antidotes,
-  // antifires) in the same list. Only item IDs matter for the optimizer; qty
-  // is accepted for future use (sell value, stack-size display).
-  items: z.array(
-    z.object({
-      id: z.number().int().nonnegative(),
-      qty: z.number().int().nonnegative(),
-    }),
-  ),
+  // Owned-items pool = bank + worn + inventory, merged by the plugin. Capped so
+  // a malformed/huge POST can't blow up the row. Only ids matter to the
+  // optimizer; qty is kept for future use (sell value, stack display).
+  items: z
+    .array(z.object({ id: z.number().int().nonnegative(), qty: z.number().int().nonnegative() }))
+    .max(10_000),
   skills: z.object({
     attack: z.number().int().min(1).max(99),
     strength: z.number().int().min(1).max(99),
@@ -36,71 +40,68 @@ const PayloadSchema = z.object({
   }),
   /** GP across inventory + bank coin slot. */
   gp: z.number().int().nonnegative(),
-  /** Optional player name for UI display ("Live bank: PlayerName · synced 5s ago"). */
-  playerName: z.string().max(64).optional(),
+  /** Character name — REQUIRED now: it's the per-character key (userId, rsn). */
+  playerName: z.string().trim().min(1).max(64),
 });
 
-export type BankPayload = z.infer<typeof PayloadSchema> & {
-  /** Server-assigned timestamp at receive time (ms since epoch). */
-  receivedAt: number;
-};
-
-// Single-tenant in-memory store. Kept on globalThis (not a plain module-scoped
-// `let`) so it survives Turbopack hot-reloads / on-demand route recompilation in
-// dev. A module-scoped variable silently resets to null whenever the route module
-// is re-evaluated, which makes the live banner flicker back to "Sample bank in use"
-// even though the plugin posted successfully. globalThis lives at the process level.
-const bankStore = globalThis as unknown as { __osrsBankLatest: BankPayload | null };
-bankStore.__osrsBankLatest ??= null;
-
-const CORS_HEADERS = {
-  // RuneLite's HTTP client doesn't actually care about CORS (it's not a
-  // browser), but if you ever serve this from a different origin to the
-  // web app, you'll want these. Open to everything is fine for localhost.
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+/** Extract a Bearer token from the Authorization header, or null. */
+function bearerToken(request: Request): string | null {
+  const h = request.headers.get("authorization");
+  if (!h) return null;
+  const m = /^Bearer\s+(.+)$/i.exec(h.trim());
+  return m ? m[1].trim() : null;
 }
 
 export async function POST(request: Request) {
+  const token = bearerToken(request);
+  if (!token) {
+    return Response.json({ error: "Missing plugin token" }, { status: 401 });
+  }
+  const userId = await userIdForPluginToken(token);
+  if (!userId) {
+    return Response.json({ error: "Invalid plugin token" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return Response.json(
-      { error: "Invalid JSON body" },
-      { status: 400, headers: CORS_HEADERS },
-    );
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
   const parsed = PayloadSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json(
       { error: "Payload validation failed", issues: parsed.error.issues },
-      { status: 400, headers: CORS_HEADERS },
+      { status: 400 },
     );
   }
-  const latest = { ...parsed.data, receivedAt: Date.now() };
-  bankStore.__osrsBankLatest = latest;
-  return Response.json(
-    { ok: true, itemCount: latest.items.length, receivedAt: latest.receivedAt },
-    { headers: CORS_HEADERS },
-  );
+
+  const { items, skills, gp, playerName } = parsed.data;
+  await upsertCharacterBank(userId, { rsn: playerName, items, skills, gp });
+  return Response.json({ ok: true, itemCount: items.length });
 }
 
-export async function GET() {
-  const latest = bankStore.__osrsBankLatest;
-  if (!latest) {
+export async function GET(request: Request) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    // Not an error — the page renders an unauthenticated / Budget-mode state.
     return Response.json(
-      { latest: null },
-      { headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } },
+      { authed: false, characters: [], selected: null, bank: null },
+      { headers: { "Cache-Control": "no-store" } },
     );
   }
+
+  const characters = await listCharacters(userId);
+  const requested = new URL(request.url).searchParams.get("rsn");
+  const selected =
+    requested && characters.some((c) => c.rsn === requested)
+      ? requested
+      : (characters[0]?.rsn ?? null);
+  const bank = selected ? await getCharacterBank(userId, selected) : null;
+
   return Response.json(
-    { latest },
-    { headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } },
+    { authed: true, characters, selected, bank },
+    { headers: { "Cache-Control": "no-store" } },
   );
 }

@@ -1,22 +1,33 @@
 "use client";
 
-// Live bank sync — pulls the latest payload posted by the RuneLite plugin
-// (see /api/bank/route.ts). Falls back to undefined when no plugin data has
-// arrived yet; the page wires SAMPLE_BANK as a stand-in in that case.
+// Reads the signed-in user's saved bank from /api/bank (Phase 6.4). The bank is
+// persisted in Postgres by the RuneLite plugin (POST, token-authed); here we
+// poll for the logged-in user's selected character. `authed` is false when no
+// one is signed in — the page then shows the sign-in / Budget-mode state.
 
 import useSWR from "swr";
 import { asItemId } from "@/types/osrs";
 import type { BankContents, Skills } from "@/types/osrs";
 
 interface RawItem { id: number; qty: number }
-interface RawPayload {
+interface RawBank {
+  rsn: string;
   items: RawItem[];
   skills: Skills;
   gp: number;
-  playerName?: string;
-  receivedAt: number;
+  updatedAt: string;
 }
-interface ApiResponse { latest: RawPayload | null }
+export interface CharacterSummary {
+  rsn: string;
+  gp: number;
+  updatedAt: string;
+}
+interface ApiResponse {
+  authed: boolean;
+  characters: CharacterSummary[];
+  selected: string | null;
+  bank: RawBank | null;
+}
 
 const fetcher = async (url: string): Promise<ApiResponse> => {
   const res = await fetch(url);
@@ -25,53 +36,77 @@ const fetcher = async (url: string): Promise<ApiResponse> => {
 };
 
 export interface LiveBankResult {
+  /** True iff a user is signed in. */
+  authed: boolean;
+  /** The user's saved characters (for the switcher). */
+  characters: CharacterSummary[];
+  /** rsn of the character whose bank is returned (server-resolved). */
+  selected: string | null;
   bank: BankContents | null;
   skills: Skills | null;
   gp: number | null;
   playerName: string | undefined;
-  /** ms since epoch when the plugin last pushed. null when no payload yet. */
+  /** ms since epoch of the selected character's last sync. null when none. */
   receivedAt: number | null;
-  /** True iff a plugin payload has been received in this session. */
+  /** True iff a saved bank is loaded for the selected character. */
   isLive: boolean;
 }
 
+const EMPTY: LiveBankResult = {
+  authed: false,
+  characters: [],
+  selected: null,
+  bank: null,
+  skills: null,
+  gp: null,
+  playerName: undefined,
+  receivedAt: null,
+  isLive: false,
+};
+
 /**
- * Polls /api/bank every 5s. Returns the most recent plugin payload, or all
- * nulls when no plugin has connected yet. Polling is intentional (not SSE)
- * for simplicity — bank changes are rare and a 5s lag is fine for the
- * "see your live bank" use case.
+ * Polls /api/bank every 5s for the signed-in user's selected character.
+ * Pass `selectedRsn` to choose a character; omit to let the server default to
+ * the most-recently-synced one.
  */
-export function useLiveBank(): LiveBankResult {
-  const { data } = useSWR<ApiResponse>("/api/bank", fetcher, {
+export function useLiveBank(selectedRsn?: string): LiveBankResult {
+  const key = selectedRsn ? `/api/bank?rsn=${encodeURIComponent(selectedRsn)}` : "/api/bank";
+  const { data } = useSWR<ApiResponse>(key, fetcher, {
     refreshInterval: 5_000,
     revalidateOnFocus: true,
     dedupingInterval: 2_000,
   });
-  const payload = data?.latest ?? null;
-  if (!payload) {
-    return {
-      bank: null,
-      skills: null,
-      gp: null,
-      playerName: undefined,
-      receivedAt: null,
-      isLive: false,
-    };
-  }
+  if (!data) return EMPTY;
+
+  const base: LiveBankResult = {
+    authed: data.authed,
+    characters: data.characters,
+    selected: data.selected,
+    bank: null,
+    skills: null,
+    gp: null,
+    playerName: undefined,
+    receivedAt: null,
+    isLive: false,
+  };
+  const b = data.bank;
+  if (!b) return base;
+
   return {
+    ...base,
     bank: {
-      tagName: payload.playerName ?? "Live bank",
-      itemIds: new Set(payload.items.map((i) => asItemId(i.id))),
+      tagName: b.rsn,
+      itemIds: new Set(b.items.map((i) => asItemId(i.id))),
     },
-    skills: payload.skills,
-    gp: payload.gp,
-    playerName: payload.playerName,
-    receivedAt: payload.receivedAt,
+    skills: b.skills,
+    gp: b.gp,
+    playerName: b.rsn,
+    receivedAt: Date.parse(b.updatedAt) || null,
     isLive: true,
   };
 }
 
-/** Seconds since the last plugin push, or null if nothing received. */
+/** Seconds since the last sync, or null if nothing loaded. */
 export function secondsSince(receivedAt: number | null): number | null {
   if (receivedAt === null) return null;
   return Math.max(0, Math.floor((Date.now() - receivedAt) / 1000));

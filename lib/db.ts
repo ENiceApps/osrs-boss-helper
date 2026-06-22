@@ -8,6 +8,7 @@
 // isn't configured (e.g. before the DB is provisioned).
 
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 let _sql: NeonQueryFunction<false, false> | null = null;
 
@@ -106,4 +107,51 @@ export async function listCharacters(userId: string): Promise<CharacterSummary[]
     ORDER BY updated_at DESC
   `) as Array<{ rsn: string; gp: string | number; updated_at: string }>;
   return rows.map((r) => ({ rsn: r.rsn, gp: Number(r.gp), updatedAt: r.updated_at }));
+}
+
+// --- Plugin tokens (machine credential for the RuneLite plugin) ----------------
+
+/** Generate a fresh plugin token (plaintext) — shown to the user once. */
+export function generatePluginToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+/** SHA-256 hex of a token. Only the hash is ever stored. */
+export function hashPluginToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+/** Store (or rotate) the hashed plugin token for a user. */
+export async function setPluginTokenHash(userId: string, tokenHash: string): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO plugin_tokens (user_id, token_hash, created_at)
+    VALUES (${userId}, ${tokenHash}, now())
+    ON CONFLICT (user_id) DO UPDATE
+      SET token_hash = EXCLUDED.token_hash, created_at = now()
+  `;
+}
+
+/** Resolve a presented plugin token to its owning user id, or null. Compares
+ *  via constant-time equality against the stored hash for that user. */
+export async function userIdForPluginToken(token: string): Promise<string | null> {
+  const sql = getSql();
+  const presented = hashPluginToken(token);
+  const rows = (await sql`
+    SELECT user_id, token_hash FROM plugin_tokens WHERE token_hash = ${presented} LIMIT 1
+  `) as Array<{ user_id: string; token_hash: string }>;
+  const r = rows[0];
+  if (!r) return null;
+  // Defense-in-depth: constant-time compare (the WHERE already matched the hash).
+  const a = Buffer.from(presented);
+  const b = Buffer.from(r.token_hash);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  return r.user_id;
+}
+
+/** Whether the user has minted a plugin token (for the Settings UI). */
+export async function hasPluginToken(userId: string): Promise<boolean> {
+  const sql = getSql();
+  const rows = (await sql`SELECT 1 FROM plugin_tokens WHERE user_id = ${userId} LIMIT 1`) as unknown[];
+  return rows.length > 0;
 }

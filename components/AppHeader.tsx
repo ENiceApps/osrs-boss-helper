@@ -47,6 +47,9 @@ function AuthControl() {
     return (
       <span className="inline-flex items-center gap-2 text-caption">
         <span className="text-parchment-dark hidden sm:inline">{session.user.email}</span>
+        <Link href="/settings" className="text-osrs-gold hover:underline font-semibold">
+          Settings
+        </Link>
         <button
           type="button"
           onClick={() => signOut({ redirectTo: "/" })}
@@ -108,10 +111,14 @@ function ConnectionStatus() {
   return (
     <span
       className="inline-flex items-center gap-2 text-caption text-parchment-dark"
-      title="No RuneLite plugin data yet — the app is using a sample bank. Run the osrs-boss-sync plugin to sync your real bank, inventory, worn gear, and skills."
+      title={
+        live.authed
+          ? "Signed in, but no bank synced yet. Open your bank in-game with the osrs-boss-sync plugin."
+          : "Sign in and run the osrs-boss-sync plugin to sync your bank, or use Budget mode to plan without one."
+      }
     >
       <span aria-hidden className="w-2 h-2 rounded-full bg-osrs-muted" />
-      Sample data — not connected
+      {live.authed ? "No bank synced" : "Not signed in"}
     </span>
   );
 }
