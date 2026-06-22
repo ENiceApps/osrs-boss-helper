@@ -15,10 +15,14 @@
     "refresh-vendor": "tsx scripts/refresh-vendor-data.ts",
     "build-data": "tsx scripts/build-monster-catalog.ts && tsx scripts/build-item-catalog.ts",
     "build-monster-catalog": "tsx scripts/build-monster-catalog.ts",
-    "build-item-catalog": "tsx scripts/build-item-catalog.ts"
+    "build-item-catalog": "tsx scripts/build-item-catalog.ts",
+    "migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
+    "@auth/pg-adapter": "^1.11.2",
+    "@neondatabase/serverless": "^1.1.0",
     "next": "16.2.6",
+    "next-auth": "^5.0.0-beta.31",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "swr": "^2.4.1",

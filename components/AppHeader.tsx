@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useLiveBank, secondsSince } from "@/lib/liveBank";
 
 /**
@@ -30,11 +31,36 @@ export function AppHeader() {
             Items
           </NavLink>
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
           <ConnectionStatus />
+          <AuthControl />
         </div>
       </div>
     </header>
+  );
+}
+
+function AuthControl() {
+  const { data: session, status } = useSession();
+  if (status === "loading") return null;
+  if (session?.user) {
+    return (
+      <span className="inline-flex items-center gap-2 text-caption">
+        <span className="text-parchment-dark hidden sm:inline">{session.user.email}</span>
+        <button
+          type="button"
+          onClick={() => signOut({ redirectTo: "/" })}
+          className="text-osrs-gold hover:underline font-semibold"
+        >
+          Sign out
+        </button>
+      </span>
+    );
+  }
+  return (
+    <Link href="/signin" className="text-caption text-osrs-gold hover:underline font-semibold">
+      Sign in
+    </Link>
   );
 }
 

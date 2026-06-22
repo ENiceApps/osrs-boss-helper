@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -30,8 +31,10 @@ export default function RootLayout({
       className={`${inter.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppHeader />
-        <main className="flex-1">{children}</main>
+        <SessionProvider>
+          <AppHeader />
+          <main className="flex-1">{children}</main>
+        </SessionProvider>
       </body>
     </html>
   );
