@@ -21,6 +21,7 @@ import { activeBonusesForTarget } from "@/lib/loadout";
 import { explainSlots } from "@/lib/loadout-explain";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
+import { CharacterBar } from "@/components/CharacterBar";
 import { SetupPanel } from "@/components/SetupPanel";
 import { SellSelectionPanel, type SellableItem } from "@/components/SellSelectionPanel";
 import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/OwnedUntradeablesPanel";
@@ -97,10 +98,12 @@ export default function BossPage({
   const [dittoMonster, setDittoMonster] = useState<MonsterCatalogEntry>(baseMonster);
   const monster = isDitto ? dittoMonster : baseMonster;
 
-  // Live RuneLite plugin sync — see lib/liveBank.ts. Until the plugin pushes,
-  // `bank` is null and the page shows an empty/connect state (no fabricated
-  // loadout from sample data).
-  const live = useLiveBank();
+  // Hosted multi-account bank — see lib/liveBank.ts. `live` reads the signed-in
+  // user's selected character from the DB; until they sign in + sync, `bank` is
+  // null and the page shows a sign-in / Budget state (no fabricated loadout).
+  // `selectedRsn` undefined → the server defaults to the most-recently-synced.
+  const [selectedRsn, setSelectedRsn] = useState<string | undefined>(undefined);
+  const live = useLiveBank(selectedRsn);
   const bank: BankContents | null = live.bank;
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
@@ -682,7 +685,13 @@ export default function BossPage({
           setup last (configuration). Order utilities rearrange without changing
           the DOM order, which keeps tab-focus logical. */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16">
+        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16 space-y-4">
+          <CharacterBar
+            authed={live.authed}
+            characters={live.characters}
+            selected={live.selected}
+            onSelect={setSelectedRsn}
+          />
           <SetupPanel
             mode={mode}
             onModeChange={setMode}

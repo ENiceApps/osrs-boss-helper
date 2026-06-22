@@ -100,7 +100,18 @@ async function main() {
     END $$
   `;
 
-  console.log("✓ Migration complete: auth tables + character_banks ready.");
+  // --- Plugin tokens: one machine credential per user for the RuneLite plugin
+  // to authenticate its bank POSTs (the plugin can't do interactive login).
+  // Stores only the SHA-256 hash; the plaintext is shown once at mint time. ---
+  await sql`
+    CREATE TABLE IF NOT EXISTS plugin_tokens (
+      user_id    TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  console.log("✓ Migration complete: auth tables + character_banks + plugin_tokens ready.");
 }
 
 main().catch((err) => {
