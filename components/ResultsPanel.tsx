@@ -7,6 +7,7 @@ import { StatCard } from "@/components/ui";
 import { ASSUMED_PRAYER } from "@/lib/recommend";
 import { fmtDpsPerM, fmtGp, formatSeconds } from "@/lib/format";
 import { buildRecommendationSlots } from "@/lib/recommendation";
+import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
@@ -235,9 +236,24 @@ export function ResultsPanel({
         size="md"
       />
 
-      {set && dps && (
+      {set && dps && (() => {
+        // For weapons whose special attack changes the max hit (Osmumten's fang,
+        // godswords, Voidwaker, …), split the headline into the normal-attack max
+        // and a separate special-attack max so they aren't conflated.
+        const specMax = set.slots.weapon
+          ? specMaxHitDisplay(set.slots.weapon.itemId, dps.maxHit)
+          : null;
+        const specValue = specMax
+          ? specMax.varies ??
+            `${specMax.minHit != null ? `${specMax.minHit}–` : ""}${specMax.specMaxHit}` +
+              (specMax.hits > 1 ? ` ×${specMax.hits}` : "")
+          : null;
+        return (
         <div>
-          <StatRow label="Max hit" value={dps.maxHit} />
+          <StatRow label="Max hit" value={specMax ? specMax.normalMaxHit : dps.maxHit} />
+          {specMax && (
+            <StatRow label={`Spec max (${specMax.specName})`} value={specValue} />
+          )}
           <StatRow label="Accuracy" value={`${(dps.accuracy * 100).toFixed(1)}%`} />
           <StatRow
             label={`Avg kill (${bossHp} hp)`}
@@ -259,7 +275,8 @@ export function ResultsPanel({
             }
           />
         </div>
-      )}
+        );
+      })()}
 
       {set && (
         <div className="text-caption">

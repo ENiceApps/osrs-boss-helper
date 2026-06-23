@@ -18,7 +18,7 @@
 // quest-locked, PvP-only, or untradeable.
 
 import { asItemId } from "@/types/osrs";
-import type { SpecWeapon } from "@/types/spec-weapons";
+import type { SpecMaxHit, SpecWeapon } from "@/types/spec-weapons";
 
 const id = (n: number) => asItemId(n);
 
@@ -496,6 +496,70 @@ const BY_ID = new Map<number, SpecWeapon>(SPEC_WEAPONS.map((w) => [w.itemId, w])
 
 export function findSpecWeapon(itemId: number): SpecWeapon | undefined {
   return BY_ID.get(itemId);
+}
+
+/**
+ * Special-attack max-hit modifiers, keyed by item ID. Only weapons whose spec
+ * raises or lowers the max hit appear here — everything else (stat drains,
+ * heals, freezes, accuracy-only specs like Magic shortbow) is omitted. Factors
+ * are calibrated against weirdgloop's PlayerVsNPCCalc.ts spec block; see
+ * `SpecMaxHit` for the conventions.
+ *
+ * Note: godswords stack a base ×11/10 (every godsword) with a per-weapon factor,
+ * so the values below are the COMBINED multiplier (AGS = 11/10 × 5/4 = 11/8).
+ */
+export const SPEC_MAX_HIT: Record<number, SpecMaxHit> = {
+  // ---- Godswords (combined multiplier) ----
+  11802: { factor: [11, 8] }, //  Armadyl godsword — The Judgement (+37.5%)
+  11804: { factor: [121, 100] }, // Bandos godsword — Warstrike (+21%)
+  11806: { factor: [11, 10] }, // Saradomin godsword — Healing Blade (+10%)
+  11808: { factor: [11, 10] }, // Zamorak godsword — Ice Cleave (+10%)
+  26233: { factor: [11, 10] }, // Ancient godsword — Blood Sacrifice (+10%)
+
+  // ---- Swords ----
+  11838: { factor: [11, 10] }, // Saradomin sword — Saradomin's Lightning
+  12808: { factor: [5, 4] }, //   Saradomin's blessed sword (+25%)
+  1305: { factor: [5, 4] }, //    Dragon longsword — Cleave (+25%)
+
+  // ---- Maces / hammers ----
+  1434: { factor: [3, 2] }, //    Dragon mace — Shatter (+50%)
+  13576: { factor: [3, 2] }, //   Dragon warhammer — Smash (also +50% dmg)
+
+  // ---- Daggers (two hits) ----
+  5698: { factor: [23, 20], hits: 2 }, //  Dragon dagger — Puncture (+15% ×2)
+  13271: { factor: [17, 20], hits: 2 }, // Abyssal dagger — reduced dmg ×2 (−15%)
+
+  // ---- Halberds ----
+  3204: { factor: [11, 10] }, //  Dragon halberd — Sweep (+10%)
+  23987: { factor: [11, 10] }, // Crystal halberd — Sweep (+10%)
+
+  // ---- Voidwaker (guaranteed, rolls 50%–150% of max) ----
+  27690: { factor: [3, 2], minFactor: [1, 2] },
+
+  // ---- Dual macuahuitl (Blood moon set; rolls 25%–125%) ----
+  28997: { factor: [5, 4], minFactor: [1, 4] },
+
+  // ---- Ranged ----
+  19478: { factor: [5, 4] }, //   Light ballista — Concentrated Shot (+25%)
+  19481: { factor: [5, 4] }, //   Heavy ballista — Concentrated Shot (+25%)
+  // Dark bow — Descent of Darkness: two arrows at +50% each, min 8 with dragon
+  // arrows (the standard end-game case). Without dragon arrows it's +30%, min 5.
+  11235: { factor: [15, 10], hits: 2, minHit: 8 },
+  // Webweaver bow — Swarm: four hits at 40% of max each (−60%).
+  27655: { factor: [2, 5], hits: 4 },
+
+  // ---- Magic ----
+  27665: { factor: [3, 2] }, //   Accursed sceptre — Condemn (+50%)
+  31113: { factor: [13, 10] }, //  Eye of ayak — Soul Rend (+30%)
+  24424: { varies: "scales with Magic level (max 58)" }, // Volatile nightmare staff
+
+  // ---- True-max / variable ----
+  26219: { uncapped: true }, //   Osmumten's fang — Eviscerate (rolls true max)
+  13263: { varies: "scales with missing Prayer" }, // Abyssal bludgeon — Penance
+};
+
+export function specMaxHitMod(itemId: number): SpecMaxHit | undefined {
+  return SPEC_MAX_HIT[itemId];
 }
 
 export function specWeaponsByRole(role: SpecWeapon["role"]): SpecWeapon[] {

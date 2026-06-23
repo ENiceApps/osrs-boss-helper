@@ -42,6 +42,38 @@ export interface SpecWeapon {
   role: SpecRole;
 }
 
+/**
+ * How a weapon's special attack changes the max hit, for the few weapons whose
+ * spec raises or lowers it. Display-only — the DPS engine still ignores spec
+ * attacks. Calibrated against weirdgloop's PlayerVsNPCCalc.ts spec block (the
+ * same engine the OSRS Wiki DPS calculator runs).
+ *
+ * Conventions: `factor` and `minFactor` are applied to the weapon's NORMAL max
+ * hit (the value the engine already computes) via Math.trunc, matching
+ * weirdgloop's integer math. Exactly one of `factor`, `uncapped`, or `varies`
+ * is set per weapon.
+ */
+export interface SpecMaxHit {
+  /** Per-hit max-hit multiplier during the spec, as [numerator, denominator].
+   *  e.g. Armadyl godsword [11, 8] = +37.5%. */
+  factor?: readonly [number, number];
+  /**
+   * Osmumten's fang: a NORMAL attack is capped to ~85% of the true max
+   * (max − trunc(max × 3/20)); the Eviscerate spec rolls the full true max.
+   * The engine's `maxHit` is the un-capped (spec) value.
+   */
+  uncapped?: boolean;
+  /** Hits landed per spec activation, for display ("41 ×2"). Default 1. */
+  hits?: number;
+  /** Guaranteed minimum hit during the spec (Dark bow w/ dragon arrows = 8). */
+  minHit?: number;
+  /** Minimum hit as a fraction of the true max (Voidwaker rolls 50%–150%). */
+  minFactor?: readonly [number, number];
+  /** Shown when the spec max varies and can't be a fixed factor (Abyssal
+   *  bludgeon scales with missing Prayer, etc.). */
+  varies?: string;
+}
+
 /** A spec weapon recommended for a specific boss, with a short justification note. */
 export interface BossSpecRecommendation {
   /** Item ID of the recommended spec weapon — must match a SpecWeapon in the catalog. */
