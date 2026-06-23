@@ -7,7 +7,7 @@ import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catal
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
-import { optimizeForBoss, itemScore, meetsRequirements, loadoutSlotFor, rankedSlotAlternatives } from "@/lib/optimize/bank";
+import { itemScore, meetsRequirements, loadoutSlotFor, rankedSlotAlternatives } from "@/lib/optimize/bank";
 import { buildRecommendationSlots } from "@/lib/recommendation";
 import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
@@ -837,9 +837,7 @@ export default function BossPage({
             set={selectedSet}
             dps={selectedDps}
             activeBonuses={selectedActiveBonuses}
-            // The upgrade path describes the budget-mode pick — it doesn't
-            // apply to the per-style tabs, so they get stats only.
-            result={activeTab === "best" ? budgetResult : null}
+            result={activeTab === "best" ? budgetResult : (styleResults?.[activeTab] ?? null)}
             edited={overridesActive}
             boltProcFlag={boltProcFlag}
             mapping={mapping}
