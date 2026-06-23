@@ -13,6 +13,7 @@ import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { categoryForMonster } from "@/data/monsters/categories";
 import {
   activeBonusesForTarget,
   defenceBonusForAttackType,
@@ -86,6 +87,12 @@ function targetDefenceLevelFor(set: LoadoutSet, target: MonsterCatalogEntry): nu
  * affordability concerns. Used both by the full evaluator and by the
  * browse-mode previewer on the dynamic boss page.
  */
+// Dharok's greataxe + armour piece IDs (all degradation states: 100/75/50/25).
+const DHAROK_GREATAXE_IDS = new Set([4718, 4886, 4887, 4888]);
+const DHAROK_HELM_IDS = new Set([4716, 4880, 4881, 4882]);
+const DHAROK_BODY_IDS = new Set([4720, 4892, 4893, 4894]);
+const DHAROK_LEGS_IDS = new Set([4722, 4898, 4899, 4900]);
+
 export function computeSetDps(
   set: LoadoutSet,
   target: MonsterCatalogEntry,
@@ -94,6 +101,14 @@ export function computeSetDps(
   boost?: CombatBoost,
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask = false,
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks = false,
+  /**
+   * Dharok's set: player's current HP. When the full Dharok set is detected
+   * and this is below max HP, applies the missing-HP max-hit multiplier.
+   * Undefined = no override (full HP, no bonus).
+   */
+  currentHp?: number,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
   // Black mask / slayer helm (i): only on-task, and only when no Salve is active
@@ -101,7 +116,27 @@ export function computeSetDps(
   const salveActive =
     activeBonuses.conditionalBonuses.salveAmulet || activeBonuses.conditionalBonuses.salveAmuletEi;
   const slayerOnTask = set.itemBonusFlags.slayerHelmImbued && onTask && !salveActive;
-  const effectiveSkills = applyCombatBoost(skills, boost);
+  let effectiveSkills = applyCombatBoost(skills, boost);
+  // Soulreaper axe (28338): +6% Strength level per stack × 5 max stacks = +30%.
+  // The wiki confirms the boost applies to the visible Strength level (after boost
+  // potion), multiplicative, floored — identical to how Piety/Turmoil apply.
+  const weaponId = set.slots.weapon?.itemId;
+  if (soulreaperMaxStacks && weaponId === 28338) {
+    effectiveSkills = { ...effectiveSkills, strength: Math.floor(effectiveSkills.strength * 1.3) };
+  }
+  // Dharok's full set: max-hit scales with missing HP. Detect all 4 pieces worn
+  // in their correct slots; degradation variants all share the same set effect.
+  const dharokFullSet =
+    set.style === "melee" &&
+    weaponId !== undefined && DHAROK_GREATAXE_IDS.has(weaponId) &&
+    set.slots.head?.itemId !== undefined && DHAROK_HELM_IDS.has(set.slots.head.itemId) &&
+    set.slots.body?.itemId !== undefined && DHAROK_BODY_IDS.has(set.slots.body.itemId) &&
+    set.slots.legs?.itemId !== undefined && DHAROK_LEGS_IDS.has(set.slots.legs.itemId);
+  const maxHp = skills.hitpoints;
+  const dharok =
+    dharokFullSet && currentHp !== undefined && currentHp < maxHp
+      ? { maxHp, currentHp }
+      : undefined;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -117,9 +152,10 @@ export function computeSetDps(
   const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
     targetSize: target.size,
   });
-  // Tumeken's shadow (charged 27275 / uncharged 27277) triples worn magic bonuses.
-  const weaponId = set.slots.weapon?.itemId;
+  // Tumeken's shadow (charged 27275 / uncharged 27277) triples worn magic bonuses
+  // — quadruples them inside the Tombs of Amascut (magic damage still capped 100%).
   const shadowEquipped = weaponId === 27275 || weaponId === 27277;
+  const shadowToaQuadruple = shadowEquipped && categoryForMonster(target.slug) === "toa";
   // Twinflame staff (30634): +10% acc/dmg on any standard spell, plus a second
   // cast (~40%) on Bolt/Blast/Wave. It casts standard spells, so the auto-/picked
   // spell's element is elemental and its name reveals whether it qualifies.
@@ -139,6 +175,30 @@ export function computeSetDps(
     castSpell?.vsDemonAccuracyPct && target.attributes.includes("demon")
       ? castSpell.vsDemonAccuracyPct
       : undefined;
+
+  // Virtus armour: the base +2% magic-damage per piece is already in
+  // totals.magicDamagePct (vendor magic_str). When casting Ancient Magicks each
+  // worn piece grants +3% MORE (2%→5%). Count worn pieces and add the delta.
+  const VIRTUS_PIECE_IDS = new Set([26241, 26243, 26245]); // mask, robe top, robe bottom
+  const virtusPiecesWorn = [
+    set.slots.head?.itemId,
+    set.slots.body?.itemId,
+    set.slots.legs?.itemId,
+  ].filter((id) => id !== undefined && VIRTUS_PIECE_IDS.has(id)).length;
+  const virtusAncientBonusPct =
+    castSpell?.spellbook === "ancient" ? virtusPiecesWorn * 3 : 0;
+  const magicDamagePercent =
+    set.style === "magic" && (set.totals.magicDamagePct ?? 0) + virtusAncientBonusPct > 0
+      ? (set.totals.magicDamagePct ?? 0) + virtusAncientBonusPct
+      : set.totals.magicDamagePct;
+
+  // Harmonised nightmare staff (24423): standard-spellbook autocasts at 4 ticks
+  // instead of 5. The staff's vendor `speed` (5, its melee bash) is what the set
+  // builder records, so override it here when it's actually casting a standard spell.
+  const harmonisedFastCast =
+    weaponId === 24423 && set.style === "magic" && castSpell?.spellbook === "standard";
+  const attackSpeedTicks = harmonisedFastCast ? 4 : set.attackSpeedTicks;
+
   return calculateDps({
     style: set.style,
     attackStyle: set.attackStyleChoice,
@@ -146,9 +206,9 @@ export function computeSetDps(
     skills: effectiveSkills,
     attackBonus: set.totals.attackBonus,
     strengthBonus: set.totals.strengthBonus,
-    magicDamagePercent: set.totals.magicDamagePct,
+    magicDamagePercent,
     baseSpellMaxHit: set.style === "magic" ? set.baseSpellMaxHit : undefined,
-    attackSpeedTicks: set.attackSpeedTicks,
+    attackSpeedTicks,
     targetDefenceLevel: targetDefenceLevelFor(set, target),
     targetDefenceBonusForStyle: defenceBonusForSet(set, target),
     conditionalBonuses: activeBonuses.conditionalBonuses,
@@ -157,6 +217,8 @@ export function computeSetDps(
     tomeOfWaterEquipped: activeBonuses.tomeOfWaterEquipped,
     tomeOfEarthEquipped: activeBonuses.tomeOfEarthEquipped,
     shadowEquipped,
+    shadowToaQuadruple,
+    kalphiteTripleProc: activeBonuses.conditionalBonuses.kerisVsKalphite,
     demonbaneSpellAccuracyPct,
     twinflameStandard,
     twinflameDoubleCast,
@@ -167,6 +229,7 @@ export function computeSetDps(
     armorSetBonus: set.armorSetBonus,
     boltProc,
     hitProfile,
+    dharok,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

@@ -63,6 +63,8 @@ export interface BudgetBuildInput {
   spellElement?: SpellElement;
   boostResolver?: BoostResolver;
   onTask?: boolean;
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
 }
@@ -418,6 +420,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
       autoSpellName: spell.autoSpellName,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
+      soulreaperMaxStacks: input.soulreaperMaxStacks,
     });
     if (!scored.valid || scored.dps.dps <= 0) continue;
     const cost = totalCost(c.ids, c.internalAmmoId, input.priceLookup);
@@ -461,6 +464,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     topN: 50,
     boostResolver: input.boostResolver,
     onTask: input.onTask,
+    soulreaperMaxStacks: input.soulreaperMaxStacks,
     requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
@@ -493,6 +497,40 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   }
   shoppingList.sort((a, b) => b.valueGp - a.valueGp);
 
+  // Per-style best from the same scored candidate pool — no extra optimizer runs.
+  const bestPerStyle = new Map<CombatStyle, { scored: Extract<ScoredScenario, { valid: true }>; cost: number }>();
+  for (const sc of scoredCands) {
+    const style = sc.scored.loadout.style as CombatStyle;
+    const cur = bestPerStyle.get(style);
+    if (!cur || sc.scored.dps.dps > cur.scored.dps.dps) bestPerStyle.set(style, sc);
+  }
+  const byStyle: Partial<Record<CombatStyle, import("@/lib/optimize/budget").BudgetResult>> = {};
+  for (const [style, sc] of bestPerStyle) {
+    const styleShoppingList: ItemValue[] = [];
+    for (const s of Object.values(sc.scored.loadout.slots)) {
+      const p = input.priceLookup(s.itemId);
+      if (p === null) continue;
+      styleShoppingList.push({ itemId: s.itemId, name: s.itemName, valueGp: p });
+    }
+    const sia = sc.scored.loadout.internalAmmo;
+    if (sia) {
+      const p = input.priceLookup(sia.itemId);
+      if (p !== null) styleShoppingList.push({ itemId: sia.itemId, name: sia.itemName, valueGp: p });
+    }
+    styleShoppingList.sort((a, b) => b.valueGp - a.valueGp);
+    byStyle[style] = {
+      currentBest: null,
+      upgradedBest: sc.scored,
+      upgradePath: [],
+      totalCostGp: sc.cost,
+      totalDpsDelta: 0,
+      sellList: [],
+      remainingGp: input.gp - sc.cost,
+      shoppingList: styleShoppingList,
+      fromScratch: true,
+    };
+  }
+
   return {
     currentBest: null,
     upgradedBest: best.scored,
@@ -503,5 +541,6 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     remainingGp: input.gp - best.cost,
     shoppingList,
     fromScratch: true,
+    byStyle,
   };
 }

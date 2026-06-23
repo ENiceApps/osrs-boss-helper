@@ -62,6 +62,8 @@ export interface BankOptimizerInput {
   boostResolver?: BoostResolver;
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask?: boolean;
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks?: boolean;
   /**
    * When true, the target can only be meleed with a 2-tile reach weapon
    * (halberd / Scythe of Vitur). Melee candidates using any other weapon are
@@ -648,6 +650,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       autoSpellName,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
+      soulreaperMaxStacks: input.soulreaperMaxStacks,
     });
     if (scored.valid) valid.push(scored);
   }
