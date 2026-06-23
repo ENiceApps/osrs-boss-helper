@@ -153,6 +153,8 @@ export function applyOverrides(
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
+    kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
     tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
     tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),

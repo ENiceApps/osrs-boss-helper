@@ -124,6 +124,12 @@ export default function BossPage({
   // Slayer-task assumption. Defaults on (the common bossing context) — gates the
   // imbued black mask / slayer helmet bonus through the optimizer and recompute.
   const [onTask, setOnTask] = useState(true);
+  // Soulreaper axe: assume max 5 stacks (+30% Strength level). Only shown when
+  // the axe is in the active loadout's weapon slot.
+  const [soulreaperMaxStacks, setSoulreaperMaxStacks] = useState(false);
+  // Dharok's set: current HP for the missing-HP max-hit multiplier. undefined
+  // means "full HP" (no bonus). Only shown when the full Dharok set is detected.
+  const [dharokCurrentHp, setDharokCurrentHp] = useState<number | undefined>(undefined);
   // Per-slot gear overrides on top of the optimizer's best setup. "Reset"
   // clears this map.
   const [overrides, setOverrides] = useState<
@@ -213,6 +219,7 @@ export default function BossPage({
         },
         boostResolver,
         onTask: effectiveOnTask,
+        soulreaperMaxStacks,
         requiresMeleeReach2: meleeReach2,
       });
     }
@@ -227,9 +234,10 @@ export default function BossPage({
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
+      soulreaperMaxStacks,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, meleeReach2]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
 
   // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
   // as owned. Ranked by the current build's combat style (stable per boss), with
@@ -316,9 +324,10 @@ export default function BossPage({
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
+      soulreaperMaxStacks,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, meleeReach2]);
+  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
 
   const sellableItems = useMemo<SellableItem[]>(() => {
     if (mode !== "sell-to-fund" || !budgetResult?.currentBest) return [];
@@ -368,37 +377,15 @@ export default function BossPage({
     });
   }
 
-  // Best buildable loadout PER ATTACK STYLE, for the comparison tabs. One
-  // uncapped run: topN only caps how many ranked scenarios are returned (the
-  // default 10 can be a single style entirely), so ask for all of them and
-  // keep the first occurrence of each style — rankings are DPS-descending.
-  const styleBests = useMemo(() => {
-    if (!bank) return null;
-    const { rankings } = optimizeForBoss({
-      bank: ownedItemIds,
-      target: monster,
-      skills,
-      topN: Number.MAX_SAFE_INTEGER,
-      boostResolver,
-      onTask: effectiveOnTask,
-      requiresMeleeReach2: meleeReach2,
-    });
-    const bests: Partial<Record<CombatStyle, (typeof rankings)[number]>> = {};
-    for (const r of rankings) {
-      // A zero-DPS scenario (e.g. magic with no castable spell modelled) is
-      // "valid" to the optimizer but useless as a comparison tab.
-      if (r.dps.dps <= 0) continue;
-      if (!bests[r.loadout.style]) bests[r.loadout.style] = r;
-      if (bests.melee && bests.ranged && bests.magic) break;
-    }
-    return bests;
-  }, [bank, ownedItemIds, monster, skills, boostResolver, effectiveOnTask, meleeReach2]);
+  // Per-style results derived from the same budgetResult that drives the Best
+  // tab — so they react to GP, mode, and sell selections automatically.
+  const styleResults = budgetResult?.byStyle ?? null;
 
   // Which comparison tab is active. A style tab can disappear if the bank
   // changes (e.g. last melee weapon removed) — fall back to "best" then.
   const [activeTabRaw, setActiveTab] = useState<LoadoutTabId>("best");
   const activeTab: LoadoutTabId =
-    activeTabRaw !== "best" && !styleBests?.[activeTabRaw] ? "best" : activeTabRaw;
+    activeTabRaw !== "best" && !styleResults?.[activeTabRaw]?.upgradedBest ? "best" : activeTabRaw;
 
   const loadoutTabs = useMemo(() => {
     if (!bank && !fromScratchMode) return [];
@@ -407,23 +394,23 @@ export default function BossPage({
       tabs.push({ id: "best", label: "Best", dps: budgetResult.upgradedBest.dps.dps });
     }
     for (const style of STYLE_TABS) {
-      const r = styleBests?.[style];
-      if (r) {
+      const r = styleResults?.[style];
+      if (r?.upgradedBest) {
         tabs.push({
           id: style,
           label: style.charAt(0).toUpperCase() + style.slice(1),
-          dps: r.dps.dps,
+          dps: r.upgradedBest.dps.dps,
         });
       }
     }
     return tabs;
-  }, [bank, fromScratchMode, budgetResult, styleBests]);
+  }, [bank, fromScratchMode, budgetResult, styleResults]);
 
   // The editable base is the active tab's scenario: the optimizer's pick for
   // the current budget mode (== best-from-bank when there are no upgrades),
   // or the best own-bank build of one style. Manual edits layer on top.
   const activeScenario =
-    activeTab === "best" ? budgetResult?.upgradedBest : styleBests?.[activeTab];
+    activeTab === "best" ? budgetResult?.upgradedBest : styleResults?.[activeTab]?.upgradedBest;
   const baseSet = activeScenario?.loadout;
 
   // Effective loadout = base + any per-slot overrides the user has applied
@@ -436,6 +423,20 @@ export default function BossPage({
   }, [baseSet, overrides, spellOverride, skills.magic]);
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride) : false;
+
+  // Soulreaper: only meaningful when the axe is actually equipped.
+  const soulreaperEquipped = selectedSet?.slots.weapon?.itemId === 28338;
+  // Dharok's: show the HP slider and apply the bonus only when the full set is worn.
+  const DHAROK_GREATAXE_PAGE = new Set([4718, 4886, 4887, 4888]);
+  const DHAROK_HELM_PAGE = new Set([4716, 4880, 4881, 4882]);
+  const DHAROK_BODY_PAGE = new Set([4720, 4892, 4893, 4894]);
+  const DHAROK_LEGS_PAGE = new Set([4722, 4898, 4899, 4900]);
+  const dharokFullSetEquipped =
+    selectedSet?.style === "melee" &&
+    selectedSet?.slots.weapon?.itemId !== undefined && DHAROK_GREATAXE_PAGE.has(selectedSet.slots.weapon.itemId) &&
+    selectedSet?.slots.head?.itemId !== undefined && DHAROK_HELM_PAGE.has(selectedSet.slots.head.itemId) &&
+    selectedSet?.slots.body?.itemId !== undefined && DHAROK_BODY_PAGE.has(selectedSet.slots.body.itemId) &&
+    selectedSet?.slots.legs?.itemId !== undefined && DHAROK_LEGS_PAGE.has(selectedSet.slots.legs.itemId);
 
   // Per-slot ranked alternatives around the active loadout — the optimizer's
   // pick first, then the owned items the player could swap in. Feeds the
@@ -520,12 +521,25 @@ export default function BossPage({
   }, [selectedSet, monster]);
 
   // When untouched, reuse the active scenario's own DPS so the hero number
-  // always matches the tab/upgrade-path arithmetic; recompute only for edits.
+  // always matches the tab/upgrade-path arithmetic; recompute only for edits
+  // or when the Soulreaper / Dharok toggles diverge from the optimizer's state.
+  const needsDpsRecompute =
+    overridesActive ||
+    (soulreaperMaxStacks && soulreaperEquipped) ||
+    (dharokFullSetEquipped && dharokCurrentHp !== undefined && dharokCurrentHp < (skills.hitpoints ?? 99));
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
-    if (!overridesActive) return activeScenario?.dps;
-    return computeSetDps(selectedSet, monster, skills, boostResolver(selectedSet.style), effectiveOnTask);
-  }, [selectedSet, overridesActive, activeScenario, monster, skills, boostResolver, effectiveOnTask]);
+    if (!needsDpsRecompute) return activeScenario?.dps;
+    return computeSetDps(
+      selectedSet,
+      monster,
+      skills,
+      boostResolver(selectedSet.style),
+      effectiveOnTask,
+      soulreaperMaxStacks,
+      dharokCurrentHp,
+    );
+  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp]);
 
   // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
   // protection in the shield slot AND no Super antifire in the bank) — reacts
@@ -731,6 +745,47 @@ export default function BossPage({
                 </span>
               </span>
             </label>
+
+            {soulreaperEquipped && (
+              <label className="mt-3 flex items-center gap-2 text-sm select-none text-osrs-brown cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={soulreaperMaxStacks}
+                  onChange={(e) => setSoulreaperMaxStacks(e.target.checked)}
+                  className="h-4 w-4 accent-osrs-gold"
+                />
+                <span>
+                  Soulreaper axe — max stacks{" "}
+                  <span className="text-osrs-brown/60">+30% Str level</span>
+                </span>
+              </label>
+            )}
+
+            {dharokFullSetEquipped && (
+              <div className="mt-3 space-y-1">
+                <label className="block text-sm text-osrs-brown select-none">
+                  <span>
+                    Dharok&apos;s — current HP{" "}
+                    <span className="text-osrs-brown/60">
+                      {dharokCurrentHp !== undefined ? `${dharokCurrentHp} HP` : "full HP (no bonus)"}
+                    </span>
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={skills.hitpoints ?? 99}
+                  step={1}
+                  value={dharokCurrentHp ?? (skills.hitpoints ?? 99)}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setDharokCurrentHp(val >= (skills.hitpoints ?? 99) ? undefined : val);
+                  }}
+                  className="w-full"
+                  aria-label="Dharok's current HP"
+                />
+              </div>
+            )}
           </SetupPanel>
 
           {mode === "sell-to-fund" && bank !== null && (

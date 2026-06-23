@@ -12,6 +12,8 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   SALVE_AMULET_I: 12017, // imbued (non-enchanted) → ×7/6
   ARCLIGHT: 19675, // Charged → demonbane
   EMBERLIGHT: 29589, // demonbane
+  KERIS_PARTISAN: 25979, // any Keris partisan → +33% dmg + 1/51 triple vs Kalphites
+  KERIS_PARTISAN_BREACHING: 25981, // breaching → additionally +33% accuracy
   TOME_OF_FIRE_CHARGED: 20714,
   TOME_OF_WATER_CHARGED: 25574,
   TOME_OF_EARTH_CHARGED: 30064,
@@ -39,6 +41,10 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   SALVE_AMULET_I: [12017, 25250, 26763], // + Soul Wars, Emir's Arena imbues
   ARCLIGHT: [19675], // Charged only — Inactive (30305) has no demonbane
   EMBERLIGHT: [29589],
+  // All Keris partisan variants share the +33% damage + 1/51 triple vs Kalphites.
+  KERIS_PARTISAN: [25979, 30891, 25981, 27287, 27291], // base, amascut, breaching, corruption, sun
+  KERIS_PARTISAN_BREACHING: [25981], // only breaching adds the +33% accuracy
+
   TOME_OF_FIRE_CHARGED: [20714],  // Empty (20716) gives no bonus
   TOME_OF_WATER_CHARGED: [25574], // Empty (25576) gives no bonus
   TOME_OF_EARTH_CHARGED: [30064], // Empty (30066) gives no bonus

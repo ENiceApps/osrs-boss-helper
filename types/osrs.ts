@@ -154,6 +154,11 @@ export interface ConditionalBonusFlags {
   salveAmulet: boolean;
   /** Arclight / Emberlight vs demons → +70% accuracy & damage (additive). */
   demonbane: boolean;
+  /** Any Keris partisan vs Kalphites/Scabarites → +33% damage (×4/3). The 1/51
+   *  triple-damage proc is modelled separately (dps-mean only) via `kalphiteTripleProc`. */
+  kerisVsKalphite?: boolean;
+  /** Keris partisan of breaching vs Kalphites/Scabarites → +33% accuracy (×4/3). */
+  kerisBreachVsKalphite?: boolean;
   /**
    * A charged wilderness weapon (Craw's/Webweaver bow, Viggora's/Ursine
    * chainmace, Thammaron's/Accursed sceptre) attacking an NPC in the Wilderness

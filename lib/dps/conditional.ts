@@ -64,6 +64,16 @@ export function conditionalMultipliers(
     accuracy.push({ numerator: 7, denominator: 4, reason: "Dragon hunter wand vs dragon" });
     damage.push({ numerator: 7, denominator: 5, reason: "Dragon hunter wand vs dragon" });
   }
+  if (flags.kerisVsKalphite) {
+    // Keris partisan family vs Kalphites/Scabarites: +33% damage (×4/3). The
+    // 1/51 triple-damage proc is mean-only and handled in calculate.ts, not here.
+    damage.push({ numerator: 4, denominator: 3, reason: "Keris partisan vs Kalphite/Scabarite" });
+  }
+  if (flags.kerisBreachVsKalphite) {
+    // Keris partisan of breaching: +33% accuracy vs Kalphites/Scabarites
+    // (persists outside the Tombs of Amascut).
+    accuracy.push({ numerator: 4, denominator: 3, reason: "Keris partisan of breaching vs Kalphite/Scabarite" });
+  }
   if (flags.salveAmuletEi) {
     accuracy.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
     damage.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });

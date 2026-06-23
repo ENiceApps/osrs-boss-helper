@@ -51,6 +51,8 @@ export interface ScenarioInput {
   boostResolver?: BoostResolver;
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask?: boolean;
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks?: boolean;
   /**
    * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
    * it lives inside the weapon, leaving the ammo slot free for a blessing.
@@ -330,6 +332,8 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
+    kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
     tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
     tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
@@ -378,6 +382,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     skills,
     input.boostResolver?.(combatStyle),
     input.onTask ?? false,
+    input.soulreaperMaxStacks ?? false,
   );
   const activeBonuses = activeBonusesForTarget(loadout, target);
   return { valid: true, loadout, dps, activeBonuses };

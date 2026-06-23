@@ -25,6 +25,7 @@ import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type {
   AttackStyleChoice,
+  CombatStyle,
   Skills,
   SpellElement,
   WeaponAttackType,
@@ -72,6 +73,8 @@ export interface FindUpgradesInput {
   boostResolver?: BoostResolver;
   /** Whether the player is on a slayer task — gates the imbued black mask / slayer helm bonus. */
   onTask?: boolean;
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
 }
@@ -108,6 +111,8 @@ export interface BudgetResult {
   shoppingList?: ItemValue[];
   /** True when built from scratch ignoring the bank (Budget mode). */
   fromScratch?: boolean;
+  /** Best result per combat style under the same context (GP/mode/sell). */
+  byStyle?: Partial<Record<CombatStyle, BudgetResult>>;
 }
 
 /** Strict equip check — mirrors lib/optimize/bank.ts and scenario.ts. */
@@ -265,82 +270,22 @@ function findCandidates(
   return candidates;
 }
 
-/**
- * Main entry point — see module header for algorithm + limitations.
- */
-export function findUpgrades(input: FindUpgradesInput): BudgetResult {
-  const originalBank = new Set<number>(
-    input.bank instanceof Set ? input.bank : input.bank,
-  );
-  const maxIterations = input.maxIterations ?? 8;
-  const sellItemIds = input.sellItemIds ?? [];
-
-  // Step 1: best loadout from the original bank.
-  const { rankings } = optimizeForBoss({
-    bank: originalBank,
-    target: input.target,
-    skills: input.skills,
-    topN: 1,
-    baseSpellMaxHit: input.baseSpellMaxHit,
-    spellElement: input.spellElement,
-    boostResolver: input.boostResolver,
-    onTask: input.onTask,
-    requiresMeleeReach2: input.requiresMeleeReach2,
-  });
-  const currentBest = rankings[0] ?? null;
-
-  // Empty-bank early-out — see "limitations" in module header.
-  if (!currentBest) {
-    return {
-      currentBest: null,
-      upgradedBest: null,
-      upgradePath: [],
-      totalCostGp: 0,
-      totalDpsDelta: 0,
-      sellList: [],
-      remainingGp: input.gp,
-    };
-  }
-
-  if (input.mode === "own-only") {
-    return {
-      currentBest,
-      upgradedBest: currentBest,
-      upgradePath: [],
-      totalCostGp: 0,
-      totalDpsDelta: 0,
-      sellList: [],
-      remainingGp: input.gp,
-    };
-  }
-
-  // Step 2: determine starting budget + sell list. In sell-to-fund mode the
-  // player explicitly picks which bank items to liquidate; their summed GE
-  // value tops up the budget. (recommendedSellToFund seeds the default picks.)
-  const sellList: ItemValue[] = [];
-  let budget = input.gp;
-  if (input.mode === "sell-to-fund") {
-    for (const id of sellItemIds) {
-      const item = ITEM_BY_ID.get(id);
-      if (!item) continue;
-      const price = input.priceLookup(id);
-      if (price === null) continue;
-      sellList.push({ itemId: id, name: item.name, valueGp: price });
-      budget += price;
-    }
-  }
-
-  // Step 3: iterative greedy. Each round picks the best DPS/GP upgrade
-  // affordable within budget, commits it, then re-evaluates.
+/** Iterative greedy upgrade loop starting from a single base loadout. */
+function runUpgradesFromBase(
+  base: Extract<ScoredScenario, { valid: true }>,
+  originalBank: Set<number>,
+  budget: number,
+  sellList: ItemValue[],
+  input: FindUpgradesInput,
+  maxIterations: number,
+): BudgetResult {
   const upgradePath: UpgradeStep[] = [];
-  let activeLoadout = currentBest.loadout;
-  let activeDps = currentBest.dps.dps;
+  let activeLoadout = base.loadout;
+  let activeDps = base.dps.dps;
   const effectiveBank = new Set(originalBank);
+  let remainingBudget = budget;
 
   for (let iter = 0; iter < maxIterations; iter++) {
-    // Spell info: prefer caller-supplied, fall back to the active loadout's
-    // computed values so powered-staff formulas and auto-selected standard
-    // spells are preserved when evaluating non-weapon slot upgrades.
     const upgradeSpellMaxHit =
       input.baseSpellMaxHit ??
       (activeLoadout.style === "magic" ? activeLoadout.baseSpellMaxHit : undefined);
@@ -354,7 +299,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       effectiveBank,
       input.target,
       input.skills,
-      budget,
+      remainingBudget,
       input.priceLookup,
       upgradeSpellMaxHit,
       upgradeSpellElement,
@@ -366,7 +311,6 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);
     const best = candidates[0];
 
-    // Commit the upgrade.
     const swappedOutItem = best.swappedOutItemId !== null
       ? ITEM_BY_ID.get(best.swappedOutItemId)
       : null;
@@ -387,10 +331,8 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     });
 
     effectiveBank.add(best.item.id);
-    budget -= best.costGp;
+    remainingBudget -= best.costGp;
 
-    // Update the active loadout. Re-score the new gear from scratch so the
-    // loadout shape is consistent with optimizeForBoss's output.
     const rescored = scoreScenario({
       itemIds: best.itemIdsAfter,
       target: input.target,
@@ -402,16 +344,15 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
-    onTask: input.onTask,
+      onTask: input.onTask,
+      soulreaperMaxStacks: input.soulreaperMaxStacks,
     });
-    if (!rescored.valid) break; // shouldn't happen — we just scored it above
+    if (!rescored.valid) break;
     activeLoadout = rescored.loadout;
     activeDps = rescored.dps.dps;
   }
 
-  // Re-score the final activeLoadout one more time so upgradedBest's dps
-  // has accurate maxHit + accuracy (not just dps).
-  let upgradedBest = currentBest;
+  let upgradedBest = base;
   if (upgradePath.length > 0) {
     const finalScore = scoreScenario({
       itemIds: Object.values(activeLoadout.slots).map((s) => s.itemId),
@@ -424,22 +365,132 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
-    onTask: input.onTask,
+      onTask: input.onTask,
+      soulreaperMaxStacks: input.soulreaperMaxStacks,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }
 
   const totalCostGp = upgradePath.reduce((s, u) => s + u.bought.costGp, 0);
-  const totalDpsDelta = upgradedBest.dps.dps - currentBest.dps.dps;
+  const totalDpsDelta = upgradedBest.dps.dps - base.dps.dps;
 
   return {
-    currentBest,
+    currentBest: base,
     upgradedBest,
     upgradePath,
     totalCostGp,
     totalDpsDelta,
     sellList,
-    remainingGp: budget,
+    remainingGp: remainingBudget,
+  };
+}
+
+const COMBAT_STYLES: CombatStyle[] = ["melee", "ranged", "magic"];
+
+/**
+ * Main entry point — see module header for algorithm + limitations.
+ */
+export function findUpgrades(input: FindUpgradesInput): BudgetResult {
+  const originalBank = new Set<number>(
+    input.bank instanceof Set ? input.bank : input.bank,
+  );
+  const maxIterations = input.maxIterations ?? 8;
+  const sellItemIds = input.sellItemIds ?? [];
+
+  // One optimizer call for all rankings — used for both the global best and
+  // per-style bases, saving a redundant call vs the old topN:1 approach.
+  const { rankings } = optimizeForBoss({
+    bank: originalBank,
+    target: input.target,
+    skills: input.skills,
+    topN: Number.MAX_SAFE_INTEGER,
+    baseSpellMaxHit: input.baseSpellMaxHit,
+    spellElement: input.spellElement,
+    boostResolver: input.boostResolver,
+    onTask: input.onTask,
+    soulreaperMaxStacks: input.soulreaperMaxStacks,
+    requiresMeleeReach2: input.requiresMeleeReach2,
+  });
+  const currentBest = rankings[0] ?? null;
+
+  // Empty-bank early-out — see "limitations" in module header.
+  if (!currentBest) {
+    return {
+      currentBest: null,
+      upgradedBest: null,
+      upgradePath: [],
+      totalCostGp: 0,
+      totalDpsDelta: 0,
+      sellList: [],
+      remainingGp: input.gp,
+    };
+  }
+
+  // Find the best base loadout per combat style from the rankings.
+  const styleBases: Partial<Record<CombatStyle, Extract<ScoredScenario, { valid: true }>>> = {};
+  for (const r of rankings) {
+    if (r.dps.dps <= 0) continue;
+    if (!styleBases[r.loadout.style]) styleBases[r.loadout.style] = r;
+    if (COMBAT_STYLES.every((s) => styleBases[s])) break;
+  }
+
+  if (input.mode === "own-only") {
+    const byStyle: Partial<Record<CombatStyle, BudgetResult>> = {};
+    for (const [style, base] of Object.entries(styleBases) as Array<[CombatStyle, Extract<ScoredScenario, { valid: true }>]>) {
+      byStyle[style] = {
+        currentBest: base,
+        upgradedBest: base,
+        upgradePath: [],
+        totalCostGp: 0,
+        totalDpsDelta: 0,
+        sellList: [],
+        remainingGp: input.gp,
+      };
+    }
+    return {
+      currentBest,
+      upgradedBest: currentBest,
+      upgradePath: [],
+      totalCostGp: 0,
+      totalDpsDelta: 0,
+      sellList: [],
+      remainingGp: input.gp,
+      byStyle,
+    };
+  }
+
+  // Determine starting budget + sell list. In sell-to-fund mode the player
+  // explicitly picks which bank items to liquidate; their summed GE value tops
+  // up the budget. (recommendedSellToFund seeds the default picks.)
+  const sellList: ItemValue[] = [];
+  let budget = input.gp;
+  if (input.mode === "sell-to-fund") {
+    for (const id of sellItemIds) {
+      const item = ITEM_BY_ID.get(id);
+      if (!item) continue;
+      const price = input.priceLookup(id);
+      if (price === null) continue;
+      sellList.push({ itemId: id, name: item.name, valueGp: price });
+      budget += price;
+    }
+  }
+
+  // Run the iterative greedy per style. Each style tab shows the best setup
+  // of that style achievable under the same GP/sell context as the Best tab.
+  const byStyle: Partial<Record<CombatStyle, BudgetResult>> = {};
+  for (const [style, base] of Object.entries(styleBases) as Array<[CombatStyle, Extract<ScoredScenario, { valid: true }>]>) {
+    byStyle[style] = runUpgradesFromBase(base, originalBank, budget, sellList, input, maxIterations);
+  }
+
+  // Overall best = greedy from the global-best base (unchanged behavior for
+  // the Best tab). currentBest is the pre-upgrade bank loadout.
+  const overallStyle = currentBest.loadout.style as CombatStyle;
+  const overallResult = byStyle[overallStyle]!;
+
+  return {
+    ...overallResult,
+    currentBest,
+    byStyle,
   };
 }
 
@@ -455,6 +506,8 @@ export interface RecommendSellInput {
   spellElement?: SpellElement;
   boostResolver?: BoostResolver;
   onTask?: boolean;
+  /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
+  soulreaperMaxStacks?: boolean;
   requiresMeleeReach2?: boolean;
 }
 
@@ -483,6 +536,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
     spellElement: input.spellElement,
     boostResolver: input.boostResolver,
     onTask: input.onTask,
+    soulreaperMaxStacks: input.soulreaperMaxStacks,
     requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0];
@@ -561,6 +615,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
+      soulreaperMaxStacks: input.soulreaperMaxStacks,
     });
     if (!rescored.valid) break;
     activeLoadout = rescored.loadout;

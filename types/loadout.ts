@@ -39,6 +39,10 @@ export interface ItemBonusFlags {
   salveAmulet: boolean;
   /** Arclight / Emberlight — demonbane vs demons. */
   demonbane: boolean;
+  /** Any Keris partisan — +33% damage + 1/51 triple vs Kalphites/Scabarites. */
+  kerisPartisan?: boolean;
+  /** Keris partisan of breaching — additionally +33% accuracy vs Kalphites/Scabarites. */
+  kerisBreaching?: boolean;
   tomeOfFire: boolean;
   /** Tome of Water (charged) — ×6/5 accuracy + ×6/5 damage on water spells. */
   tomeOfWater: boolean;

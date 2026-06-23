@@ -55,6 +55,19 @@ export interface DpsScenario {
    */
   shadowEquipped?: boolean;
   /**
+   * Magic-only: Tumeken's shadow is being used inside the Tombs of Amascut —
+   * the worn-bonus multiplier becomes ×4 instead of the overworld ×3 (magic
+   * damage still hard-capped at 100%). Only meaningful when `shadowEquipped`.
+   */
+  shadowToaQuadruple?: boolean;
+  /**
+   * Melee-only: Keris partisan's 1/51 chance to deal triple damage vs
+   * Kalphites/Scabarites. Mean-only — the +33% damage lives in the conditional
+   * factors (and the displayed max hit), while this rare proc lifts only mean
+   * DPS by ×53/51. Resolved upstream alongside the kerisVsKalphite flag.
+   */
+  kalphiteTripleProc?: boolean;
+  /**
    * Magic-only: a demonbane spell (Inferior/Superior/Dark Demonbane) cast vs a
    * demon — raises magic accuracy by this percentage (e.g. 20 → ×120/100).
    * Mark of Darkness would raise it further (not modeled). Damage is unaffected.
@@ -106,6 +119,12 @@ export interface DpsScenario {
    * size for the Scythe). See lib/dps/multihit.ts.
    */
   hitProfile?: HitProfile;
+  /**
+   * Melee-only: Dharok's full set effect — max hit scales with missing HP.
+   * Multiplier: 1 + (maxHp − currentHp) × maxHp / 10000.
+   * Only active when all four Dharok's pieces are equipped. Resolved upstream.
+   */
+  dharok?: { maxHp: number; currentHp: number };
 }
 
 interface StyleBonuses {
@@ -154,6 +173,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       );
       attackRoll = meleeAttackRoll(effAtk, scenario.attackBonus);
       maxHit = meleeMaxHit(effStr, scenario.strengthBonus);
+      if (scenario.dharok) {
+        const { maxHp, currentHp } = scenario.dharok;
+        maxHit = Math.trunc(maxHit * (1 + (maxHp - currentHp) * maxHp / 10000));
+      }
       break;
     }
     case "ranged": {
@@ -185,8 +208,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       // ×3 case. Void/Salve/Slayer-helm sit outside this multiplier; in this
       // engine they're already separate factors, so tripling the gear bonus is
       // correct. https://oldschool.runescape.wiki/w/Tumeken's_shadow
+      const shadowMult = scenario.shadowToaQuadruple ? 4 : 3;
       const magicAtkBonus = scenario.shadowEquipped
-        ? scenario.attackBonus * 3
+        ? scenario.attackBonus * shadowMult
         : scenario.attackBonus;
       attackRoll = magicAttackRoll(effMag, magicAtkBonus);
 
@@ -201,8 +225,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
       const base = scenario.baseSpellMaxHit ?? 0;
       let pctFromGear = scenario.magicDamagePercent ?? 0;
-      // Shadow ×3 on gear magic damage, hard-capped at a total of 100%.
-      if (scenario.shadowEquipped) pctFromGear = Math.min(pctFromGear * 3, 100);
+      // Shadow ×3 (overworld) / ×4 (Tombs of Amascut) on gear magic damage,
+      // hard-capped at a total of 100%.
+      if (scenario.shadowEquipped) pctFromGear = Math.min(pctFromGear * shadowMult, 100);
       // Prayer magic damage % (e.g. Augury = +4%) folds into the single
       // equipment-percent application, matching wgloop's behaviour where
       // both contribute to magicDmgBonus before trackAddFactor.
@@ -307,6 +332,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
     const expected = expectedMultiHitDamage(scenario.hitProfile, accuracy, maxHit);
     dps = expected / (effectiveAttackSpeed * 0.6);
+  }
+
+  // Keris partisan's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
+  // (50·1 + 1·3)/51 = ×53/51. The +33% damage is already baked into maxHit via
+  // the conditional factors; this is the rare-proc expectation on top, applied
+  // to whichever mean (single-hit / bolt / multi-hit) was computed above.
+  if (scenario.kalphiteTripleProc) {
+    dps = (dps * 53) / 51;
   }
 
   return { dps, maxHit, accuracy };
