@@ -8,6 +8,7 @@
 import type { DpsResult, Skills } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
+import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
 import { SPELLS_BY_NAME } from "@/data/spells/catalog";
 import { resolveBoltProc } from "@/lib/dps/bolts";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
@@ -79,8 +80,13 @@ function defenceBonusForSet(set: LoadoutSet, target: MonsterCatalogEntry): numbe
 }
 
 function targetDefenceLevelFor(set: LoadoutSet, target: MonsterCatalogEntry): number {
-  // For magic, NPC defence roll uses skills.magic — every other style uses skills.def.
-  return set.style === "magic" ? target.magicLevel : target.defenceLevel;
+  if (set.style !== "magic") return target.defenceLevel;
+  // For magic, NPC defence rolls off skills.magic — EXCEPT a curated set of
+  // bosses (Verzik, Ice demon, Fragment of Seren, Rabbit, …) that use Defence
+  // level instead. https://oldschool.runescape.wiki / wgloop.
+  return usesDefenceLevelForMagicDefence(target.wikiId)
+    ? target.defenceLevel
+    : target.magicLevel;
 }
 
 /**
