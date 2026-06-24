@@ -369,7 +369,13 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     attackSpeedTicks,
     internalAmmo,
     baseSpellMaxHit: combatStyle === "magic" ? input.baseSpellMaxHit : undefined,
-    spellElement: combatStyle === "magic" ? input.spellElement : undefined,
+    // Powered staves (Trident / Sanguinesti / Tumeken's shadow) fire their own
+    // attack with NO spell element — they must NOT inherit a spellElement, or the
+    // engine would wrongly apply elemental-weakness / tome bonuses to them.
+    spellElement:
+      combatStyle === "magic" && weapon.category !== "Powered Staff"
+        ? input.spellElement
+        : undefined,
     autoSpellName: combatStyle === "magic" ? input.autoSpellName : undefined,
     itemBonusFlags,
     weaponCategory: weapon.category,
