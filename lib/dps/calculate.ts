@@ -171,7 +171,12 @@ function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonus
 
 export function calculateDps(scenario: DpsScenario): DpsResult {
   const sb = styleBonuses(scenario.style, scenario.attackStyle);
-  const effectiveAttackSpeed = Math.max(1, scenario.attackSpeedTicks + sb.attackSpeedAdjust);
+  // A weapon with no recorded speed (e.g. holiday/cosmetic items wrongly in the
+  // weapon slot) must NOT be treated as a 1-tick attack — that 4× inflates DPS
+  // and makes the optimizer recommend junk. Default to 4 ticks, matching
+  // wgloop's `weapon.speed || DEFAULT_ATTACK_SPEED`.
+  const baseSpeedTicks = scenario.attackSpeedTicks > 0 ? scenario.attackSpeedTicks : 4;
+  const effectiveAttackSpeed = Math.max(1, baseSpeedTicks + sb.attackSpeedAdjust);
   const mult = conditionalMultipliers(scenario.conditionalBonuses);
   const defenceRoll = npcDefenceRoll(scenario.targetDefenceLevel, scenario.targetDefenceBonusForStyle);
 
