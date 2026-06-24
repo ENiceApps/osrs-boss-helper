@@ -106,7 +106,9 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     // size-3+ monsters; not modelled in single-target DPS calc.
     { name: "Reap", attackType: "slash", choice: "accurate", defensive: false },
     { name: "Chop", attackType: "slash", choice: "aggressive", defensive: false },
-    { name: "Jab", attackType: "crush", choice: "controlled", defensive: false },
+    // Jab is crush/AGGRESSIVE (verified vs OSRS wiki + wgloop). It was wrongly
+    // crush/controlled, which doesn't exist in-game and under-credits strength.
+    { name: "Jab", attackType: "crush", choice: "aggressive", defensive: false },
     { name: "Block", attackType: "slash", choice: "defensive", defensive: true },
   ],
   Spiked: [
