@@ -40,6 +40,13 @@ export interface CanonicalCombo {
   /** On a slayer task — gates black mask / slayer helm on BOTH engines. */
   onTask?: boolean;
   /**
+   * Target is a Wilderness boss. Our engine infers this from the boss slug, but
+   * the wgloop worker needs the `inWilderness` buff set explicitly so wilderness
+   * weapons (Accursed sceptre, Webweaver, Ursine chainmace, …) get their ×3/2 on
+   * both sides.
+   */
+  inWilderness?: boolean;
+  /**
    * Optional locked baseline this combo was lifted from (oracle-matrix). When
    * present the diff report does a three-way check: our engine vs wgloop vs
    * this wiki-target baseline.

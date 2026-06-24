@@ -10,6 +10,7 @@ import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { ITEM_CATALOG } from "@/data/items/catalog";
 import { ORACLE_MATRIX, type OracleFixture } from "@/tests/fixtures/oracle-matrix";
 import { optimizeForBoss } from "@/lib/optimize/bank";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import type { CombatStyle, SpellElement } from "@/types/osrs";
 import type { CanonicalCombo } from "./contract";
@@ -98,6 +99,7 @@ export function sweepCombos(opts: { style?: CombatStyle; limit?: number } = {}):
         bossWikiId: boss.wikiId,
         bossVersion: boss.version || undefined,
         bossSlug: boss.slug,
+        inWilderness: isWildernessBoss(boss.slug),
         baseline: undefined, // sweep rows have no locked baseline
       });
     }
@@ -143,6 +145,7 @@ export function optimizedSweepCombos(opts: { limit?: number } = {}): CanonicalCo
       bossWikiId: boss.wikiId,
       bossVersion: boss.version || undefined,
       bossSlug: boss.slug,
+      inWilderness: isWildernessBoss(boss.slug),
       attackType: lo.attackType,
       choice: lo.attackStyleChoice,
       baseSpellMaxHit: isMagic ? lo.baseSpellMaxHit : undefined,
