@@ -24,6 +24,7 @@ import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import { scoreScenario } from "@/lib/optimize/scenario";
 import { STAT_OVERRIDES } from "@/data/items/stat-overrides";
+import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
 import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
@@ -44,6 +45,13 @@ interface OurResult {
   maxHit?: number;
   accuracy?: number;
   dps?: number;
+  /**
+   * Multi-hit weapon (Scythe, Dark bow, …). For these, our `maxHit` is the
+   * single largest hit while wgloop's `getMax()` is the summed max across all
+   * hits — not comparable. The comparator skips the maxHit check and relies on
+   * DPS + accuracy instead.
+   */
+  multiHit?: boolean;
   error?: string;
 }
 
@@ -61,12 +69,15 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     onTask: combo.onTask ?? false,
   });
   if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
+  const weaponId = scored.loadout.slots.weapon?.itemId;
+  const multiHit = hitProfileForWeapon(weaponId, { targetSize: boss.size }) !== undefined;
   return {
     id: combo.id,
     ok: true,
     maxHit: scored.dps.maxHit,
     accuracy: scored.dps.accuracy,
     dps: scored.dps.dps,
+    multiHit,
   };
 }
 
@@ -121,7 +132,9 @@ function compare(our: OurResult, wg: OracleResult | undefined): { verdict: Verdi
   if (!wg) return { verdict: "ERROR", detail: "wgloop: no result" };
   if (!wg.ok) return { verdict: "ERROR", detail: `wgloop: ${wg.error}` };
 
-  if (our.maxHit !== wg.maxHit) {
+  // Multi-hit weapons report maxHit differently on each side (single largest
+  // hit vs summed max across hits), so it isn't comparable — rely on DPS + acc.
+  if (!our.multiHit && our.maxHit !== wg.maxHit) {
     return { verdict: "MAXHIT", detail: `maxHit ours=${our.maxHit} wg=${wg.maxHit}` };
   }
   if (Math.abs((our.accuracy ?? 0) - wg.accuracy) > ACC_TOL) {
