@@ -42,6 +42,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Oracle harness: cloned weirdgloop/osrs-dps-calc + its node_modules + IO json.
+# Bootstrapped on demand by scripts/oracle/setup-oracle.ts — never committed.
+/.oracle/
+
 # graphify (knowledge-graph dev tool output). Remove this line if you want to
 # commit the graph for team sharing (graphify supports git-merge of graph.json).
 graphify-out/

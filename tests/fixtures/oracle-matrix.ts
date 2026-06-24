@@ -125,7 +125,10 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "elemental weakness: fire vs Zulrah (severity 50) boosts attack roll + max hit",
     ],
     wikiNotes: "Augury prayer. Zulrah. Fire Surge (max hit 24). Tome of Fire (charged) equipped. No special options.",
-    baseline: { maxHit: 48, accuracy: 0.9262, dps: 9.262, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    // dps corrected 9.262 → 7.410 after the magic cast-speed fix (Fire Surge
+    // autocasts at 5 ticks, not the Kodai wand's 4-tick melee speed). Now matches
+    // the wgloop engine (7.416) via scripts/oracle.
+    baseline: { maxHit: 48, accuracy: 0.9262, dps: 7.41, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
   },
 
   // ─── Twisted bow at high-magic boss ───────────────────────────────────────
