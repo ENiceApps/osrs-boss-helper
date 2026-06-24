@@ -130,6 +130,17 @@ export function itemScore(
   return 2 * str + offensiveFor(item, attackType);
 }
 
+/**
+ * Total defensive bonus across all five defence types. Used only as a
+ * DPS-neutral tiebreak: when two items have an identical `itemScore` (same
+ * offensive + strength contribution, e.g. Bandos vs Blood moon chestplate),
+ * prefer the one with better defence — a strictly-better pick at no DPS cost,
+ * and deterministic rather than left to arbitrary bank iteration order.
+ */
+function defensiveSum(item: ItemCatalogEntry): number {
+  return item.defStab + item.defSlash + item.defCrush + item.defMagic + item.defRanged;
+}
+
 /** True iff the player can equip the item given their skills. */
 export function meetsRequirements(item: ItemCatalogEntry, skills: Skills): boolean {
   if (!item.requirements) return true;
@@ -251,12 +262,21 @@ function greedyBuild(
       pool = pool.filter((a) => checkAmmoCompatWithCategory(ws.weapon.name, ws.weapon.category, a.name).ok);
     }
     if (pool.length === 0) continue;
-    // Pick the item with the highest DPS-flavoured score for this style.
+    // Pick the item with the highest DPS-flavoured score for this style. On an
+    // exact tie, prefer higher defence — a strictly-better, deterministic pick
+    // that costs no DPS (see defensiveSum).
     let best = pool[0];
     let bestScore = itemScore(best, ws.attackType, ws.combatStyle, meleeStrForRanged);
+    let bestDef = defensiveSum(best);
     for (let i = 1; i < pool.length; i++) {
-      const s = itemScore(pool[i], ws.attackType, ws.combatStyle, meleeStrForRanged);
-      if (s > bestScore) { best = pool[i]; bestScore = s; }
+      const it = pool[i];
+      const s = itemScore(it, ws.attackType, ws.combatStyle, meleeStrForRanged);
+      if (s > bestScore) {
+        best = it; bestScore = s; bestDef = defensiveSum(it);
+      } else if (s === bestScore) {
+        const d = defensiveSum(it);
+        if (d > bestDef) { best = it; bestDef = d; }
+      }
     }
     ids.push(best.id);
   }
@@ -413,7 +433,11 @@ export function rankedSlotAlternatives(
       );
     }
 
-    let ids = [...pool].sort((a, b) => score(b) - score(a)).map((i) => i.id);
+    // Best-first by DPS-flavoured score; ties broken by higher defence so the
+    // ordering is deterministic and matches the optimizer's slot pick.
+    let ids = [...pool]
+      .sort((a, b) => score(b) - score(a) || defensiveSum(b) - defensiveSum(a))
+      .map((i) => i.id);
     const chosen = input.chosenBySlot[slot];
     if (chosen !== undefined) ids = [chosen, ...ids.filter((id) => id !== chosen)];
     ids = [...new Set(ids)].slice(0, perSlot);
