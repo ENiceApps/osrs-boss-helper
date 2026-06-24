@@ -123,6 +123,12 @@ function prayerFor(attackType: AttackType): Prayer {
 
 function runOne(combo: Combo): Result {
   const monster = getTestMonsterById(combo.bossWikiId);
+  // getTestMonsterById applies INITIAL_MONSTER_INPUTS, which defaults
+  // monsterCurrentHp to 150. Current-HP-based procs (ruby bolts' 20%) would then
+  // be computed off 150 instead of the boss's real HP. Our engine assumes full
+  // HP at the start of the fight, so set the wgloop monster to full HP to match.
+  monster.inputs.monsterCurrentHp = monster.skills.hp;
+  monster.monsterCurrentHp = monster.skills.hp;
 
   const equipment: Partial<PlayerEquipment> = {};
   let weapon: EquipmentPiece | undefined;
