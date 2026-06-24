@@ -10,6 +10,8 @@
 //   npx tsx scripts/oracle/run-oracle.ts --all                 # print matching rows too
 //   npx tsx scripts/oracle/run-oracle.ts --sweep --style=magic # broad sweep, sharded by style
 //   npx tsx scripts/oracle/run-oracle.ts --sweep --limit=60    # N bosses per style
+//   npx tsx scripts/oracle/run-oracle.ts --optimize --limit=20 # oracle-check the app's
+//                                                              # recommended loadout per boss
 //
 // Exit code is non-zero if any combo diverges beyond tolerance — usable as a CI
 // gate once the validation set is green.
@@ -21,9 +23,10 @@ import { fileURLToPath } from "node:url";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import { scoreScenario } from "@/lib/optimize/scenario";
+import { STAT_OVERRIDES } from "@/data/items/stat-overrides";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
-import { sweepCombos, validationCombos } from "./combos";
+import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CLONE_DIR = join(ROOT, ".oracle", "wgloop");
@@ -76,11 +79,22 @@ function ensureOracle(): void {
   execFileSync(tsx, ["scripts/oracle/setup-oracle.ts"], { cwd: ROOT, stdio: "inherit" });
 }
 
+/** Refresh the injected worker from the template so edits take effect each run. */
+function refreshWorker(): void {
+  const template = readFileSync(join(ROOT, "scripts", "oracle", "worker.ts.template"), "utf8");
+  const dest = join(CLONE_DIR, "src", "tests", "oracle", "oracle-worker.test.ts");
+  if (existsSync(dest)) writeFileSync(dest, template, "utf8");
+}
+
 function runWorker(combos: CanonicalCombo[]): OracleResult[] {
   mkdirSync(IO_DIR, { recursive: true });
+  refreshWorker();
   const combosPath = join(IO_DIR, "combos.json");
   const outPath = join(IO_DIR, "results.json");
+  const overridesPath = join(IO_DIR, "overrides.json");
   writeFileSync(combosPath, JSON.stringify(combos, null, 2), "utf8");
+  // Replay our catalog's stat overrides so both engines use identical item data.
+  writeFileSync(overridesPath, JSON.stringify(STAT_OVERRIDES), "utf8");
 
   console.log(`Running wgloop worker on ${combos.length} combo(s) …`);
   execFileSync(
@@ -89,7 +103,12 @@ function runWorker(combos: CanonicalCombo[]): OracleResult[] {
     {
       cwd: CLONE_DIR,
       stdio: "inherit",
-      env: { ...process.env, ORACLE_COMBOS: combosPath, ORACLE_OUT: outPath },
+      env: {
+        ...process.env,
+        ORACLE_COMBOS: combosPath,
+        ORACLE_OUT: outPath,
+        ORACLE_OVERRIDES: overridesPath,
+      },
     },
   );
   return JSON.parse(readFileSync(outPath, "utf8")) as OracleResult[];
@@ -123,11 +142,16 @@ function main(): void {
   const limitArg = args.find((a) => a.startsWith("--limit="));
   const showAll = args.includes("--all");
   const sweep = args.includes("--sweep");
+  const optimize = args.includes("--optimize");
   const only = onlyArg ? onlyArg.slice("--only=".length) : undefined;
   const style = styleArg ? (styleArg.slice("--style=".length) as CombatStyle) : undefined;
   const limit = limitArg ? Number(limitArg.slice("--limit=".length)) : undefined;
 
-  let combos = sweep ? sweepCombos({ style, limit }) : validationCombos();
+  let combos = optimize
+    ? optimizedSweepCombos({ limit })
+    : sweep
+      ? sweepCombos({ style, limit })
+      : validationCombos();
   if (only) combos = combos.filter((c) => c.id.includes(only));
   if (combos.length === 0) {
     console.error(`No combos matched --only=${only}`);

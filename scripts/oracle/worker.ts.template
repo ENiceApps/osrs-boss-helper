@@ -25,6 +25,43 @@ import { Prayer } from '@/enums/Prayer';
 import { PlayerCombatStyle } from '@/types/PlayerCombatStyle';
 import { EquipmentPiece, PlayerEquipment } from '@/types/Player';
 
+// Item stat overrides from our catalog (data/items/stat-overrides.ts), replayed
+// onto the clone's equipment so BOTH engines use identical item stats. Without
+// this, items our catalog has rebalanced (e.g. the Inquisitor's buff) diverge
+// purely on data version, not engine logic. Keyed by id → our flat field names;
+// mapped to wgloop's nested EquipmentStats below.
+type StatOverride = Record<string, number>;
+let OVERRIDES: Record<number, StatOverride> = {};
+if (process.env.ORACLE_OVERRIDES) {
+  OVERRIDES = JSON.parse(readFileSync(process.env.ORACLE_OVERRIDES, 'utf8'));
+}
+
+function applyOverride(piece: EquipmentPiece, ov: StatOverride): void {
+  const off = piece.offensive;
+  const def = piece.defensive;
+  const bon = piece.bonuses;
+  for (const [field, value] of Object.entries(ov)) {
+    switch (field) {
+      case 'str': bon.str = value; break;
+      case 'rangedStr': bon.ranged_str = value; break;
+      case 'magicStr': bon.magic_str = value; break;
+      case 'prayer': bon.prayer = value; break;
+      case 'attackStab': off.stab = value; break;
+      case 'attackSlash': off.slash = value; break;
+      case 'attackCrush': off.crush = value; break;
+      case 'attackMagic': off.magic = value; break;
+      case 'attackRanged': off.ranged = value; break;
+      case 'defStab': def.stab = value; break;
+      case 'defSlash': def.slash = value; break;
+      case 'defCrush': def.crush = value; break;
+      case 'defMagic': def.magic = value; break;
+      case 'defRanged': def.ranged = value; break;
+      case 'speed': piece.speed = value; break;
+      default: break;
+    }
+  }
+}
+
 type AttackType = 'stab' | 'slash' | 'crush' | 'ranged' | 'magic';
 type Choice = 'accurate' | 'aggressive' | 'controlled' | 'defensive' | 'rapid' | 'longrange';
 
@@ -90,9 +127,16 @@ function runOne(combo: Combo): Result {
   let weapon: EquipmentPiece | undefined;
   for (const id of combo.itemIds) {
     const piece = findEquipmentById(id);
-    // Clone so per-combo mutation (blowpipe darts) can't leak across the shared
-    // equipment array.
-    const copy = { ...piece } as EquipmentPiece;
+    // Deep-clone the stat sub-objects so per-combo mutation (blowpipe darts,
+    // stat overrides) can't leak across the shared equipment array.
+    const copy = {
+      ...piece,
+      bonuses: { ...piece.bonuses },
+      offensive: { ...piece.offensive },
+      defensive: { ...piece.defensive },
+    } as EquipmentPiece;
+    const ov = OVERRIDES[id];
+    if (ov) applyOverride(copy, ov);
     equipment[copy.slot] = copy;
     if (copy.slot === 'weapon') weapon = copy;
   }
