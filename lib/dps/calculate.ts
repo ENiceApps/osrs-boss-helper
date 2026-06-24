@@ -144,6 +144,14 @@ export interface DpsScenario {
    * arrives via armorSetBonus). Resolved upstream (computeSetDps).
    */
   berserkerObsidian?: boolean;
+  /**
+   * Corporeal Beast halves damage from non-"corpbane" weapons (everything except
+   * magic, or a stab-style spear/halberd/fang, or King's barrage). When set, the
+   * final max hit is halved — mirroring wgloop's divisionTransformer(2) on the
+   * damage distribution. Resolved upstream (computeSetDps) where the weapon name,
+   * attack type and target identity are all known.
+   */
+  corpDamageHalved?: boolean;
 }
 
 interface StyleBonuses {
@@ -361,6 +369,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // scale. e.g. obsidian set base 36 → trunc(36 × 6/5) = 43.
   if (scenario.berserkerObsidian && scenario.style === "melee") {
     maxHit = Math.trunc((maxHit * 6) / 5);
+  }
+
+  // Corporeal Beast halves damage from non-corpbane weapons. Applied last (after
+  // every damage multiplier), before the bolt/multi-hit expected-damage calc so
+  // it propagates to those means too.
+  if (scenario.corpDamageHalved) {
+    maxHit = Math.trunc(maxHit / 2);
   }
 
   const accuracy = scenario.fangEquipped

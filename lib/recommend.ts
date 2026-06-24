@@ -171,6 +171,17 @@ export function computeSetDps(
     set.slots.neck?.itemId === 11128 &&
     weaponId !== undefined &&
     TZHAAR_MELEE_WEAPON_IDS.has(weaponId);
+  // Corporeal Beast halves damage from non-"corpbane" weapons: full damage only
+  // from magic, or a STAB-style spear / halberd / Osmumten's fang (Blue moon
+  // spear excluded). Mirrors wgloop's isWearingCorpbaneWeapon.
+  const weaponName = set.slots.weapon?.itemName ?? "";
+  const isCorpbane =
+    set.style === "magic" ||
+    (set.attackType === "stab" &&
+      (set.itemBonusFlags?.fang === true ||
+        weaponName.endsWith("halberd") ||
+        (weaponName.toLowerCase().includes("spear") && weaponName !== "Blue moon spear")));
+  const corpDamageHalved = target.slug === "corporeal-beast" && !isCorpbane;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -272,6 +283,7 @@ export function computeSetDps(
     dharok,
     bloodrager,
     berserkerObsidian,
+    corpDamageHalved,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {
