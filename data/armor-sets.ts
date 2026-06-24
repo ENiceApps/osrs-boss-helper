@@ -172,6 +172,26 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
   },
 
+  // ============ Blood moon — only fires with the Dual macuahuitl ============
+  // The "Bloodrager" set effect is an attack-SPEED acceleration, not an
+  // accuracy/damage multiplier — so the bonus here is empty. Its presence in
+  // ARMOR_SETS exists solely to drive the optimizer's force-include (so it
+  // assembles macuahuitl + full set), and to mark the set "active" for display.
+  // The actual DPS gain is applied in calculate.ts via the `bloodrager` flag,
+  // which computeSetDps sets when it detects this exact set + weapon.
+  {
+    id: "blood-moon",
+    name: "Blood moon armour",
+    style: "melee",
+    requiredWeaponIds: [28997], // Dual macuahuitl
+    pieces: [
+      { slot: "head", itemIds: [29028, 29047, 29073] }, // helm (New / Used / Broken)
+      { slot: "body", itemIds: [29022, 29043, 29067] }, // chestplate
+      { slot: "legs", itemIds: [29025, 29045, 29070] }, // tassets
+    ],
+    bonus: {}, // speed effect modeled separately — see calculate.ts `bloodrager`
+  },
+
   // ============ Inquisitor's (crush only) ============
   {
     id: "inquisitors",

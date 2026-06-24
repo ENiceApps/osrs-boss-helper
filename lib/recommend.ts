@@ -93,6 +93,14 @@ const DHAROK_HELM_IDS = new Set([4716, 4880, 4881, 4882]);
 const DHAROK_BODY_IDS = new Set([4720, 4892, 4893, 4894]);
 const DHAROK_LEGS_IDS = new Set([4722, 4898, 4899, 4900]);
 
+// Blood moon "Bloodrager" set: Dual macuahuitl + full Blood moon armour. Each
+// armour piece has three variants (New / Used / Broken — Broken still counts
+// for the set effect, only its stats differ).
+const DUAL_MACUAHUITL_ID = 28997;
+const BLOOD_MOON_HELM_IDS = new Set([29028, 29047, 29073]);
+const BLOOD_MOON_BODY_IDS = new Set([29022, 29043, 29067]);
+const BLOOD_MOON_LEGS_IDS = new Set([29025, 29045, 29070]);
+
 export function computeSetDps(
   set: LoadoutSet,
   target: MonsterCatalogEntry,
@@ -137,6 +145,14 @@ export function computeSetDps(
     dharokFullSet && currentHp !== undefined && currentHp < maxHp
       ? { maxHp, currentHp }
       : undefined;
+  // Blood moon "Bloodrager": full Blood moon armour + Dual macuahuitl. Engine
+  // applies the accuracy-dependent attack-speed acceleration when this is set.
+  const bloodrager =
+    set.style === "melee" &&
+    weaponId === DUAL_MACUAHUITL_ID &&
+    set.slots.head?.itemId !== undefined && BLOOD_MOON_HELM_IDS.has(set.slots.head.itemId) &&
+    set.slots.body?.itemId !== undefined && BLOOD_MOON_BODY_IDS.has(set.slots.body.itemId) &&
+    set.slots.legs?.itemId !== undefined && BLOOD_MOON_LEGS_IDS.has(set.slots.legs.itemId);
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -230,6 +246,7 @@ export function computeSetDps(
     boltProc,
     hitProfile,
     dharok,
+    bloodrager,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

@@ -125,6 +125,17 @@ export interface DpsScenario {
    * Only active when all four Dharok's pieces are equipped. Resolved upstream.
    */
   dharok?: { maxHp: number; currentHp: number };
+  /**
+   * Blood moon "Bloodrager" set effect — full Blood moon armour (helm + chest +
+   * tassets) worn with the Dual macuahuitl. Each successful hit has a 33% chance
+   * to make the next attack land a tick sooner (3 ticks instead of 4). The
+   * macuahuitl hits twice per attack (sequential), so the per-attack chance to
+   * accelerate is P = 0.33·a·(1 + 0.67·a) where `a` is the per-hit accuracy.
+   * Long-run effective interval = baseSpeed − P ticks. Accuracy-dependent, so
+   * it's applied AFTER accuracy is known. Only active when the full set + weapon
+   * are detected; resolved upstream (computeSetDps).
+   */
+  bloodrager?: boolean;
 }
 
 interface StyleBonuses {
@@ -322,16 +333,27 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   const accuracy = scenario.fangEquipped
     ? fangHitChance(attackRoll, defenceRoll)
     : hitChance(attackRoll, defenceRoll);
-  let dps = dpsFromHitChance(accuracy, maxHit, effectiveAttackSpeed);
+
+  // Blood moon "Bloodrager" set effect: the Dual macuahuitl's two sequential
+  // hits each have a 33% chance to accelerate the next attack by one tick. The
+  // per-attack chance to accelerate is P = 0.33·a·(1 + 0.67·a) (a = per-hit
+  // accuracy: hit 1 lands w.p. a, hit 2 only if hit 1 did, so w.p. a²). The
+  // long-run effective interval drops by P ticks. Accuracy-dependent, so it's
+  // resolved here rather than in the up-front styleBonuses speed adjust.
+  const bloodragerSpeed = scenario.bloodrager
+    ? Math.max(1, effectiveAttackSpeed - 0.33 * accuracy * (1 + 0.67 * accuracy))
+    : effectiveAttackSpeed;
+
+  let dps = dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
 
   if (scenario.boltProc && scenario.style === "ranged") {
     const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc);
-    dps = expected / (effectiveAttackSpeed * 0.6);
+    dps = expected / (bloodragerSpeed * 0.6);
   } else if (scenario.hitProfile && scenario.hitProfile.length > 0) {
     // Multi-hit weapons override the single-hit mean with their hit profile.
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
     const expected = expectedMultiHitDamage(scenario.hitProfile, accuracy, maxHit);
-    dps = expected / (effectiveAttackSpeed * 0.6);
+    dps = expected / (bloodragerSpeed * 0.6);
   }
 
   // Keris partisan's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
