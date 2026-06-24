@@ -275,33 +275,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       const prayerPctBoost = (scenario.prayers.magicDamageMultiplier - 1) * 100;
       maxHit = magicMaxHit(base, pctFromGear + prayerPctBoost);
 
-      // Spellement weakness — applies to BOTH attack roll and max hit when
-      // the spell's element matches the monster's weakness. Per wgloop:
-      //   atkRoll = trunc(atkRoll * (100 + severity) / 100)
-      //   maxHit  = maxHit + floor(baseMax * severity / 100)
-      // Note the max-hit application is ADDITIVE from baseMax, not a
-      // multiplicative factor on the running max hit.
+      // Spellement weakness + elemental tomes affect BOTH accuracy and damage.
+      // The ACCURACY side (multiplicative) is applied here; the DAMAGE side is
+      // applied LATER (see the magic damage block after the conditional bonuses)
+      // because the weakness max-hit bonus is ADDITIVE from baseMax and must not
+      // be scaled by DHW / Salve / Void / Slayer multipliers — matching wgloop's
+      // order (those multiply first, THEN the weakness is added, THEN the tome).
       const spellElement = scenario.spellElement;
       const weak = scenario.targetWeakness;
       if (weak && spellElement && weak.element === spellElement) {
         attackRoll = Math.trunc((attackRoll * (100 + weak.severity)) / 100);
-        const weaknessBonus = Math.trunc((base * weak.severity) / 100);
-        maxHit = maxHit + weaknessBonus;
       }
-
-      // Tome of Fire: +10% damage only (×11/10) on fire spells vs all NPCs.
-      if (scenario.tomeOfFireEquipped && spellElement === "fire") {
-        maxHit = Math.trunc((maxHit * 11) / 10);
-      }
-      // Tome of Water: +20% accuracy AND +20% damage (×6/5) on water spells.
+      // Tome of Water / Earth accuracy (×6/5, ×11/10). Tome of Fire is damage-only.
       if (scenario.tomeOfWaterEquipped && spellElement === "water") {
         attackRoll = Math.trunc((attackRoll * 6) / 5);
-        maxHit = Math.trunc((maxHit * 6) / 5);
       }
-      // Tome of Earth: +10% accuracy AND +10% damage (×11/10) on earth spells.
       if (scenario.tomeOfEarthEquipped && spellElement === "earth") {
         attackRoll = Math.trunc((attackRoll * 11) / 10);
-        maxHit = Math.trunc((maxHit * 11) / 10);
       }
       // Twinflame staff: +10% accuracy & damage on any standard spellbook spell,
       // plus a second cast worth ~40% of the first on Bolt/Blast/Wave (Strike and
@@ -362,6 +352,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     };
     attackRoll = Math.trunc((attackRoll * tbowBonus(10, 140)) / 100);
     maxHit = Math.trunc((maxHit * tbowBonus(14, 250)) / 100);
+  }
+
+  // Magic damage: elemental weakness then elemental tome — applied AFTER the
+  // multiplicative bonuses (DHW / Salve / Void / Slayer above) so the ADDITIVE
+  // weakness bonus (⌊baseMax × severity/100⌋) isn't scaled by them. Mirrors
+  // wgloop: ...×DHW → +weakness → ×tome. The tome multiplies the weakness, the
+  // dragon-hunter/salve/slayer multipliers do not.
+  if (scenario.style === "magic") {
+    const base = scenario.baseSpellMaxHit ?? 0;
+    const el = scenario.spellElement;
+    const weak = scenario.targetWeakness;
+    if (weak && el && weak.element === el) {
+      maxHit = maxHit + Math.trunc((base * weak.severity) / 100);
+    }
+    if (scenario.tomeOfFireEquipped && el === "fire") maxHit = Math.trunc((maxHit * 11) / 10);
+    if (scenario.tomeOfWaterEquipped && el === "water") maxHit = Math.trunc((maxHit * 6) / 5);
+    if (scenario.tomeOfEarthEquipped && el === "earth") maxHit = Math.trunc((maxHit * 11) / 10);
   }
 
   // Berserker necklace + TzHaar/obsidian melee weapon: ×6/5 damage, applied last
