@@ -339,19 +339,21 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
 
   // Twisted bow scaling: applies AFTER dragonbane / Salve multipliers per
-  // wgloop's order of operations. Accuracy mod capped at 140%, damage mod
-  // at 250%. Source: https://oldschool.runescape.wiki/w/Twisted_bow
+  // wgloop's order of operations. The bonus % is computed with INTEGER-truncated
+  // intermediate terms and has NO upper clamp (the natural peak is e.g. 141%
+  // accuracy at magic 250, not 140) — mirroring wgloop's tbowScaling exactly.
+  // Source: https://oldschool.runescape.wiki/w/Twisted_bow
   if (scenario.twistedBowEquipped && scenario.style === "ranged") {
-    const M = scenario.targetMonsterMagicLevel ?? 0;
     const cap = scenario.targetIsXerician ? 350 : 250;
-    const m = Math.min(cap, M);
-    const accPctRaw = 140 + (3 * m - 10) / 100 - Math.pow((3 * m) / 10 - 100, 2) / 100;
-    const dmgPctRaw = 250 + (3 * m - 14) / 100 - Math.pow((3 * m) / 10 - 140, 2) / 100;
-    const accPct = Math.max(0, Math.min(140, accPctRaw));
-    const dmgPct = Math.max(0, Math.min(250, dmgPctRaw));
-    // Multiplier applied as trunc(roll × pct / 100) to mirror the integer math.
-    attackRoll = Math.trunc((attackRoll * accPct) / 100);
-    maxHit = Math.trunc((maxHit * dmgPct) / 100);
+    const m = Math.min(cap, scenario.targetMonsterMagicLevel ?? 0);
+    // factor/base differ for accuracy (10/140) vs damage (14/250).
+    const tbowBonus = (factor: number, base: number): number => {
+      const t2 = Math.trunc((3 * m - factor) / 100);
+      const t3 = Math.trunc((Math.trunc((3 * m) / 10) - 10 * factor) ** 2 / 100);
+      return base + t2 - t3;
+    };
+    attackRoll = Math.trunc((attackRoll * tbowBonus(10, 140)) / 100);
+    maxHit = Math.trunc((maxHit * tbowBonus(14, 250)) / 100);
   }
 
   // Berserker necklace + TzHaar/obsidian melee weapon: ×6/5 damage, applied last
