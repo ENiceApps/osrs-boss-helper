@@ -75,6 +75,7 @@ interface Combo {
   choice: Choice;
   spellName?: string;
   onTask?: boolean;
+  inWilderness?: boolean;
 }
 
 type Result =
@@ -169,6 +170,9 @@ function runOne(combo: Combo): Result {
       // onSlayerTask=true and kandarinDiary=true — both forced here.
       onSlayerTask: combo.onTask ?? false,
       kandarinDiary: false,
+      // Our engine auto-applies the Wilderness weapon ×3/2 for wilderness bosses;
+      // set the buff so wgloop matches.
+      inWilderness: combo.inWilderness ?? false,
     },
   });
 
