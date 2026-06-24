@@ -7,6 +7,7 @@
 
 import type { DpsResult, Skills } from "@/types/osrs";
 import { calculateDps } from "@/lib/dps/calculate";
+import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { SPELLS_BY_NAME } from "@/data/spells/catalog";
 import { resolveBoltProc } from "@/lib/dps/bolts";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
@@ -208,12 +209,18 @@ export function computeSetDps(
       ? (set.totals.magicDamagePct ?? 0) + virtusAncientBonusPct
       : set.totals.magicDamagePct;
 
-  // Harmonised nightmare staff (24423): standard-spellbook autocasts at 4 ticks
-  // instead of 5. The staff's vendor `speed` (5, its melee bash) is what the set
-  // builder records, so override it here when it's actually casting a standard spell.
-  const harmonisedFastCast =
-    weaponId === 24423 && set.style === "magic" && castSpell?.spellbook === "standard";
-  const attackSpeedTicks = harmonisedFastCast ? 4 : set.attackSpeedTicks;
+  // Magic cast speed: a regular staff/wand autocasting a spellbook spell fires at
+  // the SPELL's cast speed (5 ticks; Harmonised standard → 4, Twinflame → 6), not
+  // the staff's recorded melee speed. A fast wand (Kodai = 4-tick melee) still
+  // casts at 5 — the bug the oracle caught (magic DPS was ×5/4 too high). Powered
+  // staves keep their own speed; non-staff magic (salamanders) falls through.
+  const isStandardSpell = castSpell
+    ? castSpell.spellbook === "standard"
+    : set.spellElement !== undefined && set.spellElement !== "none";
+  const attackSpeedTicks =
+    set.style === "magic" && set.weaponCategory === "Staff"
+      ? magicCastSpeedTicks(weaponId, set.attackSpeedTicks, isStandardSpell)
+      : set.attackSpeedTicks;
 
   return calculateDps({
     style: set.style,

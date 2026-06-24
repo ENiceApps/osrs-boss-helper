@@ -13,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "refresh-vendor": "tsx scripts/refresh-vendor-data.ts",
+    "oracle:setup": "tsx scripts/oracle/setup-oracle.ts",
+    "oracle": "tsx scripts/oracle/run-oracle.ts",
     "build-data": "tsx scripts/build-monster-catalog.ts && tsx scripts/build-item-catalog.ts",
     "build-monster-catalog": "tsx scripts/build-monster-catalog.ts",
     "build-item-catalog": "tsx scripts/build-item-catalog.ts",

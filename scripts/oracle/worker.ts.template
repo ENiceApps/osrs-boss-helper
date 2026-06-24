@@ -1,0 +1,161 @@
+/* eslint-disable */
+// GENERATED INTO THE WGLOOP CLONE by scripts/oracle/setup-oracle.ts.
+// Do not edit here in the clone — edit scripts/oracle/worker.ts.template in the
+// osrs-boss-helper repo and re-run setup-oracle.
+//
+// This is a jest spec (not a unit test) used as a batch worker. It reuses the
+// wgloop repo's OWN test helpers + jest module mapping (which stubs .png/.css
+// asset imports and aliases @/ -> src/), so the numbers it produces are
+// identical to wgloop's own test suite — the strongest correctness guarantee.
+//
+// Contract: reads a CanonicalCombo[] JSON from $ORACLE_COMBOS, writes an
+// OracleResult[] JSON to $ORACLE_OUT.
+
+import { describe, test, expect } from '@jest/globals';
+import { readFileSync, writeFileSync } from 'fs';
+import {
+  calculatePlayerVsNpc,
+  findEquipmentById,
+  findSpell,
+  getTestMonsterById,
+  getTestPlayer,
+} from '@/tests/utils/TestUtils';
+import { getCombatStylesForCategory } from '@/utils';
+import { Prayer } from '@/enums/Prayer';
+import { PlayerCombatStyle } from '@/types/PlayerCombatStyle';
+import { EquipmentPiece, PlayerEquipment } from '@/types/Player';
+
+type AttackType = 'stab' | 'slash' | 'crush' | 'ranged' | 'magic';
+type Choice = 'accurate' | 'aggressive' | 'controlled' | 'defensive' | 'rapid' | 'longrange';
+
+interface Combo {
+  id: string;
+  itemIds: number[];
+  internalAmmoId?: number;
+  bossWikiId: number;
+  bossVersion?: string;
+  attackType: AttackType;
+  choice: Choice;
+  spellName?: string;
+  onTask?: boolean;
+}
+
+type Result =
+  | { id: string; ok: true; maxHit: number; accuracy: number; dps: number; maxAttackRoll: number; npcDefRoll: number }
+  | { id: string; ok: false; error: string };
+
+const STANCE_BY_CHOICE: Record<Choice, string> = {
+  accurate: 'Accurate',
+  aggressive: 'Aggressive',
+  controlled: 'Controlled',
+  defensive: 'Defensive',
+  rapid: 'Rapid',
+  longrange: 'Longrange',
+};
+
+/**
+ * Pick the wgloop PlayerCombatStyle matching our (attackType, choice). Magic is
+ * special: standard-spellbook weapons expose Autocast / Defensive Autocast
+ * stances, while powered staves/wands expose Accurate / Longrange. We branch on
+ * which family the weapon's category presents.
+ */
+function resolveStyle(styles: PlayerCombatStyle[], attackType: AttackType, choice: Choice): PlayerCombatStyle | undefined {
+  if (attackType === 'magic') {
+    const hasAutocast = styles.some((s) => s.stance === 'Autocast');
+    if (hasAutocast) {
+      const want = choice === 'defensive' ? 'Defensive Autocast' : 'Autocast';
+      return styles.find((s) => s.stance === want);
+    }
+    const want = choice === 'longrange' ? 'Longrange' : 'Accurate';
+    return styles.find((s) => s.stance === want && s.type === 'magic');
+  }
+  const stance = STANCE_BY_CHOICE[choice];
+  return (
+    styles.find((s) => s.stance === stance && s.type === attackType) ||
+    styles.find((s) => s.stance === stance)
+  );
+}
+
+/** Mirror our engine's DEFAULT_PRAYERS: always-on offensive prayer per style. */
+function prayerFor(attackType: AttackType): Prayer {
+  if (attackType === 'ranged') return Prayer.RIGOUR;
+  if (attackType === 'magic') return Prayer.AUGURY;
+  return Prayer.PIETY;
+}
+
+function runOne(combo: Combo): Result {
+  const monster = getTestMonsterById(combo.bossWikiId);
+
+  const equipment: Partial<PlayerEquipment> = {};
+  let weapon: EquipmentPiece | undefined;
+  for (const id of combo.itemIds) {
+    const piece = findEquipmentById(id);
+    // Clone so per-combo mutation (blowpipe darts) can't leak across the shared
+    // equipment array.
+    const copy = { ...piece } as EquipmentPiece;
+    equipment[copy.slot] = copy;
+    if (copy.slot === 'weapon') weapon = copy;
+  }
+  if (!weapon) return { id: combo.id, ok: false, error: 'no weapon in itemIds' };
+
+  if (combo.internalAmmoId !== undefined) {
+    const dart = findEquipmentById(combo.internalAmmoId);
+    weapon.itemVars = { blowpipeDartId: dart.id, blowpipeDartName: dart.name };
+  }
+
+  const styles = getCombatStylesForCategory(weapon.category);
+  const style = resolveStyle(styles, combo.attackType, combo.choice);
+  if (!style) {
+    return {
+      id: combo.id,
+      ok: false,
+      error: `no style for ${weapon.category} / ${combo.attackType} / ${combo.choice} (have: ${styles
+        .map((s) => `${s.type}:${s.stance}`)
+        .join(', ')})`,
+    };
+  }
+
+  const player = getTestPlayer(monster, {
+    equipment,
+    style,
+    prayers: [prayerFor(combo.attackType)],
+    spell: combo.spellName ? findSpell(combo.spellName) : null,
+    buffs: {
+      // Match our engine's neutral assumptions. generateEmptyPlayer defaults
+      // onSlayerTask=true and kandarinDiary=true — both forced here.
+      onSlayerTask: combo.onTask ?? false,
+      kandarinDiary: false,
+    },
+  });
+
+  const r = calculatePlayerVsNpc(monster, player);
+  return {
+    id: combo.id,
+    ok: true,
+    maxHit: r.maxHit,
+    accuracy: r.accuracy,
+    dps: r.dps,
+    maxAttackRoll: r.maxAttackRoll,
+    npcDefRoll: r.npcDefRoll,
+  };
+}
+
+describe('oracle worker', () => {
+  test('runs all combos', () => {
+    const combosPath = process.env.ORACLE_COMBOS;
+    const outPath = process.env.ORACLE_OUT;
+    if (!combosPath || !outPath) {
+      throw new Error('ORACLE_COMBOS and ORACLE_OUT env vars are required');
+    }
+    const combos = JSON.parse(readFileSync(combosPath, 'utf8')) as Combo[];
+    const results: Result[] = combos.map((c) => {
+      try {
+        return runOne(c);
+      } catch (e) {
+        return { id: c.id, ok: false, error: e instanceof Error ? e.message : String(e) };
+      }
+    });
+    writeFileSync(outPath, JSON.stringify(results, null, 2), 'utf8');
+    expect(results.length).toBe(combos.length);
+  });
+});
