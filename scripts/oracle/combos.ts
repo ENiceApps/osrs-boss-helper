@@ -7,7 +7,10 @@
 // any broad sweep is trusted.
 
 import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
+import { ITEM_CATALOG } from "@/data/items/catalog";
 import { ORACLE_MATRIX, type OracleFixture } from "@/tests/fixtures/oracle-matrix";
+import { optimizeForBoss } from "@/lib/optimize/bank";
+import { SKILLS_AT_99 } from "@/lib/recommend";
 import type { CombatStyle, SpellElement } from "@/types/osrs";
 import type { CanonicalCombo } from "./contract";
 
@@ -98,6 +101,54 @@ export function sweepCombos(opts: { style?: CombatStyle; limit?: number } = {}):
         baseline: undefined, // sweep rows have no locked baseline
       });
     }
+  }
+  return out;
+}
+
+/**
+ * Optimizer-driven sweep: for each sampled boss, run the APP's own
+ * optimizeForBoss with an owns-everything bank, then oracle-check the loadout it
+ * actually recommends. This is the highest-value sweep — it validates the real
+ * gear the app puts in front of users, not a fixed reference set. Magic ranking
+ * is seeded with Fire Surge (24, fire); both engines then use that same spell.
+ */
+export function optimizedSweepCombos(opts: { limit?: number } = {}): CanonicalCombo[] {
+  const realBosses = MONSTER_CATALOG.filter((m) => m.wikiId !== 0);
+  const limit = opts.limit ?? 12;
+  const step = Math.max(1, Math.floor(realBosses.length / limit));
+  const sampled = realBosses.filter((_, i) => i % step === 0).slice(0, limit);
+  const bank = ITEM_CATALOG.map((i) => i.id);
+
+  const out: CanonicalCombo[] = [];
+  for (const boss of sampled) {
+    const result = optimizeForBoss({
+      bank,
+      target: boss,
+      skills: SKILLS_AT_99,
+      baseSpellMaxHit: 24,
+      spellElement: "fire",
+      topN: 1,
+    });
+    const best = result.rankings[0];
+    if (!best) continue;
+    const lo = best.loadout;
+    const itemIds = Object.values(lo.slots)
+      .filter((s): s is NonNullable<typeof s> => Boolean(s))
+      .map((s) => s.itemId);
+    const isMagic = lo.style === "magic";
+    out.push({
+      id: `opt-${boss.slug}`,
+      itemIds,
+      internalAmmoId: lo.internalAmmo?.itemId,
+      bossWikiId: boss.wikiId,
+      bossVersion: boss.version || undefined,
+      bossSlug: boss.slug,
+      attackType: lo.attackType,
+      choice: lo.attackStyleChoice,
+      baseSpellMaxHit: isMagic ? lo.baseSpellMaxHit : undefined,
+      spellElement: isMagic ? lo.spellElement : undefined,
+      spellName: isMagic ? spellNameFor(lo.spellElement, lo.baseSpellMaxHit) : undefined,
+    });
   }
   return out;
 }

@@ -35,7 +35,18 @@ npm run oracle -- --all     # also print the rows that match
 npm run oracle -- --sweep --style=magic --limit=60   # broad sweep, one shard
 npm run oracle -- --sweep --style=ranged
 npm run oracle -- --sweep --style=melee
+npm run oracle -- --optimize --limit=20              # oracle-check the APP's own
+                                                     # recommended loadout per boss
 ```
+
+`--optimize` is the highest-value sweep: it runs `optimizeForBoss` (owns-everything
+bank) per boss and oracle-checks the loadout the app actually recommends — so it
+validates real user-facing gear, not a fixed reference set. (First catch: the
+optimizer recommending `speed: 0` holiday items like "Christmas dinner" as BIS.)
+
+Both engines are fed identical item stats: the harness replays our
+`data/items/stat-overrides.ts` into the clone, so divergences are engine logic,
+not data version.
 
 Exit code is non-zero when any combo diverges beyond tolerance (maxHit must match
 exactly; accuracy ±0.0015; dps ±0.5%) — usable as a CI gate once green.
@@ -80,9 +91,9 @@ localize to specific mechanics:
   remains from wgloop's distribution flooring on the necklace ×6/5 — minor.
 - ~~**Void set** — accuracy ~0.4% high.~~ **FIXED** — void now applies ×11/10 to
   the effective level, not the roll (`accuracyOnEffectiveLevel`).
-- **Inquisitor's set** (47 vs 46) — **NOT an engine bug**: the wgloop clone has
-  pre-buff Inquisitor item stats; our data (stat-overrides) matches live OSRS.
-  An example of the data-skew caveat below.
+- ~~**Inquisitor's set** (47 vs 46)~~ — was data skew (clone had pre-buff item
+  stats); **resolved** by replaying our stat-overrides into the worker. Matches
+  exactly now. Our engine was correct all along.
 - **Twisted bow with no arrows** — fixture omits ammo; the app always fills it.
   Not an engine bug.
 

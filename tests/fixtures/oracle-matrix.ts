@@ -167,7 +167,9 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "attack-type gate: set bonus must NOT fire for stab/slash with same pieces",
     ],
     wikiNotes: "Piety prayer. General Graardor. Full Inquisitor's set. Barrelchest anchor (crush style).",
-    baseline: { maxHit: 47, accuracy: 0.3740, dps: 2.441, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    // Matches wgloop exactly once the oracle replays our post-buff Inquisitor
+    // stat-overrides into the clone (its pinned equipment.json is pre-buff).
+    baseline: { maxHit: 47, accuracy: 0.374, dps: 2.441, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
   },
 
   // ─── Obsidian armour (weapon-gated set bonus) ─────────────────────────────
