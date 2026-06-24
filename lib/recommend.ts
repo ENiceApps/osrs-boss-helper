@@ -101,6 +101,9 @@ const DUAL_MACUAHUITL_ID = 28997;
 const BLOOD_MOON_HELM_IDS = new Set([29028, 29047, 29073]);
 const BLOOD_MOON_BODY_IDS = new Set([29022, 29043, 29067]);
 const BLOOD_MOON_LEGS_IDS = new Set([29025, 29045, 29070]);
+// TzHaar/obsidian MELEE weapons — Berserker necklace gives +20% damage with these.
+// Toktz-xil-ak (sword), Toktz-xil-ek (dagger), Tzhaar-ket-em (mace), Tzhaar-ket-om (maul).
+const TZHAAR_MELEE_WEAPON_IDS = new Set([6523, 6525, 6527, 6528]);
 
 export function computeSetDps(
   set: LoadoutSet,
@@ -154,6 +157,14 @@ export function computeSetDps(
     set.slots.head?.itemId !== undefined && BLOOD_MOON_HELM_IDS.has(set.slots.head.itemId) &&
     set.slots.body?.itemId !== undefined && BLOOD_MOON_BODY_IDS.has(set.slots.body.itemId) &&
     set.slots.legs?.itemId !== undefined && BLOOD_MOON_LEGS_IDS.has(set.slots.legs.itemId);
+  // Berserker necklace (11128) + a TzHaar/obsidian MELEE weapon → ×6/5 damage.
+  // Stacks on top of the Obsidian armour set's ×11/10 (which arrives via
+  // set.armorSetBonus). Neck-slot item, so it's not part of the armor set.
+  const berserkerObsidian =
+    set.style === "melee" &&
+    set.slots.neck?.itemId === 11128 &&
+    weaponId !== undefined &&
+    TZHAAR_MELEE_WEAPON_IDS.has(weaponId);
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -254,6 +265,7 @@ export function computeSetDps(
     hitProfile,
     dharok,
     bloodrager,
+    berserkerObsidian,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

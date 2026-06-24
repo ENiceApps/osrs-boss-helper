@@ -35,6 +35,15 @@ export interface ArmorSetBonus {
   name: string;
   accuracyFactor?: readonly [number, number];
   damageFactor?: readonly [number, number];
+  /**
+   * Void only: the accuracy bonus multiplies the EFFECTIVE LEVEL (before the
+   * gear-bonus multiply), not the final attack roll — so it floors earlier and
+   * lands ~0.4% below a roll-stage application. Mirrors wgloop, which applies
+   * void at the effective-level stage for melee/ranged/magic alike. When set,
+   * calculate.ts applies accuracyFactor to the effective level and skips it on
+   * the roll. damageFactor is unaffected (still applied to max hit).
+   */
+  accuracyOnEffectiveLevel?: boolean;
 }
 
 /**
@@ -92,7 +101,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "hands", itemIds: [VOID_GLOVES] },
     ],
     // +10% accuracy + +12.5% damage. Elite ranged's signature bonus.
-    bonus: { accuracyFactor: [11, 10], damageFactor: [9, 8] },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [9, 8], accuracyOnEffectiveLevel: true },
   },
   {
     id: "void-ranged",
@@ -106,7 +115,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +10% accuracy + +10% damage. Standard bonus, also fires if the player
     // mixes elite/regular pieces (no elite-set tax in that case).
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true },
   },
   {
     id: "crystal-armour",
@@ -139,7 +148,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +45% accuracy + +5% magic damage. Bumped from 2.5% → 5% in the
     // 29 May 2024 game update.
-    bonus: { accuracyFactor: [29, 20], damageFactor: [21, 20] },
+    bonus: { accuracyFactor: [29, 20], damageFactor: [21, 20], accuracyOnEffectiveLevel: true },
   },
   {
     id: "void-magic",
@@ -153,7 +162,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +45% accuracy, no damage bonus. Elite mage helm doesn't exist
     // separately — same mage helm used for both regular and elite.
-    bonus: { accuracyFactor: [29, 20] },
+    bonus: { accuracyFactor: [29, 20], accuracyOnEffectiveLevel: true },
   },
 
   // ============ Melee ============
@@ -169,7 +178,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +10% acc + +10% dmg. Elite top/robe DON'T add damage for melee
     // (elite ranged/magic only), so there's no separate "elite-void-melee".
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true },
   },
 
   // ============ Blood moon — only fires with the Dual macuahuitl ============

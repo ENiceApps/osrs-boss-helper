@@ -136,6 +136,14 @@ export interface DpsScenario {
    * are detected; resolved upstream (computeSetDps).
    */
   bloodrager?: boolean;
+  /**
+   * Melee-only: Berserker necklace worn with a TzHaar/obsidian melee weapon —
+   * ×6/5 damage. Applied at the very end of the max-hit pipeline (after the
+   * Obsidian armour set bonus and every other multiplier), mirroring wgloop's
+   * final distribution scale. Stacks with the Obsidian set's ×11/10 (which
+   * arrives via armorSetBonus). Resolved upstream (computeSetDps).
+   */
+  berserkerObsidian?: boolean;
 }
 
 interface StyleBonuses {
@@ -170,6 +178,15 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   let attackRoll: number;
   let maxHit: number;
 
+  // Void's accuracy bonus multiplies the EFFECTIVE LEVEL (floored before the
+  // gear multiply), not the final roll — see ArmorSetBonus.accuracyOnEffectiveLevel.
+  const voidEffLvlAcc =
+    scenario.armorSetBonus?.accuracyOnEffectiveLevel && scenario.armorSetBonus.accuracyFactor
+      ? scenario.armorSetBonus.accuracyFactor
+      : undefined;
+  const applyEffLvlAcc = (level: number): number =>
+    voidEffLvlAcc ? Math.trunc((level * voidEffLvlAcc[0]) / voidEffLvlAcc[1]) : level;
+
   switch (scenario.style) {
     case "melee": {
       const effAtk = effectiveLevel(
@@ -182,7 +199,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         scenario.prayers.strengthMultiplier,
         sb.strength,
       );
-      attackRoll = meleeAttackRoll(effAtk, scenario.attackBonus);
+      attackRoll = meleeAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = meleeMaxHit(effStr, scenario.strengthBonus);
       if (scenario.dharok) {
         const { maxHp, currentHp } = scenario.dharok;
@@ -201,7 +218,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         scenario.prayers.rangedStrengthMultiplier,
         sb.strength,
       );
-      attackRoll = rangedAttackRoll(effAtk, scenario.attackBonus);
+      attackRoll = rangedAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = rangedMaxHit(effStr, scenario.strengthBonus);
       break;
     }
@@ -223,7 +240,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       const magicAtkBonus = scenario.shadowEquipped
         ? scenario.attackBonus * shadowMult
         : scenario.attackBonus;
-      attackRoll = magicAttackRoll(effMag, magicAtkBonus);
+      attackRoll = magicAttackRoll(applyEffLvlAcc(effMag), magicAtkBonus);
 
       // Demonbane spell (Arceuus) vs a demon — magic accuracy only. Applied to
       // the raw attack roll before tome/weakness/conditional mods, mirroring how
@@ -293,7 +310,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // additive trick. Multiplier expressed as [n, d] (e.g. [11, 10] = ×1.10).
   if (scenario.armorSetBonus) {
     const setBonus = scenario.armorSetBonus;
-    if (setBonus.accuracyFactor) {
+    // Void's accuracy factor was already applied to the effective level above;
+    // applying it again here would double-count it.
+    if (setBonus.accuracyFactor && !setBonus.accuracyOnEffectiveLevel) {
       const [n, d] = setBonus.accuracyFactor;
       attackRoll = Math.trunc((attackRoll * n) / d);
     }
@@ -328,6 +347,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // Multiplier applied as trunc(roll × pct / 100) to mirror the integer math.
     attackRoll = Math.trunc((attackRoll * accPct) / 100);
     maxHit = Math.trunc((maxHit * dmgPct) / 100);
+  }
+
+  // Berserker necklace + TzHaar/obsidian melee weapon: ×6/5 damage, applied last
+  // (after the obsidian armour set's ×11/10), matching wgloop's final damage
+  // scale. e.g. obsidian set base 36 → trunc(36 × 6/5) = 43.
+  if (scenario.berserkerObsidian && scenario.style === "melee") {
+    maxHit = Math.trunc((maxHit * 6) / 5);
   }
 
   const accuracy = scenario.fangEquipped

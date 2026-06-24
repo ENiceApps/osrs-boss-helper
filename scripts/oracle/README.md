@@ -73,11 +73,24 @@ These are candidate engine bugs the oracle found, **not** harness errors — bas
 math (e.g. demonbane melee accuracy) matches wgloop to 4 decimals, so divergences
 localize to specific mechanics:
 
-- ~~**Standard-spellbook cast speed** — magic DPS ×5/4 too high everywhere.~~
-  **FIXED** 2026-06-23 (`lib/dps/magic-cast-speed.ts`).
-- **Obsidian + Berserker necklace** — damage under-modelled (maxHit 36 vs 43);
-  the Berserker-necklace obsidian-weapon boost looks missing.
-- **Inquisitor's set** — crush bonus over-credited (maxHit 47 vs 46).
-- **Void set** — accuracy slightly high (~0.4%) on melee & ranged.
-- **Twisted bow with no arrows** — our engine fires anyway; wgloop (correctly)
-  yields 0. Either an engine gap or a fixture missing ammo.
+- ~~**Standard-spellbook cast speed** — magic DPS ×5/4 too high.~~ **FIXED**
+  (`lib/dps/magic-cast-speed.ts`).
+- ~~**Obsidian + Berserker necklace** — damage under-modelled (36 vs 43).~~
+  **FIXED** (`berserkerObsidian` in `lib/dps/calculate.ts`). ~1.2% dps residual
+  remains from wgloop's distribution flooring on the necklace ×6/5 — minor.
+- ~~**Void set** — accuracy ~0.4% high.~~ **FIXED** — void now applies ×11/10 to
+  the effective level, not the roll (`accuracyOnEffectiveLevel`).
+- **Inquisitor's set** (47 vs 46) — **NOT an engine bug**: the wgloop clone has
+  pre-buff Inquisitor item stats; our data (stat-overrides) matches live OSRS.
+  An example of the data-skew caveat below.
+- **Twisted bow with no arrows** — fixture omits ammo; the app always fills it.
+  Not an engine bug.
+
+## Caveat — data version skew
+
+Our item catalog applies `data/items/stat-overrides.ts` on top of vendored data
+to track live OSRS rebalances (e.g. the Inquisitor's buff). The wgloop clone
+reads its own pinned `cdn/json/equipment.json`, which can predate those changes.
+When a divergence is a clean ±1 on a single rebalanced item, suspect data skew
+before an engine bug — verify the item's stats match live OSRS. A future
+hardening is to feed the worker our final (overridden) item stats.
