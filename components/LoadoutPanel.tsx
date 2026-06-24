@@ -105,12 +105,34 @@ export function LoadoutPanel<TabId extends string>({
 
   return (
     <div className="osrs-panel p-4 rounded">
-      <div className="flex items-baseline justify-between gap-2 mb-1">
+      <div className="flex items-center justify-between gap-2 mb-1">
         <h3 className="section-title font-semibold text-osrs-brown">Loadout</h3>
         {set && (
-          <span className="text-caption text-osrs-muted">
-            {edited ? "custom — edited by you" : sourceLabel}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-caption text-osrs-muted">
+              {edited ? "custom — edited by you" : sourceLabel}
+            </span>
+            {/* Persistent "go back to the recommendation" affordance. Reverts
+                any manual weapon/gear/spell swaps to the optimizer's pick, which
+                re-runs the DPS calc. Disabled (nothing to undo) until edited. */}
+            <button
+              type="button"
+              onClick={onResetEdits}
+              disabled={!edited}
+              title={
+                edited
+                  ? "Discard your edits and rebuild the optimizer's recommended loadout"
+                  : "This is the optimizer's recommendation — nothing to refresh"
+              }
+              className={`text-caption font-semibold rounded px-1.5 py-0.5 border shrink-0 transition-colors ${
+                edited
+                  ? "text-osrs-gold border-osrs-gold/60 hover:bg-osrs-gold/10 cursor-pointer"
+                  : "text-osrs-muted border-osrs-brown/30 opacity-60 cursor-default"
+              }`}
+            >
+              ↻ Refresh loadout
+            </button>
+          </div>
         )}
       </div>
 
