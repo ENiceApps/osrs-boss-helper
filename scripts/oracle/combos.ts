@@ -119,7 +119,11 @@ export function optimizedSweepCombos(opts: { limit?: number } = {}): CanonicalCo
   const limit = opts.limit ?? 12;
   const step = Math.max(1, Math.floor(realBosses.length / limit));
   const sampled = realBosses.filter((_, i) => i % step === 0).slice(0, limit);
-  const bank = ITEM_CATALOG.map((i) => i.id);
+  // Exclude PvP/minigame-only gear (Deadman Mode, Bounty Hunter "(bh)", LMS
+  // "(perfected)"/"(augmented)") from the owns-everything bank — players don't
+  // own these in PvM and their inflated/variant stats only add sweep noise.
+  const PVP_GEAR = /\(deadman mode\)|\(bh\)|\(perfected\)|\(augmented\)|\(last man standing\)/i;
+  const bank = ITEM_CATALOG.filter((i) => !PVP_GEAR.test(i.name)).map((i) => i.id);
 
   const out: CanonicalCombo[] = [];
   for (const boss of sampled) {
