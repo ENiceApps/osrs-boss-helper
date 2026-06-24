@@ -73,7 +73,9 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "void-ranged set bonus: ×11/10 accuracy + ×11/10 damage",
     ],
     wikiNotes: "Rigour prayer. General Graardor. No Kandarin diary (bolts are not enchanted).",
-    baseline: { maxHit: 38, accuracy: 0.3423, dps: 2.168, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    // accuracy corrected 0.3423 → 0.3408 (bug #8: void ×11/10 applies to the
+    // effective level, not the attack roll). Now matches wgloop.
+    baseline: { maxHit: 38, accuracy: 0.3408, dps: 2.158, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
   },
 
   // ─── Elite Void Knight (Ranged) ───────────────────────────────────────────
@@ -90,7 +92,8 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "elite-void-ranged set bonus: ×11/10 accuracy + ×9/8 damage (stronger than regular)",
     ],
     wikiNotes: "Rigour prayer. General Graardor. Elite void top + robe equipped.",
-    baseline: { maxHit: 39, accuracy: 0.3423, dps: 2.225, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    // accuracy corrected 0.3423 → 0.3408 (bug #8). Now matches wgloop.
+    baseline: { maxHit: 39, accuracy: 0.3408, dps: 2.215, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
   },
 
   // ─── Void Knight (Melee) ──────────────────────────────────────────────────
@@ -106,7 +109,8 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "void-melee set bonus: ×11/10 accuracy + ×11/10 damage",
     ],
     wikiNotes: "Piety prayer. General Graardor. Void gloves are mandatory for the set.",
-    baseline: { maxHit: 39, accuracy: 0.2971, dps: 2.414, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    // accuracy corrected 0.2971 → 0.2952 (bug #8). Now matches wgloop.
+    baseline: { maxHit: 39, accuracy: 0.2952, dps: 2.398, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
   },
 
   // ─── Tome of Fire + elemental weakness ────────────────────────────────────
@@ -179,7 +183,17 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "Obsidian set bonus: ×11/10 accuracy + ×11/10 damage (TzHaar weapon required)",
       "weapon-ID gate: set bonus must NOT fire if a non-TzHaar weapon is equipped",
     ],
-    wikiNotes: "Piety prayer. Cerberus. Toktz-xil-ak (obsidian sword) equipped. Full obsidian set.",
-    baseline: { maxHit: 36, accuracy: 0.6355, dps: 4.766, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    wikiNotes: "Piety prayer. Cerberus. Toktz-xil-ak (obsidian sword) equipped. Full obsidian set. Berserker necklace.",
+    // maxHit corrected 36 → 43 after modelling the Berserker necklace ×6/5 (bug
+    // #6). maxHit + accuracy now match wgloop exactly; dps 5.693 vs wgloop 5.625
+    // (~1.2%) — a residual from wgloop flooring each value of the scaled hit
+    // distribution, which our max-hit-only model doesn't capture (see dpsNote).
+    baseline: {
+      maxHit: 43,
+      accuracy: 0.6355,
+      dps: 5.693,
+      verifiedOn: "2026-06-23 (oracle vs wgloop)",
+      dpsNote: "wgloop 5.625; ~1.2% gap from distribution-flooring on the necklace ×6/5",
+    },
   },
 ];
