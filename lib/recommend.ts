@@ -247,7 +247,7 @@ export function computeSetDps(
     : set.spellElement !== undefined && set.spellElement !== "none";
   const attackSpeedTicks =
     set.style === "magic" && set.weaponCategory === "Staff"
-      ? magicCastSpeedTicks(weaponId, set.attackSpeedTicks, isStandardSpell)
+      ? magicCastSpeedTicks(weaponId!, set.attackSpeedTicks, isStandardSpell)
       : set.attackSpeedTicks;
 
   return calculateDps({
