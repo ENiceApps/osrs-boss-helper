@@ -34,7 +34,7 @@ import type {
   SpellElement,
   WeaponAttackType,
 } from "@/types/osrs";
-import { optimizeForBoss } from "@/lib/optimize/bank";
+import { optimizeForBoss, combatStyleFor } from "@/lib/optimize/bank";
 import { isHalberdWeapon } from "@/data/items/halberd-weapons";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
@@ -259,7 +259,9 @@ function findCandidates(
     // Non-weapon swaps keep the active style (the worn weapon is unchanged).
     let scored: ScoredScenario | null = null;
     if (slot === "weapon") {
-      const offensive = (WEAPON_STYLES[item.category] ?? []).filter((o) => !o.defensive);
+      const offensive = (WEAPON_STYLES[item.category] ?? []).filter(
+        (o) => !o.defensive && combatStyleFor(o.attackType) === activeLoadout.style,
+      );
       for (const o of offensive) {
         const s = scoreScenario({
           itemIds: itemIdsAfter,
