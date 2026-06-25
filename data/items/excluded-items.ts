@@ -53,14 +53,23 @@ export const EXCLUDED_ITEM_NAMES: ReadonlySet<string> = new Set<string>([
 // can't be equipped. Every "(basic|attuned|perfected)" item in the dataset is a
 // Gauntlet item, so this pattern is safe. The real, usable crystal gear
 // (Crystal helm / body / legs / bow / halberd, no tier suffix) is untouched.
-// "(Deadman Mode)" variants (Morrigan's / Statius's / Vesta's / Zuriel's, etc.)
-// exist only in the Deadman Mode seasonal game mode — not obtainable or usable
-// in the main game, so they must never be recommended.
+// "(Deadman Mode)" variants exist only in the Deadman Mode seasonal game mode —
+// not usable in the main game.
 //
-// NOTE: "(bh)" Bounty Hunter variants are NOT excluded here yet — many are just
-// untradeable duplicates of real main-game weapons (Abyssal dagger (bh), Dark
-// bow (bh)). Revisit if they cause bogus recommendations.
+// "(bh)" Bounty Hunter variants: untradeable BH-shop versions. The weapon ones
+// (Abyssal dagger (bh), Dark bow (bh)) are duplicates of real items already in
+// the catalog; the armour ones are the ancient warriors' PvP set (below).
+//
+// The ANCIENT WARRIORS' EQUIPMENT (Morrigan's / Statius's / Vesta's / Zuriel's)
+// is degradable PvP/Wilderness gear — its only obtainable forms are "(bh)" and
+// the single-use "blighted" Wilderness versions. It is NOT realistic PvM gear,
+// yet some pieces (Morrigan's leather: +ranged strength) out-stat true BIS
+// (Masori) and were being recommended as best-in-slot for normal bosses. No
+// legitimate main-game item shares these family names, so excluding them whole
+// is safe.
 export const EXCLUDED_NAME_PATTERNS: readonly RegExp[] = [
   /\((?:basic|attuned|perfected)\)/i,
   /\(deadman mode\)/i,
+  /\(bh\)/i,
+  /\b(?:morrigan's|statius's|vesta's|zuriel's)\b/i,
 ];
