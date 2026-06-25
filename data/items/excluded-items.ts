@@ -53,6 +53,14 @@ export const EXCLUDED_ITEM_NAMES: ReadonlySet<string> = new Set<string>([
 // can't be equipped. Every "(basic|attuned|perfected)" item in the dataset is a
 // Gauntlet item, so this pattern is safe. The real, usable crystal gear
 // (Crystal helm / body / legs / bow / halberd, no tier suffix) is untouched.
+// "(Deadman Mode)" variants (Morrigan's / Statius's / Vesta's / Zuriel's, etc.)
+// exist only in the Deadman Mode seasonal game mode — not obtainable or usable
+// in the main game, so they must never be recommended.
+//
+// NOTE: "(bh)" Bounty Hunter variants are NOT excluded here yet — many are just
+// untradeable duplicates of real main-game weapons (Abyssal dagger (bh), Dark
+// bow (bh)). Revisit if they cause bogus recommendations.
 export const EXCLUDED_NAME_PATTERNS: readonly RegExp[] = [
   /\((?:basic|attuned|perfected)\)/i,
+  /\(deadman mode\)/i,
 ];
