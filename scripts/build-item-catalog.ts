@@ -11,7 +11,7 @@ import equipmentJson from "../data/vendor/wgloop/equipment.json" with { type: "j
 import requirementsJson from "../data/vendor/wiki/item-requirements.json" with { type: "json" };
 import { REQUIREMENT_OVERRIDES } from "../data/items/requirement-overrides.js";
 import { STAT_OVERRIDES } from "../data/items/stat-overrides.js";
-import { EXCLUDED_ITEM_NAMES } from "../data/items/excluded-items.js";
+import { EXCLUDED_ITEM_NAMES, EXCLUDED_NAME_PATTERNS } from "../data/items/excluded-items.js";
 import type { VendorEquipmentItem } from "../types/vendor.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -25,6 +25,10 @@ const excludedMatched = new Set<string>();
 const equipment = allEquipment.filter((it) => {
   if (EXCLUDED_ITEM_NAMES.has(it.name)) {
     excludedMatched.add(it.name);
+    return false;
+  }
+  // Pattern exclusions (e.g. Gauntlet "(basic|attuned|perfected)" gear).
+  if (EXCLUDED_NAME_PATTERNS.some((re) => re.test(it.name))) {
     return false;
   }
   return true;
