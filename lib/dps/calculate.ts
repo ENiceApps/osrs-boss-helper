@@ -199,6 +199,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       : undefined;
   const applyEffLvlAcc = (level: number): number =>
     voidEffLvlAcc ? Math.trunc((level * voidEffLvlAcc[0]) / voidEffLvlAcc[1]) : level;
+  // Void's melee/ranged DAMAGE bonus likewise multiplies the effective STRENGTH
+  // level (floored before the max-hit formula) — see damageOnEffectiveLevel.
+  const voidEffLvlDmg =
+    scenario.armorSetBonus?.damageOnEffectiveLevel && scenario.armorSetBonus.damageFactor
+      ? scenario.armorSetBonus.damageFactor
+      : undefined;
+  const applyEffLvlDmg = (level: number): number =>
+    voidEffLvlDmg ? Math.trunc((level * voidEffLvlDmg[0]) / voidEffLvlDmg[1]) : level;
 
   switch (scenario.style) {
     case "melee": {
@@ -213,7 +221,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         sb.strength,
       );
       attackRoll = meleeAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
-      maxHit = meleeMaxHit(effStr, scenario.strengthBonus);
+      maxHit = meleeMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
       if (scenario.dharok) {
         const { maxHp, currentHp } = scenario.dharok;
         maxHit = Math.trunc(maxHit * (1 + (maxHp - currentHp) * maxHp / 10000));
@@ -232,7 +240,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         sb.strength,
       );
       attackRoll = rangedAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
-      maxHit = rangedMaxHit(effStr, scenario.strengthBonus);
+      maxHit = rangedMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
       break;
     }
     case "magic": {
@@ -319,7 +327,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       const [n, d] = setBonus.accuracyFactor;
       attackRoll = Math.trunc((attackRoll * n) / d);
     }
-    if (setBonus.damageFactor) {
+    if (setBonus.damageFactor && !setBonus.damageOnEffectiveLevel) {
       const [n, d] = setBonus.damageFactor;
       maxHit = Math.trunc((maxHit * n) / d);
     }

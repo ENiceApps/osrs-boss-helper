@@ -44,6 +44,15 @@ export interface ArmorSetBonus {
    * the roll. damageFactor is unaffected (still applied to max hit).
    */
   accuracyOnEffectiveLevel?: boolean;
+  /**
+   * Void only (melee/ranged): the DAMAGE bonus multiplies the effective STRENGTH
+   * level (floored before the max-hit formula), not the final max hit — so it
+   * floors earlier. Mirrors wgloop, which applies Elite ×9/8 / regular ×11/10 to
+   * the effective level before trackMaxHitFromEffective. When set, calculate.ts
+   * applies damageFactor to the effective strength level and skips it on the max
+   * hit. (Magic void's +5% is a separate magic-damage-% path, not this flag.)
+   */
+  damageOnEffectiveLevel?: boolean;
 }
 
 /**
@@ -101,7 +110,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "hands", itemIds: [VOID_GLOVES] },
     ],
     // +10% accuracy + +12.5% damage. Elite ranged's signature bonus.
-    bonus: { accuracyFactor: [11, 10], damageFactor: [9, 8], accuracyOnEffectiveLevel: true },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [9, 8], accuracyOnEffectiveLevel: true, damageOnEffectiveLevel: true },
   },
   {
     id: "void-ranged",
@@ -115,7 +124,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +10% accuracy + +10% damage. Standard bonus, also fires if the player
     // mixes elite/regular pieces (no elite-set tax in that case).
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true, damageOnEffectiveLevel: true },
   },
   {
     id: "crystal-armour",
@@ -178,7 +187,7 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +10% acc + +10% dmg. Elite top/robe DON'T add damage for melee
     // (elite ranged/magic only), so there's no separate "elite-void-melee".
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true },
+    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], accuracyOnEffectiveLevel: true, damageOnEffectiveLevel: true },
   },
 
   // ============ Blood moon — only fires with the Dual macuahuitl ============
