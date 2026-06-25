@@ -145,6 +145,46 @@ describe("optimize/budget — gp-only mode", () => {
   });
 });
 
+describe("optimize/budget — weapon candidate uses its own legal style", () => {
+  // Regression: a weapon upgrade was scored with the INCUMBENT weapon's attack
+  // style. The Dragon hunter lance (category "Spear") has no aggressive style,
+  // only "controlled" Lunge/Swipe/Pound — so when the bank's best melee weapon
+  // is an aggressive Stab Sword (Osmumten's fang), the lance was scored with an
+  // illegal {stab, aggressive} combo, came back invalid, and was silently
+  // dropped. It must instead be evaluated with its own legal style and, vs a
+  // dragon, win on its dragonbane bonus.
+  const RUNE_DRAGON = MONSTER_BY_SLUG["rune-dragon"];
+
+  it("recommends the Dragon hunter lance over the fang vs a dragon", () => {
+    const FANG = 26219;
+    const DHL = 22978;
+    // Full melee strength setup — the fang's higher base Strength only loses to
+    // the lance's dragonbane once strength gear is stacked, mirroring the live
+    // app's loadout. With a bare weapon the fang still wins, so the regression
+    // needs the real gear context.
+    const GEAR = [26674, 24780, 20445, 11832, 11834, 7462, 11840, 26770, 20463, 20220];
+    const prices = (id: number) => (id === DHL ? 60_000_000 : null);
+
+    const result = findUpgrades({
+      bank: [FANG, ...GEAR],
+      target: RUNE_DRAGON,
+      skills: SKILLS_AT_99,
+      gp: 100_000_000,
+      mode: "gp-only",
+      onTask: true,
+      priceLookup: prices,
+    });
+
+    // The fang is the bank's only weapon, so it's the current best.
+    expect(result.currentBest!.loadout.slots.weapon!.itemId).toBe(FANG);
+    // The lance must be bought and end up equipped — it beats the fang vs a dragon.
+    const boughtLance = result.upgradePath.some((s) => s.bought.itemId === DHL);
+    expect(boughtLance).toBe(true);
+    expect(result.upgradedBest!.loadout.slots.weapon!.itemId).toBe(DHL);
+    expect(result.upgradedBest!.dps.dps).toBeGreaterThan(result.currentBest!.dps.dps);
+  });
+});
+
 describe("optimize/budget — sell-to-fund mode (explicit selection)", () => {
   it("only the explicitly-selected items fund the budget; sellList echoes them", () => {
     // Player chooses to sell a spare Armadyl chestplate (30M). That GP — and
