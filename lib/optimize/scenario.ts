@@ -331,10 +331,12 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   // when compatible ammo is loaded — a bonus NOT in the cape's base stats. Only
   // the charged/blessed/max variants grant it. Mirrors wgloop's
   // calculateEquipmentBonusesFromGear (Blessed dizana's quiver et al.).
+  // Only real ammo in the AMMO SLOT counts — a blowpipe's internal dart does
+  // not (wgloop checks the ammo-slot item, which is empty for a blowpipe), so
+  // the passive does not apply to self-ammo weapons.
   if (combatStyle === "ranged") {
     const capeId = computedSlots.cape?.itemId;
-    const ammoLoaded = ammoIsIncluded || input.internalAmmoId !== undefined;
-    if (capeId !== undefined && DIZANA_PASSIVE_CAPE_IDS.has(capeId) && ammoLoaded) {
+    if (capeId !== undefined && DIZANA_PASSIVE_CAPE_IDS.has(capeId) && ammoIsIncluded) {
       attackBonus += 10;
       rngStr += 1;
     }
