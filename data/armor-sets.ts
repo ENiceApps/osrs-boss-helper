@@ -292,11 +292,19 @@ export function detectArmorSetBonus(
       p.itemIds.some((id) => itemIds.has(id)),
     );
     if (allPresent) {
+      // Inquisitor's full set is normally +2.5% (×41/40). The Inquisitor's MACE
+      // upgrades the per-piece bonus from 0.5%→2.5%, so a full set + mace is
+      // +7.5% (×43/40) — matching wgloop's `inqPieces *= 5` → ×(200+15)/200.
+      if (set.id === "inquisitors" && weaponId === INQUISITORS_MACE_ID) {
+        return { id: set.id, name: set.name, accuracyFactor: [43, 40], damageFactor: [43, 40] };
+      }
       return { id: set.id, name: set.name, ...set.bonus };
     }
   }
   return undefined;
 }
+
+const INQUISITORS_MACE_ID = 24417;
 
 /**
  * Every armor set in the catalog whose pieces are all in the bank — AND, if
