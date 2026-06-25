@@ -17,7 +17,7 @@
 // gate once the validation set is green.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
@@ -97,9 +97,28 @@ function refreshWorker(): void {
   if (existsSync(dest)) writeFileSync(dest, template, "utf8");
 }
 
+/**
+ * Copy OUR vendored equipment/monsters data into the clone's CDN so both engines
+ * read identical base item/monster stats by construction. Currently a no-op
+ * (our vendored snapshot == the clone's pinned snapshot — verified via git diff),
+ * but it future-proofs the oracle: when WGLOOP_PINNED_SHA is bumped or the
+ * vendored data is refreshed independently, this keeps both sides on OUR data so
+ * any divergence is engine logic, never a data-version mismatch. (Our catalog =
+ * this vendored data + stat-overrides; the worker replays the overrides on top.)
+ */
+function syncVendorData(): void {
+  const srcDir = join(ROOT, "data", "vendor", "wgloop");
+  const dstDir = join(CLONE_DIR, "cdn", "json");
+  for (const f of ["equipment.json", "monsters.json"]) {
+    const src = join(srcDir, f);
+    if (existsSync(src) && existsSync(dstDir)) copyFileSync(src, join(dstDir, f));
+  }
+}
+
 function runWorker(combos: CanonicalCombo[]): OracleResult[] {
   mkdirSync(IO_DIR, { recursive: true });
   refreshWorker();
+  syncVendorData();
   const combosPath = join(IO_DIR, "combos.json");
   const outPath = join(IO_DIR, "results.json");
   const overridesPath = join(IO_DIR, "overrides.json");
