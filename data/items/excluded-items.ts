@@ -69,6 +69,7 @@ export const EXCLUDED_ITEM_NAMES: ReadonlySet<string> = new Set<string>([
 // is safe.
 export const EXCLUDED_NAME_PATTERNS: readonly RegExp[] = [
   /\((?:basic|attuned|perfected)\)/i,
+  /\(The Gauntlet\)/i,
   /\(deadman mode\)/i,
   /\(bh\)/i,
   /\b(?:morrigan's|statius's|vesta's|zuriel's)\b/i,
