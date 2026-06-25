@@ -1,10 +1,14 @@
 // Phase 3 — budget-aware upgrade finder.
 // Given a player's bank + GP + mode, returns:
 //   - the best loadout buildable RIGHT NOW from the bank (Phase 2 output)
-//   - an ordered "upgrade path" of single-item purchases ranked by DPS gained
-//     per GP spent — committing one at a time, re-evaluating against the new
-//     loadout (iterative greedy)
+//   - an ordered "upgrade path" of single-item purchases ranked by raw DPS
+//     gained (biggest upgrade first) — committing one at a time, re-evaluating
+//     against the new loadout (iterative greedy)
 //   - in sell-to-fund mode, the list of bank items recommended for liquidation
+//
+// Ordering note: the path leads with the biggest DPS jump (a pricey best-in-slot
+// like the Dragon hunter lance outranks a cheap-but-small boots upgrade), so the
+// player sees their highest-impact purchases first. GP cost is only a tie-break.
 //
 // The iterative greedy commits the best single-item upgrade each round. This
 // naturally handles:
@@ -65,7 +69,11 @@ export interface FindUpgradesInput {
   sellItemIds?: number[];
   /** Caller wires this from /api/prices or test fixtures. */
   priceLookup: PriceLookup;
-  /** Cap on iterations to avoid runaway when no upgrade is meaningfully better. Default 8. */
+  /**
+   * Safety bound on greedy iterations. High by default (20) so the path isn't
+   * truncated before a worthwhile purchase — the loop normally stops on its own
+   * once no affordable upgrade improves DPS. Not a "top N upgrades" limit.
+   */
   maxIterations?: number;
   /** Magic-only — passed through to scoreScenario. */
   baseSpellMaxHit?: number;
@@ -348,7 +356,8 @@ function runUpgradesFromBase(
     );
     if (candidates.length === 0) break;
 
-    candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);
+    // Biggest raw DPS gain first; cheaper item wins ties.
+    candidates.sort((a, b) => b.dpsDelta - a.dpsDelta || b.dpsPerGp - a.dpsPerGp);
     const best = candidates[0];
 
     const swappedOutItem = best.swappedOutItemId !== null
@@ -431,7 +440,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
   const originalBank = new Set<number>(
     input.bank instanceof Set ? input.bank : input.bank,
   );
-  const maxIterations = input.maxIterations ?? 8;
+  const maxIterations = input.maxIterations ?? 20;
   const sellItemIds = input.sellItemIds ?? [];
 
   // One optimizer call for all rankings — used for both the global best and
@@ -562,7 +571,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
   const originalBank = new Set<number>(
     input.bank instanceof Set ? input.bank : input.bank,
   );
-  const maxIterations = input.maxIterations ?? 8;
+  const maxIterations = input.maxIterations ?? 20;
 
   const { rankings } = optimizeForBoss({
     bank: originalBank,
@@ -627,7 +636,8 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       input.soulreaperMaxStacks,
     );
     if (candidates.length === 0) break;
-    candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);
+    // Biggest raw DPS gain first; cheaper item wins ties.
+    candidates.sort((a, b) => b.dpsDelta - a.dpsDelta || b.dpsPerGp - a.dpsPerGp);
     const best = candidates[0];
 
     // Sell unused items until this upgrade is affordable, recording each sale.
