@@ -389,8 +389,11 @@ function runUpgradesFromBase(
       target: input.target,
       skills: input.skills,
       attackStyle: best.attackStyle,
-      baseSpellMaxHit: input.baseSpellMaxHit,
-      spellElement: input.spellElement,
+      // Use the spell recovered from the active loadout, not input (which is
+      // undefined on the boss page). Powered staves self-derive in scoreScenario;
+      // this keeps regular-staff magic upgrades from dropping to a 0 max hit.
+      baseSpellMaxHit: upgradeSpellMaxHit,
+      spellElement: upgradeSpellElement,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
@@ -402,6 +405,14 @@ function runUpgradesFromBase(
 
   let upgradedBest = base;
   if (upgradePath.length > 0) {
+    // Recover the active loadout's spell so the final rescore keeps its magic
+    // max hit (powered staves self-derive in scoreScenario regardless).
+    const finalSpellMaxHit =
+      input.baseSpellMaxHit ??
+      (activeLoadout.style === "magic" ? activeLoadout.baseSpellMaxHit : undefined);
+    const finalSpellElement =
+      input.spellElement ??
+      (activeLoadout.style === "magic" ? activeLoadout.spellElement : undefined);
     const finalScore = scoreScenario({
       itemIds: Object.values(activeLoadout.slots).map((s) => s.itemId),
       target: input.target,
@@ -410,8 +421,8 @@ function runUpgradesFromBase(
         attackType: activeLoadout.attackType as WeaponAttackType,
         choice: activeLoadout.attackStyleChoice as AttackStyleChoice,
       },
-      baseSpellMaxHit: input.baseSpellMaxHit,
-      spellElement: input.spellElement,
+      baseSpellMaxHit: finalSpellMaxHit,
+      spellElement: finalSpellElement,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
@@ -659,8 +670,11 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       target: input.target,
       skills: input.skills,
       attackStyle: best.attackStyle,
-      baseSpellMaxHit: input.baseSpellMaxHit,
-      spellElement: input.spellElement,
+      // Use the spell recovered from the active loadout, not input (which is
+      // undefined on the boss page). Powered staves self-derive in scoreScenario;
+      // this keeps regular-staff magic upgrades from dropping to a 0 max hit.
+      baseSpellMaxHit: upgradeSpellMaxHit,
+      spellElement: upgradeSpellElement,
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
