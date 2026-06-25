@@ -150,9 +150,19 @@ const INQ_MACE = 24417;        // Spiked — supports crush and stab styles
 const ABYSSAL_WHIP = 4151;     // Slash — should NEVER fire Inquisitor's
 
 describe("Inquisitor's armour — crush-only constraint", () => {
-  it("fires when weapon attack is crush", () => {
+  it("fires at +7.5% (×43/40) with the Inquisitor's mace", () => {
+    // The mace upgrades each piece's bonus, so a full set + mace is +7.5%.
     const ids = new Set([INQ_HELM, INQ_BODY, INQ_LEGS, INQ_MACE]);
     const bonus = detectArmorSetBonus(ids, "melee", { attackType: "crush", weaponId: INQ_MACE });
+    expect(bonus?.id).toBe("inquisitors");
+    expect(bonus?.damageFactor).toEqual([43, 40]);
+    expect(bonus?.accuracyFactor).toEqual([43, 40]);
+  });
+
+  it("fires at +2.5% (×41/40) with a non-mace crush weapon", () => {
+    const BARRELCHEST_ANCHOR = 10887; // crush, not the Inquisitor's mace
+    const ids = new Set([INQ_HELM, INQ_BODY, INQ_LEGS, BARRELCHEST_ANCHOR]);
+    const bonus = detectArmorSetBonus(ids, "melee", { attackType: "crush", weaponId: BARRELCHEST_ANCHOR });
     expect(bonus?.id).toBe("inquisitors");
     expect(bonus?.damageFactor).toEqual([41, 40]);
   });
