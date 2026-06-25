@@ -41,3 +41,18 @@ export const EXCLUDED_ITEM_NAMES: ReadonlySet<string> = new Set<string>([
   "Echo ahrim's robeskirt",
   "Echo ahrim's staff",
 ]);
+
+// Name PATTERNS excluded from the catalog (in addition to EXCLUDED_ITEM_NAMES).
+// Use for whole families of game-mode-locked gear that share a naming scheme.
+//
+// The Gauntlet (Crystalline / Corrupted Hunllef) hands out crystal & corrupted
+// weapons and armour in three tiers — "(basic)", "(attuned)", "(perfected)" —
+// that ONLY function inside the Gauntlet and vanish on exit. They carry strong
+// stats (e.g. Corrupted halberd (perfected): +166 stab, +138 str), so the
+// optimiser would surface them as best-in-slot for normal bosses where they
+// can't be equipped. Every "(basic|attuned|perfected)" item in the dataset is a
+// Gauntlet item, so this pattern is safe. The real, usable crystal gear
+// (Crystal helm / body / legs / bow / halberd, no tier suffix) is untouched.
+export const EXCLUDED_NAME_PATTERNS: readonly RegExp[] = [
+  /\((?:basic|attuned|perfected)\)/i,
+];
