@@ -32,6 +32,7 @@ import type {
 } from "@/types/osrs";
 import { optimizeForBoss } from "@/lib/optimize/bank";
 import { isHalberdWeapon } from "@/data/items/halberd-weapons";
+import { WEAPON_STYLES } from "@/data/weapon-styles";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
 import type { BoostResolver } from "@/lib/dps/boost";
 
@@ -185,6 +186,8 @@ interface Candidate {
   dpsPerGp: number;
   swappedOutItemId: number | null;
   itemIdsAfter: number[];
+  /** The legal style the candidate was scored with (a weapon swap may change it). */
+  attackStyle: { attackType: WeaponAttackType; choice: AttackStyleChoice };
 }
 
 /** Find all single-item upgrades that improve DPS within budget. */
@@ -200,6 +203,8 @@ function findCandidates(
   spellElement?: SpellElement,
   boostResolver?: BoostResolver,
   requiresMeleeReach2?: boolean,
+  onTask?: boolean,
+  soulreaperMaxStacks?: boolean,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -238,16 +243,45 @@ function findCandidates(
     const itemIdsAfter = buildSwappedItemIds(activeLoadout, item);
     if (!itemIdsAfter) continue;
 
-    const scored = scoreScenario({
-      itemIds: itemIdsAfter,
-      target,
-      skills,
-      attackStyle,
-      baseSpellMaxHit,
-      spellElement,
-      boostResolver,
-    });
-    if (!scored.valid) continue;
+    // A weapon candidate brings its OWN legal attack styles — forcing the
+    // incumbent weapon's style silently discards weapons that can't replicate
+    // it (e.g. a Spear like the Dragon hunter lance has no aggressive style, so
+    // it could never displace an aggressive Stab Sword). For weapon swaps,
+    // enumerate the candidate's offensive styles and keep its best-scoring one.
+    // Non-weapon swaps keep the active style (the worn weapon is unchanged).
+    let scored: ScoredScenario | null = null;
+    if (slot === "weapon") {
+      const offensive = (WEAPON_STYLES[item.category] ?? []).filter((o) => !o.defensive);
+      for (const o of offensive) {
+        const s = scoreScenario({
+          itemIds: itemIdsAfter,
+          target,
+          skills,
+          attackStyle: { attackType: o.attackType, choice: o.choice },
+          baseSpellMaxHit,
+          spellElement,
+          boostResolver,
+          onTask,
+          soulreaperMaxStacks,
+        });
+        if (s.valid && (!scored || !scored.valid || s.dps.dps > scored.dps.dps)) {
+          scored = s;
+        }
+      }
+    } else {
+      scored = scoreScenario({
+        itemIds: itemIdsAfter,
+        target,
+        skills,
+        attackStyle,
+        baseSpellMaxHit,
+        spellElement,
+        boostResolver,
+        onTask,
+        soulreaperMaxStacks,
+      });
+    }
+    if (!scored || !scored.valid) continue;
     const dpsDelta = scored.dps.dps - activeDps;
     if (dpsDelta <= 0) continue;
 
@@ -264,6 +298,10 @@ function findCandidates(
       dpsPerGp: dpsDelta / price,
       swappedOutItemId,
       itemIdsAfter,
+      attackStyle: {
+        attackType: scored.loadout.attackType as WeaponAttackType,
+        choice: scored.loadout.attackStyleChoice as AttackStyleChoice,
+      },
     });
   }
 
@@ -305,6 +343,8 @@ function runUpgradesFromBase(
       upgradeSpellElement,
       input.boostResolver,
       input.requiresMeleeReach2,
+      input.onTask,
+      input.soulreaperMaxStacks,
     );
     if (candidates.length === 0) break;
 
@@ -337,10 +377,7 @@ function runUpgradesFromBase(
       itemIds: best.itemIdsAfter,
       target: input.target,
       skills: input.skills,
-      attackStyle: {
-        attackType: activeLoadout.attackType as WeaponAttackType,
-        choice: activeLoadout.attackStyleChoice as AttackStyleChoice,
-      },
+      attackStyle: best.attackStyle,
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
@@ -586,6 +623,8 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       upgradeSpellElement,
       input.boostResolver,
       input.requiresMeleeReach2,
+      input.onTask,
+      input.soulreaperMaxStacks,
     );
     if (candidates.length === 0) break;
     candidates.sort((a, b) => b.dpsPerGp - a.dpsPerGp);
@@ -607,10 +646,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       itemIds: best.itemIdsAfter,
       target: input.target,
       skills: input.skills,
-      attackStyle: {
-        attackType: activeLoadout.attackType as WeaponAttackType,
-        choice: activeLoadout.attackStyleChoice as AttackStyleChoice,
-      },
+      attackStyle: best.attackStyle,
       baseSpellMaxHit: input.baseSpellMaxHit,
       spellElement: input.spellElement,
       boostResolver: input.boostResolver,
