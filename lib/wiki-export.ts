@@ -3,13 +3,40 @@
 // returning an ID that prefills equipment, skills, and target monster.
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import type { CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
-import type { AttackStyleChoice, Skills } from "@/types/osrs";
+import type { AttackStyleChoice, CombatStyle, Skills } from "@/types/osrs";
 
 const SHORTLINK_API = "https://tools.runescape.wiki/osrs-dps/shortlink";
 const WIKI_CALC_BASE = "https://tools.runescape.wiki/osrs-dps/";
 // Keep in sync with IMPORT_VERSION in weirdgloop/osrs-dps-calc/src/types/State.ts
 const IMPORT_VERSION = 10;
+
+// Wiki calc Prayer enum values (Prayer.ts in weirdgloop/osrs-dps-calc)
+const WIKI_PRAYER_FOR_STYLE: Record<CombatStyle, number> = {
+  melee: 13,  // Prayer.PIETY
+  ranged: 14, // Prayer.RIGOUR
+  magic: 15,  // Prayer.AUGURY
+};
+
+// Wiki calc Potion enum values (Potion.ts in weirdgloop/osrs-dps-calc).
+// Divine variants map to their non-divine counterpart (same boost formula;
+// wiki calc has no divine potion entries). null = no equivalent, omit.
+const WIKI_POTION_FOR_BOOST: Record<string, number | null> = {
+  "divine-super-combat": 14, // Potion.SUPER_COMBAT
+  "super-combat":        14, // Potion.SUPER_COMBAT
+  "super-strength":      12, // Potion.SUPER_STRENGTH
+  "super-attack":        11, // Potion.SUPER_ATTACK
+  "combat-potion":       null,
+  "divine-ranging":       7, // Potion.RANGING (+4 +10%)
+  "ranging-potion":       7, // Potion.RANGING
+  "bastion-potion":       7, // Potion.RANGING (closest)
+  "saturated-heart":      8, // Potion.SATURATED_HEART
+  "imbued-heart":         3, // Potion.IMBUED_HEART
+  "divine-magic":         4, // Potion.MAGIC (+4 flat)
+  "magic-potion":         4, // Potion.MAGIC
+  "battlemage-potion":    4, // Potion.MAGIC (closest)
+};
 
 type WikiStance =
   | "Accurate"
@@ -42,8 +69,13 @@ function buildPayload(
   set: LoadoutSet,
   skills: Skills,
   monster: MonsterCatalogEntry,
+  onTask: boolean,
+  boost: CombatBoost | undefined,
 ): object {
   const stance = toWikiStance(set.attackStyleChoice, set.style);
+  const prayer = WIKI_PRAYER_FOR_STYLE[set.style];
+  const potionVal = boost ? (WIKI_POTION_FOR_BOOST[boost.id] ?? null) : null;
+  const potions = potionVal !== null ? [potionVal] : [];
 
   const equipment: Record<string, { id: number } | null> = {
     head:   set.slots.head   ? { id: set.slots.head.itemId }   : null,
@@ -139,21 +171,20 @@ function buildPayload(
           herblore: 99,
         },
         equipment,
-        // Match our DPS engine defaults so numbers align.
         buffs: {
-          onSlayerTask: false,
+          onSlayerTask: onTask,
           inWilderness: false,
           kandarinDiary: true,
           chargeSpell: false,
           markOfDarknessSpell: false,
           forinthrySurge: false,
           soulreaperStacks: 0,
-          potions: [],
+          potions,
           baAttackerLevel: 0,
           chinchompaDistance: 4,
           usingSunfireRunes: false,
         },
-        prayers: [],
+        prayers: [prayer],
         spell: null,
       },
     ],
@@ -169,6 +200,8 @@ export async function openInWikiCalc(
   set: LoadoutSet,
   skills: Skills,
   monster: MonsterCatalogEntry,
+  onTask: boolean,
+  boost: CombatBoost | undefined,
 ): Promise<string> {
   if (monster.wikiId === 0) {
     // Synthetic entries (Combat dummy) have no wiki equivalent — open the calc
@@ -177,7 +210,7 @@ export async function openInWikiCalc(
     return WIKI_CALC_BASE;
   }
 
-  const payload = JSON.stringify(buildPayload(set, skills, monster));
+  const payload = JSON.stringify(buildPayload(set, skills, monster, onTask, boost));
   const res = await fetch(SHORTLINK_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
