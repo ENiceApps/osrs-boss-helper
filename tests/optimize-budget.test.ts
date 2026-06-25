@@ -98,11 +98,7 @@ describe("optimize/budget — gp-only mode", () => {
     expect(result.sellList).toEqual([]);
   });
 
-  it("upgrade path is sorted by dpsPerGp (each step's ratio >= the next step against its own baseline)", () => {
-    // Iterative greedy commits the best dpsPerGp at each step. Because the
-    // baseline DPS changes each iteration, raw dpsPerGp across steps isn't
-    // strictly monotone — but each step IS the best available at the time
-    // of commit. We can sanity-check that every step is a positive gain.
+  it("every upgrade step is a positive gain", () => {
     const result = findUpgrades({
       bank: EARLY_GAME_BANK,
       target: VORKATH,
@@ -116,6 +112,39 @@ describe("optimize/budget — gp-only mode", () => {
       expect(step.dpsPerGp).toBeGreaterThan(0);
       expect(step.dpsAfter).toBeGreaterThan(step.dpsBefore);
     }
+  });
+
+  it("leads with the biggest DPS gain even when a cheaper item is more GP-efficient", () => {
+    // Two independent upgrades for Vorkath (dragon + undead):
+    //   - Dragon hunter crossbow: a big DPS jump (dragonbane), but pricey.
+    //   - Pegasian boots: a small jump, but cheap — so a HIGHER dps-per-gp.
+    // Restricting the buyable universe to just these two (everything else is
+    // unpriced → excluded), the path must lead with the crossbow. Under the old
+    // dps-per-gp ordering the cheap boots would have come first.
+    const DHCB = 21012;
+    const PEGASIAN = 13237;
+    // DHCB priced high enough that the cheap boots win on dps-per-gp — so only
+    // a biggest-raw-gain ordering puts the crossbow first.
+    const twoItemPrices = (id: number) =>
+      id === DHCB ? 500_000_000 : id === PEGASIAN ? 4_000_000 : null;
+
+    const result = findUpgrades({
+      bank: EARLY_GAME_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 1_000_000_000,
+      mode: "gp-only",
+      priceLookup: twoItemPrices,
+    });
+
+    const dhcbStep = result.upgradePath.find((s) => s.bought.itemId === DHCB);
+    const pegStep = result.upgradePath.find((s) => s.bought.itemId === PEGASIAN);
+    expect(dhcbStep).toBeDefined();
+    expect(pegStep).toBeDefined();
+    // Biggest raw gain leads, despite the boots being more GP-efficient.
+    expect(result.upgradePath[0].bought.itemId).toBe(DHCB);
+    expect(dhcbStep!.dpsDelta).toBeGreaterThan(pegStep!.dpsDelta);
+    expect(dhcbStep!.dpsPerGp).toBeLessThan(pegStep!.dpsPerGp);
   });
 
   it("a tiny budget halts the loop quickly and respects affordability", () => {
