@@ -189,13 +189,27 @@ export function EquipmentGrid({
                 {detail?.bonusLine && (
                   <div className="text-caption text-osrs-muted mt-0.5">{detail.bonusLine}</div>
                 )}
-                {detail?.marginalDps !== undefined && (
+                {detail?.vsBank ? (
                   <div className="text-caption text-osrs-brown mt-1">
-                    <span className="font-semibold text-status-owned">
-                      +{detail.marginalDps.toFixed(2)} DPS
+                    <span
+                      className={`font-semibold ${
+                        detail.vsBank.dpsDelta >= 0 ? "text-status-owned" : "text-status-missing"
+                      }`}
+                    >
+                      {detail.vsBank.dpsDelta >= 0 ? "+" : ""}
+                      {detail.vsBank.dpsDelta.toFixed(2)} DPS
                     </span>{" "}
-                    vs leaving this slot empty
+                    vs {detail.vsBank.vsItemName ?? "leaving this slot empty"}
                   </div>
+                ) : (
+                  detail?.marginalDps !== undefined && (
+                    <div className="text-caption text-osrs-brown mt-1">
+                      <span className="font-semibold text-status-owned">
+                        +{detail.marginalDps.toFixed(2)} DPS
+                      </span>{" "}
+                      vs leaving this slot empty
+                    </div>
+                  )
                 )}
                 {detail?.reasons.map((reason) => (
                   <div key={reason} className="text-caption text-osrs-gold mt-0.5 leading-snug">

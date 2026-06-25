@@ -19,6 +19,7 @@ import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { explainSlots } from "@/lib/loadout-explain";
+import { compareSlotsVsReference, type SlotVsBank } from "@/lib/loadout-compare";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
 import { CharacterBar } from "@/components/CharacterBar";
@@ -571,7 +572,7 @@ export default function BossPage({
   // contribution, marginal DPS with the slot emptied, conditional bonuses.
   const slotDetails = useMemo(() => {
     if (!selectedSet || !selectedDps) return undefined;
-    return explainSlots(
+    const details = explainSlots(
       selectedSet,
       selectedDps,
       monster,
@@ -579,7 +580,38 @@ export default function BossPage({
       boostResolver(selectedSet.style),
       selectedActiveBonuses,
     );
-  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses]);
+
+    // In GP / sell-to-fund modes the doll shows the POST-upgrade build, so the
+    // honest hover comparison is "vs the bank item this slot replaced", not "vs
+    // empty". Overlay that delta onto each upgraded slot. Skipped when the user
+    // has manually edited (the bank reference no longer matches the doll).
+    const reference =
+      activeTab === "best"
+        ? budgetResult?.currentBest
+        : styleResults?.[activeTab]?.currentBest;
+    const showVsBank =
+      (mode === "gp-only" || mode === "sell-to-fund") &&
+      !overridesActive &&
+      reference &&
+      activeScenario;
+    if (showVsBank) {
+      const vsBank = compareSlotsVsReference({
+        displayed: activeScenario.loadout,
+        displayedDps: activeScenario.dps.dps,
+        reference: reference.loadout,
+        target: monster,
+        skills,
+        boostResolver,
+        onTask: effectiveOnTask,
+        soulreaperMaxStacks,
+      });
+      for (const [slot, cmp] of Object.entries(vsBank) as Array<[LoadoutSlotKey, SlotVsBank]>) {
+        const d = details[slot];
+        if (d) d.vsBank = cmp;
+      }
+    }
+    return details;
+  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks]);
 
   // Augment the curated consumables with the boost potion that matches the
   // selected loadout's combat style — the same potion baked into the DPS above.

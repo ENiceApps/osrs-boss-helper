@@ -20,6 +20,12 @@ export interface SlotExplanation {
   /** DPS lost if this slot were emptied. Undefined for the weapon slot —
       emptying the weapon isn't a meaningful comparison. */
   marginalDps?: number;
+  /**
+   * GP / sell-to-fund modes only: DPS gained over the bank item this upgrade
+   * replaced. When present, the tooltip shows this instead of the empty-slot
+   * marginal — the player is comparing the new item to what they already had.
+   */
+  vsBank?: { dpsDelta: number; vsItemName: string | null };
   /** Target-specific reasons this item earns its slot (conditional bonuses). */
   reasons: string[];
 }
