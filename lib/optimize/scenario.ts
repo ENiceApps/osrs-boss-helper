@@ -34,6 +34,16 @@ import type {
   WeaponAttackType,
 } from "@/types/osrs";
 
+// Cape variants that grant the Dizana passive (+10 ranged atk / +1 ranged str
+// with compatible ammo): Blessed dizana's quiver, Dizana's max cape, and the
+// Charged Dizana's quiver — all version ids. Uncharged/broken base quiver and
+// the cosmetic max hood do NOT qualify.
+const DIZANA_PASSIVE_CAPE_IDS: ReadonlySet<number> = new Set([
+  28828, 28957, 28955, // Blessed dizana's quiver (Broken / Locked / Normal)
+  28830, 28906, 28902, // Dizana's max cape (Broken / Locked / Normal)
+  28951, 28953, // Dizana's quiver (Charged / Charged + Locked)
+]);
+
 export interface ScenarioInput {
   /** Up to 11 item IDs — one per slot. Order doesn't matter. */
   itemIds: number[];
@@ -235,12 +245,16 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   // that can be worn alongside ANY weapon — skip the projectile compat check for
   // them. Real ammo (bolts, arrows, darts) still goes through the full check.
   const ammoItems = bySlot.get("ammo") ?? [];
+  // Whether real ammo compatible with the weapon is loaded (its ranged stats
+  // apply). Gates the Dizana's quiver passive below.
+  let ammoIsIncluded = false;
   if (weapon && ammoItems[0]) {
     const ammo = ammoItems[0];
     const isBlessingItem = ammo.prayer > 0 && ammo.rangedStr === 0 && ammo.attackRanged === 0;
     if (!isBlessingItem) {
       const compat = checkAmmoCompat(weapon.name, ammo.name);
       if (!compat.ok) reasons.push(compat.reason);
+      else ammoIsIncluded = true;
     }
   }
 
@@ -310,6 +324,19 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     if (dartItem) {
       rngStr += dartItem.rangedStr;
       internalAmmo = { itemId: dartItem.id, itemName: dartItem.name };
+    }
+  }
+
+  // Dizana's quiver / max cape passive: +10 ranged attack and +1 ranged strength
+  // when compatible ammo is loaded — a bonus NOT in the cape's base stats. Only
+  // the charged/blessed/max variants grant it. Mirrors wgloop's
+  // calculateEquipmentBonusesFromGear (Blessed dizana's quiver et al.).
+  if (combatStyle === "ranged") {
+    const capeId = computedSlots.cape?.itemId;
+    const ammoLoaded = ammoIsIncluded || input.internalAmmoId !== undefined;
+    if (capeId !== undefined && DIZANA_PASSIVE_CAPE_IDS.has(capeId) && ammoLoaded) {
+      attackBonus += 10;
+      rngStr += 1;
     }
   }
 
