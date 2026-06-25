@@ -174,6 +174,49 @@ describe("optimize/budget — gp-only mode", () => {
   });
 });
 
+describe("optimize/budget — powered-staff magic keeps its DPS through upgrades", () => {
+  // Regression: a powered staff's max hit is derived from the weapon id by
+  // optimizeForBoss (via autoPickSpell), but the budget upgrade loop re-scored
+  // through scoreScenario with baseSpellMaxHit=undefined — so after any upgrade
+  // the staff's max hit (and DPS) collapsed to 0. scoreScenario now self-derives
+  // the powered-staff max hit, so gp-only must match own-only for these weapons.
+  const SCURRIUS = MONSTER_BY_SLUG["scurrius"];
+  const TRIDENT_OF_SWAMP = 12899; // charged
+  const OCCULT = 12002;
+
+  it("gp-only DPS stays > 0 and matches own-only for a Trident build", () => {
+    const bank = [TRIDENT_OF_SWAMP];
+    const prices = (id: number) => (id === OCCULT ? 1_000_000 : null);
+
+    const ownOnly = findUpgrades({
+      bank,
+      target: SCURRIUS,
+      skills: SKILLS_AT_99,
+      gp: 0,
+      mode: "own-only",
+      priceLookup: prices,
+    });
+    const magicOwn = ownOnly.byStyle?.magic;
+    expect(magicOwn?.upgradedBest!.dps.dps).toBeGreaterThan(0);
+
+    const gpOnly = findUpgrades({
+      bank,
+      target: SCURRIUS,
+      skills: SKILLS_AT_99,
+      gp: 100_000_000,
+      mode: "gp-only",
+      priceLookup: prices,
+    });
+    const magicGp = gpOnly.byStyle?.magic;
+    // The whole point: the powered-staff magic build must not collapse to 0 DPS
+    // in a budget mode. Buying the occult can only help, so it's >= own-only.
+    expect(magicGp?.upgradedBest!.dps.dps).toBeGreaterThan(0);
+    expect(magicGp!.upgradedBest!.dps.dps).toBeGreaterThanOrEqual(
+      magicOwn!.upgradedBest!.dps.dps,
+    );
+  });
+});
+
 describe("optimize/budget — weapon candidate uses its own legal style", () => {
   // Regression: a weapon upgrade was scored with the INCUMBENT weapon's attack
   // style. The Dragon hunter lance (category "Spear") has no aggressive style,

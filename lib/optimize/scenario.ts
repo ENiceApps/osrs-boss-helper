@@ -5,6 +5,7 @@
 // as the scorer.
 
 import type { ItemCatalogEntry } from "@/data/items/catalog";
+import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
@@ -342,6 +343,17 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     }
   }
 
+  // Powered staves (Trident, Sanguinesti, Eye of ayak, …) embed their own
+  // max-hit formula keyed by weapon id. Derive it here from the weapon so any
+  // caller that doesn't pre-resolve a spell — notably the budget upgrade path,
+  // which re-scores without re-running autoPickSpell — still gets correct magic
+  // DPS instead of a 0 max hit. Regular staves keep the caller-supplied value.
+  // Uses base magic level (input.skills.magic) to match optimizeForBoss exactly.
+  const poweredStaffFormula = POWERED_STAFF_FORMULA.get(weapon.id);
+  const resolvedBaseSpellMaxHit = poweredStaffFormula
+    ? poweredStaffFormula(skills.magic)
+    : input.baseSpellMaxHit;
+
   let strengthBonus = 0;
   let magicDamagePct: number | undefined;
   switch (combatStyle) {
@@ -397,7 +409,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     },
     attackSpeedTicks,
     internalAmmo,
-    baseSpellMaxHit: combatStyle === "magic" ? input.baseSpellMaxHit : undefined,
+    baseSpellMaxHit: combatStyle === "magic" ? resolvedBaseSpellMaxHit : undefined,
     // Powered staves (Trident / Sanguinesti / Tumeken's shadow) fire their own
     // attack with NO spell element — they must NOT inherit a spellElement, or the
     // engine would wrongly apply elemental-weakness / tome bonuses to them.
