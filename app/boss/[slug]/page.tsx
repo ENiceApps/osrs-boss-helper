@@ -856,7 +856,7 @@ export default function BossPage({
             boostName={ownedBoost?.name}
             onWikiExport={
               selectedSet
-                ? async () => { await openInWikiCalc(selectedSet, skills, monster); }
+                ? async () => { await openInWikiCalc(selectedSet, skills, monster, effectiveOnTask, boostResolver(selectedSet.style)); }
                 : undefined
             }
           />
