@@ -77,12 +77,31 @@ function buildPayload(
   const potionVal = boost ? (WIKI_POTION_FOR_BOOST[boost.id] ?? null) : null;
   const potions = potionVal !== null ? [potionVal] : [];
 
-  const equipment: Record<string, { id: number } | null> = {
+  // A blowpipe's dart lives INSIDE the weapon (set.internalAmmo), not the ammo
+  // slot. The wiki calc reads it from the weapon entry's itemVars on import
+  // (state.tsx:parseLoadoutsFromImportedData) — without it the calc shows
+  // "Unknown dart" and computes no ranged-strength contribution from the dart.
+  type WikiEquipmentPiece = {
+    id: number;
+    itemVars?: { blowpipeDartId: number; blowpipeDartName: string };
+  };
+  let weaponPiece: WikiEquipmentPiece | null = null;
+  if (set.slots.weapon) {
+    weaponPiece = { id: set.slots.weapon.itemId };
+    if (set.internalAmmo) {
+      weaponPiece.itemVars = {
+        blowpipeDartId: set.internalAmmo.itemId,
+        blowpipeDartName: set.internalAmmo.itemName,
+      };
+    }
+  }
+
+  const equipment: Record<string, WikiEquipmentPiece | null> = {
     head:   set.slots.head   ? { id: set.slots.head.itemId }   : null,
     cape:   set.slots.cape   ? { id: set.slots.cape.itemId }   : null,
     neck:   set.slots.neck   ? { id: set.slots.neck.itemId }   : null,
     ammo:   set.slots.ammo   ? { id: set.slots.ammo.itemId }   : null,
-    weapon: set.slots.weapon ? { id: set.slots.weapon.itemId } : null,
+    weapon: weaponPiece,
     body:   set.slots.body   ? { id: set.slots.body.itemId }   : null,
     shield: set.slots.shield ? { id: set.slots.shield.itemId } : null,
     legs:   set.slots.legs   ? { id: set.slots.legs.itemId }   : null,
