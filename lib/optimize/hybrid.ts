@@ -177,6 +177,25 @@ function armorItemFor(
   return unlocked.has(slot) ? anchor.bestArmor.get(slot) : shared.get(slot);
 }
 
+/**
+ * The single item that stays in the ammo slot for EVERY style — it's never a
+ * switch. Prefer real ranged ammo (when a ranged style fires from the ammo slot
+ * you leave its bolts/arrows in place for the whole fight); otherwise a blessing
+ * if one is owned. Returns undefined when nothing belongs there.
+ */
+function pickSharedAmmo(anchors: StyleAnchor[]): number | undefined {
+  let blessing: number | undefined;
+  for (const a of anchors) {
+    for (const id of a.ownedItemIds) {
+      const it = findCatalogItem(id);
+      if (!it) continue;
+      if (it.rangedStr > 0 || it.attackRanged > 0) return it.id; // real ammo — always keep it on
+      if (it.prayer > 0 && blessing === undefined) blessing = it.id;
+    }
+  }
+  return blessing;
+}
+
 export function optimizeHybrid(input: HybridOptimizerInput): HybridResult {
   const requested = dedupeStyles(input.styles);
 
@@ -418,10 +437,27 @@ function solveHybrid(
     if (item) sharedSlots[slot] = { itemId: id, itemName: item.name, version: item.version || undefined };
   }
 
+  // The ammo slot is the same for every style — never a switch. Surface it in the
+  // shared base (and pin it into each per-style loadout below) so it never reads
+  // as a swap, even when ranged keeps real ammo in the slot.
+  const sharedAmmoId = pickSharedAmmo(anchors);
+  const sharedAmmoSlot = sharedAmmoId !== undefined
+    ? (() => {
+        const it = findCatalogItem(sharedAmmoId);
+        return it ? { itemId: it.id, itemName: it.name, version: it.version || undefined } : undefined;
+      })()
+    : undefined;
+  if (sharedAmmoSlot) sharedSlots.ammo = sharedAmmoSlot;
+
   const perStyle: Partial<Record<CombatStyle, HybridStyleResult>> = {};
   for (const anchor of anchors) {
     const s = finalState.get(anchor.style);
     if (!s?.scored) continue;
+    // Pin every style's ammo slot to the shared ammo so it's never shown as a swap
+    // (display-only — the ammo slot doesn't affect melee/magic DPS, and the ranged
+    // style already fired its real ammo when its DPS was computed).
+    if (sharedAmmoSlot) s.scored.loadout.slots.ammo = sharedAmmoSlot;
+    else delete s.scored.loadout.slots.ammo;
     // The switched (per-style) slots this style equips an item in. A 2H style has
     // no shield, so its empty shield isn't listed even though the slot is unlocked.
     const switchedSlots: LoadoutSlotKey[] = [];
