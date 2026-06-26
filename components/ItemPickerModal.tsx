@@ -10,6 +10,11 @@ import { useMapping } from "@/lib/prices";
 interface Props {
   slot: LoadoutSlotKey;
   currentItemId?: number;
+  /** DPS of the active loadout — baseline the per-item deltas are measured against. */
+  currentDps?: number;
+  /** DPS the loadout would have with `item` slotted into `slot`. When provided,
+   *  items are ranked by this (best DPS first) instead of by raw stat. */
+  dpsForItem?: (slot: LoadoutSlotKey, item: ItemCatalogEntry | null) => number | undefined;
   onSelect: (item: ItemCatalogEntry | null) => void;
   onClose: () => void;
 }
@@ -34,16 +39,33 @@ const SLOT_LABELS: Record<LoadoutSlotKey, string> = {
  * float to the top, click an item to apply. Inspired by the wgloop calc's
  * "Search for equipment..." dropdown.
  */
-export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Props) {
+export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, onSelect, onClose }: Props) {
   const [query, setQuery] = useState("");
   const { data: mapping } = useMapping();
   const items = useMemo(() => itemsForSlot(slot), [slot]);
 
-  // Default sort: by the stat most likely to matter for this slot's purpose.
-  // For weapon-likely slots we sort by ranged_atk DESC (covers crossbows /
-  // bows / blowpipes); for other slots, by str+rangedStr+magicStr summed —
-  // a coarse "any offensive bonus" priority. Users can search by name.
+  // The DPS each candidate would yield in this slot, keyed by item id. Computed
+  // once per open via the parent's engine callback; absent when no callback was
+  // supplied (then we fall back to a stat-based sort below).
+  const dpsById = useMemo(() => {
+    if (!dpsForItem) return undefined;
+    const map = new Map<number, number>();
+    for (const it of items) {
+      const dps = dpsForItem(slot, it);
+      if (dps !== undefined) map.set(it.id, dps);
+    }
+    return map;
+  }, [items, slot, dpsForItem]);
+
+  // Primary ordering: by resulting DPS (best first) when we have it, else by the
+  // stat most likely to matter for this slot — a coarse "any offensive bonus"
+  // priority. Users can always search by name.
   const sorted = useMemo(() => {
+    if (dpsById) {
+      return [...items].sort(
+        (a, b) => (dpsById.get(b.id) ?? -Infinity) - (dpsById.get(a.id) ?? -Infinity),
+      );
+    }
     const slotPrimary = (item: ItemCatalogEntry): number => {
       switch (slot) {
         case "weapon":
@@ -57,7 +79,7 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
       }
     };
     return [...items].sort((a, b) => slotPrimary(b) - slotPrimary(a));
-  }, [items, slot]);
+  }, [items, slot, dpsById]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -112,7 +134,9 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
         />
 
         <div className="flex items-baseline justify-between text-caption text-osrs-muted mb-2">
-          <span>{filtered.length} items</span>
+          <span>
+            {filtered.length} items{dpsById ? " · sorted by DPS" : ""}
+          </span>
           {currentItemId && (
             <button
               type="button"
@@ -127,6 +151,12 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
         <ul className="overflow-y-auto flex-1 space-y-0.5">
           {filtered.slice(0, 200).map((it) => {
             const isCurrent = it.id === currentItemId;
+            const itemDps = dpsById?.get(it.id);
+            // Delta vs the active loadout's DPS. Hidden for the equipped item.
+            const delta =
+              itemDps !== undefined && currentDps !== undefined && !isCurrent
+                ? itemDps - currentDps
+                : undefined;
             return (
               <li key={`${it.id}-${it.version}`}>
                 <button
@@ -166,6 +196,20 @@ export function ItemPickerModal({ slot, currentItemId, onSelect, onClose }: Prop
                       {it.speed > 0 && <span>{it.speed}t</span>}
                     </div>
                   </div>
+                  {delta !== undefined && Math.abs(delta) >= 0.005 && (
+                    <span
+                      className={`shrink-0 tabular-nums font-semibold ${
+                        delta > 0 ? "text-status-owned" : "text-status-missing"
+                      }`}
+                      title="DPS change vs the current loadout"
+                    >
+                      {delta > 0 ? "+" : "−"}
+                      {Math.abs(delta).toFixed(2)}
+                    </span>
+                  )}
+                  {isCurrent && (
+                    <span className="shrink-0 label-eyebrow text-osrs-muted">equipped</span>
+                  )}
                 </button>
               </li>
             );

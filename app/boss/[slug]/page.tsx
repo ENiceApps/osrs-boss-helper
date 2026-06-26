@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
-import { itemScore, meetsRequirements, loadoutSlotFor, rankedSlotAlternatives } from "@/lib/optimize/bank";
-import { buildRecommendationSlots } from "@/lib/recommendation";
+import { itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
 import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
@@ -29,6 +28,7 @@ import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { LoadoutPanel } from "@/components/LoadoutPanel";
 import { ResultsPanel } from "@/components/ResultsPanel";
+import { PRAYER_POTION_4_ID } from "@/data/prayer-drain";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
@@ -43,8 +43,9 @@ import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { NON_PVE_UNTRADEABLE_IDS } from "@/data/items/non-pve-untradeables";
 import { openInWikiCalc } from "@/lib/wiki-export";
+import { encodeLoadout, decodeLoadout } from "@/lib/share-link";
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import type { SpellEntry } from "@/data/spells/catalog";
+import { SPELLS_BY_NAME, type SpellEntry } from "@/data/spells/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import type { BankContents, CombatStyle, ItemId } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
@@ -116,6 +117,17 @@ export default function BossPage({
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
   const [sellSelections, setSellSelections] = useState<Set<number>>(new Set());
+  // Upgrade path: items the player toggled OFF (won't buy). Stored with their
+  // name so the "excluded" list can render without a catalog lookup. Re-planning
+  // happens automatically via the budgetResult memo (excludedItemIds dep).
+  const [excludedUpgrades, setExcludedUpgrades] = useState<{ itemId: number; name: string }[]>([]);
+  const toggleExcludedUpgrade = useCallback((itemId: number, name: string) => {
+    setExcludedUpgrades((prev) =>
+      prev.some((e) => e.itemId === itemId)
+        ? prev.filter((e) => e.itemId !== itemId)
+        : [...prev, { itemId, name }],
+    );
+  }, []);
   // Budget mode: from-scratch spend, independent of wallet GP.
   const [budgetGp, setBudgetGp] = useState(100_000_000);
   // Budget mode: ids of non-tradeable items the player has checked as OWNED.
@@ -232,13 +244,14 @@ export default function BossPage({
       gp,
       mode,
       sellItemIds: [...sellSelections],
+      excludedItemIds: excludedUpgrades.map((e) => e.itemId),
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
 
   // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
   // as owned. Ranked by the current build's combat style (stable per boss), with
@@ -425,6 +438,64 @@ export default function BossPage({
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride) : false;
 
+  // Stateless share link: encode the displayed loadout + setup into a `?b=`
+  // value (see lib/share-link.ts). `tab` carries the loadout's concrete style so
+  // the recipient's base is the matching style and the layered gear computes
+  // correct stats even with a different bank (or none).
+  const shareCode = useMemo(() => {
+    if (!selectedSet) return null;
+    const slots: Partial<Record<LoadoutSlotKey, number>> = {};
+    for (const [slot, piece] of Object.entries(selectedSet.slots) as Array<
+      [LoadoutSlotKey, { itemId: number } | undefined]
+    >) {
+      if (piece) slots[slot] = piece.itemId;
+    }
+    return encodeLoadout({
+      v: 1,
+      slots,
+      dart: selectedSet.internalAmmo?.itemId,
+      spell: selectedSet.style === "magic" ? selectedSet.autoSpellName : undefined,
+      mode: modeRaw,
+      budgetGp,
+      gp: gpManual,
+      onTask,
+      tab: selectedSet.style,
+      soulreaper: soulreaperMaxStacks || undefined,
+      dharokHp: dharokCurrentHp,
+    });
+  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp]);
+
+  // Hydrate page state from a share link once on mount. Garbage/absent param →
+  // decodeLoadout returns null and we leave defaults untouched.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (typeof window === "undefined") return;
+    const code = new URLSearchParams(window.location.search).get("b");
+    if (!code) return;
+    const state = decodeLoadout(code);
+    if (!state) return;
+
+    const ov: Partial<Record<LoadoutSlotKey, ItemCatalogEntry | null>> = {};
+    for (const [slot, id] of Object.entries(state.slots) as Array<[LoadoutSlotKey, number]>) {
+      const item = findCatalogItem(id);
+      if (item) ov[slot] = item;
+    }
+    if (Object.keys(ov).length > 0) setOverrides(ov);
+    if (state.spell) {
+      const sp = SPELLS_BY_NAME.get(state.spell);
+      if (sp) setSpellOverride(sp);
+    }
+    if (state.mode) setMode(state.mode as BudgetMode);
+    if (typeof state.budgetGp === "number") setBudgetGp(state.budgetGp);
+    if (typeof state.gp === "number") setGpManual(state.gp);
+    if (typeof state.onTask === "boolean") setOnTask(state.onTask);
+    if (state.tab) setActiveTab(state.tab as LoadoutTabId);
+    if (typeof state.soulreaper === "boolean") setSoulreaperMaxStacks(state.soulreaper);
+    if (typeof state.dharokHp === "number") setDharokCurrentHp(state.dharokHp);
+  }, []);
+
   // Soulreaper: only meaningful when the axe is actually equipped.
   const soulreaperEquipped = selectedSet?.slots.weapon?.itemId === 28338;
   // Dharok's: show the HP slider and apply the bonus only when the full set is worn.
@@ -438,51 +509,6 @@ export default function BossPage({
     selectedSet?.slots.head?.itemId !== undefined && DHAROK_HELM_PAGE.has(selectedSet.slots.head.itemId) &&
     selectedSet?.slots.body?.itemId !== undefined && DHAROK_BODY_PAGE.has(selectedSet.slots.body.itemId) &&
     selectedSet?.slots.legs?.itemId !== undefined && DHAROK_LEGS_PAGE.has(selectedSet.slots.legs.itemId);
-
-  // Per-slot ranked alternatives around the active loadout — the optimizer's
-  // pick first, then the owned items the player could swap in. Feeds the
-  // "Copy plugin JSON" export and the live recommendation pushed to the
-  // RuneLite plugin (which highlights / filters the bank to these items).
-  const slotAlternatives = useMemo(() => {
-    const weapon = selectedSet?.slots.weapon;
-    if (!selectedSet || !weapon) return undefined;
-    const chosenBySlot: Partial<Record<LoadoutSlotKey, number>> = {};
-    for (const [slot, piece] of Object.entries(selectedSet.slots)) {
-      if (piece) chosenBySlot[slot as LoadoutSlotKey] = piece.itemId;
-    }
-    return rankedSlotAlternatives({
-      bank: ownedItemIds,
-      skills,
-      attackType: selectedSet.attackType,
-      combatStyle: selectedSet.style,
-      weaponId: weapon.itemId,
-      weaponName: weapon.itemName,
-      weaponCategory: selectedSet.weaponCategory ?? "",
-      weaponIsTwoHanded: findCatalogItem(weapon.itemId)?.isTwoHanded ?? false,
-      chosenBySlot,
-    });
-  }, [selectedSet, ownedItemIds, skills]);
-
-  // Push the active recommendation to the local server so the RuneLite plugin
-  // can pull it (GET /api/recommendation) and show the gear in the bank. Fires
-  // whenever the active loadout changes; failures are ignored (no server / no
-  // plugin is a fine, silent no-op).
-  useEffect(() => {
-    if (!selectedSet || !slotAlternatives) return;
-    const slots = buildRecommendationSlots(slotAlternatives, selectedSet.internalAmmo?.itemId);
-    const controller = new AbortController();
-    fetch("/api/recommendation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bossSlug: slug,
-        label: `${monster.name} — ${selectedSet.name}`,
-        slots,
-      }),
-      signal: controller.signal,
-    }).catch(() => {});
-    return () => controller.abort();
-  }, [selectedSet, slotAlternatives, slug, monster.name]);
 
   function resetOverrides() {
     setOverrides({});
@@ -541,6 +567,32 @@ export default function BossPage({
       dharokCurrentHp,
     );
   }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp]);
+
+  // DPS a candidate item would yield if slotted into `slot` on top of the
+  // current loadout (existing overrides preserved). Powers the item picker's
+  // "rank by DPS gained/lost" ordering. Same engine + params as selectedDps so
+  // the delta vs the active number is apples-to-apples.
+  const dpsForSlotItem = useCallback(
+    (slot: LoadoutSlotKey, item: ItemCatalogEntry | null): number | undefined => {
+      if (!baseSet) return undefined;
+      const trial = applyOverrides(
+        baseSet,
+        { ...overrides, [slot]: item },
+        spellOverride,
+        skills.magic,
+      );
+      return computeSetDps(
+        trial,
+        monster,
+        skills,
+        boostResolver(trial.style),
+        effectiveOnTask,
+        soulreaperMaxStacks,
+        dharokCurrentHp,
+      ).dps;
+    },
+    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp],
+  );
 
   // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
   // protection in the shield slot AND no Super antifire in the bank) — reacts
@@ -859,6 +911,7 @@ export default function BossPage({
                 ? async () => { await openInWikiCalc(selectedSet, skills, monster, effectiveOnTask, boostResolver(selectedSet.style)); }
                 : undefined
             }
+            shareCode={shareCode}
           />
         </section>
 
@@ -873,7 +926,12 @@ export default function BossPage({
             edited={overridesActive}
             boltProcFlag={boltProcFlag}
             mapping={mapping}
-            slotAlternatives={slotAlternatives}
+            prayerLevel={skills.prayer ?? 99}
+            prayerPotPriceGp={priceForItem(prices, PRAYER_POTION_4_ID)}
+            bossSlug={monster.slug}
+            priceLookup={(id) => priceForItem(prices, id)}
+            excludedUpgrades={excludedUpgrades}
+            onToggleUpgradeItem={toggleExcludedUpgrade}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel
@@ -913,6 +971,8 @@ export default function BossPage({
         <ItemPickerModal
           slot={pickerSlot}
           currentItemId={selectedSet?.slots[pickerSlot]?.itemId}
+          currentDps={selectedDps?.dps}
+          dpsForItem={dpsForSlotItem}
           onSelect={onPickerSelect}
           onClose={() => setPickerSlot(null)}
         />

@@ -18,6 +18,7 @@
     "build-data": "tsx scripts/build-monster-catalog.ts && tsx scripts/build-item-catalog.ts",
     "build-monster-catalog": "tsx scripts/build-monster-catalog.ts",
     "build-item-catalog": "tsx scripts/build-item-catalog.ts",
+    "build-drop-tables": "tsx scripts/build-drop-tables.ts",
     "migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
