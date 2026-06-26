@@ -23,7 +23,8 @@ const VOID = {
   helmMelee: 11665,
 };
 
-const TRIDENT_SWAMP = 12899; // powered staff (magic)
+const TRIDENT_SWAMP = 12899; // powered staff (magic, one-handed)
+const SHADOW = 27275;        // Tumeken's shadow (magic, two-handed)
 const DHCB = 21012;          // dragon hunter crossbow (ranged)
 const DIAMOND_E = 9243;      // diamond bolts (e)
 const WHIP = 4151;           // abyssal whip (melee)
@@ -104,8 +105,40 @@ describe("optimize/hybrid — Void as a 1-helm-switch hybrid", () => {
   });
 });
 
+describe("optimize/hybrid — the shield counts as a switch (a separate click)", () => {
+  // Melee uses a 1H weapon + a shield (dragon defender); magic uses a 2H staff.
+  // The shield is its own inventory click, so it should count — but only when the
+  // budget can afford it. With a 2H style present, the shared base keeps the shield
+  // empty (a shared shield the 2H style can't wear would be a hidden click).
+  const bank = [
+    WHIP, 20463 /* dragon defender */, SHADOW /* 2H magic */,
+    6585 /* fury */, 11832, 11834, 7462, 11840, 6737, 12002 /* occult */,
+  ];
+
+  it("budget 1 → shield is not a switch (shared base keeps it empty)", () => {
+    const { hybrid } = optimizeHybrid({
+      bank, target: VORKATH, skills: SKILLS_AT_99,
+      styles: ["melee", "magic"], switchBudget: 1,
+    });
+    expect(hybrid!.switchCount).toBe(1);
+    expect(hybrid!.perStyle.melee!.switchedSlots).not.toContain("shield");
+    expect(hybrid!.perStyle.melee!.loadout.slots.shield).toBeUndefined();
+  });
+
+  it("ample budget → melee switches in the shield; magic (2H) has none", () => {
+    const { hybrid } = optimizeHybrid({
+      bank, target: VORKATH, skills: SKILLS_AT_99,
+      styles: ["melee", "magic"], switchBudget: 10,
+    });
+    expect(hybrid!.perStyle.melee!.switchedSlots).toContain("shield");
+    expect(hybrid!.perStyle.melee!.loadout.slots.shield?.itemId).toBe(20463);
+    expect(hybrid!.perStyle.magic!.loadout.slots.shield).toBeUndefined();
+    expect(hybrid!.perStyle.magic!.switchedSlots).not.toContain("shield");
+  });
+});
+
 describe("optimize/hybrid — converges to per-style optima at max budget", () => {
-  it("ranged+melee at budget 9 → each style matches its independent best DPS", () => {
+  it("ranged+melee at budget 10 → each style matches its independent best DPS", () => {
     const bank = [
       // Ranged kit
       DHCB, DIAMOND_E, 27235 /* masori mask f */, 27238 /* masori body f */,
@@ -125,7 +158,7 @@ describe("optimize/hybrid — converges to per-style optima at max budget", () =
       target: VORKATH,
       skills: SKILLS_AT_99,
       styles: ["ranged", "melee"],
-      switchBudget: 9,
+      switchBudget: 10,
     });
     expect(hybrid).not.toBeNull();
     expect(hybrid!.perStyle.ranged!.dps).toBeCloseTo(bestOf("ranged"), 4);
@@ -170,8 +203,8 @@ describe("optimize/hybrid — invariants & degenerate inputs", () => {
     6585, 6570, 11840, 6737,
   ];
 
-  it("switchCount never exceeds the budget, across budgets 1..9", () => {
-    for (let n = 1; n <= 9; n++) {
+  it("switchCount never exceeds the budget, across budgets 1..10", () => {
+    for (let n = 1; n <= 10; n++) {
       const { hybrid } = optimizeHybrid({
         bank,
         target: VORKATH,
