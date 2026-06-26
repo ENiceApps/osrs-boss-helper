@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ALL_SPELLS,
-  spellCastableVs,
   spellEffectiveMaxHit,
   spellMaxHit,
   type SpellEntry,

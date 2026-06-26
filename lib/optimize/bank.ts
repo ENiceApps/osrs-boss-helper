@@ -295,7 +295,6 @@ function applicableForceIncludes(
   const isDragon = target.attributes.includes("dragon");
   const isUndead = target.attributes.includes("undead");
   const isDemon = target.attributes.includes("demon");
-  const isFireWeak = target.weakness?.element === "fire";
   const out: number[] = [];
   // Variant-aware (ownedTriggerIds): force-include the id the player actually
   // owns — a Salve(ei) Soul Wars/Emir's Arena imbue or DHCB (t)/(b) kit
