@@ -41,6 +41,20 @@ interface Props {
   excludedUpgrades?: { itemId: number; name: string }[];
   /** Toggle an item in/out of the excluded set; re-plans the upgrade path. */
   onToggleUpgradeItem?: (itemId: number, name: string) => void;
+  /** Player-set trip assumptions driving the kills/hr + supply + profit math. */
+  trip: TripAssumptions;
+  onTripChange: (patch: Partial<TripAssumptions>) => void;
+  /** Live GE price of a Saradomin brew(4), or null when unavailable. */
+  brewPriceGp: number | null;
+}
+
+export interface TripAssumptions {
+  /** Share of the hour actually fighting (0..1). */
+  uptime: number;
+  /** Running a protection prayer alongside the offensive overhead. */
+  protectionPrayer: boolean;
+  /** Brews (4-dose) drunk per hour. */
+  brewsPerHour: number;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -183,8 +197,12 @@ export function ResultsPanel({
   priceLookup,
   excludedUpgrades = [],
   onToggleUpgradeItem,
+  trip,
+  onTripChange,
+  brewPriceGp,
 }: Props) {
   const [showDrops, setShowDrops] = useState(false);
+  const [showTrip, setShowTrip] = useState(false);
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
   // mirroring calculate.ts so the displayed cadence matches the engine.
   const rapidRangedAdjust =
@@ -193,13 +211,22 @@ export function ResultsPanel({
   const activeFlags = set ? buildActiveFlags(set, activeBonuses) : [];
   if (set && boltProcFlag) activeFlags.push(boltProcFlag);
 
-  // Per-hour economics: kills/hr × loot value per kill, less prayer-supply cost.
+  // Per-hour economics. The theoretical-max kills/hr is scaled by the player's
+  // combat-uptime assumption; supplies and profit all use that effective rate.
   const supply = set
-    ? estimatePrayerSupplies(set.style, prayerLevel, set.totals.prayerBonus, prayerPotPriceGp)
+    ? estimatePrayerSupplies(set.style, prayerLevel, set.totals.prayerBonus, prayerPotPriceGp, {
+        useProtectionPrayer: trip.protectionPrayer,
+        uptime: trip.uptime,
+      })
     : null;
-  const killsPerHour = dps && dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0;
+  const maxKillsPerHour = dps && dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0;
+  const killsPerHour = maxKillsPerHour * trip.uptime;
+  // Food cost scales with how much you actually fight (uptime).
+  const foodGpPerHour =
+    brewPriceGp != null ? trip.brewsPerHour * brewPriceGp * trip.uptime : 0;
+  const supplyGpPerHour = (supply?.gpPerHour ?? 0) + foodGpPerHour;
   const profit = expectedGpPerKill(bossSlug, priceLookup);
-  const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supply?.gpPerHour ?? 0);
+  const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supplyGpPerHour);
 
   const upgradePath = result?.upgradePath ?? [];
   const showUpgrades =
@@ -242,8 +269,18 @@ export function ResultsPanel({
             value={formatSeconds(dps.dps > 0 ? bossHp / dps.dps : Infinity)}
           />
           <StatRow
-            label="Kills / hr (max)"
-            value={formatKph(dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0)}
+            label="Kills / hr"
+            value={
+              <span>
+                {formatKph(killsPerHour)}
+                {trip.uptime < 1 && (
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {" "}
+                    (max {formatKph(maxKillsPerHour)})
+                  </span>
+                )}
+              </span>
+            }
           />
           <StatRow
             label="Attack speed"
@@ -266,10 +303,11 @@ export function ResultsPanel({
               value={
                 <span>
                   {supply.potionsPerHour.toFixed(1)} prayer pots
-                  {supply.gpPerHour != null && (
+                  {trip.brewsPerHour > 0 && ` · ${trip.brewsPerHour} brews`}
+                  {supplyGpPerHour > 0 && (
                     <span className="text-caption font-normal text-osrs-muted">
                       {" "}
-                      · {fmtGp(Math.round(supply.gpPerHour))} gp
+                      · {fmtGp(Math.round(supplyGpPerHour))} gp
                     </span>
                   )}
                 </span>
@@ -296,6 +334,67 @@ export function ResultsPanel({
         </div>
         );
       })()}
+
+      {set && dps && (
+        <div className="text-caption">
+          <button
+            type="button"
+            onClick={() => setShowTrip((v) => !v)}
+            className="text-osrs-gold hover:underline"
+          >
+            {showTrip ? "Hide" : "Adjust"} trip assumptions
+          </button>
+          {showTrip && (
+            <div className="mt-2 osrs-well rounded p-2.5 space-y-2.5">
+              <label className="block">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-osrs-brown font-semibold">Combat uptime</span>
+                  <span className="text-osrs-muted">{Math.round(trip.uptime * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={10}
+                  max={100}
+                  step={5}
+                  value={Math.round(trip.uptime * 100)}
+                  onChange={(e) => onTripChange({ uptime: Number(e.target.value) / 100 })}
+                  className="w-full accent-osrs-gold"
+                />
+                <span className="text-osrs-muted">
+                  Share of the hour actually fighting (vs banking, walking, downtime).
+                </span>
+              </label>
+              <label className="flex items-center justify-between gap-2">
+                <span className="text-osrs-brown font-semibold">Protection prayer</span>
+                <input
+                  type="checkbox"
+                  checked={trip.protectionPrayer}
+                  onChange={(e) => onTripChange({ protectionPrayer: e.target.checked })}
+                  className="accent-osrs-gold w-4 h-4"
+                />
+              </label>
+              <label className="flex items-center justify-between gap-2">
+                <span className="text-osrs-brown font-semibold">Brews / hr</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  value={trip.brewsPerHour}
+                  onChange={(e) =>
+                    onTripChange({ brewsPerHour: Math.max(0, Math.floor(Number(e.target.value) || 0)) })
+                  }
+                  className="w-16 bg-osrs-field border border-osrs-brown/30 rounded px-1.5 py-0.5 text-right text-osrs-brown"
+                />
+              </label>
+              <p className="text-osrs-muted italic">
+                Per-hour numbers assume continuous{" "}
+                {trip.protectionPrayer ? "offensive + protection" : "offensive"} prayer while
+                fighting. These factors vary by player — set them to your real rate.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {set && dps && profit.hasData && profit.breakdown.length > 0 && (
         <div className="text-caption">
