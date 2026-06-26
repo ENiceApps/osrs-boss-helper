@@ -49,13 +49,21 @@ import type {
 
 type ValidScenario = Extract<ScoredScenario, { valid: true }>;
 
-/** Armor/jewelry slots that can be shared or switched. Weapon/ammo/shield are style-owned. */
+/**
+ * Slots that can be shared or switched, and that count as a "click" when they
+ * differ across styles. Includes the shield: it's a separate inventory click, so
+ * it counts (a 2H weapon simply can't hold one — handled in scoring). The weapon
+ * is counted separately (always differs). Ammo is NOT here — see STYLE_OWNED_SLOTS.
+ */
 export const HYBRID_ARMOR_SLOTS: readonly LoadoutSlotKey[] = [
-  "head", "cape", "neck", "body", "legs", "hands", "feet", "ring",
+  "head", "cape", "neck", "body", "legs", "hands", "feet", "ring", "shield",
 ];
 
-/** Slots each style always keeps from its own anchor — folded into the weapon switch. */
-const STYLE_OWNED_SLOTS: readonly LoadoutSlotKey[] = ["weapon", "ammo", "shield"];
+/**
+ * Style-owned, FREE slots — never counted as a switch. Only ammo: you leave the
+ * ranged ammo (or a blessing) in the slot the whole fight, so it's never a click.
+ */
+const STYLE_OWNED_SLOTS: readonly LoadoutSlotKey[] = ["ammo"];
 
 export interface HybridOptimizerInput {
   bank: Set<number> | number[];
@@ -117,9 +125,11 @@ interface StyleAnchor {
   weaponId: number;
   attackStyle: { attackType: LoadoutSet["attackType"]; choice: LoadoutSet["attackStyleChoice"] };
   internalAmmoId?: number;
-  /** Style-owned slot items (ammo, shield) carried verbatim into every scored loadout. */
+  /** Whether the weapon is two-handed — a 2H weapon can't equip a shield. */
+  isTwoHanded: boolean;
+  /** Style-owned FREE slot items (ammo) carried verbatim into every scored loadout. */
   ownedItemIds: number[];
-  /** This style's best item per shareable armor slot. */
+  /** This style's best item per shareable slot (incl. shield, when 1H). */
   bestArmor: Map<LoadoutSlotKey, number>;
   /** This style's independent-best (full-switch) DPS. */
   baseDps: number;
@@ -132,7 +142,6 @@ function buildAnchor(scored: ValidScenario): StyleAnchor | null {
 
   const ownedItemIds: number[] = [];
   for (const slot of STYLE_OWNED_SLOTS) {
-    if (slot === "weapon") continue;
     const id = l.slots[slot]?.itemId;
     if (id !== undefined) ownedItemIds.push(id);
   }
@@ -148,6 +157,7 @@ function buildAnchor(scored: ValidScenario): StyleAnchor | null {
     weaponId,
     attackStyle: { attackType: l.attackType, choice: l.attackStyleChoice },
     internalAmmoId: l.internalAmmo?.itemId,
+    isTwoHanded: findCatalogItem(weaponId)?.isTwoHanded ?? false,
     ownedItemIds,
     bestArmor,
     baseDps: scored.dps.dps,
@@ -271,6 +281,7 @@ function solveHybrid(
     for (const anchor of anchors) {
       const ids: number[] = [anchor.weaponId, ...anchor.ownedItemIds];
       for (const slot of HYBRID_ARMOR_SLOTS) {
+        if (slot === "shield" && anchor.isTwoHanded) continue; // 2H can't hold a shield
         const id = armorItemFor(anchor, slot, unlocked, shared);
         if (id !== undefined) ids.push(id);
       }
@@ -333,13 +344,21 @@ function solveHybrid(
   // already been re-geared by the caller when it's a hybrid-set candidate).
   const seedMaps: Map<LoadoutSlotKey, number>[] = anchors.map((a) => new Map(a.bestArmor));
 
+  // A shared shield can only be worn by every style when none is two-handed.
+  // If any selected style is 2H, the shared base keeps the shield empty (0 clicks)
+  // and the shield becomes a real switch via the unlock step below.
+  const anyTwoHanded = anchors.some((a) => a.isTwoHanded);
+
   let shared = new Map<LoadoutSlotKey, number>();
   let sharedBlended = -Infinity;
   for (const seedMap of seedMaps) {
     const cand = new Map<LoadoutSlotKey, number>(seedMap);
     // Greedy slot improvement: for each slot try "none" + every style's item.
     for (const slot of HYBRID_ARMOR_SLOTS) {
-      const options: (number | undefined)[] = [undefined, ...(slotCandidates.get(slot) ?? [])];
+      const options: (number | undefined)[] =
+        slot === "shield" && anyTwoHanded
+          ? [undefined]
+          : [undefined, ...(slotCandidates.get(slot) ?? [])];
       let bestId: number | undefined;
       let bestB = -Infinity;
       for (const id of options) {
@@ -403,9 +422,13 @@ function solveHybrid(
   for (const anchor of anchors) {
     const s = finalState.get(anchor.style);
     if (!s?.scored) continue;
+    // The switched (per-style) slots this style equips an item in. A 2H style has
+    // no shield, so its empty shield isn't listed even though the slot is unlocked.
     const switchedSlots: LoadoutSlotKey[] = [];
     for (const slot of HYBRID_ARMOR_SLOTS) {
-      if (unlocked.has(slot)) switchedSlots.push(slot);
+      if (!unlocked.has(slot)) continue;
+      const styleItem = slot === "shield" && anchor.isTwoHanded ? undefined : anchor.bestArmor.get(slot);
+      if (styleItem !== undefined) switchedSlots.push(slot);
     }
     perStyle[anchor.style] = {
       loadout: s.scored.loadout,

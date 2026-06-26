@@ -126,14 +126,14 @@ export function HybridPanel({
           <label className="label-eyebrow mb-1 block" htmlFor="hybrid-switch-budget">
             Switches: {switchBudget}{" "}
             <span className="text-osrs-muted normal-case">
-              (weapon + {switchBudget - 1} armour)
+              (clicks to swap: weapon + {switchBudget - 1} more)
             </span>
           </label>
           <input
             id="hybrid-switch-budget"
             type="range"
             min={1}
-            max={9}
+            max={10}
             step={1}
             value={switchBudget}
             onChange={(e) => setSwitchBudget(Number(e.target.value))}
@@ -253,7 +253,7 @@ function HybridResult({
           const switchItems = switchSlots
             .map((s) => ps.loadout.slots[s])
             .filter((p): p is NonNullable<typeof p> => Boolean(p));
-          const highlight = new Set<LoadoutSlotKey>(["weapon", "ammo", ...ps.switchedSlots]);
+          const highlight = new Set<LoadoutSlotKey>(["weapon", ...ps.switchedSlots]);
           return (
             <div key={style} className="osrs-panel rounded p-3">
               <div className="flex items-baseline justify-between mb-2">
