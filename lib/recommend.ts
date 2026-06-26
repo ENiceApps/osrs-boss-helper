@@ -5,7 +5,8 @@
 // specific target's stats. One curated set serves every boss that matches
 // its predicate — no per-boss preset curation needed.
 
-import type { DpsResult, Skills } from "@/types/osrs";
+import type { DpsResult, PrayerSelection, Skills } from "@/types/osrs";
+import { defaultPrayerFor } from "@/data/prayers";
 import { calculateDps } from "@/lib/dps/calculate";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
@@ -22,51 +23,33 @@ import {
   rangedDefenceBonusFor,
 } from "@/lib/loadout";
 
-const DEFAULT_PRAYERS = {
-  melee: {
-    attackMultiplier: 1.2,
-    strengthMultiplier: 1.23,
-    rangedAttackMultiplier: 1,
-    rangedStrengthMultiplier: 1,
-    magicAttackMultiplier: 1,
-    magicDamageMultiplier: 1,
-    defenceMultiplier: 1.25,
-  },
-  ranged: {
-    attackMultiplier: 1,
-    strengthMultiplier: 1,
-    rangedAttackMultiplier: 1.2,
-    rangedStrengthMultiplier: 1.23,
-    magicAttackMultiplier: 1,
-    magicDamageMultiplier: 1,
-    defenceMultiplier: 1.25,
-  },
-  magic: {
-    attackMultiplier: 1,
-    strengthMultiplier: 1,
-    rangedAttackMultiplier: 1,
-    rangedStrengthMultiplier: 1,
-    magicAttackMultiplier: 1.25,
-    // Augury gives +25% magic accuracy AND +4% magic damage.
-    magicDamageMultiplier: 1.04,
-    defenceMultiplier: 1.25,
-  },
-} as const;
+// The offensive prayer the calc defaults to per style — the best one (Piety /
+// Rigour / Augury). Sourced from the prayer catalog so the multipliers, the
+// drain model, and the picker can never drift apart. Callers that don't pass a
+// `prayer` override (the optimizer, tests) get this.
+const DEFAULT_PRAYERS: Record<LoadoutSet["style"], PrayerSelection> = {
+  melee: defaultPrayerFor("melee").selection,
+  ranged: defaultPrayerFor("ranged").selection,
+  magic: defaultPrayerFor("magic").selection,
+};
 
 /**
- * The offensive prayer the DPS calc assumes per combat style (mirrors the
- * multipliers in DEFAULT_PRAYERS above). Surfaced in the results rail so the
- * player knows which prayer the DPS number bakes in. `effect` is the short
- * offensive summary — defence (+25%) is omitted since it doesn't affect DPS.
+ * The default offensive prayer per combat style (name + short effect summary),
+ * surfaced in the results rail. Derived from the catalog's default option.
  */
 export const ASSUMED_PRAYER: Record<
   LoadoutSet["style"],
   { name: string; effect: string }
 > = {
-  melee: { name: "Piety", effect: "+23% str · +20% atk" },
-  ranged: { name: "Rigour", effect: "+23% ranged str · +20% ranged atk" },
-  magic: { name: "Augury", effect: "+4% magic dmg · +25% magic acc" },
+  melee: pick("melee"),
+  ranged: pick("ranged"),
+  magic: pick("magic"),
 };
+
+function pick(style: LoadoutSet["style"]): { name: string; effect: string } {
+  const p = defaultPrayerFor(style);
+  return { name: p.name, effect: p.effect };
+}
 
 /** Resolve which defence-bonus number to feed the DPS calc given the loadout's attack profile. */
 function defenceBonusForSet(set: LoadoutSet, target: MonsterCatalogEntry): number {
@@ -127,6 +110,12 @@ export function computeSetDps(
    * Undefined = no override (full HP, no bonus).
    */
   currentHp?: number,
+  /**
+   * The offensive prayer to apply. Omit to use the style's best prayer
+   * (DEFAULT_PRAYERS) — that's what the optimizer ranks gear against. The boss
+   * page passes the player's chosen prayer here so the displayed DPS reflects it.
+   */
+  prayer?: PrayerSelection,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
   // Black mask / slayer helm (i): only on-task, and only when no Salve is active
@@ -253,7 +242,7 @@ export function computeSetDps(
   return calculateDps({
     style: set.style,
     attackStyle: set.attackStyleChoice,
-    prayers: DEFAULT_PRAYERS[set.style],
+    prayers: prayer ?? DEFAULT_PRAYERS[set.style],
     skills: effectiveSkills,
     attackBonus: set.totals.attackBonus,
     strengthBonus: set.totals.strengthBonus,

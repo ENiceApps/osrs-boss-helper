@@ -81,6 +81,12 @@ export interface SupplyOptions {
   useProtectionPrayer?: boolean;
   /** Share of the hour actually spent praying (0..1). Banking/downtime < 1. */
   uptime?: number;
+  /**
+   * Drain effect of the chosen offensive prayer. Defaults to
+   * PRAYER_DRAIN_EFFECT[style] (24 — Piety/Rigour/Augury). A weaker prayer
+   * drains slower; "None" is 0 (no offensive drain).
+   */
+  offensiveDrainEffect?: number;
 }
 
 /**
@@ -100,9 +106,9 @@ export function estimatePrayerSupplies(
   options: SupplyOptions = {},
 ): SupplyEstimate {
   const uptime = Math.min(1, Math.max(0, options.uptime ?? 1));
+  const offensiveDrain = options.offensiveDrainEffect ?? PRAYER_DRAIN_EFFECT[style];
   const drainEffect =
-    PRAYER_DRAIN_EFFECT[style] +
-    (options.useProtectionPrayer ? PROTECTION_PRAYER_DRAIN_EFFECT : 0);
+    offensiveDrain + (options.useProtectionPrayer ? PROTECTION_PRAYER_DRAIN_EFFECT : 0);
   const pointsPerMinute = prayerPointsPerMinute(drainEffect, prayerBonus);
   const pointsPerHour = pointsPerMinute * 60 * uptime;
   const dosesPerHour = pointsPerHour / prayerRestorePerDose(prayerLevel);
