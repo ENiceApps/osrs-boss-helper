@@ -49,4 +49,21 @@ describe("supply estimate", () => {
     expect(est.gpPerHour).toBeNull();
     expect(est.potionsPerHour).toBeGreaterThan(0);
   });
+
+  it("a protection prayer raises drain by the 36/24 effect ratio", () => {
+    const base = estimatePrayerSupplies("melee", 99, 0, 10_000);
+    const withProt = estimatePrayerSupplies("melee", 99, 0, 10_000, {
+      useProtectionPrayer: true,
+    });
+    // Drain effect 24 → 36 (offensive + protection), so 1.5× the pots.
+    expect(withProt.potionsPerHour / base.potionsPerHour).toBeCloseTo(36 / 24, 5);
+  });
+
+  it("uptime scales consumption linearly", () => {
+    const full = estimatePrayerSupplies("ranged", 99, 0, 10_000);
+    const half = estimatePrayerSupplies("ranged", 99, 0, 10_000, { uptime: 0.5 });
+    expect(half.potionsPerHour).toBeCloseTo(full.potionsPerHour * 0.5, 5);
+    // The instantaneous drain rate is unchanged — only the per-hour totals scale.
+    expect(half.pointsPerMinute).toBeCloseTo(full.pointsPerMinute, 5);
+  });
 });

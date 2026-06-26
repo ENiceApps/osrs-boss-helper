@@ -28,7 +28,7 @@ import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { LoadoutPanel } from "@/components/LoadoutPanel";
 import { ResultsPanel } from "@/components/ResultsPanel";
-import { PRAYER_POTION_4_ID } from "@/data/prayer-drain";
+import { PRAYER_POTION_4_ID, SARADOMIN_BREW_4_ID } from "@/data/prayer-drain";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
@@ -137,6 +137,14 @@ export default function BossPage({
   // Slayer-task assumption. Defaults on (the common bossing context) — gates the
   // imbued black mask / slayer helmet bonus through the optimizer and recompute.
   const [onTask, setOnTask] = useState(true);
+  // Trip assumptions for the kills/hr + supply + profit estimates. These are
+  // the player-specific factors a calculator can't know, so they're adjustable:
+  //  - uptime: share of the hour actually fighting (vs banking/walking/downtime)
+  //  - protection prayer: whether a Protect-from prayer runs alongside the offensive one
+  //  - brews/hr: food the player actually drinks (damage taken varies wildly per player)
+  const [combatUptime, setCombatUptime] = useState(1); // 0..1, default theoretical max
+  const [useProtectionPrayer, setUseProtectionPrayer] = useState(true);
+  const [brewsPerHour, setBrewsPerHour] = useState(0);
   // Soulreaper axe: assume max 5 stacks (+30% Strength level). Only shown when
   // the axe is in the active loadout's weapon slot.
   const [soulreaperMaxStacks, setSoulreaperMaxStacks] = useState(false);
@@ -932,6 +940,13 @@ export default function BossPage({
             priceLookup={(id) => priceForItem(prices, id)}
             excludedUpgrades={excludedUpgrades}
             onToggleUpgradeItem={toggleExcludedUpgrade}
+            trip={{ uptime: combatUptime, protectionPrayer: useProtectionPrayer, brewsPerHour }}
+            onTripChange={(patch) => {
+              if (patch.uptime !== undefined) setCombatUptime(patch.uptime);
+              if (patch.protectionPrayer !== undefined) setUseProtectionPrayer(patch.protectionPrayer);
+              if (patch.brewsPerHour !== undefined) setBrewsPerHour(patch.brewsPerHour);
+            }}
+            brewPriceGp={priceForItem(prices, SARADOMIN_BREW_4_ID)}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel
