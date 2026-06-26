@@ -33,6 +33,8 @@ import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
 import { SpellPickerModal } from "@/components/SpellPickerModal";
+import { PrayerPickerModal } from "@/components/PrayerPickerModal";
+import { prayerById, DEFAULT_PRAYER_ID } from "@/data/prayers";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
@@ -53,6 +55,17 @@ import { asItemId } from "@/types/osrs";
 // Comparison-tab ids: the budget-mode best, or the best build per style.
 type LoadoutTabId = "best" | CombatStyle;
 const STYLE_TABS: CombatStyle[] = ["melee", "ranged", "magic"];
+
+/** Share-link helper: only encode prayer picks that differ from the default. */
+function encodeNonDefaultPrayers(
+  prayerIds: Record<CombatStyle, string>,
+): Partial<Record<CombatStyle, string>> | undefined {
+  const out: Partial<Record<CombatStyle, string>> = {};
+  for (const style of STYLE_TABS) {
+    if (prayerIds[style] !== DEFAULT_PRAYER_ID[style]) out[style] = prayerIds[style];
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
 
 // Stable empty pools for the "not connected" state. We deliberately show an
 // EMPTY equipment/optimizer state until the plugin syncs, rather than invent a
@@ -161,6 +174,13 @@ export default function BossPage({
   // Manually chosen combat spell (magic loadouts). null = auto-pick by optimizer.
   const [spellOverride, setSpellOverride] = useState<SpellEntry | null>(null);
   const [spellPickerOpen, setSpellPickerOpen] = useState(false);
+  // Chosen offensive prayer per combat style. Defaults to the best (Piety /
+  // Rigour / Augury); the player can pick a weaker one via the results-rail
+  // prayer row, which re-runs DPS and the prayer-pot supply cost.
+  const [prayerIds, setPrayerIds] = useState<Record<CombatStyle, string>>({
+    ...DEFAULT_PRAYER_ID,
+  });
+  const [prayerPickerOpen, setPrayerPickerOpen] = useState(false);
 
   const { data: mapping } = useMapping();
   const { data: prices } = usePrices();
@@ -470,8 +490,9 @@ export default function BossPage({
       tab: selectedSet.style,
       soulreaper: soulreaperMaxStacks || undefined,
       dharokHp: dharokCurrentHp,
+      prayers: encodeNonDefaultPrayers(prayerIds),
     });
-  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp]);
+  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds]);
 
   // Hydrate page state from a share link once on mount. Garbage/absent param →
   // decodeLoadout returns null and we leave defaults untouched.
@@ -502,6 +523,17 @@ export default function BossPage({
     if (state.tab) setActiveTab(state.tab as LoadoutTabId);
     if (typeof state.soulreaper === "boolean") setSoulreaperMaxStacks(state.soulreaper);
     if (typeof state.dharokHp === "number") setDharokCurrentHp(state.dharokHp);
+    if (state.prayers && typeof state.prayers === "object") {
+      setPrayerIds((prev) => {
+        const next = { ...prev };
+        for (const style of STYLE_TABS) {
+          const id = state.prayers?.[style];
+          // Only accept ids that exist in the catalog for that style.
+          if (id && prayerById(style, id).id === id) next[style] = id;
+        }
+        return next;
+      });
+    }
   }, []);
 
   // Soulreaper: only meaningful when the axe is actually equipped.
@@ -568,6 +600,9 @@ export default function BossPage({
   const needsDpsRecompute =
     overridesActive ||
     (soulreaperMaxStacks && soulreaperEquipped) ||
+    // A non-default prayer pick diverges from the optimizer's baked-in best
+    // prayer, so the hero number must be recomputed with the chosen one.
+    (!!selectedSet && prayerIds[selectedSet.style] !== DEFAULT_PRAYER_ID[selectedSet.style]) ||
     (dharokFullSetEquipped && dharokCurrentHp !== undefined && dharokCurrentHp < (skills.hitpoints ?? 99));
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
@@ -580,8 +615,15 @@ export default function BossPage({
       effectiveOnTask,
       soulreaperMaxStacks,
       dharokCurrentHp,
+      prayerById(selectedSet.style, prayerIds[selectedSet.style]).selection,
     );
-  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp]);
+  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds]);
+
+  // The prayer option backing the displayed DPS — drives the results-rail prayer
+  // row, the picker's current selection, and the supply-cost drain effect.
+  // Falls back to the melee default when no loadout is active (row is hidden then).
+  const selectedPrayerStyle: CombatStyle = selectedSet?.style ?? "melee";
+  const selectedPrayerOption = prayerById(selectedPrayerStyle, prayerIds[selectedPrayerStyle]);
 
   // DPS a candidate item would yield if slotted into `slot` on top of the
   // current loadout (existing overrides preserved). Powers the item picker's
@@ -604,9 +646,10 @@ export default function BossPage({
         effectiveOnTask,
         soulreaperMaxStacks,
         dharokCurrentHp,
+        prayerById(trial.style, prayerIds[trial.style]).selection,
       ).dps;
     },
-    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp],
+    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds],
   );
 
   // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
@@ -943,6 +986,9 @@ export default function BossPage({
             mapping={mapping}
             prayerLevel={skills.prayer ?? 99}
             prayerPotPriceGp={priceForItem(prices, PRAYER_POTION_4_ID)}
+            selectedPrayer={{ name: selectedPrayerOption.name, effect: selectedPrayerOption.effect }}
+            prayerDrainEffect={selectedPrayerOption.drainEffect}
+            onOpenPrayerPicker={selectedSet ? () => setPrayerPickerOpen(true) : undefined}
             bossSlug={monster.slug}
             priceLookup={(id) => priceForItem(prices, id)}
             excludedUpgrades={excludedUpgrades}
@@ -1008,6 +1054,20 @@ export default function BossPage({
           weaponId={selectedSet?.slots.weapon?.itemId}
           onSelect={onSpellSelect}
           onClose={() => setSpellPickerOpen(false)}
+        />
+      )}
+
+      {prayerPickerOpen && selectedSet && (
+        <PrayerPickerModal
+          style={selectedSet.style}
+          currentPrayerId={prayerIds[selectedSet.style]}
+          prayerLevel={skills.prayer ?? 99}
+          onSelect={(id) => {
+            const style = selectedSet.style;
+            setPrayerIds((prev) => ({ ...prev, [style]: id }));
+            setPrayerPickerOpen(false);
+          }}
+          onClose={() => setPrayerPickerOpen(false)}
         />
       )}
 

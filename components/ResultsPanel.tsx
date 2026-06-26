@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
-import { ASSUMED_PRAYER } from "@/lib/recommend";
 import { estimatePrayerSupplies } from "@/data/prayer-drain";
 import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
 import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
@@ -31,6 +30,12 @@ interface Props {
   mapping?: MappingEntry[];
   /** Player Prayer level — scales prayer-potion restore per dose. */
   prayerLevel: number;
+  /** The offensive prayer the displayed DPS bakes in (name + short effect). */
+  selectedPrayer: { name: string; effect: string };
+  /** Drain effect of the selected prayer — drives the prayer-pot supply cost. */
+  prayerDrainEffect: number;
+  /** Open the prayer picker. When omitted, the Prayer row is read-only text. */
+  onOpenPrayerPicker?: () => void;
   /** Live GE price of a Prayer potion(4), or null when prices are unavailable. */
   prayerPotPriceGp: number | null;
   /** Boss slug — keys the drop table for the profit/hr estimate. */
@@ -193,6 +198,9 @@ export function ResultsPanel({
   mapping,
   prayerLevel,
   prayerPotPriceGp,
+  selectedPrayer,
+  prayerDrainEffect,
+  onOpenPrayerPicker,
   bossSlug,
   priceLookup,
   excludedUpgrades = [],
@@ -217,6 +225,7 @@ export function ResultsPanel({
     ? estimatePrayerSupplies(set.style, prayerLevel, set.totals.prayerBonus, prayerPotPriceGp, {
         useProtectionPrayer: trip.protectionPrayer,
         uptime: trip.uptime,
+        offensiveDrainEffect: prayerDrainEffect,
       })
     : null;
   const maxKillsPerHour = dps && dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0;
@@ -289,12 +298,26 @@ export function ResultsPanel({
           <StatRow
             label="Prayer"
             value={
-              <span>
-                {ASSUMED_PRAYER[set.style].name}{" "}
-                <span className="text-caption font-normal text-osrs-muted">
-                  {ASSUMED_PRAYER[set.style].effect}
+              onOpenPrayerPicker ? (
+                <button
+                  type="button"
+                  onClick={onOpenPrayerPicker}
+                  className="text-left hover:text-osrs-gold underline decoration-dotted decoration-osrs-brown/40 underline-offset-2"
+                  title="Change prayer"
+                >
+                  {selectedPrayer.name}{" "}
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {selectedPrayer.effect}
+                  </span>
+                </button>
+              ) : (
+                <span>
+                  {selectedPrayer.name}{" "}
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {selectedPrayer.effect}
+                  </span>
                 </span>
-              </span>
+              )
             }
           />
           {supply && (
