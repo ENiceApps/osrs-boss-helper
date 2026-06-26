@@ -44,6 +44,8 @@ interface Props<TabId extends string> {
   boostName?: string;
   /** Called when the user clicks "Open in Wiki Calc". Async — shows a spinner while the shortlink is created. */
   onWikiExport?: () => Promise<void>;
+  /** Encoded `?b=` value for a stateless share link, or null when no loadout. */
+  shareCode?: string | null;
 }
 
 const SLOT_ORDER: LoadoutSlotKey[] = [
@@ -84,10 +86,24 @@ export function LoadoutPanel<TabId extends string>({
   conflicts,
   boostName,
   onWikiExport,
+  shareCode,
 }: Props<TabId>) {
   const edited = editedSlots.length > 0;
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  async function handleShareLink() {
+    if (!shareCode) return;
+    const url = `${window.location.origin}${window.location.pathname}?b=${shareCode}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 1500);
+    } catch {
+      // Clipboard unavailable (insecure context / denied) — fail quietly.
+    }
+  }
 
   async function handleWikiExport() {
     if (!onWikiExport) return;
@@ -285,22 +301,33 @@ export function LoadoutPanel<TabId extends string>({
             </p>
           )}
 
-          {onWikiExport && (
-            <div className="mt-3 border-t border-osrs-brown/20 pt-3">
-              <button
-                type="button"
-                onClick={handleWikiExport}
-                disabled={exporting}
-                className="w-full text-caption text-osrs-brown hover:text-osrs-gold border border-osrs-brown/40 hover:border-osrs-gold/60 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
-              >
-                {exporting ? "Opening…" : "Open in Wiki DPS Calc ↗"}
-              </button>
-              {exportError && (
-                <p className="mt-1 text-caption text-status-missing text-center">
-                  {exportError}
-                </p>
+          {(onWikiExport || shareCode) && (
+            <div className="mt-3 border-t border-osrs-brown/20 pt-3 flex gap-2">
+              {shareCode && (
+                <button
+                  type="button"
+                  onClick={handleShareLink}
+                  className="flex-1 text-caption text-osrs-brown hover:text-osrs-gold border border-osrs-brown/40 hover:border-osrs-gold/60 rounded px-2 py-1.5 transition-colors"
+                >
+                  {shareCopied ? "Link copied!" : "Copy share link"}
+                </button>
+              )}
+              {onWikiExport && (
+                <button
+                  type="button"
+                  onClick={handleWikiExport}
+                  disabled={exporting}
+                  className="flex-1 text-caption text-osrs-brown hover:text-osrs-gold border border-osrs-brown/40 hover:border-osrs-gold/60 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
+                >
+                  {exporting ? "Opening…" : "Open in Wiki DPS Calc ↗"}
+                </button>
               )}
             </div>
+          )}
+          {exportError && (
+            <p className="mt-1 text-caption text-status-missing text-center">
+              {exportError}
+            </p>
           )}
         </>
       )}

@@ -222,14 +222,29 @@ export async function openInWikiCalc(
   onTask: boolean,
   boost: CombatBoost | undefined,
 ): Promise<string> {
-  if (monster.wikiId === 0) {
-    // Synthetic entries (Combat dummy) have no wiki equivalent — open the calc
-    // with no pre-set monster.
-    window.open(WIKI_CALC_BASE, "_blank", "noreferrer");
-    return WIKI_CALC_BASE;
-  }
+  // The Combat dummy (wikiId 0) has no wiki page, but "A Corpse" (id 15165)
+  // serves the same purpose in the wiki calc: all-zero defence bonuses, used
+  // for pure max-hit / DPS sanity checks. Swap it in so the calc opens with a
+  // meaningful target instead of nothing.
+  const wikiMonster: MonsterCatalogEntry =
+    monster.wikiId === 0
+      ? {
+          ...monster,
+          wikiId: 15165,
+          name: "A corpse",
+          version: "",
+          image: "A corpse.png",
+          size: 1,
+          hp: 90,
+          defenceLevel: 90,
+          magicLevel: 1,
+          defenceBonuses: { stab: 0, slash: 0, crush: 0, magic: 0, rangedHeavy: 0, rangedStandard: 0, rangedLight: 0 },
+          attributes: [],
+          weakness: { element: "fire", severity: 50 },
+        }
+      : monster;
 
-  const payload = JSON.stringify(buildPayload(set, skills, monster, onTask, boost));
+  const payload = JSON.stringify(buildPayload(set, skills, wikiMonster, onTask, boost));
   const res = await fetch(SHORTLINK_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
