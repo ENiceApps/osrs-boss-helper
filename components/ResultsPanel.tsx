@@ -5,8 +5,9 @@ import { useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
 import { ASSUMED_PRAYER } from "@/lib/recommend";
-import { fmtDpsPerM, fmtGp, formatSeconds } from "@/lib/format";
-import { buildRecommendationSlots } from "@/lib/recommendation";
+import { estimatePrayerSupplies } from "@/data/prayer-drain";
+import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
+import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
@@ -28,8 +29,18 @@ interface Props {
   /** Enchanted-bolt proc description, when the active loadout's ammo procs. */
   boltProcFlag?: string;
   mapping?: MappingEntry[];
-  /** Ranked owned alternatives per slot (chosen first) for the plugin export. */
-  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
+  /** Player Prayer level — scales prayer-potion restore per dose. */
+  prayerLevel: number;
+  /** Live GE price of a Prayer potion(4), or null when prices are unavailable. */
+  prayerPotPriceGp: number | null;
+  /** Boss slug — keys the drop table for the profit/hr estimate. */
+  bossSlug: string;
+  /** Live GE price lookup for drop-value / profit calc. */
+  priceLookup: PriceLookup;
+  /** Upgrade-path items the user has toggled OFF (won't buy). */
+  excludedUpgrades?: { itemId: number; name: string }[];
+  /** Toggle an item in/out of the excluded set; re-plans the upgrade path. */
+  onToggleUpgradeItem?: (itemId: number, name: string) => void;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -98,68 +109,28 @@ function gearItemNames(set: LoadoutSet): string[] {
 }
 
 /**
- * Numeric item IDs grouped by worn slot — the payload a RuneLite companion
- * plugin would consume to redraw the bank into a slot-grouped recommended view.
- * Each slot is an array so the shape can later carry ranked alternatives per
- * slot; today the optimizer commits to one pick, so each holds a single id.
- */
-function gearSlotIds(set: LoadoutSet): Record<string, number[]> {
-  const slots: Record<string, number[]> = {};
-  for (const slot of GEAR_SLOT_ORDER) {
-    const piece = set.slots[slot];
-    if (piece) slots[slot] = [piece.itemId];
-  }
-  // Blowpipe darts share the ammo row in-game, so append them there.
-  if (set.internalAmmo) {
-    slots.ammo = [...(slots.ammo ?? []), set.internalAmmo.itemId];
-  }
-  return slots;
-}
-
-/**
- * Two clipboard exports for the active loadout:
- *  - "Copy gear list" → comma-separated item names, a withdrawal checklist the
- *    player keeps on hand while pulling gear from the bank.
- *  - "Copy plugin JSON" → `{ label, slots: { slot: [itemId] } }`, the payload a
- *    future RuneLite companion plugin would read to filter/redraw the in-game
- *    bank by slot. (A browser can't touch the bank widget itself, so the actual
- *    redraw is the plugin's job — this is just the data bridge to it.)
+ * "Copy gear list" → comma-separated item names, a withdrawal checklist the
+ * player keeps on hand while pulling gear from the bank.
  */
 function LoadoutExport({
   set,
-  bossName,
-  slotAlternatives,
 }: {
   set: LoadoutSet;
-  bossName: string;
-  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
 }) {
-  const [copied, setCopied] = useState<null | "names" | "json">(null);
+  const [copied, setCopied] = useState(false);
   const names = gearItemNames(set);
   if (names.length === 0) return null;
 
-  const copy = async (kind: "names" | "json", text: string) => {
+  const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(kind);
-      setTimeout(() => setCopied((c) => (c === kind ? null : c)), 1500);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     } catch {
       // Clipboard unavailable (insecure context / denied permission) — fail
       // quietly; the gear is still listed elsewhere on the page.
     }
   };
-
-  // When the page supplies ranked alternatives, the JSON carries every owned
-  // swap option per slot (chosen first); otherwise it falls back to the single
-  // best pick from the loadout's slots.
-  const slots = slotAlternatives
-    ? buildRecommendationSlots(slotAlternatives, set.internalAmmo?.itemId)
-    : gearSlotIds(set);
-  const pluginJson = JSON.stringify(
-    { label: `${bossName} — ${set.name}`, slots },
-    null,
-    2,
-  );
 
   const btnClass =
     "flex-1 osrs-well rounded px-3 py-2 text-xs font-semibold text-osrs-brown hover:text-osrs-gold transition-colors";
@@ -169,18 +140,14 @@ function LoadoutExport({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => copy("names", names.join(", "))}
+          onClick={() => copy(names.join(", "))}
           className={btnClass}
         >
-          {copied === "names" ? "Copied!" : `Copy gear list (${names.length})`}
-        </button>
-        <button type="button" onClick={() => copy("json", pluginJson)} className={btnClass}>
-          {copied === "json" ? "Copied!" : "Copy plugin JSON"}
+          {copied ? "Copied!" : `Copy gear list (${names.length})`}
         </button>
       </div>
       <p className="text-caption text-osrs-muted mt-1.5">
-        Names for a withdrawal checklist · JSON (item IDs by slot) for a RuneLite
-        companion plugin.
+        Names for a withdrawal checklist while pulling gear from the bank.
       </p>
     </div>
   );
@@ -210,8 +177,14 @@ export function ResultsPanel({
   edited,
   boltProcFlag,
   mapping,
-  slotAlternatives,
+  prayerLevel,
+  prayerPotPriceGp,
+  bossSlug,
+  priceLookup,
+  excludedUpgrades = [],
+  onToggleUpgradeItem,
 }: Props) {
+  const [showDrops, setShowDrops] = useState(false);
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
   // mirroring calculate.ts so the displayed cadence matches the engine.
   const rapidRangedAdjust =
@@ -220,8 +193,17 @@ export function ResultsPanel({
   const activeFlags = set ? buildActiveFlags(set, activeBonuses) : [];
   if (set && boltProcFlag) activeFlags.push(boltProcFlag);
 
+  // Per-hour economics: kills/hr × loot value per kill, less prayer-supply cost.
+  const supply = set
+    ? estimatePrayerSupplies(set.style, prayerLevel, set.totals.prayerBonus, prayerPotPriceGp)
+    : null;
+  const killsPerHour = dps && dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0;
+  const profit = expectedGpPerKill(bossSlug, priceLookup);
+  const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supply?.gpPerHour ?? 0);
+
   const upgradePath = result?.upgradePath ?? [];
-  const showUpgrades = !edited && result !== null && upgradePath.length > 0;
+  const showUpgrades =
+    !edited && result !== null && (upgradePath.length > 0 || excludedUpgrades.length > 0);
   const shoppingList = result?.shoppingList ?? [];
   const showShoppingList = !edited && (result?.fromScratch ?? false) && shoppingList.length > 0;
 
@@ -260,6 +242,10 @@ export function ResultsPanel({
             value={formatSeconds(dps.dps > 0 ? bossHp / dps.dps : Infinity)}
           />
           <StatRow
+            label="Kills / hr (max)"
+            value={formatKph(dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0)}
+          />
+          <StatRow
             label="Attack speed"
             value={`${effectiveTicks} ticks (${(effectiveTicks * TICK_SECONDS).toFixed(1)}s)`}
           />
@@ -274,9 +260,67 @@ export function ResultsPanel({
               </span>
             }
           />
+          {supply && (
+            <StatRow
+              label="Supplies / hr"
+              value={
+                <span>
+                  {supply.potionsPerHour.toFixed(1)} prayer pots
+                  {supply.gpPerHour != null && (
+                    <span className="text-caption font-normal text-osrs-muted">
+                      {" "}
+                      · {fmtGp(Math.round(supply.gpPerHour))} gp
+                    </span>
+                  )}
+                </span>
+              }
+            />
+          )}
+          <StatRow
+            label="Profit / hr"
+            value={
+              profit.hasData ? (
+                <span className={profitHr >= 0 ? "text-status-owned" : "text-status-missing"}>
+                  {profitHr >= 0 ? "" : "−"}
+                  {fmtGp(Math.abs(Math.round(profitHr)))} gp
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {" "}
+                    · {fmtGp(Math.round(profit.gpPerKill))}/kill
+                  </span>
+                </span>
+              ) : (
+                <span className="text-osrs-muted">—</span>
+              )
+            }
+          />
         </div>
         );
       })()}
+
+      {set && dps && profit.hasData && profit.breakdown.length > 0 && (
+        <div className="text-caption">
+          <button
+            type="button"
+            onClick={() => setShowDrops((v) => !v)}
+            className="text-osrs-gold hover:underline"
+          >
+            {showDrops ? "Hide" : "Show"} drop value breakdown
+          </button>
+          {showDrops && (
+            <ul className="mt-1.5 space-y-0.5">
+              {profit.breakdown.slice(0, 8).map((d) => (
+                <li key={d.itemId} className="flex items-baseline justify-between gap-2">
+                  <span className="text-osrs-brown truncate">{d.name}</span>
+                  <span className="text-osrs-muted shrink-0">{fmtGp(Math.round(d.gpPerKill))}/kill</span>
+                </li>
+              ))}
+              <li className="text-osrs-muted italic pt-0.5">
+                Expected value from the wiki drop table at live prices.
+              </li>
+            </ul>
+          )}
+        </div>
+      )}
 
       {set && (
         <div className="text-caption">
@@ -294,7 +338,7 @@ export function ResultsPanel({
       )}
 
       {set && (
-        <LoadoutExport set={set} bossName={bossName} slotAlternatives={slotAlternatives} />
+        <LoadoutExport set={set} />
       )}
 
       {edited && (
@@ -357,9 +401,20 @@ export function ResultsPanel({
                 key={i}
                 className="flex items-center gap-2 osrs-well rounded px-2 py-1.5 text-xs"
               >
-                <span className="font-bold text-osrs-gold w-4 text-right shrink-0">
-                  {i + 1}.
-                </span>
+                {onToggleUpgradeItem ? (
+                  <input
+                    type="checkbox"
+                    checked
+                    onChange={() => onToggleUpgradeItem(step.bought.itemId, step.bought.name)}
+                    title="Uncheck to skip this item and re-plan the path around it"
+                    className="shrink-0 accent-osrs-gold cursor-pointer"
+                    aria-label={`Use ${step.bought.name} in the upgrade path`}
+                  />
+                ) : (
+                  <span className="font-bold text-osrs-gold w-4 text-right shrink-0">
+                    {i + 1}.
+                  </span>
+                )}
                 <ItemIcon
                   itemId={step.bought.itemId}
                   size={28}
@@ -379,9 +434,15 @@ export function ResultsPanel({
                 <div className="text-right shrink-0 min-w-fit">
                   <div className="text-status-owned font-semibold">
                     +{step.dpsDelta.toFixed(2)}
+                    {step.dpsBefore > 0 && (
+                      <span className="text-caption font-normal text-osrs-muted">
+                        {" "}
+                        (+{((step.dpsDelta / step.dpsBefore) * 100).toFixed(0)}%)
+                      </span>
+                    )}
                   </div>
                   <div className="label-eyebrow text-osrs-muted">
-                    {fmtGp(step.bought.costGp)} gp
+                    {fmtGp(step.bought.costGp)} gp · {fmtDpsPerM(step.dpsPerGp)}/M
                   </div>
                 </div>
               </li>
@@ -397,10 +458,45 @@ export function ResultsPanel({
               DPS per 1M gp.
             </p>
           )}
+
+          {upgradePath.length === 0 && excludedUpgrades.length > 0 && (
+            <p className="text-caption text-osrs-muted italic">
+              Every upgrade is excluded. Re-check an item below to plan around it.
+            </p>
+          )}
+
+          {excludedUpgrades.length > 0 && onToggleUpgradeItem && (
+            <div className="mt-2">
+              <h5 className="label-eyebrow text-osrs-muted mb-1">
+                Excluded (won&apos;t buy)
+              </h5>
+              <ul className="space-y-1">
+                {excludedUpgrades.map((ex) => (
+                  <li
+                    key={ex.itemId}
+                    className="flex items-center gap-2 osrs-well rounded px-2 py-1.5 text-xs opacity-70"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      onChange={() => onToggleUpgradeItem(ex.itemId, ex.name)}
+                      title="Re-check to consider this item again"
+                      className="shrink-0 accent-osrs-gold cursor-pointer"
+                      aria-label={`Reconsider ${ex.name}`}
+                    />
+                    <ItemIcon itemId={ex.itemId} size={28} mapping={mapping} title={ex.name} />
+                    <span className="flex-1 truncate text-osrs-brown line-through">
+                      {ex.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
-      {!edited && result !== null && result.currentBest && upgradePath.length === 0 && (
+      {!edited && result !== null && result.currentBest && upgradePath.length === 0 && excludedUpgrades.length === 0 && (
         <p className="text-caption text-osrs-muted italic">
           No profitable upgrades found within budget. Your bank is already
           optimal at this price point — try Sell-to-fund mode if you have items

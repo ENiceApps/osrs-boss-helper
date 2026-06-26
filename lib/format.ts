@@ -25,6 +25,12 @@ export function fmtDpsPerM(dpsPerGp: number): string {
   return perM.toFixed(3);
 }
 
+/** Kills per hour: whole numbers when ≥ 10, one decimal when slower. */
+export function formatKph(kph: number): string {
+  if (!Number.isFinite(kph) || kph <= 0) return "—";
+  return kph >= 10 ? Math.round(kph).toLocaleString() : kph.toFixed(1);
+}
+
 /** "47.3s" under a minute, "2m 5s" above. */
 export function formatSeconds(s: number): string {
   if (!Number.isFinite(s) || s <= 0) return "—";

@@ -1,10 +1,12 @@
-// Codegen: writes data/monsters/catalog.ts — a compact list of every monster
-// from the vendored weirdgloop dataset that's plausibly a "boss-tier" target.
+// Codegen: writes data/monsters/catalog.ts — a list of every monster from the
+// vendored weirdgloop dataset that's a plausible combat target: boss-tier
+// monsters (HP >= HP_FLOOR) PLUS every Slayer-assignable creature regardless
+// of HP.
 //
-// Filter: HP >= 300, drop quest/league echo duplicates, pick one primary
-// version per unique name. The catalog is the source of truth for the boss
-// browser at /; per-boss curated content (presets, mechanics) is keyed by
-// the slug emitted here.
+// Filter: (HP >= HP_FLOOR OR is_slayer_monster), drop quest/league echo
+// duplicates, pick one primary version per unique name. The catalog is the
+// source of truth for the boss browser at /; per-boss curated content
+// (presets, mechanics) is keyed by the slug emitted here.
 
 import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -16,9 +18,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 // HP >= 200 catches iconic mid-tier bosses (KBD at 240, DKs at 250-ish, GWD
 // bosses, Kraken, Vet'ion, Scorpia, Skeletal Wyvern) plus all higher-tier
-// content. Below 200 is mostly slayer mobs and quest filler — still useful
-// for slayer DPS estimation but not the "boss helper" core. Adjust if/when
-// we add a separate slayer-monster browser.
+// content. Below 200 is mostly slayer mobs and quest filler. Slayer-assignable
+// creatures are admitted regardless of HP (see `eligible` below) so the browser
+// can serve slayer DPS estimation too — the boss browser's "Slayer" filter
+// toggles them on/off so the boss roster isn't drowned by default.
 const HP_FLOOR = 200;
 // Filter out Leagues "Echo" variants, Nightmare Zone variants, and other
 // duplicates that share the same canonical fight but with scaled stats.
@@ -108,7 +111,9 @@ const monsters = (monstersJson as VendorMonster[]).map((m) => {
 
 const eligible = monsters.filter((m) => {
   if (!m.name) return false;
-  if ((m.skills?.hp ?? 0) < HP_FLOOR) return false;
+  // Admit boss-tier monsters by HP, plus every Slayer-assignable creature
+  // regardless of HP (the UI's "Slayer" filter hides them by default).
+  if ((m.skills?.hp ?? 0) < HP_FLOOR && !m.is_slayer_monster) return false;
   if (EXCLUDED_TAGS.some((tag) => m.version?.includes(tag) || m.name?.includes(tag))) {
     return false;
   }
@@ -232,7 +237,7 @@ entries.sort((a, b) => a.name.localeCompare(b.name));
 const lines: string[] = [];
 lines.push(`// GENERATED FILE — do not edit by hand.`);
 lines.push(`// Run \`npm run build-monster-catalog\` to regenerate from data/vendor/wgloop/monsters.json.`);
-lines.push(`// Filter: HP >= ${HP_FLOOR}, excluding entries tagged ${JSON.stringify(EXCLUDED_TAGS)}.`);
+lines.push(`// Filter: HP >= ${HP_FLOOR} OR is_slayer_monster, excluding entries tagged ${JSON.stringify(EXCLUDED_TAGS)}.`);
 lines.push(``);
 lines.push(`export interface MonsterCatalogEntry {`);
 lines.push(`  slug: string;`);

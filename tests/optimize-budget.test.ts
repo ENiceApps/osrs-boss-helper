@@ -172,6 +172,36 @@ describe("optimize/budget — gp-only mode", () => {
     expect(result.upgradePath).toEqual([]);
     expect(result.upgradedBest).toBe(result.currentBest);
   });
+
+  it("excludedItemIds: a toggled-off item never appears in the path and is re-planned around", () => {
+    const base = findUpgrades({
+      bank: EARLY_GAME_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 1_000_000_000,
+      mode: "gp-only",
+      priceLookup,
+    });
+    // Pick a real bought item from the unconstrained path and exclude it.
+    const toExclude = base.upgradePath[0].bought.itemId;
+    expect(base.upgradePath.some((s) => s.bought.itemId === toExclude)).toBe(true);
+
+    const excluded = findUpgrades({
+      bank: EARLY_GAME_BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      gp: 1_000_000_000,
+      mode: "gp-only",
+      priceLookup,
+      excludedItemIds: [toExclude],
+    });
+    // The excluded item is gone from every step (bought or swapped).
+    expect(excluded.upgradePath.some((s) => s.bought.itemId === toExclude)).toBe(false);
+    // The base (bank-only) loadout is unaffected by the exclusion.
+    expect(excluded.currentBest!.dps.dps).toBeCloseTo(base.currentBest!.dps.dps, 5);
+    // Excluding a real upgrade can't make the final DPS higher than unconstrained.
+    expect(excluded.upgradedBest!.dps.dps).toBeLessThanOrEqual(base.upgradedBest!.dps.dps + 1e-6);
+  });
 });
 
 describe("optimize/budget — powered-staff magic keeps its DPS through upgrades", () => {
