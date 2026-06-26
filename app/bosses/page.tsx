@@ -157,7 +157,12 @@ export default function BossesPage() {
       counts[c] = (counts[c] ?? 0) + 1;
     }
     // Slayer is a cross-cutting tag — counted separately (overlaps the tiers).
-    counts.slayer = MONSTER_CATALOG.filter((m) => isSlayerBoss(m.slug)).length;
+    // Union of the catalog's per-monster Slayer flag (every assignable creature)
+    // with the curated slayer-boss set (catches bosses like Vorkath that count
+    // toward another creature's task but aren't flagged in the vendor data).
+    counts.slayer = MONSTER_CATALOG.filter(
+      (m) => m.isSlayerMonster || isSlayerBoss(m.slug),
+    ).length;
     return counts;
   }, []);
 
@@ -167,7 +172,7 @@ export default function BossesPage() {
 
     let list = MONSTER_CATALOG.filter((m) => {
       if (category === "slayer") {
-        if (!isSlayerBoss(m.slug)) return false;
+        if (!(m.isSlayerMonster || isSlayerBoss(m.slug))) return false;
       } else if (category !== "all" && categoryForMonster(m.slug) !== category) {
         return false;
       }
