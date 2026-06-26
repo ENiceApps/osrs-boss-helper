@@ -916,6 +916,8 @@ export default function BossPage({
             mapping={mapping}
             prayerLevel={skills.prayer ?? 99}
             prayerPotPriceGp={priceForItem(prices, PRAYER_POTION_4_ID)}
+            bossSlug={monster.slug}
+            priceLookup={(id) => priceForItem(prices, id)}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel

@@ -6,6 +6,7 @@ import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
 import { ASSUMED_PRAYER } from "@/lib/recommend";
 import { estimatePrayerSupplies } from "@/data/prayer-drain";
+import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
 import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
 import type { BudgetResult } from "@/lib/optimize/budget";
@@ -32,6 +33,10 @@ interface Props {
   prayerLevel: number;
   /** Live GE price of a Prayer potion(4), or null when prices are unavailable. */
   prayerPotPriceGp: number | null;
+  /** Boss slug — keys the drop table for the profit/hr estimate. */
+  bossSlug: string;
+  /** Live GE price lookup for drop-value / profit calc. */
+  priceLookup: PriceLookup;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -170,7 +175,10 @@ export function ResultsPanel({
   mapping,
   prayerLevel,
   prayerPotPriceGp,
+  bossSlug,
+  priceLookup,
 }: Props) {
+  const [showDrops, setShowDrops] = useState(false);
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
   // mirroring calculate.ts so the displayed cadence matches the engine.
   const rapidRangedAdjust =
@@ -178,6 +186,14 @@ export function ResultsPanel({
   const effectiveTicks = set ? Math.max(1, set.attackSpeedTicks + rapidRangedAdjust) : 0;
   const activeFlags = set ? buildActiveFlags(set, activeBonuses) : [];
   if (set && boltProcFlag) activeFlags.push(boltProcFlag);
+
+  // Per-hour economics: kills/hr × loot value per kill, less prayer-supply cost.
+  const supply = set
+    ? estimatePrayerSupplies(set.style, prayerLevel, set.totals.prayerBonus, prayerPotPriceGp)
+    : null;
+  const killsPerHour = dps && dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0;
+  const profit = expectedGpPerKill(bossSlug, priceLookup);
+  const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supply?.gpPerHour ?? 0);
 
   const upgradePath = result?.upgradePath ?? [];
   const showUpgrades = !edited && result !== null && upgradePath.length > 0;
@@ -237,33 +253,67 @@ export function ResultsPanel({
               </span>
             }
           />
-          {(() => {
-            const supply = estimatePrayerSupplies(
-              set.style,
-              prayerLevel,
-              set.totals.prayerBonus,
-              prayerPotPriceGp,
-            );
-            return (
-              <StatRow
-                label="Supplies / hr"
-                value={
-                  <span>
-                    {supply.potionsPerHour.toFixed(1)} prayer pots
-                    {supply.gpPerHour != null && (
-                      <span className="text-caption font-normal text-osrs-muted">
-                        {" "}
-                        · {fmtGp(Math.round(supply.gpPerHour))} gp
-                      </span>
-                    )}
+          {supply && (
+            <StatRow
+              label="Supplies / hr"
+              value={
+                <span>
+                  {supply.potionsPerHour.toFixed(1)} prayer pots
+                  {supply.gpPerHour != null && (
+                    <span className="text-caption font-normal text-osrs-muted">
+                      {" "}
+                      · {fmtGp(Math.round(supply.gpPerHour))} gp
+                    </span>
+                  )}
+                </span>
+              }
+            />
+          )}
+          <StatRow
+            label="Profit / hr"
+            value={
+              profit.hasData ? (
+                <span className={profitHr >= 0 ? "text-status-owned" : "text-status-missing"}>
+                  {profitHr >= 0 ? "" : "−"}
+                  {fmtGp(Math.abs(Math.round(profitHr)))} gp
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {" "}
+                    · {fmtGp(Math.round(profit.gpPerKill))}/kill
                   </span>
-                }
-              />
-            );
-          })()}
+                </span>
+              ) : (
+                <span className="text-osrs-muted">—</span>
+              )
+            }
+          />
         </div>
         );
       })()}
+
+      {set && dps && profit.hasData && profit.breakdown.length > 0 && (
+        <div className="text-caption">
+          <button
+            type="button"
+            onClick={() => setShowDrops((v) => !v)}
+            className="text-osrs-gold hover:underline"
+          >
+            {showDrops ? "Hide" : "Show"} drop value breakdown
+          </button>
+          {showDrops && (
+            <ul className="mt-1.5 space-y-0.5">
+              {profit.breakdown.slice(0, 8).map((d) => (
+                <li key={d.itemId} className="flex items-baseline justify-between gap-2">
+                  <span className="text-osrs-brown truncate">{d.name}</span>
+                  <span className="text-osrs-muted shrink-0">{fmtGp(Math.round(d.gpPerKill))}/kill</span>
+                </li>
+              ))}
+              <li className="text-osrs-muted italic pt-0.5">
+                Expected value from the wiki drop table at live prices.
+              </li>
+            </ul>
+          )}
+        </div>
+      )}
 
       {set && (
         <div className="text-caption">
