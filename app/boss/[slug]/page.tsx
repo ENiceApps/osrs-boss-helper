@@ -531,7 +531,14 @@ export default function BossPage({
   }
   function onPickerSelect(item: ItemCatalogEntry | null) {
     if (!pickerSlot) return;
-    setOverrides((prev) => ({ ...prev, [pickerSlot]: item }));
+    const slot = pickerSlot;
+    setOverrides((prev) => {
+      const next = { ...prev, [slot]: item };
+      // A 2H weapon can't coexist with a shield — clear the shield slot so the
+      // picked weapon doesn't leave a stranded off-hand (defender/shield) behind.
+      if (slot === "weapon" && item?.isTwoHanded) next.shield = null;
+      return next;
+    });
     setPickerSlot(null);
   }
   function onSpellSelect(spell: SpellEntry | null) {
