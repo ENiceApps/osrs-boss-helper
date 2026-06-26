@@ -82,12 +82,24 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  // Two ways to identify the reader: an email session (account flow), or an
+  // anonymous sync key sent as a header (no-email flow). The key is read from a
+  // header — never the URL — so it can't leak into server access logs.
   const session = await auth();
-  const userId = session?.user?.id;
+  let userId = session?.user?.id ?? null;
+  let anon = false;
+  if (!userId) {
+    const syncKey = request.headers.get("x-sync-key");
+    if (syncKey) {
+      userId = await userIdForPluginToken(syncKey);
+      anon = userId !== null;
+    }
+  }
+
   if (!userId) {
     // Not an error — the page renders an unauthenticated / Budget-mode state.
     return Response.json(
-      { authed: false, characters: [], selected: null, bank: null },
+      { authed: false, anon: false, characters: [], selected: null, bank: null },
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -101,7 +113,7 @@ export async function GET(request: Request) {
   const bank = selected ? await getCharacterBank(userId, selected) : null;
 
   return Response.json(
-    { authed: true, characters, selected, bank },
+    { authed: true, anon, characters, selected, bank },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

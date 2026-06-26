@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
+import { AnonymousSyncKey } from "@/components/AnonymousSyncKey";
 
 // Email magic-link sign-in. Server component: if already signed in, bounce home.
 export default async function SignInPage() {
@@ -43,6 +44,25 @@ export default async function SignInPage() {
       <p className="text-caption text-osrs-muted mt-3 text-center">
         Tip: in local development the link is printed to the dev-server console.
       </p>
+
+      <div className="flex items-center gap-3 my-6">
+        <span className="h-px flex-1 bg-osrs-brown/20" />
+        <span className="label-eyebrow text-osrs-muted">or</span>
+        <span className="h-px flex-1 bg-osrs-brown/20" />
+      </div>
+
+      <section className="osrs-panel rounded p-4">
+        <h2 className="section-title font-semibold text-osrs-brown mb-1">
+          Use without an email
+        </h2>
+        <p className="text-caption text-osrs-muted mb-3">
+          Prefer not to share an email? Generate an anonymous sync key instead. It&apos;s
+          saved on this device and pasted into the plugin — no account, no email. The
+          trade-off: it lives only in this browser, so clearing site data or switching
+          devices means re-entering the key.
+        </p>
+        <AnonymousSyncKey />
+      </section>
     </div>
   );
 }
