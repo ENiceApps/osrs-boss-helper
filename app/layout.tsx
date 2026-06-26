@@ -3,6 +3,7 @@ import { Inter, Cinzel } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <SessionProvider>
           <AppHeader />
           <main className="flex-1">{children}</main>
+          <FeedbackButton />
         </SessionProvider>
       </body>
     </html>

@@ -37,6 +37,10 @@ interface Props {
   bossSlug: string;
   /** Live GE price lookup for drop-value / profit calc. */
   priceLookup: PriceLookup;
+  /** Upgrade-path items the user has toggled OFF (won't buy). */
+  excludedUpgrades?: { itemId: number; name: string }[];
+  /** Toggle an item in/out of the excluded set; re-plans the upgrade path. */
+  onToggleUpgradeItem?: (itemId: number, name: string) => void;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -177,6 +181,8 @@ export function ResultsPanel({
   prayerPotPriceGp,
   bossSlug,
   priceLookup,
+  excludedUpgrades = [],
+  onToggleUpgradeItem,
 }: Props) {
   const [showDrops, setShowDrops] = useState(false);
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
@@ -196,7 +202,8 @@ export function ResultsPanel({
   const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supply?.gpPerHour ?? 0);
 
   const upgradePath = result?.upgradePath ?? [];
-  const showUpgrades = !edited && result !== null && upgradePath.length > 0;
+  const showUpgrades =
+    !edited && result !== null && (upgradePath.length > 0 || excludedUpgrades.length > 0);
   const shoppingList = result?.shoppingList ?? [];
   const showShoppingList = !edited && (result?.fromScratch ?? false) && shoppingList.length > 0;
 
@@ -394,9 +401,20 @@ export function ResultsPanel({
                 key={i}
                 className="flex items-center gap-2 osrs-well rounded px-2 py-1.5 text-xs"
               >
-                <span className="font-bold text-osrs-gold w-4 text-right shrink-0">
-                  {i + 1}.
-                </span>
+                {onToggleUpgradeItem ? (
+                  <input
+                    type="checkbox"
+                    checked
+                    onChange={() => onToggleUpgradeItem(step.bought.itemId, step.bought.name)}
+                    title="Uncheck to skip this item and re-plan the path around it"
+                    className="shrink-0 accent-osrs-gold cursor-pointer"
+                    aria-label={`Use ${step.bought.name} in the upgrade path`}
+                  />
+                ) : (
+                  <span className="font-bold text-osrs-gold w-4 text-right shrink-0">
+                    {i + 1}.
+                  </span>
+                )}
                 <ItemIcon
                   itemId={step.bought.itemId}
                   size={28}
@@ -440,10 +458,45 @@ export function ResultsPanel({
               DPS per 1M gp.
             </p>
           )}
+
+          {upgradePath.length === 0 && excludedUpgrades.length > 0 && (
+            <p className="text-caption text-osrs-muted italic">
+              Every upgrade is excluded. Re-check an item below to plan around it.
+            </p>
+          )}
+
+          {excludedUpgrades.length > 0 && onToggleUpgradeItem && (
+            <div className="mt-2">
+              <h5 className="label-eyebrow text-osrs-muted mb-1">
+                Excluded (won&apos;t buy)
+              </h5>
+              <ul className="space-y-1">
+                {excludedUpgrades.map((ex) => (
+                  <li
+                    key={ex.itemId}
+                    className="flex items-center gap-2 osrs-well rounded px-2 py-1.5 text-xs opacity-70"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      onChange={() => onToggleUpgradeItem(ex.itemId, ex.name)}
+                      title="Re-check to consider this item again"
+                      className="shrink-0 accent-osrs-gold cursor-pointer"
+                      aria-label={`Reconsider ${ex.name}`}
+                    />
+                    <ItemIcon itemId={ex.itemId} size={28} mapping={mapping} title={ex.name} />
+                    <span className="flex-1 truncate text-osrs-brown line-through">
+                      {ex.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
-      {!edited && result !== null && result.currentBest && upgradePath.length === 0 && (
+      {!edited && result !== null && result.currentBest && upgradePath.length === 0 && excludedUpgrades.length === 0 && (
         <p className="text-caption text-osrs-muted italic">
           No profitable upgrades found within budget. Your bank is already
           optimal at this price point — try Sell-to-fund mode if you have items

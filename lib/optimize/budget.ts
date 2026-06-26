@@ -86,6 +86,12 @@ export interface FindUpgradesInput {
   soulreaperMaxStacks?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
+  /**
+   * Item IDs the user has toggled OFF in the upgrade path UI. They're treated as
+   * unavailable to buy, so the greedy loop never suggests them and re-plans the
+   * rest of the path around the exclusion. Does not affect the bank-only base.
+   */
+  excludedItemIds?: number[];
 }
 
 export interface UpgradeStep {
@@ -326,11 +332,15 @@ function runUpgradesFromBase(
   sellList: ItemValue[],
   input: FindUpgradesInput,
   maxIterations: number,
+  excluded: Set<number>,
 ): BudgetResult {
   const upgradePath: UpgradeStep[] = [];
   let activeLoadout = base.loadout;
   let activeDps = base.dps.dps;
-  const effectiveBank = new Set(originalBank);
+  // Seed the "already have it, skip as a candidate" set with the user's
+  // excluded items so the greedy loop never buys them. findCandidates only
+  // uses effectiveBank for that skip, so excluded ids behave exactly right here.
+  const effectiveBank = new Set([...originalBank, ...excluded]);
   let remainingBudget = budget;
 
   for (let iter = 0; iter < maxIterations; iter++) {
@@ -455,6 +465,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
   );
   const maxIterations = input.maxIterations ?? 20;
   const sellItemIds = input.sellItemIds ?? [];
+  const excluded = new Set<number>(input.excludedItemIds ?? []);
 
   // One optimizer call for all rankings — used for both the global best and
   // per-style bases, saving a redundant call vs the old topN:1 approach.
@@ -538,7 +549,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
   // of that style achievable under the same GP/sell context as the Best tab.
   const byStyle: Partial<Record<CombatStyle, BudgetResult>> = {};
   for (const [style, base] of Object.entries(styleBases) as Array<[CombatStyle, Extract<ScoredScenario, { valid: true }>]>) {
-    byStyle[style] = runUpgradesFromBase(base, originalBank, budget, sellList, input, maxIterations);
+    byStyle[style] = runUpgradesFromBase(base, originalBank, budget, sellList, input, maxIterations, excluded);
   }
 
   // Overall best = greedy from the global-best base (unchanged behavior for
