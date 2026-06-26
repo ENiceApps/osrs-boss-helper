@@ -31,6 +31,7 @@ import { ResultsPanel } from "@/components/ResultsPanel";
 import { PRAYER_POTION_4_ID, SARADOMIN_BREW_4_ID } from "@/data/prayer-drain";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
+import { HybridPanel } from "@/components/HybridPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
 import { SpellPickerModal } from "@/components/SpellPickerModal";
 import { PrayerPickerModal } from "@/components/PrayerPickerModal";
@@ -1016,6 +1017,23 @@ export default function BossPage({
             />
           )}
         </section>
+      </div>
+
+      {/* Hybrid armour / armour-switching optimizer — blends multiple styles for
+          multi-style bosses under a chosen switch budget. Self-contained; shown on
+          every boss. */}
+      <div className="mt-4">
+        <HybridPanel
+          ownedItemIds={ownedItemIds}
+          connected={bank !== null}
+          target={monster}
+          skills={skills}
+          boostResolver={boostResolver}
+          onTask={effectiveOnTask}
+          soulreaperMaxStacks={soulreaperMaxStacks}
+          requiresMeleeReach2={meleeReach2}
+          mapping={mapping}
+        />
       </div>
 
       {/* Reference row — fight knowledge that doesn't change as you tweak
