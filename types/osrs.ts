@@ -144,16 +144,20 @@ export interface PrayerSelection {
 }
 
 export interface ConditionalBonusFlags {
-  dragonHunterCrossbow: boolean;
-  dragonHunterLance: boolean;
+  // All flags are optional — absent = not firing. The engine reads each as a
+  // plain boolean (lib/dps/conditional.ts), so a partial literal that sets only
+  // the relevant flag is valid and behaves identically to setting the rest false.
+  // (These six were previously required, which broke partial literals at compile.)
+  dragonHunterCrossbow?: boolean;
+  dragonHunterLance?: boolean;
   /** Dragon hunter wand vs dragon → ×7/4 accuracy, ×7/5 damage. Does NOT stack with Salve. */
-  dragonHunterWand: boolean;
+  dragonHunterWand?: boolean;
   /** Salve amulet (ei)/(e) vs undead → ×6/5. */
-  salveAmuletEi: boolean;
+  salveAmuletEi?: boolean;
   /** Salve amulet (regular)/(i) vs undead → ×7/6. */
-  salveAmulet: boolean;
+  salveAmulet?: boolean;
   /** Arclight / Emberlight vs demons → +70% accuracy & damage (additive). */
-  demonbane: boolean;
+  demonbane?: boolean;
   /** Any Keris partisan vs Kalphites/Scabarites → +33% damage (×4/3). The 1/51
    *  triple-damage proc is modelled separately (dps-mean only) via `kalphiteTripleProc`. */
   kerisVsKalphite?: boolean;

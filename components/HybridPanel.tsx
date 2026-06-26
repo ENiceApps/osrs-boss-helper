@@ -24,10 +24,6 @@ interface Props {
 
 const ALL_STYLES: CombatStyle[] = ["melee", "ranged", "magic"];
 const TITLE: Record<CombatStyle, string> = { melee: "Melee", ranged: "Ranged", magic: "Magic" };
-const SLOT_LABEL: Record<LoadoutSlotKey, string> = {
-  head: "Helm", cape: "Cape", neck: "Amulet", body: "Body", legs: "Legs",
-  hands: "Gloves", feet: "Boots", ring: "Ring", weapon: "Weapon", ammo: "Ammo", shield: "Shield",
-};
 
 /**
  * Hybrid armour / armour-switching optimizer. The player toggles which styles
@@ -55,6 +51,10 @@ export function HybridPanel({
   const [weights, setWeights] = useState<Record<CombatStyle, number>>({ melee: 50, ranged: 50, magic: 50 });
 
   const selectedStyles = ALL_STYLES.filter((s) => styles.has(s));
+  // Stable primitive keys so the memo recomputes when the chosen styles or their
+  // weights change — without putting objects or function calls in the dep array.
+  const stylesKey = selectedStyles.join(",");
+  const weightsKey = selectedStyles.map((s) => weights[s]).join(",");
 
   const result = useMemo(() => {
     if (!connected || ownedItemIds.size === 0 || selectedStyles.length < 2) return null;
@@ -72,8 +72,9 @@ export function HybridPanel({
       soulreaperMaxStacks,
       requiresMeleeReach2,
     }).hybrid;
+    // selectedStyles / weights are captured via stylesKey / weightsKey above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownedItemIds, connected, target, skills, switchBudget, JSON.stringify([...styles].sort()), showWeights ? JSON.stringify(weights) : "", boostResolver, onTask, soulreaperMaxStacks, requiresMeleeReach2]);
+  }, [ownedItemIds, connected, target, skills, switchBudget, stylesKey, weightsKey, boostResolver, onTask, soulreaperMaxStacks, requiresMeleeReach2]);
 
   function toggleStyle(s: CombatStyle) {
     setStyles((prev) => {
