@@ -15,14 +15,14 @@ export function AppHeader() {
   const pathname = usePathname();
   return (
     <header className="sticky top-0 z-30 border-b border-osrs-gold/40 bg-[#201507]">
-      <div className="max-w-7xl mx-auto px-6 h-12 flex items-center gap-5">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 flex items-center gap-3 sm:gap-5">
         <Link
           href="/"
-          className="font-display text-osrs-gold font-bold text-lg tracking-wide whitespace-nowrap"
+          className="font-display text-osrs-gold font-bold text-base sm:text-lg tracking-wide whitespace-nowrap"
         >
           OSRS Boss Helper
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-3 sm:gap-4 text-sm">
           {/* /boss/[slug] detail pages also belong to the "Bosses" section. */}
           <NavLink href="/bosses" active={pathname.startsWith("/boss")}>
             Bosses
@@ -31,7 +31,7 @@ export function AppHeader() {
             Items
           </NavLink>
         </nav>
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4">
           <ConnectionStatus />
           <AuthControl />
         </div>
@@ -110,7 +110,10 @@ function ConnectionStatus() {
   }
   return (
     <span
-      className="inline-flex items-center gap-2 text-caption text-parchment-dark"
+      // When not live the AuthControl ("Sign in" / "Settings") already conveys
+      // the state, so the textual status is redundant on narrow screens — hide
+      // it below sm to keep the header on one row.
+      className="hidden sm:inline-flex items-center gap-2 text-caption text-parchment-dark"
       title={
         live.authed
           ? "Signed in, but no bank synced yet. Open your bank in-game with the osrs-boss-sync plugin."
