@@ -501,7 +501,12 @@ export default function BossPage({
 
   // Hydrate page state from a share link once on mount. Garbage/absent param →
   // decodeLoadout returns null and we leave defaults untouched.
+  //
+  // The setState calls below are a deliberate one-time hydration guarded by
+  // hydratedRef, so the set-state-in-effect rule (which guards against
+  // cascading re-renders) doesn't apply — disable it for this effect only.
   const hydratedRef = useRef(false);
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
@@ -540,6 +545,7 @@ export default function BossPage({
       });
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Soulreaper: only meaningful when the axe is actually equipped.
   const soulreaperEquipped = selectedSet?.slots.weapon?.itemId === 28338;
