@@ -28,8 +28,17 @@ export const PRAYER_DRAIN_EFFECT: Record<CombatStyle, number> = {
   magic: 24, // Augury
 };
 
+/**
+ * Drain effect of a single protection prayer (Protect from Magic/Melee/Ranged).
+ * Active prayers' drain effects SUM in-game, so running one alongside the
+ * offensive overhead makes the combined effect 24 + 12 = 36.
+ */
+export const PROTECTION_PRAYER_DRAIN_EFFECT = 12;
+
 /** Prayer potion(4) — the default restore item we price the supply cost against. */
 export const PRAYER_POTION_4_ID = 2434;
+/** Saradomin brew(4) — the default food item we price the food cost against. */
+export const SARADOMIN_BREW_4_ID = 6685;
 /** Doses in a Prayer potion(4). */
 export const DOSES_PER_PRAYER_POTION = 4;
 
@@ -54,29 +63,48 @@ export function prayerRestorePerDose(prayerLevel: number): number {
 }
 
 export interface SupplyEstimate {
+  /** Instantaneous drain rate while praying (points/min). */
   pointsPerMinute: number;
-  /** Prayer potions (4-dose) consumed per hour of continuous prayer use. */
+  /** Prayer potions (4-dose) consumed per hour, scaled by combat uptime. */
   potionsPerHour: number;
   /** GP per hour spent on prayer potions, or null when the price is unknown. */
   gpPerHour: number | null;
 }
 
 /**
- * Estimate prayer-potion supply consumption for an hour of continuous combat.
+ * Player-adjustable trip assumptions — the things a calculator can't know about
+ * how an individual plays. Defaults keep the original "continuous offensive
+ * prayer, no protection" behavior so callers that omit them are unaffected.
+ */
+export interface SupplyOptions {
+  /** Also running a protection prayer (adds drain effect 12). */
+  useProtectionPrayer?: boolean;
+  /** Share of the hour actually spent praying (0..1). Banking/downtime < 1. */
+  uptime?: number;
+}
+
+/**
+ * Estimate prayer-potion supply consumption for an hour at this boss.
  *
  * @param style          combat style → which offensive prayer is assumed
  * @param prayerLevel    the player's Prayer level (restore-per-dose scales with it)
  * @param prayerBonus    worn Prayer bonus from the loadout (slows drain)
  * @param potionPriceGp  GE price of a Prayer potion(4), or null if unknown
+ * @param options        player-set protection-prayer / uptime assumptions
  */
 export function estimatePrayerSupplies(
   style: CombatStyle,
   prayerLevel: number,
   prayerBonus: number,
   potionPriceGp: number | null,
+  options: SupplyOptions = {},
 ): SupplyEstimate {
-  const pointsPerMinute = prayerPointsPerMinute(PRAYER_DRAIN_EFFECT[style], prayerBonus);
-  const pointsPerHour = pointsPerMinute * 60;
+  const uptime = Math.min(1, Math.max(0, options.uptime ?? 1));
+  const drainEffect =
+    PRAYER_DRAIN_EFFECT[style] +
+    (options.useProtectionPrayer ? PROTECTION_PRAYER_DRAIN_EFFECT : 0);
+  const pointsPerMinute = prayerPointsPerMinute(drainEffect, prayerBonus);
+  const pointsPerHour = pointsPerMinute * 60 * uptime;
   const dosesPerHour = pointsPerHour / prayerRestorePerDose(prayerLevel);
   const potionsPerHour = dosesPerHour / DOSES_PER_PRAYER_POTION;
   return {

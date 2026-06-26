@@ -13,7 +13,10 @@ import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-const FEEDBACK_TO = process.env.FEEDBACK_TO ?? "eniceapps@gmail.com";
+// Lowercased: Resend's sandbox sender (onboarding@resend.dev) matches the
+// allowed test recipient case-sensitively, and email addresses are effectively
+// case-insensitive anyway, so normalize to avoid a 403 on a capitalized address.
+const FEEDBACK_TO = (process.env.FEEDBACK_TO ?? "eniceapps@gmail.com").toLowerCase();
 const EMAIL_FROM = process.env.AUTH_EMAIL_FROM ?? "onboarding@resend.dev";
 
 const MAX_MESSAGE = 4000;
