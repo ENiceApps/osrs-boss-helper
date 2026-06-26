@@ -9,6 +9,7 @@ import {
   CATEGORY_LABELS,
   type MonsterCategory,
 } from "@/data/monsters/categories";
+import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 
 // "slayer" is a cross-cutting filter (a Slayer boss also has a primary tier),
@@ -106,6 +107,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 export default function BossesPage() {
   const [query, setQuery] = useState("");
   const [activeAttrs, setActiveAttrs] = useState<Set<string>>(new Set());
+  const [activeWeak, setActiveWeak] = useState<Set<string>>(new Set());
+  const [wildOnly, setWildOnly] = useState(false);
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [sort, setSort] = useState<SortKey>("name");
 
@@ -114,6 +117,8 @@ export default function BossesPage() {
   const isExploring =
     query.trim() !== "" ||
     activeAttrs.size > 0 ||
+    activeWeak.size > 0 ||
+    wildOnly ||
     category !== "all" ||
     sort !== "name";
 
@@ -126,6 +131,24 @@ export default function BossesPage() {
     }
     return counts;
   }, []);
+
+  // Distinct weakness elements present in the catalog, most-common first, with
+  // counts — derived so a new element in the data shows up without code changes.
+  const weaknessFacets = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of MONSTER_CATALOG) {
+      const el = m.weakness?.element;
+      if (el) counts[el] = (counts[el] ?? 0) + 1;
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, count]) => ({ key, count }));
+  }, []);
+
+  const wildernessCount = useMemo(
+    () => MONSTER_CATALOG.filter((m) => isWildernessBoss(m.slug)).length,
+    [],
+  );
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -151,6 +174,10 @@ export default function BossesPage() {
       // OR across selected attribute chips: dragons *or* demons, etc.
       if (facets.length > 0 && !facets.some((f) => m.attributes.some(f.match)))
         return false;
+      // OR across selected weakness elements.
+      if (activeWeak.size > 0 && !(m.weakness && activeWeak.has(m.weakness.element)))
+        return false;
+      if (wildOnly && !isWildernessBoss(m.slug)) return false;
       if (q) {
         const hit =
           m.name.toLowerCase().includes(q) ||
@@ -169,7 +196,7 @@ export default function BossesPage() {
       list = [...list].sort((a, b) => b.hp - a.hp);
     }
     return list;
-  }, [query, activeAttrs, category, sort]);
+  }, [query, activeAttrs, activeWeak, wildOnly, category, sort]);
 
   const notable = useMemo(() => {
     const bySlug = new Map(MONSTER_CATALOG.map((m) => [m.slug, m]));
@@ -189,9 +216,20 @@ export default function BossesPage() {
     });
   }
 
+  function toggleWeak(key: string) {
+    setActiveWeak((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   function reset() {
     setQuery("");
     setActiveAttrs(new Set());
+    setActiveWeak(new Set());
+    setWildOnly(false);
     setCategory("all");
     setSort("name");
   }
@@ -280,6 +318,41 @@ export default function BossesPage() {
               </button>
             );
           })}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="label-eyebrow text-parchment-dark mr-1">Weak to</span>
+          {weaknessFacets.map((w) => {
+            const active = activeWeak.has(w.key);
+            return (
+              <button
+                key={w.key}
+                type="button"
+                onClick={() => toggleWeak(w.key)}
+                className={`rounded px-2 py-0.5 text-caption font-medium border transition-colors capitalize ${
+                  active
+                    ? "bg-osrs-gold/20 text-osrs-gold border-osrs-gold/50"
+                    : "text-osrs-brown border-osrs-brown/20 hover:bg-osrs-gold/10"
+                }`}
+              >
+                {w.key}
+                <span className="ml-1 text-osrs-muted">{w.count}</span>
+              </button>
+            );
+          })}
+          <span className="mx-1 h-4 w-px bg-osrs-brown/20" aria-hidden />
+          <button
+            type="button"
+            onClick={() => setWildOnly((v) => !v)}
+            className={`rounded px-2 py-0.5 text-caption font-medium border transition-colors ${
+              wildOnly
+                ? "bg-osrs-gold/20 text-osrs-gold border-osrs-gold/50"
+                : "text-osrs-brown border-osrs-brown/20 hover:bg-osrs-gold/10"
+            }`}
+          >
+            Wilderness
+            <span className="ml-1 text-osrs-muted">{wildernessCount}</span>
+          </button>
         </div>
       </div>
 

@@ -5,8 +5,8 @@ import { useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
 import { ASSUMED_PRAYER } from "@/lib/recommend";
-import { fmtDpsPerM, fmtGp, formatSeconds } from "@/lib/format";
-import { buildRecommendationSlots } from "@/lib/recommendation";
+import { estimatePrayerSupplies } from "@/data/prayer-drain";
+import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
@@ -28,8 +28,10 @@ interface Props {
   /** Enchanted-bolt proc description, when the active loadout's ammo procs. */
   boltProcFlag?: string;
   mapping?: MappingEntry[];
-  /** Ranked owned alternatives per slot (chosen first) for the plugin export. */
-  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
+  /** Player Prayer level — scales prayer-potion restore per dose. */
+  prayerLevel: number;
+  /** Live GE price of a Prayer potion(4), or null when prices are unavailable. */
+  prayerPotPriceGp: number | null;
 }
 
 /** OSRS tick is 0.6 seconds. */
@@ -98,68 +100,28 @@ function gearItemNames(set: LoadoutSet): string[] {
 }
 
 /**
- * Numeric item IDs grouped by worn slot — the payload a RuneLite companion
- * plugin would consume to redraw the bank into a slot-grouped recommended view.
- * Each slot is an array so the shape can later carry ranked alternatives per
- * slot; today the optimizer commits to one pick, so each holds a single id.
- */
-function gearSlotIds(set: LoadoutSet): Record<string, number[]> {
-  const slots: Record<string, number[]> = {};
-  for (const slot of GEAR_SLOT_ORDER) {
-    const piece = set.slots[slot];
-    if (piece) slots[slot] = [piece.itemId];
-  }
-  // Blowpipe darts share the ammo row in-game, so append them there.
-  if (set.internalAmmo) {
-    slots.ammo = [...(slots.ammo ?? []), set.internalAmmo.itemId];
-  }
-  return slots;
-}
-
-/**
- * Two clipboard exports for the active loadout:
- *  - "Copy gear list" → comma-separated item names, a withdrawal checklist the
- *    player keeps on hand while pulling gear from the bank.
- *  - "Copy plugin JSON" → `{ label, slots: { slot: [itemId] } }`, the payload a
- *    future RuneLite companion plugin would read to filter/redraw the in-game
- *    bank by slot. (A browser can't touch the bank widget itself, so the actual
- *    redraw is the plugin's job — this is just the data bridge to it.)
+ * "Copy gear list" → comma-separated item names, a withdrawal checklist the
+ * player keeps on hand while pulling gear from the bank.
  */
 function LoadoutExport({
   set,
-  bossName,
-  slotAlternatives,
 }: {
   set: LoadoutSet;
-  bossName: string;
-  slotAlternatives?: Partial<Record<LoadoutSlotKey, number[]>>;
 }) {
-  const [copied, setCopied] = useState<null | "names" | "json">(null);
+  const [copied, setCopied] = useState(false);
   const names = gearItemNames(set);
   if (names.length === 0) return null;
 
-  const copy = async (kind: "names" | "json", text: string) => {
+  const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(kind);
-      setTimeout(() => setCopied((c) => (c === kind ? null : c)), 1500);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     } catch {
       // Clipboard unavailable (insecure context / denied permission) — fail
       // quietly; the gear is still listed elsewhere on the page.
     }
   };
-
-  // When the page supplies ranked alternatives, the JSON carries every owned
-  // swap option per slot (chosen first); otherwise it falls back to the single
-  // best pick from the loadout's slots.
-  const slots = slotAlternatives
-    ? buildRecommendationSlots(slotAlternatives, set.internalAmmo?.itemId)
-    : gearSlotIds(set);
-  const pluginJson = JSON.stringify(
-    { label: `${bossName} — ${set.name}`, slots },
-    null,
-    2,
-  );
 
   const btnClass =
     "flex-1 osrs-well rounded px-3 py-2 text-xs font-semibold text-osrs-brown hover:text-osrs-gold transition-colors";
@@ -169,18 +131,14 @@ function LoadoutExport({
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => copy("names", names.join(", "))}
+          onClick={() => copy(names.join(", "))}
           className={btnClass}
         >
-          {copied === "names" ? "Copied!" : `Copy gear list (${names.length})`}
-        </button>
-        <button type="button" onClick={() => copy("json", pluginJson)} className={btnClass}>
-          {copied === "json" ? "Copied!" : "Copy plugin JSON"}
+          {copied ? "Copied!" : `Copy gear list (${names.length})`}
         </button>
       </div>
       <p className="text-caption text-osrs-muted mt-1.5">
-        Names for a withdrawal checklist · JSON (item IDs by slot) for a RuneLite
-        companion plugin.
+        Names for a withdrawal checklist while pulling gear from the bank.
       </p>
     </div>
   );
@@ -210,7 +168,8 @@ export function ResultsPanel({
   edited,
   boltProcFlag,
   mapping,
-  slotAlternatives,
+  prayerLevel,
+  prayerPotPriceGp,
 }: Props) {
   // Effective attack speed after style adjustments (Rapid = -1 ranged tick),
   // mirroring calculate.ts so the displayed cadence matches the engine.
@@ -260,6 +219,10 @@ export function ResultsPanel({
             value={formatSeconds(dps.dps > 0 ? bossHp / dps.dps : Infinity)}
           />
           <StatRow
+            label="Kills / hr (max)"
+            value={formatKph(dps.dps > 0 ? (3600 * dps.dps) / bossHp : 0)}
+          />
+          <StatRow
             label="Attack speed"
             value={`${effectiveTicks} ticks (${(effectiveTicks * TICK_SECONDS).toFixed(1)}s)`}
           />
@@ -274,6 +237,30 @@ export function ResultsPanel({
               </span>
             }
           />
+          {(() => {
+            const supply = estimatePrayerSupplies(
+              set.style,
+              prayerLevel,
+              set.totals.prayerBonus,
+              prayerPotPriceGp,
+            );
+            return (
+              <StatRow
+                label="Supplies / hr"
+                value={
+                  <span>
+                    {supply.potionsPerHour.toFixed(1)} prayer pots
+                    {supply.gpPerHour != null && (
+                      <span className="text-caption font-normal text-osrs-muted">
+                        {" "}
+                        · {fmtGp(Math.round(supply.gpPerHour))} gp
+                      </span>
+                    )}
+                  </span>
+                }
+              />
+            );
+          })()}
         </div>
         );
       })()}
@@ -294,7 +281,7 @@ export function ResultsPanel({
       )}
 
       {set && (
-        <LoadoutExport set={set} bossName={bossName} slotAlternatives={slotAlternatives} />
+        <LoadoutExport set={set} />
       )}
 
       {edited && (
@@ -379,9 +366,15 @@ export function ResultsPanel({
                 <div className="text-right shrink-0 min-w-fit">
                   <div className="text-status-owned font-semibold">
                     +{step.dpsDelta.toFixed(2)}
+                    {step.dpsBefore > 0 && (
+                      <span className="text-caption font-normal text-osrs-muted">
+                        {" "}
+                        (+{((step.dpsDelta / step.dpsBefore) * 100).toFixed(0)}%)
+                      </span>
+                    )}
                   </div>
                   <div className="label-eyebrow text-osrs-muted">
-                    {fmtGp(step.bought.costGp)} gp
+                    {fmtGp(step.bought.costGp)} gp · {fmtDpsPerM(step.dpsPerGp)}/M
                   </div>
                 </div>
               </li>
