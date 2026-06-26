@@ -23,7 +23,8 @@ export function CharacterBar({ authed, characters, selected, onSelect }: Props) 
         <Link href="/signin" className="text-osrs-gold font-semibold hover:underline">
           Sign in
         </Link>{" "}
-        to load your saved bank — or use <strong>Budget</strong> mode below to plan without one.
+        (or sync without an email) to load your saved bank — or use{" "}
+        <strong>Budget</strong> mode below to plan without one.
       </div>
     );
   }

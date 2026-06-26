@@ -109,6 +109,21 @@ export async function listCharacters(userId: string): Promise<CharacterSummary[]
   return rows.map((r) => ({ rsn: r.rsn, gp: Number(r.gp), updatedAt: r.updated_at }));
 }
 
+/**
+ * Create an anonymous (email-less) user and return its id. Backs the "use
+ * without email" flow: the caller mints a plugin token for this user, which
+ * becomes the player's sync key — the only credential tying a browser + plugin
+ * to this bank. No email is ever collected. `users.email` is nullable and
+ * UNIQUE permits multiple NULLs, so these rows coexist with real accounts.
+ */
+export async function createAnonUser(): Promise<string> {
+  const sql = getSql();
+  const rows = (await sql`
+    INSERT INTO users (email) VALUES (NULL) RETURNING id
+  `) as Array<{ id: string }>;
+  return rows[0].id;
+}
+
 // --- Plugin tokens (machine credential for the RuneLite plugin) ----------------
 
 /** Generate a fresh plugin token (plaintext) — shown to the user once. */

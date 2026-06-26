@@ -8,6 +8,7 @@
 import useSWR from "swr";
 import { asItemId } from "@/types/osrs";
 import type { BankContents, Skills } from "@/types/osrs";
+import { useSyncKey } from "@/lib/syncKey";
 
 interface RawItem { id: number; qty: number }
 interface RawBank {
@@ -24,20 +25,27 @@ export interface CharacterSummary {
 }
 interface ApiResponse {
   authed: boolean;
+  /** True when identified via an anonymous sync key rather than an email session. */
+  anon?: boolean;
   characters: CharacterSummary[];
   selected: string | null;
   bank: RawBank | null;
 }
 
-const fetcher = async (url: string): Promise<ApiResponse> => {
-  const res = await fetch(url);
+// SWR array key: [url, syncKey]. Keeping the key OUT of the url (it travels as a
+// header) means it never lands in browser history or server access logs, while
+// still letting SWR re-fetch the moment the key changes.
+const fetcher = async ([url, syncKey]: [string, string | null]): Promise<ApiResponse> => {
+  const res = await fetch(url, syncKey ? { headers: { "X-Sync-Key": syncKey } } : undefined);
   if (!res.ok) throw new Error(`/api/bank fetch failed: ${res.status}`);
   return res.json();
 };
 
 export interface LiveBankResult {
-  /** True iff a user is signed in. */
+  /** True iff a user is identified (email session OR anonymous sync key). */
   authed: boolean;
+  /** True when identified via an anonymous sync key (no email). */
+  anon: boolean;
   /** The user's saved characters (for the switcher). */
   characters: CharacterSummary[];
   /** rsn of the character whose bank is returned (server-resolved). */
@@ -54,6 +62,7 @@ export interface LiveBankResult {
 
 const EMPTY: LiveBankResult = {
   authed: false,
+  anon: false,
   characters: [],
   selected: null,
   bank: null,
@@ -70,8 +79,12 @@ const EMPTY: LiveBankResult = {
  * the most-recently-synced one.
  */
 export function useLiveBank(selectedRsn?: string): LiveBankResult {
-  const key = selectedRsn ? `/api/bank?rsn=${encodeURIComponent(selectedRsn)}` : "/api/bank";
-  const { data } = useSWR<ApiResponse>(key, fetcher, {
+  // The device's anonymous sync key (if any). Re-renders when it changes so the
+  // poller picks up a freshly generated / forgotten key immediately.
+  const syncKey = useSyncKey();
+
+  const url = selectedRsn ? `/api/bank?rsn=${encodeURIComponent(selectedRsn)}` : "/api/bank";
+  const { data } = useSWR<ApiResponse>([url, syncKey], fetcher, {
     refreshInterval: 5_000,
     revalidateOnFocus: true,
     dedupingInterval: 2_000,
@@ -80,6 +93,7 @@ export function useLiveBank(selectedRsn?: string): LiveBankResult {
 
   const base: LiveBankResult = {
     authed: data.authed,
+    anon: data.anon ?? false,
     characters: data.characters,
     selected: data.selected,
     bank: null,
