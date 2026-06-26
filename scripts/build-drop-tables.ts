@@ -13,7 +13,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MONSTER_CATALOG } from "../data/monsters/catalog.ts";
+import { MONSTER_CATALOG } from "../data/monsters/catalog";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const UA = "osrs-boss-helper drop-table codegen (https://osrs-boss-helper-2026.vercel.app)";
