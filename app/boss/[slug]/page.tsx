@@ -127,7 +127,10 @@ export default function BossPage({
   // Budget mode + sell threshold drive the optimizer; they live here (not in
   // a panel) because the setup rail sets them and the loadout/results columns
   // consume the output. Every change recomputes immediately — no apply button.
-  const [modeRaw, setMode] = useState<BudgetMode>("gp-only");
+  // Default to "budget" so a first-time visitor (no bank synced yet) lands with
+  // the budget slider to play with from the start — they can switch to a
+  // bank-aware mode once they connect the plugin.
+  const [modeRaw, setMode] = useState<BudgetMode>("budget");
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
   const [sellSelections, setSellSelections] = useState<Set<number>>(new Set());
@@ -142,8 +145,9 @@ export default function BossPage({
         : [...prev, { itemId, name }],
     );
   }, []);
-  // Budget mode: from-scratch spend, independent of wallet GP.
-  const [budgetGp, setBudgetGp] = useState(100_000_000);
+  // Budget mode: from-scratch spend, independent of wallet GP. Starts at 10M —
+  // a friendly mid-range default a new player can dial up or down right away.
+  const [budgetGp, setBudgetGp] = useState(10_000_000);
   // Budget mode: ids of non-tradeable items the player has checked as OWNED.
   // Default empty (own none → all-buyable build); checking an item lets the
   // optimizer use it for free in its slot.
