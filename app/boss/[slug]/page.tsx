@@ -117,6 +117,17 @@ export default function BossPage({
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
   const [sellSelections, setSellSelections] = useState<Set<number>>(new Set());
+  // Upgrade path: items the player toggled OFF (won't buy). Stored with their
+  // name so the "excluded" list can render without a catalog lookup. Re-planning
+  // happens automatically via the budgetResult memo (excludedItemIds dep).
+  const [excludedUpgrades, setExcludedUpgrades] = useState<{ itemId: number; name: string }[]>([]);
+  const toggleExcludedUpgrade = useCallback((itemId: number, name: string) => {
+    setExcludedUpgrades((prev) =>
+      prev.some((e) => e.itemId === itemId)
+        ? prev.filter((e) => e.itemId !== itemId)
+        : [...prev, { itemId, name }],
+    );
+  }, []);
   // Budget mode: from-scratch spend, independent of wallet GP.
   const [budgetGp, setBudgetGp] = useState(100_000_000);
   // Budget mode: ids of non-tradeable items the player has checked as OWNED.
@@ -233,13 +244,14 @@ export default function BossPage({
       gp,
       mode,
       sellItemIds: [...sellSelections],
+      excludedItemIds: excludedUpgrades.map((e) => e.itemId),
       priceLookup: (id) => priceForItem(prices, id),
       boostResolver,
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
 
   // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
   // as owned. Ranked by the current build's combat style (stable per boss), with
@@ -918,6 +930,8 @@ export default function BossPage({
             prayerPotPriceGp={priceForItem(prices, PRAYER_POTION_4_ID)}
             bossSlug={monster.slug}
             priceLookup={(id) => priceForItem(prices, id)}
+            excludedUpgrades={excludedUpgrades}
+            onToggleUpgradeItem={toggleExcludedUpgrade}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel
