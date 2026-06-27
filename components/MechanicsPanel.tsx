@@ -1,5 +1,6 @@
 "use client";
 
+import { CollapsibleSection } from "./ui";
 import type { MechanicEvaluation } from "@/lib/mechanics";
 
 interface Props {
@@ -10,9 +11,20 @@ export function MechanicsPanel({ evaluations }: Props) {
   if (evaluations.length === 0) return null;
   const hasChecked = evaluations.some((e) => e.satisfied !== null);
   const hasInfo = evaluations.some((e) => e.satisfied === null);
+  // Surface unmet checks on the collapsed header so a missing mechanic is
+  // visible even before the section is opened.
+  const missingCount = evaluations.filter((e) => e.satisfied === false).length;
   return (
-    <div className="osrs-panel p-4 rounded">
-      <h3 className="section-title font-semibold text-osrs-brown mb-2">Boss mechanics</h3>
+    <CollapsibleSection
+      title="Boss mechanics"
+      right={
+        missingCount > 0 ? (
+          <span className="text-caption text-status-missing tabular-nums">
+            {missingCount} missing
+          </span>
+        ) : undefined
+      }
+    >
       {/* Legend so the colored dots read as a checklist, not errors. */}
       <div className="flex flex-wrap gap-x-3 gap-y-1 label-eyebrow text-osrs-muted mb-3">
         {hasChecked && (
@@ -67,6 +79,6 @@ export function MechanicsPanel({ evaluations }: Props) {
           );
         })}
       </ul>
-    </div>
+    </CollapsibleSection>
   );
 }

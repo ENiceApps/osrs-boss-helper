@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { EquipmentGrid } from "./EquipmentGrid";
 import { ItemIcon } from "./ItemIcon";
+import { CollapsibleSection } from "./ui";
 import { optimizeHybrid } from "@/lib/optimize/hybrid";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { BoostResolver } from "@/lib/dps/boost";
@@ -86,15 +87,12 @@ export function HybridPanel({
   }
 
   return (
-    <section className="osrs-panel rounded p-4">
-      <header className="mb-3">
-        <h2 className="text-lg font-bold text-osrs-gold">Hybrid armour</h2>
-        <p className="text-caption text-osrs-muted mt-0.5 max-w-2xl">
-          For multi-style bosses. Pick the styles you&apos;ll use and how many gear slots
-          you&apos;re willing to switch — fewer switches share more armour (easier to play),
-          more switches push each style toward its best gear. The weapon always switches.
-        </p>
-      </header>
+    <CollapsibleSection title="Hybrid armour">
+      <p className="text-caption text-osrs-muted mb-3 max-w-2xl">
+        For multi-style bosses. Pick the styles you&apos;ll use and how many gear slots
+        you&apos;re willing to switch — fewer switches share more armour (easier to play),
+        more switches push each style toward its best gear. The weapon always switches.
+      </p>
 
       {/* Controls */}
       <div className="flex flex-wrap items-end gap-x-6 gap-y-3 mb-4">
@@ -190,7 +188,7 @@ export function HybridPanel({
       ) : (
         <HybridResult result={result} ownedItemIds={ownedItemIds} mapping={mapping} />
       )}
-    </section>
+    </CollapsibleSection>
   );
 }
 

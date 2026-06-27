@@ -8,12 +8,11 @@ import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
 import { itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
-import { applyCombatBoost, bestBoostForStyle, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
+import { applyCombatBoost, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { requiresMeleeReach2 } from "@/data/monsters/melee-reach";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
-import { CONSUMABLES_BY_SLUG } from "@/data/bosses/consumables";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
@@ -23,13 +22,13 @@ import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
 import { CharacterBar } from "@/components/CharacterBar";
 import { SetupPanel } from "@/components/SetupPanel";
+import { BudgetControl } from "@/components/BudgetControl";
 import { SellSelectionPanel, type SellableItem } from "@/components/SellSelectionPanel";
 import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/OwnedUntradeablesPanel";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { LoadoutPanel } from "@/components/LoadoutPanel";
 import { ResultsPanel } from "@/components/ResultsPanel";
 import { PRAYER_POTION_4_ID, SARADOMIN_BREW_4_ID } from "@/data/prayer-drain";
-import { InventoryPanel } from "@/components/InventoryPanel";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { HybridPanel } from "@/components/HybridPanel";
 import { ItemPickerModal } from "@/components/ItemPickerModal";
@@ -37,7 +36,7 @@ import { SpellPickerModal } from "@/components/SpellPickerModal";
 import { PrayerPickerModal } from "@/components/PrayerPickerModal";
 import { prayerById, DEFAULT_PRAYER_ID } from "@/data/prayers";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
-import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
+import { MetaChip, WeaknessBadge, AttributePill, CollapsibleSection } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
 import { DittoEditorPanel } from "@/components/DittoEditorPanel";
 import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
@@ -51,7 +50,6 @@ import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { SPELLS_BY_NAME, type SpellEntry } from "@/data/spells/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import type { BankContents, CombatStyle, ItemId } from "@/types/osrs";
-import { asItemId } from "@/types/osrs";
 
 // Comparison-tab ids: the budget-mode best, or the best build per style.
 type LoadoutTabId = "best" | CombatStyle;
@@ -200,7 +198,6 @@ export default function BossPage({
 
   // Skills come from the live RuneLite plugin when connected, else default 99s.
   const skills = live.skills ?? SKILLS_AT_99;
-  const consumables = CONSUMABLES_BY_SLUG[slug];
   const mechanics = useMemo(() => mechanicsForBoss(monster), [monster]);
 
   // DPS reflects a boost potion ONLY if the player actually owns one for the
@@ -734,19 +731,6 @@ export default function BossPage({
     return details;
   }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks]);
 
-  // Augment the curated consumables with the boost potion that matches the
-  // selected loadout's combat style — the same potion baked into the DPS above.
-  const consumablesWithBoost = useMemo(() => {
-    const base = consumables ?? [];
-    if (!selectedSet) return base;
-    const boost = bestBoostForStyle(selectedSet.style);
-    if (base.some((c) => c.itemId === boost.itemId)) return base;
-    return [
-      { itemId: asItemId(boost.itemId), name: boost.name, quantity: 1, role: "boost" as const },
-      ...base,
-    ];
-  }, [consumables, selectedSet]);
-
   const sourceLabel =
     activeTab !== "best"
       ? `best ${activeTab} from your bank`
@@ -760,13 +744,13 @@ export default function BossPage({
 
   return (
     <div className="min-h-screen px-4 py-4 sm:p-6 max-w-7xl mx-auto">
-      <nav className="mb-3 text-sm">
+      <nav className="mb-2 text-sm">
         <Link href="/bosses" className="text-osrs-gold hover:underline">
           ← All bosses
         </Link>
       </nav>
 
-      <header className="mb-4">
+      <header className="mb-3">
         <div className="flex items-start gap-4">
           {/* Boss NPC image — sourced from the OSRS wiki CDN. The image field
               in the catalog is the exact wiki filename (e.g. "Vardorvis.png").
@@ -852,24 +836,26 @@ export default function BossPage({
           setup last (configuration). Order utilities rearrange without changing
           the DOM order, which keeps tab-focus logical. */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16 space-y-4">
-          <CharacterBar
-            authed={live.authed}
-            characters={live.characters}
-            selected={live.selected}
-            onSelect={setSelectedRsn}
-          />
+        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16 space-y-3">
+          {/* Player card — identity in one place: who you are (character · GP)
+              and the skills the DPS is computed at, tucked behind a disclosure
+              since they rarely change (or come live from the plugin). */}
+          <div className="space-y-2">
+            <CharacterBar
+              authed={live.authed}
+              characters={live.characters}
+              selected={live.selected}
+              onSelect={setSelectedRsn}
+            />
+            <CollapsibleSection title="Skills">
+              <PlayerStatsPanel skills={skills} isLive={live.isLive} />
+            </CollapsibleSection>
+          </div>
           <SetupPanel
             mode={mode}
             onModeChange={setMode}
-            gp={gp}
-            gpIsLive={live.gp != null}
-            onGpChange={setGpManual}
-            budgetGp={budgetGp}
-            onBudgetChange={setBudgetGp}
             isWildernessBoss={wilderness}
           >
-            <PlayerStatsPanel skills={skills} isLive={live.isLive} />
             <label
               className={`mt-3 flex items-center gap-2 text-sm select-none ${
                 monster.isSlayerMonster
@@ -957,7 +943,17 @@ export default function BossPage({
           )}
         </aside>
 
-        <section className="order-1 lg:order-2 lg:col-span-5">
+        <section className="order-1 lg:order-2 lg:col-span-5 space-y-3">
+          {/* Budget / wallet-GP control sits directly above the gear doll it
+              changes — drag the slider and watch the loadout rebuild in place. */}
+          <BudgetControl
+            mode={mode}
+            gp={gp}
+            gpIsLive={live.gp != null}
+            onGpChange={setGpManual}
+            budgetGp={budgetGp}
+            onBudgetChange={setBudgetGp}
+          />
           <LoadoutPanel
             tabs={loadoutTabs}
             activeTab={activeTab}
@@ -1029,10 +1025,11 @@ export default function BossPage({
         </section>
       </div>
 
-      {/* Hybrid armour / armour-switching optimizer — blends multiple styles for
-          multi-style bosses under a chosen switch budget. Self-contained; shown on
-          every boss. */}
-      <div className="mt-4">
+      {/* Secondary sections — each is a collapsed disclosure (click to open) so
+          the core cockpit owns the first screen. Hybrid armour (multi-style
+          switching) and the fight-reference panels (mechanics, spec weapons)
+          live here, out of the way until wanted. */}
+      <div className="mt-4 space-y-3">
         <HybridPanel
           ownedItemIds={ownedItemIds}
           connected={bank !== null}
@@ -1044,24 +1041,18 @@ export default function BossPage({
           requiresMeleeReach2={meleeReach2}
           mapping={mapping}
         />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+          {mechanicEvaluations.length > 0 && (
+            <MechanicsPanel evaluations={mechanicEvaluations} />
+          )}
+          <SpecWeaponsPanel
+            slug={slug}
+            mapping={mapping}
+            ownedItemIds={ownedItemIds}
+            weaponItemId={selectedSet?.slots.weapon?.itemId}
+          />
+        </div>
       </div>
-
-      {/* Reference row — fight knowledge that doesn't change as you tweak
-          gear: mechanics checklist, spec weapons, consumables. */}
-      <section className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-        {mechanicEvaluations.length > 0 && (
-          <MechanicsPanel evaluations={mechanicEvaluations} />
-        )}
-        <SpecWeaponsPanel
-          slug={slug}
-          mapping={mapping}
-          ownedItemIds={ownedItemIds}
-          weaponItemId={selectedSet?.slots.weapon?.itemId}
-        />
-        {consumablesWithBoost.length > 0 && (
-          <InventoryPanel consumables={consumablesWithBoost} mapping={mapping} />
-        )}
-      </section>
 
       {pickerSlot && (
         <ItemPickerModal

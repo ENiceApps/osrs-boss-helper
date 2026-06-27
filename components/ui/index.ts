@@ -1,4 +1,5 @@
 export { Badge } from "./Badge";
+export { CollapsibleSection } from "./CollapsibleSection";
 export { AttributePill } from "./AttributePill";
 export { WeaknessBadge } from "./WeaknessBadge";
 export { StatCard } from "./StatCard";

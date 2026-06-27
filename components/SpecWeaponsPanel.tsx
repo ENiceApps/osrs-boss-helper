@@ -1,6 +1,7 @@
 "use client";
 
 import { ItemIcon } from "@/components/ItemIcon";
+import { CollapsibleSection } from "@/components/ui";
 import { specRecommendationsForBoss } from "@/data/bosses/spec-weapons";
 import { findSpecWeapon } from "@/data/spec-weapons";
 import { isHalberdWeapon } from "@/data/items/halberd-weapons";
@@ -44,10 +45,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: 
   if (recs.length === 0) return null;
 
   return (
-    <div className="osrs-panel p-4 rounded">
-      <h3 className="section-title font-semibold text-osrs-brown mb-2">
-        Recommended spec weapons
-      </h3>
+    <CollapsibleSection title="Recommended spec weapons">
       <p className="text-caption text-osrs-muted mb-3">
         Special-attack weapons that pay off on this fight. Click to learn the
         spec mechanics.
@@ -94,7 +92,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: 
           );
         })}
       </ul>
-    </div>
+    </CollapsibleSection>
   );
 }
 
