@@ -1,6 +1,7 @@
 "use client";
 
 import { ItemIcon } from "@/components/ItemIcon";
+import { CollapsibleSection } from "@/components/ui";
 import type { MappingEntry } from "@/types/osrs";
 
 export interface UntradeableOption {
@@ -50,19 +51,20 @@ export function OwnedUntradeablesPanel({
   );
 
   return (
-    <div className="osrs-panel p-4 rounded space-y-2">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="section-title font-semibold text-osrs-brown">
-          Untradeables you own
-        </h3>
-        <span className="text-caption text-osrs-muted">{ownedCount} checked</span>
-      </div>
-      <p className="text-caption text-osrs-muted">
+    <CollapsibleSection
+      title="Untradeables you own"
+      right={
+        ownedCount > 0 ? (
+          <span className="text-caption text-osrs-gold tabular-nums">{ownedCount} checked</span>
+        ) : undefined
+      }
+    >
+      <p className="text-caption text-osrs-muted mb-2">
         Check the non-tradeable items you own. The builder uses your best owned
         item per slot, and a buyable item wherever you own none.
       </p>
 
-      <div className="flex gap-2 text-caption">
+      <div className="flex gap-2 text-caption mb-2">
         <button type="button" onClick={onSelectAll} className={QUICK_BTN}>
           I have all
         </button>
@@ -103,6 +105,6 @@ export function OwnedUntradeablesPanel({
           </div>
         ))}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }
