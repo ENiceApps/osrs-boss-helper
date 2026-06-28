@@ -115,7 +115,7 @@ export function BudgetControl({
             <span className="label-eyebrow shrink-0">Wallet GP</span>
             <input
               type="text"
-              inputMode="numeric"
+              inputMode="text"
               value={gpText}
               onChange={(e) => handleGpInput(e.target.value)}
               className="flex-1 min-w-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm"
@@ -148,7 +148,7 @@ export function BudgetControl({
         />
         <input
           type="text"
-          inputMode="numeric"
+          inputMode="text"
           value={budgetText}
           onChange={(e) => handleBudgetInput(e.target.value)}
           className="w-28 shrink-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm text-right tabular-nums"
