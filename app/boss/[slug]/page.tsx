@@ -26,7 +26,7 @@ import { BudgetControl } from "@/components/BudgetControl";
 import { SellSelectionPanel, type SellableItem } from "@/components/SellSelectionPanel";
 import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/OwnedUntradeablesPanel";
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
-import { LoadoutPanel } from "@/components/LoadoutPanel";
+import { LoadoutPanel, type LoadoutTab } from "@/components/LoadoutPanel";
 import { ResultsPanel } from "@/components/ResultsPanel";
 import { PRAYER_POTION_4_ID, SARADOMIN_BREW_4_ID } from "@/data/prayer-drain";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
@@ -431,24 +431,33 @@ export default function BossPage({
   const activeTab: LoadoutTabId =
     activeTabRaw !== "best" && !styleResults?.[activeTabRaw]?.upgradedBest ? "best" : activeTabRaw;
 
-  const loadoutTabs = useMemo(() => {
-    if (!bank && !fromScratchMode) return [];
-    const tabs: Array<{ id: LoadoutTabId; label: string; dps?: number }> = [];
-    if (budgetResult?.upgradedBest) {
-      tabs.push({ id: "best", label: "Best", dps: budgetResult.upgradedBest.dps.dps });
-    }
+  // Comparison tabs. Once any loadout is buildable we ALWAYS list Best plus all
+  // three styles — a style the current bank/budget can't build still shows, just
+  // dimmed + non-selectable with a tooltip, so Melee/Ranged/Magic never vanish.
+  const loadoutTabs = useMemo<LoadoutTab<LoadoutTabId>[]>(() => {
+    if (!budgetResult?.upgradedBest) return [];
+    const tabs: LoadoutTab<LoadoutTabId>[] = [
+      { id: "best", label: "Best", dps: budgetResult.upgradedBest.dps.dps, available: true },
+    ];
     for (const style of STYLE_TABS) {
-      const r = styleResults?.[style];
-      if (r?.upgradedBest) {
-        tabs.push({
-          id: style,
-          label: style.charAt(0).toUpperCase() + style.slice(1),
-          dps: r.upgradedBest.dps.dps,
-        });
-      }
+      const built = styleResults?.[style]?.upgradedBest;
+      tabs.push({
+        id: style,
+        label: style.charAt(0).toUpperCase() + style.slice(1),
+        dps: built?.dps.dps,
+        available: !!built,
+        // Why it's empty + the quickest way to actually see it. Bank modes
+        // (own/gp/sell) can only upgrade styles the bank can already perform,
+        // so the route to a missing style is Budget mode or syncing one.
+        unavailableReason: built
+          ? undefined
+          : fromScratchMode
+            ? `No ${style} setup fits this budget — raise it to see one.`
+            : `Your bank has no ${style} weapon. Switch to Budget mode to preview a ${style} setup, or sync one.`,
+      });
     }
     return tabs;
-  }, [bank, fromScratchMode, budgetResult, styleResults]);
+  }, [budgetResult, styleResults, fromScratchMode]);
 
   // The editable base is the active tab's scenario: the optimizer's pick for
   // the current budget mode (== best-from-bank when there are no upgrades),
