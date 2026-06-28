@@ -1,5 +1,9 @@
 "use client";
 
+// Browse-all-bosses grid (/bosses): the full monster catalog with category and
+// Slayer filters, search, and per-boss attribute / weakness badges. Each card
+// links to the shared /boss/[slug] page.
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MONSTER_CATALOG } from "@/data/monsters/catalog";

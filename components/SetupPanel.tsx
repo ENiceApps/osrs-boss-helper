@@ -1,5 +1,11 @@
 "use client";
 
+// Budget-mode selector card (left rail). Chooses how loadouts are sourced:
+// "Own only" (just your bank), "With GP" (buy with wallet GP), "Sell to fund"
+// (liquidate gear to bankroll upgrades), "Budget" (from-scratch spend cap), and
+// "Risk it" for wilderness bosses. Renders the setup toggles (on-task,
+// Soulreaper, Dharok) passed in as children.
+
 import { type ReactNode } from "react";
 import type { BudgetMode } from "@/lib/optimize/budget";
 

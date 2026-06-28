@@ -1,3 +1,7 @@
+// Server-side proxy for the OSRS Wiki Real-time Prices "latest" endpoint. Same
+// rationale as the mapping proxy: attach the wiki-required User-Agent
+// server-side and add a short cache. Read-only GET.
+
 import { fetchWiki } from "@/lib/wikiApi";
 
 export const dynamic = "force-dynamic";

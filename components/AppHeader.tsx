@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
 import { useLiveBank, secondsSince } from "@/lib/liveBank";
 
 /**
- * App-wide sticky header. The plugin sync is global state (one player synced
- * across the whole app), so its status lives here rather than per boss page.
- * Mounting useLiveBank here AND on the boss page is fine — SWR dedupes the
- * shared "/api/bank" key into a single poll.
+ * App-wide sticky header. The local bank is global state (one connected file
+ * read across the whole app), so its status lives here rather than per boss
+ * page. Mounting useLiveBank here AND on the boss page is fine — both read the
+ * same in-memory local-bank store.
  */
 export function AppHeader() {
   const pathname = usePathname();
@@ -33,37 +32,9 @@ export function AppHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
           <ConnectionStatus />
-          <AuthControl />
         </div>
       </div>
     </header>
-  );
-}
-
-function AuthControl() {
-  const { data: session, status } = useSession();
-  if (status === "loading") return null;
-  if (session?.user) {
-    return (
-      <span className="inline-flex items-center gap-2 text-caption">
-        <span className="text-parchment-dark hidden sm:inline">{session.user.email}</span>
-        <Link href="/settings" className="text-osrs-gold hover:underline font-semibold">
-          Settings
-        </Link>
-        <button
-          type="button"
-          onClick={() => signOut({ redirectTo: "/" })}
-          className="text-osrs-gold hover:underline font-semibold"
-        >
-          Sign out
-        </button>
-      </span>
-    );
-  }
-  return (
-    <Link href="/signin" className="text-caption text-osrs-gold hover:underline font-semibold">
-      Sign in
-    </Link>
   );
 }
 
@@ -100,9 +71,9 @@ function ConnectionStatus() {
           className="w-2 h-2 rounded-full bg-status-owned"
           style={{ boxShadow: "0 0 5px var(--color-status-owned)" }}
         />
-        <span className="font-semibold">{live.playerName ?? "Live"}</span>
+        <span className="font-semibold">{live.playerName ?? "Loaded"}</span>
         <span className="text-parchment-dark hidden sm:inline">
-          {live.bank?.itemIds.size ?? 0} items · synced{" "}
+          {live.bank?.itemIds.size ?? 0} items · updated{" "}
           {secondsSince(live.receivedAt) ?? 0}s ago
         </span>
       </span>
@@ -110,18 +81,11 @@ function ConnectionStatus() {
   }
   return (
     <span
-      // When not live the AuthControl ("Sign in" / "Settings") already conveys
-      // the state, so the textual status is redundant on narrow screens — hide
-      // it below sm to keep the header on one row.
       className="hidden sm:inline-flex items-center gap-2 text-caption text-parchment-dark"
-      title={
-        live.authed
-          ? "Signed in, but no bank synced yet. Open your bank in-game with the osrs-boss-sync plugin."
-          : "Sign in and run the osrs-boss-sync plugin to sync your bank, or use Budget mode to plan without one."
-      }
+      title="Connect the bank file the OSRS Boss Helper Sync plugin writes, or use Budget mode to plan without one."
     >
       <span aria-hidden className="w-2 h-2 rounded-full bg-osrs-muted" />
-      {live.authed ? "No bank synced" : "Not signed in"}
+      No bank connected
     </span>
   );
 }

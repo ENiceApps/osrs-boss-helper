@@ -1,5 +1,11 @@
 "use client";
 
+// Modal for swapping the item in one equipment slot. Lists every catalog item
+// valid for the slot, ranked by the DPS the loadout WOULD have with it equipped
+// (so the best upgrade floats to the top), each row showing its delta vs the
+// current pick. Selecting one applies a manual slot override; clearing empties
+// the slot.
+
 import { useEffect, useMemo, useState } from "react";
 import { itemsForSlot } from "@/lib/loadout-edit";
 import type { ItemCatalogEntry } from "@/data/items/catalog";

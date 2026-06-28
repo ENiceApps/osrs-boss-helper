@@ -1,3 +1,8 @@
+// Parses an OSRS bank-tag export string (the comma-separated id/qty paste) into
+// BankContents, supporting both the legacy and newer bank-tag formats and
+// throwing BankTagParseError on empty or malformed input. This is the
+// manual-paste path for trying the app without the live RuneLite plugin.
+
 import type { BankContents, ItemId } from "@/types/osrs";
 import { asItemId } from "@/types/osrs";
 

@@ -1,5 +1,12 @@
 "use client";
 
+// The single dynamic boss page that EVERY boss shares (/boss/<slug>). This is
+// the app's "cockpit": it loads the player's live bank (or a demo bank), runs
+// the bank optimizer for the chosen boss, and wires together the setup / loadout
+// / results panels, the budget modes, manual slot edits, the spell & prayer
+// pickers, mechanics, spec weapons, and shareable links. Most cross-panel state
+// lives here and flows down to the panels as props.
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +27,7 @@ import { explainSlots } from "@/lib/loadout-explain";
 import { compareSlotsVsReference, type SlotVsBank } from "@/lib/loadout-compare";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
-import { CharacterBar } from "@/components/CharacterBar";
+import { BankConnect } from "@/components/BankConnect";
 import { SetupPanel } from "@/components/SetupPanel";
 import { BudgetControl } from "@/components/BudgetControl";
 import { SellSelectionPanel, type SellableItem } from "@/components/SellSelectionPanel";
@@ -112,12 +119,10 @@ export default function BossPage({
   const [dittoMonster, setDittoMonster] = useState<MonsterCatalogEntry>(baseMonster);
   const monster = isDitto ? dittoMonster : baseMonster;
 
-  // Hosted multi-account bank — see lib/liveBank.ts. `live` reads the signed-in
-  // user's selected character from the DB; until they sign in + sync, `bank` is
-  // null and the page shows a sign-in / Budget state (no fabricated loadout).
-  // `selectedRsn` undefined → the server defaults to the most-recently-synced.
-  const [selectedRsn, setSelectedRsn] = useState<string | undefined>(undefined);
-  const live = useLiveBank(selectedRsn);
+  // Local bank bridge — see lib/liveBank.ts / lib/localBank.ts. `live` reads the
+  // bank file the RuneLite plugin writes on this machine; until you connect that
+  // file, `bank` is null and the page runs in Budget mode (no fabricated loadout).
+  const live = useLiveBank();
   const bank: BankContents | null = live.bank;
   const [gpManual, setGpManual] = useState(500_000_000);
   // Live GP overrides the manual GP input when the plugin has reported one.
@@ -127,7 +132,7 @@ export default function BossPage({
   // consume the output. Every change recomputes immediately — no apply button.
   // Default to "budget" so a first-time visitor (no bank synced yet) lands with
   // the budget slider to play with from the start — they can switch to a
-  // bank-aware mode once they connect the plugin.
+  // bank-aware mode once they connect their bank file.
   const [modeRaw, setMode] = useState<BudgetMode>("budget");
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
@@ -850,12 +855,7 @@ export default function BossPage({
               and the skills the DPS is computed at, tucked behind a disclosure
               since they rarely change (or come live from the plugin). */}
           <div className="space-y-2">
-            <CharacterBar
-              authed={live.authed}
-              characters={live.characters}
-              selected={live.selected}
-              onSelect={setSelectedRsn}
-            />
+            <BankConnect />
             <CollapsibleSection title="Skills">
               <PlayerStatsPanel skills={skills} isLive={live.isLive} />
             </CollapsibleSection>

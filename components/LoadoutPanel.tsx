@@ -1,5 +1,11 @@
 "use client";
 
+// Center cockpit panel: the equipment "doll" for the active loadout, with the
+// style-comparison tabs across the top — the optimizer's Best pick plus one tab
+// per attack style, each showing its DPS so styles compare at a glance. Clicking
+// a slot opens the item picker; the magic spell chip opens the spell picker.
+// Dimmed tabs mark styles the current bank/budget can't build.
+
 import { useState } from "react";
 import { EquipmentGrid } from "@/components/EquipmentGrid";
 import { MetaChip } from "@/components/ui";
@@ -210,9 +216,9 @@ export function LoadoutPanel<TabId extends string>({
 
       {!connected && (
         <p className="text-sm text-osrs-brown mb-3">
-          Connect the <strong>osrs-boss-sync</strong> RuneLite plugin to sync
-          your bank, inventory, worn gear, and skills — then this builds the
-          best loadout you can equip for this boss.
+          Connect the bank file the <strong>OSRS Boss Helper Sync</strong>
+          RuneLite plugin writes to load your bank, inventory, worn gear, and
+          skills — then this builds the best loadout you can equip for this boss.
         </p>
       )}
       {connected && !set && (

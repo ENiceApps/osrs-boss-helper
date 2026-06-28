@@ -1,23 +1,27 @@
-// User feedback inbox. POST a short message (plus optional reply-to email and
-// the page it was sent from) and it's emailed to the maintainer via the same
-// Resend setup that powers auth magic-links (see lib/auth.ts).
+// User feedback inbox — the one place the app sends anything to a server, and it
+// carries no game data: just a short message plus an optional reply-to email and
+// the page it came from, emailed to the maintainer via Resend.
 //
-// No sign-in required — anonymous visitors can leave feedback. If the sender
-// *is* signed in we attach their account email automatically so replies are
-// possible even when they don't type one.
-//
-// Dev (no AUTH_RESEND_KEY): the message prints to the server console instead of
+// Dev (no RESEND key): the message prints to the server console instead of
 // emailing, so the flow is testable without an email service.
 
-import { auth } from "@/lib/auth";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-// Lowercased: Resend's sandbox sender (onboarding@resend.dev) matches the
-// allowed test recipient case-sensitively, and email addresses are effectively
-// case-insensitive anyway, so normalize to avoid a 403 on a capitalized address.
+// Unauthenticated and triggers an outbound email per call, so cap submissions
+// per IP to deter spam / email-cost abuse.
+const MAX_PER_WINDOW = 5;
+const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+// Resend config. The AUTH_* names are read as a fallback so an existing
+// deployment keeps working until its env vars are renamed.
+const RESEND_KEY = process.env.RESEND_API_KEY ?? process.env.AUTH_RESEND_KEY ?? "";
+const EMAIL_FROM = process.env.EMAIL_FROM ?? process.env.AUTH_EMAIL_FROM ?? "onboarding@resend.dev";
+// Lowercased: Resend's sandbox sender (onboarding@resend.dev) matches the allowed
+// test recipient case-sensitively, and email is effectively case-insensitive, so
+// normalize to avoid a 403 on a capitalized address.
 const FEEDBACK_TO = (process.env.FEEDBACK_TO ?? "eliezer.d.nunez@gmail.com").toLowerCase();
-const EMAIL_FROM = process.env.AUTH_EMAIL_FROM ?? "onboarding@resend.dev";
 
 const MAX_MESSAGE = 4000;
 const MAX_EMAIL = 254;
@@ -31,6 +35,14 @@ function escapeHtml(s: string): string {
 }
 
 export async function POST(req: Request) {
+  const limit = rateLimit(`feedback:${clientIp(req)}`, MAX_PER_WINDOW, WINDOW_MS);
+  if (!limit.ok) {
+    return Response.json(
+      { error: "Too many requests. Please wait and try again." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -54,17 +66,7 @@ export async function POST(req: Request) {
   const fromPage =
     typeof page === "string" && page.trim() ? page.trim().slice(0, MAX_PAGE) : "";
 
-  // Attach the signed-in account email if available (best-effort — feedback is
-  // allowed anonymously, so a failure here must not block submission).
-  let accountEmail = "";
-  try {
-    const session = await auth();
-    accountEmail = session?.user?.email ?? "";
-  } catch {
-    // ignore — anonymous feedback is fine
-  }
-
-  const contact = replyEmail || accountEmail || "(none provided)";
+  const contact = replyEmail || "(none provided)";
   const subject = "OSRS Boss Helper feedback";
   const textLines = [
     trimmed,
@@ -72,18 +74,16 @@ export async function POST(req: Request) {
     "---",
     `Reply-to: ${contact}`,
     fromPage ? `Page: ${fromPage}` : "",
-    accountEmail ? `Signed-in account: ${accountEmail}` : "",
   ].filter(Boolean);
   const html = `<p style="white-space:pre-wrap">${escapeHtml(trimmed)}</p>
 <hr />
 <p><strong>Reply-to:</strong> ${escapeHtml(contact)}<br />
-${fromPage ? `<strong>Page:</strong> ${escapeHtml(fromPage)}<br />` : ""}
-${accountEmail ? `<strong>Signed-in account:</strong> ${escapeHtml(accountEmail)}` : ""}</p>`;
+${fromPage ? `<strong>Page:</strong> ${escapeHtml(fromPage)}` : ""}</p>`;
 
   // Dev fallback: no email service configured → log and succeed.
-  if (!process.env.AUTH_RESEND_KEY) {
+  if (!RESEND_KEY) {
     console.log(
-      `\n=== OSRS Boss Helper feedback ===\n${textLines.join("\n")}\n=== (set AUTH_RESEND_KEY to email this to ${FEEDBACK_TO}) ===\n`,
+      `\n=== OSRS Boss Helper feedback ===\n${textLines.join("\n")}\n=== (set RESEND_API_KEY to email this to ${FEEDBACK_TO}) ===\n`,
     );
     return Response.json({ ok: true });
   }
@@ -91,7 +91,7 @@ ${accountEmail ? `<strong>Signed-in account:</strong> ${escapeHtml(accountEmail)
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.AUTH_RESEND_KEY}`,
+      Authorization: `Bearer ${RESEND_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -100,7 +100,7 @@ ${accountEmail ? `<strong>Signed-in account:</strong> ${escapeHtml(accountEmail)
       subject,
       html,
       // Let the maintainer hit "reply" and reach the user, when an email exists.
-      ...(replyEmail || accountEmail ? { reply_to: replyEmail || accountEmail } : {}),
+      ...(replyEmail ? { reply_to: replyEmail } : {}),
     }),
   });
 

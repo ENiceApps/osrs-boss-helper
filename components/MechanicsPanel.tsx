@@ -1,5 +1,10 @@
 "use client";
 
+// Collapsible "Boss mechanics" checklist. Each row is a fight requirement
+// (anti-dragonfire, anti-venom, melee reach, …) evaluated against the current
+// setup and shown green/red, with the unmet count surfaced on the collapsed
+// header. Info-only rows (no pass/fail) are also supported.
+
 import { CollapsibleSection } from "./ui";
 import type { MechanicEvaluation } from "@/lib/mechanics";
 

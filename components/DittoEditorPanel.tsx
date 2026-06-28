@@ -1,5 +1,11 @@
 "use client";
 
+// Editor for "Ditto" — the fully customisable theoretical-boss sandbox. Lets you
+// dial a monster's defence stats and toggle the attributes that actually move
+// DPS (dragon, undead/Salve, demon/Arclight, flying/halberd-only, Xerician/Tbow
+// cap, elemental weakness…), feeding the edited monster back via onChange so the
+// optimizer re-runs against your made-up target.
+
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { SpellElement } from "@/types/osrs";
 

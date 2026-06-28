@@ -1,3 +1,9 @@
+// Evaluates a boss's fight-mechanic checklist against the player's bank. For
+// each requirement it asks "is this satisfied by an item the player owns or
+// wears?" — item-backed requirements return true/false, purely informational
+// ones return null (the UI renders those without a checkmark). Powers
+// <MechanicsPanel>.
+
 import type { BankContents, MechanicRequirement } from "@/types/osrs";
 
 export interface MechanicEvaluation {

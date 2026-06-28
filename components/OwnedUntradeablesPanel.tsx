@@ -1,5 +1,10 @@
 "use client";
 
+// "Untradeables you own" checklist. The optimizer can't buy non-tradeable BiS
+// gear (Void, quest/diary rewards, …), so this lets the player tick which ones
+// they actually have, per slot; ticked items then become eligible for the build.
+// Best-first within each slot, with select-all / none helpers.
+
 import { ItemIcon } from "@/components/ItemIcon";
 import { CollapsibleSection } from "@/components/ui";
 import type { MappingEntry } from "@/types/osrs";

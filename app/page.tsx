@@ -1,3 +1,6 @@
+// Landing page (/): the app's front door — a type-ahead boss search, a few
+// popular quick-pick bosses, and a link into the full catalog. Server component.
+
 import Link from "next/link";
 import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { BossSearch } from "@/components/BossSearch";
@@ -60,9 +63,10 @@ export default function HomePage() {
       </Link>
 
       <p className="text-caption text-osrs-muted mt-12 max-w-md">
-        Tip: run the osrs-boss-sync RuneLite plugin to load your real bank,
-        inventory, worn gear, and skills — connection status shows in the header
-        above. Without it, the app demonstrates everything on a sample bank.
+        Tip: install the OSRS Boss Helper Sync RuneLite plugin and connect the
+        bank file it writes to load your real gear, inventory, and skills — all
+        locally, nothing leaves your machine. Without it, the app demonstrates
+        everything on a sample bank.
       </p>
     </div>
   );

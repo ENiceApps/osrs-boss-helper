@@ -1,4 +1,4 @@
-package com.example;
+package com.osrsbosshelper;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
@@ -7,10 +7,17 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -19,6 +26,7 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.Skill;
 import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -27,58 +35,58 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.LinkBrowser;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
- * Posts the player's bank + worn equipment + skills + GP to the boss-helper web
- * app whenever the bank or inventory changes. This plugin only READS game state
- * and forwards it — it never modifies the bank or any other interface.
+ * Writes the player's bank + worn equipment + inventory + skills + GP to a local
+ * JSON file that the OSRS Boss Helper web app reads in the browser. This plugin
+ * only READS game state — it never modifies the bank or any other interface — and
+ * it makes NO network requests: nothing leaves this machine. The file lives at
+ * {@code <RuneLite dir>/osrs-boss-helper/bank.json}.
  *
  * Architecture:
  *   - @Subscribe on ItemContainerChanged fires whenever bank/inventory/
  *     equipment updates in-game.
- *   - We throttle to one POST per `minSyncIntervalMs` (default 2s) so a
- *     "deposit all" doesn't fire 28 requests.
- *   - The payload is small JSON (~5 KB even for a full main bank).
+ *   - We throttle to one write per {@code minSyncIntervalMs} (default 2s) so a
+ *     "deposit all" doesn't trigger 28 writes.
+ *   - Game state is read on the client thread; the file is serialized and
+ *     written on a background executor (disk IO must not run on the client
+ *     thread) and is swapped in atomically (temp file + move) so the web app
+ *     never reads a half-written file.
  *
  * Limitations / known gotchas:
- *   - InventoryID.BANK is only populated AFTER the player opens their
- *     bank at least once per session. Before that, bank contents are
- *     unknown and we send an empty array. Open your bank once after
- *     login.
- *   - Some accounts split GP between coin pouch + bank coin slot;
- *     we sum both.
- *   - Bank + worn equipment + inventory are all merged into a single "owned
- *     items" list so the optimizer can use anything the player has access to.
- *     Non-gear inventory items (potions, food, runes) are harmlessly ignored
- *     by the gear optimizer but ARE used by the boost-potion and mechanic
- *     checks (e.g. a Super combat potion in your inventory now counts).
- *     Coins are excluded here and tracked separately as GP.
+ *   - InventoryID.BANK is only populated AFTER the player opens their bank at
+ *     least once per session. Before that, bank contents are unknown and we
+ *     write an empty list. Open your bank once after login.
+ *   - Some accounts split GP between coin pouch + bank coin slot; we sum both.
+ *   - Bank + worn equipment + inventory are merged into a single "owned items"
+ *     list so the optimizer can use anything the player has access to. Non-gear
+ *     inventory items (potions, food, runes) are ignored by the gear optimizer
+ *     but ARE used by the boost-potion and mechanic checks. Coins are excluded
+ *     here and tracked separately as GP.
  */
 @Slf4j
 @PluginDescriptor(
     name = "OSRS Boss Helper Sync",
-    description = "Sends bank + skills + GP to the boss-helper web app (local or hosted)",
-    tags = {"bank", "dps", "helper"}
+    description = "Writes your bank + skills + GP to a local file for the OSRS Boss Helper web app (no network)",
+    tags = {"bank", "dps", "gear", "boss", "helper"}
 )
 public class BankSyncPlugin extends Plugin {
 
-    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
     private static final int COINS_ITEM_ID = 995;
+    private static final long BANK_FILE_VERSION = 1;
+    private static final String OUTPUT_DIR = "osrs-boss-helper";
+    private static final String OUTPUT_FILE = "bank.json";
 
     @Inject private Client client;
     @Inject private ClientThread clientThread;
     @Inject private BankSyncConfig config;
-    @Inject private OkHttpClient httpClient;
     @Inject private Gson gson;
     @Inject private ClientToolbar clientToolbar;
 
     private long lastSyncMs = 0;
     private NavigationButton navButton;
+    // Disk writes happen here, off the client thread.
+    private ExecutorService fileWriter;
 
     @Provides
     BankSyncConfig provideConfig(ConfigManager cm) {
@@ -87,7 +95,8 @@ public class BankSyncPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        log.info("OSRS Boss Helper Sync plugin enabled. Endpoint: {}", config.endpointUrl());
+        log.info("OSRS Boss Helper Sync enabled. Writing to {}/{}", OUTPUT_DIR, OUTPUT_FILE);
+        fileWriter = Executors.newSingleThreadExecutor();
 
         // Sidebar link to the web app. Purely a convenience button — it opens the
         // app in a browser and never touches the in-game bank or any interface.
@@ -102,19 +111,22 @@ public class BankSyncPlugin extends Plugin {
 
     @Override
     protected void shutDown() {
-        log.info("OSRS Boss Helper Sync plugin disabled.");
+        log.info("OSRS Boss Helper Sync disabled.");
 
         if (navButton != null) {
             clientToolbar.removeNavigation(navButton);
             navButton = null;
         }
+        if (fileWriter != null) {
+            fileWriter.shutdownNow();
+            fileWriter = null;
+        }
     }
 
     /**
-     * The main trigger. Fires when the bank, inventory, or equipment
-     * container updates. We only care about bank + equipment changes
-     * for the optimizer; inventory changes are filtered out unless they
-     * touch coins (which affect GP).
+     * The main trigger. Fires when the bank, inventory, or equipment container
+     * updates. Gated by the (opt-in) "Write bank file on change" toggle and
+     * throttled so a deposit-all doesn't write repeatedly.
      */
     @Subscribe
     public void onItemContainerChanged(ItemContainerChanged event) {
@@ -130,23 +142,19 @@ public class BankSyncPlugin extends Plugin {
         if (now - lastSyncMs < config.minSyncIntervalMs()) return;
         lastSyncMs = now;
 
-        // Read on the client thread (RuneLite's API is single-threaded).
-        clientThread.invoke(this::syncBank);
+        // Read game state on the client thread (RuneLite's API is single-threaded).
+        clientThread.invoke(this::collectAndWrite);
     }
 
-    private void syncBank() {
+    private void collectAndWrite() {
         if (client.getLocalPlayer() == null) return;
 
         Map<Integer, Integer> itemQty = new HashMap<>();
-        // Owned-items pool = bank + worn equipment + inventory. The optimizer
-        // builds loadouts from gear in this pool; the boost-potion / mechanic
-        // checks look for consumables (potions, antidotes, runes) here too.
+        // Owned-items pool = bank + worn equipment + inventory.
         ItemContainer bank = client.getItemContainer(InventoryID.BANK);
         addContainerItems(bank, itemQty);
-        // Worn equipment — optimizer treats these as "owned" too
         ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
         addContainerItems(equipment, itemQty);
-        // Inventory — potions/food/runes the player is carrying, plus any gear.
         ItemContainer inv = client.getItemContainer(InventoryID.INVENTORY);
         addContainerItems(inv, itemQty);
 
@@ -164,7 +172,7 @@ public class BankSyncPlugin extends Plugin {
             }
         }
 
-        // Skills — base levels, not boosted
+        // Skills — base (unboosted) levels.
         Map<String, Integer> skills = new HashMap<>();
         skills.put("attack", client.getRealSkillLevel(Skill.ATTACK));
         skills.put("strength", client.getRealSkillLevel(Skill.STRENGTH));
@@ -174,7 +182,6 @@ public class BankSyncPlugin extends Plugin {
         skills.put("hitpoints", client.getRealSkillLevel(Skill.HITPOINTS));
         skills.put("prayer", client.getRealSkillLevel(Skill.PRAYER));
 
-        // Build payload
         List<Map<String, Integer>> itemPayload = new ArrayList<>();
         for (Map.Entry<Integer, Integer> e : itemQty.entrySet()) {
             Map<String, Integer> m = new HashMap<>();
@@ -182,15 +189,23 @@ public class BankSyncPlugin extends Plugin {
             m.put("qty", e.getValue());
             itemPayload.add(m);
         }
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("items", itemPayload);
-        payload.put("skills", skills);
-        payload.put("gp", gp);
-        String name = client.getLocalPlayer().getName();
-        if (name != null) payload.put("playerName", name);
 
-        String json = gson.toJson(payload);
-        postPayload(json, itemPayload.size());
+        // LinkedHashMap so the JSON keys come out in a readable, stable order.
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("version", BANK_FILE_VERSION);
+        String name = client.getLocalPlayer().getName();
+        payload.put("rsn", name == null ? "" : name);
+        payload.put("gp", gp);
+        payload.put("skills", skills);
+        payload.put("items", itemPayload);
+        payload.put("updatedAt", System.currentTimeMillis());
+
+        // Serialize + write off the client thread.
+        final String json = gson.toJson(payload);
+        final int itemCount = itemPayload.size();
+        if (fileWriter != null && !fileWriter.isShutdown()) {
+            fileWriter.execute(() -> writeBankFile(json, itemCount));
+        }
     }
 
     private void addContainerItems(ItemContainer container, Map<Integer, Integer> acc) {
@@ -203,33 +218,25 @@ public class BankSyncPlugin extends Plugin {
         }
     }
 
-    private void postPayload(String json, int itemCount) {
-        Request.Builder reqBuilder = new Request.Builder()
-            .url(config.endpointUrl())
-            .post(RequestBody.create(JSON_MEDIA_TYPE, json));
-        String token = config.accountToken();
-        if (token != null && !token.isEmpty()) {
-            reqBuilder.addHeader("Authorization", "Bearer " + token);
+    /** Write bank.json atomically: to a temp file, then move it into place so a
+     *  reader never observes a partial file. Runs on the file-writer thread. */
+    private void writeBankFile(String json, int itemCount) {
+        try {
+            Path dir = RuneLite.RUNELITE_DIR.toPath().resolve(OUTPUT_DIR);
+            Files.createDirectories(dir);
+            Path tmp = dir.resolve(OUTPUT_FILE + ".tmp");
+            Path dest = dir.resolve(OUTPUT_FILE);
+            Files.write(tmp, json.getBytes(StandardCharsets.UTF_8));
+            try {
+                Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException atomicUnsupported) {
+                // Some filesystems don't support ATOMIC_MOVE — fall back.
+                Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+            log.debug("Wrote {} items to {}", itemCount, dest);
+        } catch (IOException e) {
+            log.warn("Failed to write bank file: {}", e.getMessage());
         }
-        Request req = reqBuilder.build();
-        httpClient.newCall(req).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                log.warn("Bank sync POST failed: {}", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                try (Response r = response) {
-                    if (r.isSuccessful()) {
-                        log.info("BankSyncPlugin: posted {} items", itemCount);
-                    } else {
-                        log.warn("BankSyncPlugin: server returned {} — {}",
-                            r.code(), r.body() == null ? "" : r.body().string());
-                    }
-                }
-            }
-        });
     }
 
     /** Simple in-code sidebar icon so we don't ship a binary asset. */
