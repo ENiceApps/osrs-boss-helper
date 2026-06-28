@@ -14,6 +14,11 @@ export interface LoadoutTab<Id extends string = string> {
   label: string;
   /** Shown small inside the tab so setups compare at a glance. */
   dps?: number;
+  /** False when the bank/budget can't build this style. The tab still renders
+   *  (so the styles are always visible) but dimmed and non-selectable. */
+  available?: boolean;
+  /** Tooltip on a dimmed tab: why it's unavailable and how to see it. */
+  unavailableReason?: string;
 }
 
 interface Props<TabId extends string> {
@@ -159,27 +164,34 @@ export function LoadoutPanel<TabId extends string>({
         <div role="tablist" aria-label="Loadout setups" className="flex flex-wrap gap-1.5 mt-1 mb-3">
           {tabs!.map((tab) => {
             const active = tab.id === activeTab;
+            const unavailable = tab.available === false;
             return (
               <button
                 key={tab.id}
                 type="button"
                 role="tab"
                 aria-selected={active}
-                onClick={() => onTabChange?.(tab.id)}
+                aria-disabled={unavailable}
+                // Keep it focusable (not HTML-disabled) so the explanatory
+                // title still shows on hover; the click just no-ops.
+                title={unavailable ? tab.unavailableReason : undefined}
+                onClick={() => !unavailable && onTabChange?.(tab.id)}
                 className={`px-2.5 py-1 rounded border text-center ${
                   active
                     ? "bg-osrs-gold border-osrs-gold"
-                    : "bg-parchment-dark/10 border-osrs-brown/40 hover:border-osrs-gold/60"
+                    : unavailable
+                      ? "bg-parchment-dark/5 border-osrs-brown/20 opacity-50 cursor-not-allowed"
+                      : "bg-parchment-dark/10 border-osrs-brown/40 hover:border-osrs-gold/60"
                 }`}
               >
                 <span
                   className={`block text-xs font-semibold ${
-                    active ? "text-background" : "text-osrs-brown"
+                    active ? "text-background" : unavailable ? "text-osrs-muted" : "text-osrs-brown"
                   }`}
                 >
                   {tab.label}
                 </span>
-                {tab.dps !== undefined && (
+                {tab.dps !== undefined ? (
                   <span
                     className={`block text-caption ${
                       active ? "text-background/80" : "text-osrs-muted"
@@ -187,7 +199,9 @@ export function LoadoutPanel<TabId extends string>({
                   >
                     {tab.dps.toFixed(2)} dps
                   </span>
-                )}
+                ) : unavailable ? (
+                  <span className="block text-caption text-osrs-muted">n/a</span>
+                ) : null}
               </button>
             );
           })}
