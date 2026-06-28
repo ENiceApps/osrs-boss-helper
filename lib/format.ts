@@ -16,6 +16,33 @@ export function fmtGp(n: number): string {
   return n.toLocaleString();
 }
 
+/**
+ * Parse a GP amount the way an OSRS player types it, accepting k/m/b
+ * abbreviations: "1k" → 1_000, "10m" → 10_000_000, "1.5b" → 1_500_000_000.
+ * Plain numbers, commas, and spaces all work ("1,000,000", "2 500"). Anything
+ * unparseable resolves to 0 so a stray keystroke never throws. Mirrors fmtGp.
+ */
+export function parseGp(text: string): number {
+  const cleaned = text.trim().toLowerCase().replace(/[,\s]/g, "");
+  if (cleaned === "") return 0;
+  const match = cleaned.match(/^(\d*\.?\d+)([kmb]?)$/);
+  if (!match) {
+    // Fallback: keep digits only so one bad character can't zero the value.
+    const digits = cleaned.replace(/[^0-9]/g, "");
+    return digits ? Number(digits) : 0;
+  }
+  const value = parseFloat(match[1]);
+  const mult =
+    match[2] === "k"
+      ? 1_000
+      : match[2] === "m"
+        ? 1_000_000
+        : match[2] === "b"
+          ? 1_000_000_000
+          : 1;
+  return Math.round(value * mult);
+}
+
 /** DPS gained per million GP — much more readable than raw 1e-9 ratios. */
 export function fmtDpsPerM(dpsPerGp: number): string {
   const perM = dpsPerGp * 1_000_000;

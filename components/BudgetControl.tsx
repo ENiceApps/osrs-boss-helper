@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fmtGp } from "@/lib/format";
+import { fmtGp, parseGp } from "@/lib/format";
 import type { BudgetMode } from "@/lib/optimize/budget";
 
 interface Props {
@@ -76,10 +76,7 @@ export function BudgetControl({
   function handleGpInput(text: string) {
     setGpText(text);
     clearTimeout(commitTimer.current);
-    commitTimer.current = setTimeout(() => {
-      const parsed = Number(text.replace(/[^0-9]/g, ""));
-      onGpChange(Number.isFinite(parsed) ? parsed : 0);
-    }, 250);
+    commitTimer.current = setTimeout(() => onGpChange(parseGp(text)), 250);
   }
 
   function commitBudget(gpValue: number) {
@@ -96,8 +93,7 @@ export function BudgetControl({
 
   function handleBudgetInput(text: string) {
     setBudgetText(text);
-    const parsed = Number(text.replace(/[^0-9]/g, ""));
-    const gpValue = Number.isFinite(parsed) ? parsed : 0;
+    const gpValue = parseGp(text);
     setBudgetSlider(gpToSlider(gpValue));
     commitBudget(gpValue);
   }
@@ -123,10 +119,10 @@ export function BudgetControl({
               value={gpText}
               onChange={(e) => handleGpInput(e.target.value)}
               className="flex-1 min-w-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm"
-              placeholder="500000000"
+              placeholder="500m"
             />
             <span className="text-caption text-osrs-muted shrink-0 tabular-nums">
-              {fmtGp(Number(gpText.replace(/[^0-9]/g, "")) || 0)}
+              {fmtGp(parseGp(gpText))}
             </span>
           </label>
         )}
@@ -156,7 +152,7 @@ export function BudgetControl({
           value={budgetText}
           onChange={(e) => handleBudgetInput(e.target.value)}
           className="w-28 shrink-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm text-right tabular-nums"
-          placeholder="100000000"
+          placeholder="100m"
         />
       </div>
       <p className="text-caption text-osrs-muted mt-1">
