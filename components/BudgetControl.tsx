@@ -1,5 +1,11 @@
 "use client";
 
+// Wallet-GP and budget inputs for the setup panel. The wallet field accepts
+// k/m/b shorthand and goes read-only when the plugin reports live GP; the budget
+// amount uses a log-scaled slider (most upgrades happen below 200M, so a linear
+// slider would bunch them all into the low end). Shared by the gp-only, budget,
+// and wildy-risk modes.
+
 import { useEffect, useRef, useState } from "react";
 import { fmtGp, parseGp } from "@/lib/format";
 import type { BudgetMode } from "@/lib/optimize/budget";

@@ -1,5 +1,12 @@
 "use client";
 
+// Right-rail results: the headline DPS readout for the active loadout plus the
+// stats a player actually cares about — max hit (normal + special attack), the
+// selected offensive prayer (click to change), estimated kills/hour, and
+// profit/hour net of supply costs. In budget mode it also surfaces the upgrade
+// path, the sell-to-fund list, and totals. Pure presentation: every number
+// arrives as a prop from the boss page.
+
 import { useState } from "react";
 
 import { ItemIcon } from "@/components/ItemIcon";

@@ -1,3 +1,7 @@
+// Server-side proxy for the OSRS Wiki item mapping (id → name / icon / stats).
+// Exists so the browser never calls the wiki directly: we attach the required
+// User-Agent here and cache hard (the mapping changes rarely). Read-only GET.
+
 import { fetchWiki } from "@/lib/wikiApi";
 
 export const dynamic = "force-dynamic";

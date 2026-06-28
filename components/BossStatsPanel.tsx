@@ -1,5 +1,9 @@
 "use client";
 
+// Boss defensive-stats card: shows the target's defence level and its per-style
+// defence bonuses (stab/slash/crush/magic/ranged) so you can see why the
+// optimizer favours one attack style over another. Display-only.
+
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 
 interface Props {

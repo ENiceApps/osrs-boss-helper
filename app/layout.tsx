@@ -1,6 +1,9 @@
+// Root layout: global fonts, the Auth.js SessionProvider, the sticky AppHeader,
+// and the floating FeedbackButton wrap every page. Also sets the app-wide
+// <title>/description metadata.
+
 import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { FeedbackButton } from "@/components/FeedbackButton";
@@ -32,11 +35,9 @@ export default function RootLayout({
       className={`${inter.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SessionProvider>
-          <AppHeader />
-          <main className="flex-1">{children}</main>
-          <FeedbackButton />
-        </SessionProvider>
+        <AppHeader />
+        <main className="flex-1">{children}</main>
+        <FeedbackButton />
       </body>
     </html>
   );

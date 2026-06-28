@@ -14,7 +14,14 @@ function buildUserAgent(): string {
 }
 
 export async function fetchWiki(path: string, init?: RequestInit): Promise<Response> {
-  const url = path.startsWith("http") ? path : `${WIKI_BASE}${path}`;
+  // Only relative paths off the fixed wiki base are allowed — never an absolute
+  // URL. This keeps the helper from being coaxed into fetching an arbitrary host
+  // (defense-in-depth against SSRF); every caller passes a constant like
+  // "/latest" or "/mapping".
+  if (!path.startsWith("/")) {
+    throw new Error(`fetchWiki expects a relative path beginning with "/", got: ${path}`);
+  }
+  const url = `${WIKI_BASE}${path}`;
   return fetch(url, {
     ...init,
     headers: {

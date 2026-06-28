@@ -1,5 +1,11 @@
 "use client";
 
+// Client-side hooks for Grand Exchange data, fetched with SWR from our
+// same-origin API proxies (app/api/mapping and app/api/prices, which add the
+// OSRS-Wiki-required User-Agent server-side): useMapping() for the
+// id → name/icon mapping (cached ~1h) and the latest-prices hook below, plus
+// priceForItem helpers used throughout the UI.
+
 import useSWR from "swr";
 import type { LatestPriceEntry, MappingEntry } from "@/types/osrs";
 

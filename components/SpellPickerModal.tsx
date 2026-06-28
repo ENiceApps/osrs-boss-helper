@@ -1,5 +1,10 @@
 "use client";
 
+// Modal for choosing the combat spell a magic loadout casts. Lists spells across
+// the autocastable spellbooks, gated by the equipped weapon (which spellbooks it
+// can autocast and whether it meets each spell's staff requirement), each with
+// its effective max hit. Selecting null reverts to the optimizer's auto-pick.
+
 import { useEffect, useMemo, useState } from "react";
 import {
   ALL_SPELLS,

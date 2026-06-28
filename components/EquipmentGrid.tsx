@@ -1,5 +1,11 @@
 "use client";
 
+// The equipment "paper-doll" grid — one cell per worn slot (head, cape, weapon,
+// body, …) showing each item's icon. Items the player doesn't own are faded;
+// manually-edited slots get a gold outline; when clickable, a slot opens the
+// item picker and shows a "why this item" tooltip. Used by LoadoutPanel and
+// HybridPanel.
+
 import { useState } from "react";
 import { ItemIcon } from "./ItemIcon";
 import { fmtGp } from "@/lib/format";

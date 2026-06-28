@@ -1,5 +1,10 @@
 "use client";
 
+// "Sell to fund" checklist. In sell-to-fund mode the player picks which unused,
+// tradeable bank items to liquidate; their GE value bankrolls the upgrade path.
+// Sorted by value, with the optimizer's recommended sales pre-checked (★) and
+// all / none / recommended helpers.
+
 import { ItemIcon } from "@/components/ItemIcon";
 import { fmtGp } from "@/lib/format";
 import type { MappingEntry } from "@/types/osrs";

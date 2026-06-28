@@ -1,5 +1,9 @@
 "use client";
 
+// Item browser (/items): the full equipment catalog in a table you can sort by
+// any combat bonus and filter by slot, with live GE prices. A read-only
+// reference view — the actual gear optimizer lives on the boss pages.
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ITEM_CATALOG, type ItemCatalogEntry, type ItemCatalogSlot } from "@/data/items/catalog";
