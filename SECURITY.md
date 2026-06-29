@@ -9,7 +9,7 @@ safety of third-party tools, and so do we — this is meant to be auditable.
 Please report security issues **privately** so they can be fixed before public
 disclosure:
 
-- Email: **eliezer.d.nunez@gmail.com** (subject line starting with `SECURITY:`)
+- Email: **eniceapps@gmail.com** (subject line starting with `SECURITY:`)
 
 Please don't open a public GitHub issue for a vulnerability. We aim to
 acknowledge reports within a few days. Responsible disclosure is appreciated and
@@ -38,8 +38,9 @@ leave your machine.
 | Combat skill levels, GP, character name | RuneLite plugin (opt-in) | same local file |
 | The file's contents, while you use the app | read by your browser | in-memory in the browser tab only; never uploaded |
 
-The web app is fully usable on a **sample bank** with no plugin and no file.
-Your real data is only involved if you install the plugin and connect the file.
+The web app is fully usable with no plugin and no file: pick a boss and use
+**Budget mode** to plan the best setup for a GP cap. Your real data is only
+involved if you install the plugin and connect (or upload) the file.
 
 ## The only things the server does
 

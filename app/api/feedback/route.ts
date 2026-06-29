@@ -18,10 +18,11 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 // deployment keeps working until its env vars are renamed.
 const RESEND_KEY = process.env.RESEND_API_KEY ?? process.env.AUTH_RESEND_KEY ?? "";
 const EMAIL_FROM = process.env.EMAIL_FROM ?? process.env.AUTH_EMAIL_FROM ?? "onboarding@resend.dev";
-// Lowercased: Resend's sandbox sender (onboarding@resend.dev) matches the allowed
-// test recipient case-sensitively, and email is effectively case-insensitive, so
-// normalize to avoid a 403 on a capitalized address.
-const FEEDBACK_TO = (process.env.FEEDBACK_TO ?? "eliezer.d.nunez@gmail.com").toLowerCase();
+// The recipient comes ONLY from the environment — never hardcode a personal
+// address in (open-source) code. Unset → feedback is logged server-side instead
+// of emailed (see the fallback below). Lowercased because email is effectively
+// case-insensitive and Resend matches its sandbox recipient case-sensitively.
+const FEEDBACK_TO = (process.env.FEEDBACK_TO ?? "").toLowerCase();
 
 const MAX_MESSAGE = 4000;
 const MAX_EMAIL = 254;
@@ -80,10 +81,11 @@ export async function POST(req: Request) {
 <p><strong>Reply-to:</strong> ${escapeHtml(contact)}<br />
 ${fromPage ? `<strong>Page:</strong> ${escapeHtml(fromPage)}` : ""}</p>`;
 
-  // Dev fallback: no email service configured → log and succeed.
-  if (!RESEND_KEY) {
+  // No email service or no destination configured → log and succeed (dev, or a
+  // deployment that hasn't set both RESEND_API_KEY and FEEDBACK_TO yet).
+  if (!RESEND_KEY || !FEEDBACK_TO) {
     console.log(
-      `\n=== OSRS Boss Helper feedback ===\n${textLines.join("\n")}\n=== (set RESEND_API_KEY to email this to ${FEEDBACK_TO}) ===\n`,
+      `\n=== OSRS Boss Helper feedback ===\n${textLines.join("\n")}\n=== (set RESEND_API_KEY + FEEDBACK_TO to email this) ===\n`,
     );
     return Response.json({ ok: true });
   }
