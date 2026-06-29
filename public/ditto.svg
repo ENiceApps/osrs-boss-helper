@@ -1,0 +1,22 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ditto">
+  <!-- Ditto: the shape-shifting blob. A pale-purple gloopy body with a wavy
+       base, two dot eyes and a little squiggle mouth. Fixed colors on purpose —
+       it's a picture of Ditto, not an accent surface. -->
+  <path
+    d="M50 18
+       C 28 18, 14 34, 14 54
+       C 14 66, 18 74, 18 80
+       Q 24 79, 27 83 Q 31 88, 35 83
+       Q 39 78, 43 83 Q 47 88, 50 83
+       Q 53 78, 57 83 Q 61 88, 65 83
+       Q 69 78, 73 83 Q 77 87, 82 80
+       C 82 74, 86 66, 86 54
+       C 86 34, 72 18, 50 18 Z"
+    fill="#b79ad4" stroke="#6e5295" stroke-width="2.5" stroke-linejoin="round" />
+  <!-- eyes -->
+  <ellipse cx="39" cy="50" rx="3.6" ry="5" fill="#23202a" />
+  <ellipse cx="61" cy="50" rx="3.6" ry="5" fill="#23202a" />
+  <!-- mouth: Ditto's flat squiggle -->
+  <path d="M41 64 q4.5 -4.5 9 0 q4.5 4.5 9 0" fill="none"
+        stroke="#23202a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

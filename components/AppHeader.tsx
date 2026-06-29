@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLiveBank, secondsSince } from "@/lib/liveBank";
+import { AccentPicker } from "@/components/AccentPicker";
 
 /**
  * App-wide sticky header. The local bank is global state (one connected file
@@ -32,6 +33,7 @@ export function AppHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
           <ConnectionStatus />
+          <AccentPicker />
         </div>
       </div>
     </header>

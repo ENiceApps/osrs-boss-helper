@@ -18,6 +18,12 @@
 :root {
   --background: #0d0f12; /* page background */
   --foreground: #ece6d8; /* primary text on the page background */
+
+  /* User-selectable highlight color (see components/AccentPicker.tsx). The
+     accent token below resolves to these, so swapping them at runtime re-tints
+     every `osrs-gold` surface. Defaults to the original gold. */
+  --accent: #d4af37;
+  --accent-light: #e8c869;
 }
 
 @theme inline {
@@ -29,8 +35,8 @@
   --color-parchment-raised: #20242c; /* elevated surface above a panel */
   --color-osrs-brown: #ece6d8;       /* primary text on panels (light) */
   --color-osrs-brown-light: #cfc8b8;
-  --color-osrs-gold: #d4af37;        /* accent */
-  --color-osrs-gold-light: #e8c869;
+  --color-osrs-gold: var(--accent);        /* accent (user-selectable) */
+  --color-osrs-gold-light: var(--accent-light);
   --color-osrs-blood: #c0392b;
 
   /* Muted text on a dark panel — warm grey, comfortably readable (~6:1). */
