@@ -768,18 +768,31 @@ export default function BossPage({
         <div className="flex items-start gap-4">
           {/* Boss NPC image — sourced from the OSRS wiki CDN. The image field
               in the catalog is the exact wiki filename (e.g. "Vardorvis.png").
-              We cap the display box so oversized renders don't blow the layout. */}
-          {monster.image && (
+              We cap the display box so oversized renders don't blow the layout.
+              Ditto is the synthetic sandbox boss with no wiki page, so it gets
+              the Pokémon Ditto picture (public/ditto.svg) instead. */}
+          {isDitto ? (
             <div className="shrink-0 osrs-panel rounded flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={wikiIconUrl(monster.image)}
-                alt={monster.name}
-                className="max-w-full max-h-full object-contain"
-                style={{ imageRendering: "pixelated" }}
-                onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+                src="/ditto.svg"
+                alt="Ditto"
+                className="max-w-full max-h-full object-contain p-1.5"
               />
             </div>
+          ) : (
+            monster.image && (
+              <div className="shrink-0 osrs-panel rounded flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={wikiIconUrl(monster.image)}
+                  alt={monster.name}
+                  className="max-w-full max-h-full object-contain"
+                  style={{ imageRendering: "pixelated" }}
+                  onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+                />
+              </div>
+            )
           )}
 
           <div className="flex-1 min-w-0">
