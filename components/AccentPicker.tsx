@@ -21,11 +21,15 @@ import {
 export function AccentPicker() {
   const [activeId, setActiveId] = useState<AccentId>(DEFAULT_ACCENT_ID);
 
-  // Apply the saved accent and sync the highlighted swatch on mount.
+  // Apply the saved accent and sync the highlighted swatch on mount. localStorage
+  // is unavailable during SSR, so this one-time read must run after mount — which
+  // makes the setState-in-effect legitimate here (same pattern as the boss page's
+  // hydration effect).
   useEffect(() => {
     const stored = localStorage.getItem(ACCENT_STORAGE_KEY) as AccentId | null;
     const accent = ACCENTS.find((a) => a.id === stored);
     if (accent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveId(accent.id);
       applyAccent(accent);
     }
