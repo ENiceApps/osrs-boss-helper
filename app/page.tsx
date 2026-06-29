@@ -1,5 +1,6 @@
 // Landing page (/): the app's front door — a type-ahead boss search, a few
-// popular quick-pick bosses, and a link into the full catalog. Server component.
+// popular quick-pick bosses, a link into the full catalog, and a short
+// "load your own bank" guide. Server component.
 
 import Link from "next/link";
 import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
@@ -19,6 +20,43 @@ const QUICK_PICK_SLUGS = [
   "vardorvis",
   "cerberus",
   "scurrius",
+];
+
+// The three steps to load your real bank, rendered as a numbered guide below.
+const BANK_STEPS = [
+  {
+    title: "Install the plugin",
+    body: (
+      <>
+        In RuneLite, open the <span className="text-osrs-brown">Plugin Hub</span>{" "}
+        and add <span className="text-osrs-brown font-semibold">OSRS Boss Helper Sync</span>,
+        then enable it. It only <em>reads</em> your game data and makes no network
+        requests.
+      </>
+    ),
+  },
+  {
+    title: "Open your bank in-game",
+    body: (
+      <>
+        Log in and open your bank once. The plugin saves a small{" "}
+        <code className="text-osrs-brown">bank.json</code> file on your own
+        computer — nothing is uploaded.
+      </>
+    ),
+  },
+  {
+    title: "Connect or upload it here",
+    body: (
+      <>
+        On any boss page, click{" "}
+        <span className="text-osrs-brown font-semibold">Connect bank file</span>{" "}
+        for live updates (Chrome/Edge/Brave), or{" "}
+        <span className="text-osrs-brown font-semibold">Upload bank.json</span>{" "}
+        once on any browser. Your data never leaves your machine.
+      </>
+    ),
+  },
 ];
 
 export default function HomePage() {
@@ -62,11 +100,43 @@ export default function HomePage() {
         Browse all {MONSTER_CATALOG.length} bosses →
       </Link>
 
-      <p className="text-caption text-osrs-muted mt-12 max-w-md">
-        Tip: install the OSRS Boss Helper Sync RuneLite plugin and connect the
-        bank file it writes to load your real gear, inventory, and skills — all
-        locally, nothing leaves your machine. Without it, the app demonstrates
-        everything on a sample bank.
+      {/* "Load your bank" guide — the recommendations are built from the gear you
+          actually own, so the most valuable first step is connecting/uploading
+          your bank. Kept simple and numbered so a newcomer can follow it. */}
+      <section className="osrs-panel rounded-lg mt-14 w-full max-w-xl p-5 sm:p-6 text-left">
+        <h2 className="section-title font-display text-lg font-semibold text-osrs-gold">
+          Load your own bank — in 3 steps
+        </h2>
+        <p className="text-caption text-osrs-muted mt-1">
+          Optional, but it lets the optimiser build setups from the gear you
+          really have. Free, private, and nothing leaves your computer.
+        </p>
+
+        <ol className="mt-4 space-y-3">
+          {BANK_STEPS.map((step, i) => (
+            <li key={step.title} className="flex gap-3">
+              <span
+                aria-hidden
+                className="flex-none w-6 h-6 rounded-full bg-osrs-gold text-background font-bold text-xs flex items-center justify-center mt-0.5"
+              >
+                {i + 1}
+              </span>
+              <p className="text-sm text-parchment-dark leading-snug">
+                <span className="text-osrs-brown font-semibold">{step.title}.</span>{" "}
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+
+        <p className="text-caption text-osrs-muted mt-4 border-t border-osrs-gold/15 pt-3">
+          No RuneLite? Pick any boss and use <span className="text-osrs-brown">Budget mode</span>{" "}
+          to plan the best setup for a GP budget — no bank needed.
+        </p>
+      </section>
+
+      <p className="text-caption text-osrs-muted mt-6">
+        Free &amp; open-source · fan-made, not affiliated with Jagex
       </p>
     </div>
   );

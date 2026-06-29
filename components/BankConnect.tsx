@@ -96,9 +96,9 @@ export function BankConnect() {
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="text-osrs-muted hover:underline"
+            className="text-osrs-brown hover:text-osrs-gold hover:underline"
           >
-            or import once
+            or upload bank.json
           </button>
         </div>
       ) : (
@@ -108,7 +108,7 @@ export function BankConnect() {
             onClick={() => fileInput.current?.click()}
             className="text-osrs-gold font-semibold hover:underline"
           >
-            Import bank.json →
+            Upload bank.json →
           </button>
           <p className="text-osrs-muted">
             Your browser can&apos;t auto-refresh — re-import after you bank in-game.

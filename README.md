@@ -49,8 +49,9 @@ prices, and **shareable loadout links** that encode a setup into a URL.
 
 **There is no backend that stores or even receives your bank.** The plugin
 writes a file on your machine; the browser reads it locally. Without the plugin
-(or without connecting the file), the app runs on a **sample bank** so you can
-try every feature.
+(or without connecting the file), the app runs in **Budget mode** — pick a boss
+and it builds the best setup for a GP cap, so you can try every feature with no
+setup.
 
 ## Data & trust model
 

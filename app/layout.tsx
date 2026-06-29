@@ -1,6 +1,7 @@
-// Root layout: global fonts, the Auth.js SessionProvider, the sticky AppHeader,
+// Root layout: global fonts, the accent-color bootstrap, the sticky AppHeader,
 // and the floating FeedbackButton wrap every page. Also sets the app-wide
-// <title>/description metadata.
+// metadata (title/description + social-share cards). No auth/session — the app
+// is fully client-side and stores no user data.
 
 import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
@@ -8,6 +9,7 @@ import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ACCENTS, ACCENT_STORAGE_KEY, DEFAULT_ACCENT_ID } from "@/lib/accent";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -19,10 +21,42 @@ const cinzel = Cinzel({
   subsets: ["latin"],
 });
 
+// metadataBase makes the file-based opengraph-image / icon resolve to absolute
+// URLs (required for social-share cards). The og:image + favicon <link> tags are
+// injected automatically from app/opengraph-image.tsx and app/icon.tsx.
 export const metadata: Metadata = {
-  title: "OSRS Boss Helper",
-  description:
-    "Pick any boss and get a DPS-optimised loadout built from your own bank, plus mechanics and spec weapons for the fight.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — DPS-optimised loadouts from your own bank`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "OSRS",
+    "Old School RuneScape",
+    "DPS calculator",
+    "gear loadout",
+    "best in slot",
+    "boss guide",
+    "RuneLite plugin",
+    "bossing",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
 // Apply the user's saved highlight color before first paint so a non-default
