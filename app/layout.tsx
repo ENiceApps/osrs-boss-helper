@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { AppHeader } from "@/components/AppHeader";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ACCENTS, ACCENT_STORAGE_KEY, DEFAULT_ACCENT_ID } from "@/lib/accent";
@@ -97,6 +98,7 @@ export default function RootLayout({
         <AppHeader />
         <main className="flex-1">{children}</main>
         <FeedbackButton />
+        <Analytics />
       </body>
     </html>
   );
