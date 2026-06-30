@@ -34,14 +34,4 @@ public interface BankSyncConfig extends Config {
     default int minSyncIntervalMs() {
         return 2000;
     }
-
-    @ConfigItem(
-        keyName = "appUrl",
-        name = "App web page",
-        description = "The OSRS Boss Helper web app, opened by the sidebar button.",
-        position = 3
-    )
-    default String appUrl() {
-        return "https://osrsbosshelper.com";
-    }
 }

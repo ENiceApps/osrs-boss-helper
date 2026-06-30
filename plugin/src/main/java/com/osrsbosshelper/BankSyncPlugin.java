@@ -77,6 +77,9 @@ public class BankSyncPlugin extends Plugin {
     private static final long BANK_FILE_VERSION = 1;
     private static final String OUTPUT_DIR = "osrs-boss-helper";
     private static final String OUTPUT_FILE = "bank.json";
+    // The web app the sidebar button opens. Hardcoded (not a config) so the panel
+    // stays simple — the app lives at one canonical URL.
+    private static final String APP_URL = "https://osrsbosshelper.com";
 
     @Inject private Client client;
     @Inject private ClientThread clientThread;
@@ -109,7 +112,7 @@ public class BankSyncPlugin extends Plugin {
             .tooltip("Open OSRS Boss Helper")
             .icon(createIcon())
             .priority(10)
-            .onClick(() -> LinkBrowser.browse(config.appUrl()))
+            .onClick(() -> LinkBrowser.browse(APP_URL))
             .build();
         clientToolbar.addNavigation(navButton);
     }
@@ -239,37 +242,33 @@ public class BankSyncPlugin extends Plugin {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
             }
             log.debug("Wrote {} items to {}", itemCount, dest);
-            announceSaveOnce(dest);
+            announceSaveOnce();
         } catch (IOException e) {
             log.warn("Failed to write bank file: {}", e.getMessage());
         }
     }
 
     /**
-     * On the first successful write of the session, drop a confirmation into the
-     * in-game chat box telling the player the file was saved, exactly where it
-     * lives, and what to do with it. Shown once per session (guarded by
-     * {@code announcedSave}) so a deposit-all / active banking run doesn't spam.
+     * On the first successful write of the session, drop a short confirmation into
+     * the in-game chat box telling the player the file was saved and what to do
+     * with it. Shown once per session (guarded by {@code announcedSave}) so an
+     * active banking run doesn't spam.
      *
-     * These lines are added to the LOCAL chat buffer only — nothing is sent to
-     * the server. Chat must be touched on the client thread, so we hop back onto
-     * it via {@code clientThread.invoke} (this method runs on the file-writer
-     * thread).
+     * These lines are added to the LOCAL chat buffer only — nothing is sent to the
+     * server. Chat must be touched on the client thread, so we hop back onto it via
+     * {@code clientThread.invoke} (this method runs on the file-writer thread).
      */
-    private void announceSaveOnce(Path dest) {
+    private void announceSaveOnce() {
         if (announcedSave) return;
         announcedSave = true;
 
-        final String path = dest.toString();
-        final String url = config.appUrl();
         clientThread.invoke(() -> {
+            // Colour the WHOLE line (not just the tag) so it stays readable on a
+            // transparent chat background.
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=ec9a29>[Boss Helper]</col> Bank file saved.", null);
+                "<col=ec9a29>[Boss Helper] Bank saved to your .runelite/" + OUTPUT_DIR + " folder.</col>", null);
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=ec9a29>[Boss Helper]</col> Location: " + path, null);
-            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=ec9a29>[Boss Helper]</col> Open " + url
-                    + " , click 'Connect bank file', then choose this file.", null);
+                "<col=ec9a29>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
         });
     }
 
