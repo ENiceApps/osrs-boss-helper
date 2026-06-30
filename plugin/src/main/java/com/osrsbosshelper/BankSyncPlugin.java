@@ -66,7 +66,7 @@ import net.runelite.client.util.LinkBrowser;
  */
 @Slf4j
 @PluginDescriptor(
-    name = "OSRS Boss Helper Sync",
+    name = "Boss Helper Bank Sync",
     description = "Writes your bank + skills + GP to a local file for the OSRS Boss Helper web app (no network)",
     tags = {"bank", "dps", "gear", "boss", "helper"}
 )
@@ -95,7 +95,7 @@ public class BankSyncPlugin extends Plugin {
 
     @Override
     protected void startUp() {
-        log.info("OSRS Boss Helper Sync enabled. Writing to {}/{}", OUTPUT_DIR, OUTPUT_FILE);
+        log.info("Boss Helper Bank Sync enabled. Writing to {}/{}", OUTPUT_DIR, OUTPUT_FILE);
         fileWriter = Executors.newSingleThreadExecutor();
 
         // Sidebar link to the web app. Purely a convenience button — it opens the
@@ -111,7 +111,7 @@ public class BankSyncPlugin extends Plugin {
 
     @Override
     protected void shutDown() {
-        log.info("OSRS Boss Helper Sync disabled.");
+        log.info("Boss Helper Bank Sync disabled.");
 
         if (navButton != null) {
             clientToolbar.removeNavigation(navButton);
