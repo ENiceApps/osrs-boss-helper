@@ -47,12 +47,15 @@ import net.runelite.client.util.LinkBrowser;
  * Architecture:
  *   - @Subscribe on ItemContainerChanged fires whenever bank/inventory/
  *     equipment updates in-game.
- *   - We throttle to one write per {@code minSyncIntervalMs} (default 2s) so a
+ *   - We throttle to one write per {@code MIN_SYNC_INTERVAL_MS} (2s) so a
  *     "deposit all" doesn't trigger 28 writes.
  *   - Game state is read on the client thread; the file is serialized and
  *     written on a background executor (disk IO must not run on the client
  *     thread) and is swapped in atomically (temp file + move) so the web app
  *     never reads a half-written file.
+ *   - On enable we also write once immediately, so the file (and the in-game
+ *     confirmation) reflect the current state right away rather than only after
+ *     the next bank change.
  *
  * Limitations / known gotchas:
  *   - InventoryID.BANK is only populated AFTER the player opens their bank at
@@ -80,6 +83,9 @@ public class BankSyncPlugin extends Plugin {
     // The web app the sidebar button opens. Hardcoded (not a config) so the panel
     // stays simple — the app lives at one canonical URL.
     private static final String APP_URL = "https://osrsbosshelper.com";
+    // Minimum gap between writes so a "deposit all" burst doesn't rewrite the file
+    // many times in a row. Hardcoded — 2s is the right balance for everyone.
+    private static final long MIN_SYNC_INTERVAL_MS = 2000;
 
     @Inject private Client client;
     @Inject private ClientThread clientThread;
@@ -115,6 +121,13 @@ public class BankSyncPlugin extends Plugin {
             .onClick(() -> LinkBrowser.browse(APP_URL))
             .build();
         clientToolbar.addNavigation(navButton);
+
+        // Write once on enable (when opted in and logged in) so the file — and the
+        // in-game confirmation — appear immediately, instead of only after the next
+        // bank/inventory change. Makes re-enabling the plugin show the message.
+        clientThread.invoke(() -> {
+            if (config.syncOnBankChange()) collectAndWrite();
+        });
     }
 
     @Override
@@ -147,7 +160,7 @@ public class BankSyncPlugin extends Plugin {
         if (!relevant) return;
 
         long now = System.currentTimeMillis();
-        if (now - lastSyncMs < config.minSyncIntervalMs()) return;
+        if (now - lastSyncMs < MIN_SYNC_INTERVAL_MS) return;
         lastSyncMs = now;
 
         // Read game state on the client thread (RuneLite's API is single-threaded).
@@ -249,10 +262,11 @@ public class BankSyncPlugin extends Plugin {
     }
 
     /**
-     * On the first successful write of the session, drop a confirmation into the
-     * in-game chat box telling the player the file was saved, exactly where it
-     * lives, and what to do with it. Shown once per session (guarded by
-     * {@code announcedSave}) so an active banking run doesn't spam.
+     * On the first successful write since the plugin was enabled, drop a
+     * confirmation into the in-game chat box telling the player the file was saved,
+     * exactly where it lives, and what to do with it. Shown once per enable
+     * (guarded by {@code announcedSave}, reset in startUp) so an active banking run
+     * doesn't spam.
      *
      * These lines are added to the LOCAL chat buffer only — nothing is sent to the
      * server. Chat must be touched on the client thread, so we hop back onto it via
@@ -268,11 +282,11 @@ public class BankSyncPlugin extends Plugin {
             // yellow-ish) chat background, so blue reads far better. The full path
             // is kept so the player knows exactly where to find the file.
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=1e90ff>[Boss Helper] Bank file saved.</col>", null);
+                "<col=0066cc>[Boss Helper] Bank file saved.</col>", null);
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=1e90ff>[Boss Helper] Location: " + path + "</col>", null);
+                "<col=0066cc>[Boss Helper] Location: " + path + "</col>", null);
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=1e90ff>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
+                "<col=0066cc>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
         });
     }
 
