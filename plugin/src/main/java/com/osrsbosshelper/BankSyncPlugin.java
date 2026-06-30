@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
@@ -84,6 +85,9 @@ public class BankSyncPlugin extends Plugin {
     @Inject private ClientToolbar clientToolbar;
 
     private long lastSyncMs = 0;
+    // First successful write of the session posts an in-game confirmation; this
+    // guards it so an active banking session doesn't spam the chat box.
+    private volatile boolean announcedSave = false;
     private NavigationButton navButton;
     // Disk writes happen here, off the client thread.
     private ExecutorService fileWriter;
@@ -97,6 +101,7 @@ public class BankSyncPlugin extends Plugin {
     protected void startUp() {
         log.info("Boss Helper Bank Sync enabled. Writing to {}/{}", OUTPUT_DIR, OUTPUT_FILE);
         fileWriter = Executors.newSingleThreadExecutor();
+        announcedSave = false;
 
         // Sidebar link to the web app. Purely a convenience button — it opens the
         // app in a browser and never touches the in-game bank or any interface.
@@ -234,9 +239,38 @@ public class BankSyncPlugin extends Plugin {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
             }
             log.debug("Wrote {} items to {}", itemCount, dest);
+            announceSaveOnce(dest);
         } catch (IOException e) {
             log.warn("Failed to write bank file: {}", e.getMessage());
         }
+    }
+
+    /**
+     * On the first successful write of the session, drop a confirmation into the
+     * in-game chat box telling the player the file was saved, exactly where it
+     * lives, and what to do with it. Shown once per session (guarded by
+     * {@code announcedSave}) so a deposit-all / active banking run doesn't spam.
+     *
+     * These lines are added to the LOCAL chat buffer only — nothing is sent to
+     * the server. Chat must be touched on the client thread, so we hop back onto
+     * it via {@code clientThread.invoke} (this method runs on the file-writer
+     * thread).
+     */
+    private void announceSaveOnce(Path dest) {
+        if (announcedSave) return;
+        announcedSave = true;
+
+        final String path = dest.toString();
+        final String url = config.appUrl();
+        clientThread.invoke(() -> {
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                "<col=ec9a29>[Boss Helper]</col> Bank file saved.", null);
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                "<col=ec9a29>[Boss Helper]</col> Location: " + path, null);
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                "<col=ec9a29>[Boss Helper]</col> Open " + url
+                    + " , click 'Connect bank file', then choose this file.", null);
+        });
     }
 
     /** Simple in-code sidebar icon so we don't ship a binary asset. */
