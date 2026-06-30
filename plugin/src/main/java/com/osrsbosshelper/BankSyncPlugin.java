@@ -242,33 +242,37 @@ public class BankSyncPlugin extends Plugin {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
             }
             log.debug("Wrote {} items to {}", itemCount, dest);
-            announceSaveOnce();
+            announceSaveOnce(dest);
         } catch (IOException e) {
             log.warn("Failed to write bank file: {}", e.getMessage());
         }
     }
 
     /**
-     * On the first successful write of the session, drop a short confirmation into
-     * the in-game chat box telling the player the file was saved and what to do
-     * with it. Shown once per session (guarded by {@code announcedSave}) so an
-     * active banking run doesn't spam.
+     * On the first successful write of the session, drop a confirmation into the
+     * in-game chat box telling the player the file was saved, exactly where it
+     * lives, and what to do with it. Shown once per session (guarded by
+     * {@code announcedSave}) so an active banking run doesn't spam.
      *
      * These lines are added to the LOCAL chat buffer only — nothing is sent to the
      * server. Chat must be touched on the client thread, so we hop back onto it via
      * {@code clientThread.invoke} (this method runs on the file-writer thread).
      */
-    private void announceSaveOnce() {
+    private void announceSaveOnce(Path dest) {
         if (announcedSave) return;
         announcedSave = true;
 
+        final String path = dest.toString();
         clientThread.invoke(() -> {
-            // Colour the WHOLE line (not just the tag) so it stays readable on a
-            // transparent chat background.
+            // Coloured BLUE: the gold/orange brand colour blends into the (often
+            // yellow-ish) chat background, so blue reads far better. The full path
+            // is kept so the player knows exactly where to find the file.
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=ec9a29>[Boss Helper] Bank saved to your .runelite/" + OUTPUT_DIR + " folder.</col>", null);
+                "<col=1e90ff>[Boss Helper] Bank file saved.</col>", null);
             client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=ec9a29>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
+                "<col=1e90ff>[Boss Helper] Location: " + path + "</col>", null);
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                "<col=1e90ff>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
         });
     }
 
