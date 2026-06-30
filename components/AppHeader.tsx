@@ -84,7 +84,7 @@ function ConnectionStatus() {
   return (
     <span
       className="hidden sm:inline-flex items-center gap-2 text-caption text-parchment-dark"
-      title="Connect the bank file the OSRS Boss Helper Sync plugin writes, or use Budget mode to plan without one."
+      title="Connect the bank file the Boss Helper Bank Sync plugin writes, or use Budget mode to plan without one."
     >
       <span aria-hidden className="w-2 h-2 rounded-full bg-osrs-muted" />
       No bank connected

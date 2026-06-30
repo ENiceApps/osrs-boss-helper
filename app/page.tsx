@@ -29,7 +29,7 @@ const BANK_STEPS = [
     body: (
       <>
         In RuneLite, open the <span className="text-osrs-brown">Plugin Hub</span>{" "}
-        and add <span className="text-osrs-brown font-semibold">OSRS Boss Helper Sync</span>,
+        and add <span className="text-osrs-brown font-semibold">Boss Helper Bank Sync</span>,
         then enable it. It only <em>reads</em> your game data and makes no network
         requests.
       </>

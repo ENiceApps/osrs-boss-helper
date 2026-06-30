@@ -216,7 +216,7 @@ export function LoadoutPanel<TabId extends string>({
 
       {!connected && (
         <p className="text-sm text-osrs-brown mb-3">
-          Connect the bank file the <strong>OSRS Boss Helper Sync</strong>
+          Connect the bank file the <strong>Boss Helper Bank Sync</strong>
           RuneLite plugin writes to load your bank, inventory, worn gear, and
           skills — then this builds the best loadout you can equip for this boss.
         </p>

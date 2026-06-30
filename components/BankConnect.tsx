@@ -80,7 +80,7 @@ export function BankConnect() {
   return (
     <div className="osrs-panel p-3 rounded text-caption text-osrs-brown leading-snug space-y-2">
       <p>
-        Connect the bank file the <strong>OSRS Boss Helper Sync</strong> RuneLite
+        Connect the bank file the <strong>Boss Helper Bank Sync</strong> RuneLite
         plugin writes to load your real gear — or use <strong>Budget</strong> mode
         below to plan without it.
       </p>

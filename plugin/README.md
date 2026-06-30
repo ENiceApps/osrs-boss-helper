@@ -1,6 +1,6 @@
-# OSRS Boss Helper Sync (RuneLite plugin)
+# Boss Helper Bank Sync (RuneLite plugin)
 
-A companion RuneLite plugin for the [OSRS Boss Helper](../README.md) web app. It
+A companion RuneLite plugin for the [OSRS Boss Helper](https://osrsbosshelper.com) web app. It
 writes your bank, inventory, worn equipment, combat skills, and GP to a **local
 file** that the web app reads in your browser, so it can recommend gear and
 compute DPS from what you actually own.

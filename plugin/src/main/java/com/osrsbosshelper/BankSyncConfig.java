@@ -42,6 +42,6 @@ public interface BankSyncConfig extends Config {
         position = 3
     )
     default String appUrl() {
-        return "https://osrs-boss-helper-2026.vercel.app";
+        return "https://osrsbosshelper.com";
     }
 }
