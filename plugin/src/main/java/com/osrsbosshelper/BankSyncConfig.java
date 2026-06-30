@@ -17,21 +17,11 @@ public interface BankSyncConfig extends Config {
     // this key or the @ConfigGroup without a migration — it resets users' settings.
     @ConfigItem(
         keyName = "syncOnBankChange",
-        name = "Write bank file on change",
-        description = "Write your bank, inventory, worn gear, skills, and GP to a local file whenever they change, for the OSRS Boss Helper web app to read. Nothing is sent over the network.",
+        name = "Save my bank & gear for the web app",
+        description = "Saves your bank, inventory, worn gear, skills, and GP to a local file for the OSRS Boss Helper web app to read. Updates automatically as you play; nothing is sent over the network.",
         position = 1
     )
     default boolean syncOnBankChange() {
         return false;
-    }
-
-    @ConfigItem(
-        keyName = "minSyncIntervalMs",
-        name = "Min write interval (ms)",
-        description = "Throttle: ignore bank-change events faster than this. Prevents repeated writes on rapid deposit-all operations.",
-        position = 2
-    )
-    default int minSyncIntervalMs() {
-        return 2000;
     }
 }
