@@ -10,6 +10,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ACCENTS, ACCENT_STORAGE_KEY, DEFAULT_ACCENT_ID } from "@/lib/accent";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -97,6 +98,7 @@ export default function RootLayout({
         <AppHeader />
         <main className="flex-1">{children}</main>
         <FeedbackButton />
+        <Analytics />
       </body>
     </html>
   );
