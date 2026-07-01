@@ -49,6 +49,7 @@ const NOTABLE_SLUGS = [
   "amoxliatl",
   "the-hueycoatl",
   "yama",
+  "maggot-king",
   // Slayer bosses
   "alchemical-hydra",
   "abyssal-sire",

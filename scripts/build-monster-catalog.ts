@@ -12,6 +12,7 @@ import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import monstersJson from "../data/vendor/wgloop/monsters.json" with { type: "json" };
+import { SUPPLEMENTAL_MONSTERS } from "../data/monsters/supplemental.js";
 import type { VendorMonster } from "../types/vendor.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -99,7 +100,19 @@ const STAT_OVERRIDES: Record<string, Partial<{ def: number; magic: number }>> = 
   "Vardorvis|Quest":      { def: 200 },
 };
 
-const monsters = (monstersJson as VendorMonster[]).map((m) => {
+// Fold in hand-authored monsters (brand-new releases not yet in the vendored
+// weirdgloop dump — see data/monsters/supplemental.ts). Skip any whose id is
+// already upstream so a future `npm run refresh-vendor` self-heals the overlap
+// and we never emit a duplicate catalog entry.
+const vendorMonsters = monstersJson as VendorMonster[];
+const vendorIds = new Set(vendorMonsters.map((m) => m.id));
+const supplemental = SUPPLEMENTAL_MONSTERS.filter((m) => !vendorIds.has(m.id));
+if (supplemental.length < SUPPLEMENTAL_MONSTERS.length) {
+  const shipped = SUPPLEMENTAL_MONSTERS.filter((m) => vendorIds.has(m.id)).map((m) => m.name);
+  console.log(`Note: dropped supplemental monsters now present upstream: ${shipped.join(", ")}`);
+}
+
+const monsters = [...vendorMonsters, ...supplemental].map((m) => {
   const key = `${m.name}|${m.version ?? ""}`;
   const patch = STAT_OVERRIDES[key];
   if (!patch) return m;

@@ -10537,6 +10537,34 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "maggot-king",
+    "wikiId": 15742,
+    "name": "Maggot King",
+    "version": "",
+    "combatLevel": 741,
+    "hp": 1500,
+    "defenceLevel": 200,
+    "magicLevel": 200,
+    "defenceBonuses": {
+      "stab": 172,
+      "slash": 100,
+      "crush": 45,
+      "magic": 150,
+      "rangedHeavy": 43,
+      "rangedStandard": 158,
+      "rangedLight": 232
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "fire",
+      "severity": 80
+    },
+    "image": "Maggot King.png",
+    "size": 5,
+    "maxHitText": "46 (Magic / Ranged), ~52 (Melee lunge)",
+    "isSlayerMonster": true
+  },
+  {
     "slug": "magic-axe",
     "wikiId": 2844,
     "name": "Magic axe",
@@ -18469,6 +18497,33 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 5,
     "maxHitText": "19",
     "isSlayerMonster": false
+  },
+  {
+    "slug": "venator",
+    "wikiId": 15765,
+    "name": "Venator",
+    "version": "",
+    "combatLevel": 246,
+    "hp": 345,
+    "defenceLevel": 120,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": -5,
+      "slash": 20,
+      "crush": 90,
+      "magic": 100,
+      "rangedHeavy": -5,
+      "rangedStandard": -5,
+      "rangedLight": -5
+    },
+    "attributes": [
+      "vampyre3"
+    ],
+    "weakness": null,
+    "image": "Venator (1).png",
+    "size": 2,
+    "maxHitText": "21",
+    "isSlayerMonster": true
   },
   {
     "slug": "venenatis",

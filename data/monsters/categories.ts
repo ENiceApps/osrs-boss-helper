@@ -92,6 +92,7 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "doom-of-mokhaiotl": "late",
   "alchemical-hydra": "late",
   "araxxor": "late",
+  "maggot-king": "late", // Blood Moon Rises solo boss (Phosani's–Inferno tier)
 
   // --- Chambers of Xeric (CoX) ---
   "great-olm": "cox",
@@ -136,6 +137,7 @@ const SLAYER_BOSSES = new Set<string>([
   "dusk",
   "skotizo",
   "araxxor",
+  "maggot-king", // assigned as a boss task by Konar/Nieve/Duradel
   // Count toward another creature's Slayer task
   "vorkath", // blue dragon
   "tormented-demon", // greater demon
