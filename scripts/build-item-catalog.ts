@@ -12,11 +12,22 @@ import requirementsJson from "../data/vendor/wiki/item-requirements.json" with {
 import { REQUIREMENT_OVERRIDES } from "../data/items/requirement-overrides.js";
 import { STAT_OVERRIDES } from "../data/items/stat-overrides.js";
 import { EXCLUDED_ITEM_NAMES, EXCLUDED_NAME_PATTERNS } from "../data/items/excluded-items.js";
+import { SUPPLEMENTAL_ITEMS } from "../data/items/supplemental.js";
 import type { VendorEquipmentItem } from "../types/vendor.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const allEquipment = equipmentJson as VendorEquipmentItem[];
+// Fold in hand-authored gear not yet in the vendored weirdgloop dump (brand-new
+// releases — see data/items/supplemental.ts). Skip any whose id is already
+// upstream so a future `npm run refresh-vendor` self-heals the overlap.
+const vendorEquipment = equipmentJson as VendorEquipmentItem[];
+const vendorItemIds = new Set(vendorEquipment.map((it) => it.id));
+const supplementalItems = SUPPLEMENTAL_ITEMS.filter((it) => !vendorItemIds.has(it.id));
+if (supplementalItems.length < SUPPLEMENTAL_ITEMS.length) {
+  const shipped = SUPPLEMENTAL_ITEMS.filter((it) => vendorItemIds.has(it.id)).map((it) => it.name);
+  console.log(`Note: dropped supplemental items now present upstream: ${shipped.join(", ")}`);
+}
+const allEquipment = [...vendorEquipment, ...supplementalItems];
 
 // Drop league-exclusive items (see data/items/excluded-items.ts). Sanity-check
 // that every excluded name matched at least one real item, so the list can't

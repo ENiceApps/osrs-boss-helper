@@ -195,6 +195,12 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Amethyst arrow": { class: "arrow", tier: 6 },
   "Dragon arrow": { class: "arrow", tier: 7 },
 
+  // Seeking arrows (post-The Blood Moon Rises quest) — same tier as their base
+  // metal, +20 ranged accuracy and a minimum hit of 3. Only PvM-relevant tiers.
+  "Seeking rune arrow": { class: "arrow", tier: 6 },
+  "Seeking amethyst arrow": { class: "arrow", tier: 6 },
+  "Seeking dragon arrow": { class: "arrow", tier: 7 },
+
   // Darts — for Blowpipe. Strength bonuses are large for Dragon dart.
   // Note: in the item catalog, darts have slot:"weapon" (they are thrown
   // weapons). They appear here so the preset codegen can validate blowpipe
