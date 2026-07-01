@@ -41,6 +41,27 @@ export const SUPPLEMENTAL_ITEMS: VendorEquipmentItem[] = [
     isTwoHanded: true,
   },
 
+  // Sunspear — untradeable 2h melee Spear, reward from The Blood Moon Rises
+  // quest ("A holy spear"). Untradeable, so it has no GE price: the optimizer
+  // offers it as a free untradeable PvE option (Budget mode) / from the bank
+  // (Own-only), like Avernic treads. Left OFF NON_PVE_UNTRADEABLE_IDS on
+  // purpose (it's legit PvE gear). Its anti-vampyre bonus is not modelled.
+  // Source: https://oldschool.runescape.wiki/w/Sunspear
+  {
+    id: 33722,
+    name: "Sunspear",
+    version: "",
+    slot: "weapon",
+    weight: 3,
+    image: "Sunspear.png",
+    speed: 5,
+    category: "Spear",
+    bonuses: { str: 70, ranged_str: 0, magic_str: 0, prayer: 7 },
+    offensive: { stab: 100, slash: 21, crush: 60, magic: 0, ranged: 0 },
+    defensive: { stab: 0, slash: 42, crush: 28, magic: 0, ranged: 0 },
+    isTwoHanded: true,
+  },
+
   // Necklace of rupture — BiS Ranged amulet, a straight upgrade over the
   // Necklace of anguish (arange 15→20, rstr 5→8, prayer 2→3). Crafted from an
   // etched elder venator fang + Necklace of anguish.
