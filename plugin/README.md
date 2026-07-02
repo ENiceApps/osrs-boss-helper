@@ -39,9 +39,11 @@ The file is small JSON:
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| Write bank file on change | **off** | Opt-in toggle. Off until you enable it. |
-| Min write interval (ms) | `2000` | Throttle so a "deposit all" doesn't write repeatedly. |
-| App web page | the hosted app URL | Opened by the sidebar button. |
+| Save my bank & gear for the web app | **off** | The only setting — an opt-in toggle. Off until you enable it. |
+
+Writes are throttled to one per 2 seconds (hardcoded) so a "deposit all" doesn't
+rewrite the file repeatedly, and the sidebar button always opens
+[osrsbosshelper.com](https://osrsbosshelper.com) (also hardcoded).
 
 ## Building & testing
 
@@ -60,13 +62,16 @@ guide.
 
 ## Plugin Hub status
 
-Because this plugin **makes no network requests and only writes inside the
-RuneLite directory**, it does not "expose player information over HTTP" and meets
-the Data & Privacy restriction that the previous network-sync design could not.
-It's also opt-in by default, permissively licensed (BSD-2), Java 11, and free of
-template cruft.
+**Live on the RuneLite Plugin Hub** — search "Boss Helper Bank Sync" in the
+in-client Plugin Hub. The canonical source for the Hub build is the standalone
+repo [ENiceApps/boss-helper-bank-sync](https://github.com/ENiceApps/boss-helper-bank-sync);
+this `plugin/` directory is the same code vendored into the app monorepo (synced
+via `git subtree split`).
 
-Before any Hub submission, set a real `author` in `runelite-plugin.properties`.
+Because the plugin **makes no network requests and only writes inside the
+RuneLite directory**, it does not "expose player information over HTTP" and meets
+the Hub's Data & Privacy restrictions. It's also opt-in by default, permissively
+licensed (BSD-2), and Java 11.
 
 ## License
 

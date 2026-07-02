@@ -12,7 +12,7 @@ for the fight.
 
 ## What it does
 
-- **Boss catalog** — every monster in the game with ≥ 200 HP (~235 targets),
+- **Boss catalog** — every monster in the game with ≥ 200 HP (~725 targets),
   searchable, on one dynamic page (`/boss/[slug]`).
 - **Bank-driven optimizer** — given the items you own, your skills, and your GP,
   it builds the highest-DPS setup it can from *your* gear (no canned "BiS" sets).
