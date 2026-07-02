@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
@@ -48,7 +51,10 @@ import net.runelite.client.util.LinkBrowser;
  *   - @Subscribe on ItemContainerChanged fires whenever bank/inventory/
  *     equipment updates in-game.
  *   - We throttle to one write per {@code MIN_SYNC_INTERVAL_MS} (2s) so a
- *     "deposit all" doesn't trigger 28 writes.
+ *     "deposit all" doesn't trigger 28 writes. Changes landing inside the
+ *     window schedule ONE trailing write at the window's end, so the last
+ *     change of a burst always reaches disk (a leading-edge-only throttle
+ *     would drop it and leave bank.json stale until the next change).
  *   - Game state is read on the client thread; the file is serialized and
  *     written on a background executor (disk IO must not run on the client
  *     thread) and is swapped in atomically (temp file + move) so the web app
@@ -92,8 +98,14 @@ public class BankSyncPlugin extends Plugin {
     @Inject private BankSyncConfig config;
     @Inject private Gson gson;
     @Inject private ClientToolbar clientToolbar;
+    // RuneLite's shared scheduled executor — used only for the trailing-edge
+    // throttle write below (the task itself hops back onto the client thread).
+    @Inject private ScheduledExecutorService executor;
 
-    private long lastSyncMs = 0;
+    // Written from the client thread (leading edge) and the scheduled-executor
+    // thread (trailing edge), hence volatile.
+    private volatile long lastSyncMs = 0;
+    private volatile ScheduledFuture<?> pendingSync;
     // First successful write of the session posts an in-game confirmation; this
     // guards it so an active banking session doesn't spam the chat box.
     private volatile boolean announcedSave = false;
@@ -138,6 +150,12 @@ public class BankSyncPlugin extends Plugin {
             clientToolbar.removeNavigation(navButton);
             navButton = null;
         }
+        // Cancel any pending trailing write — the executor is RuneLite's shared
+        // one, so cancel the task rather than touching the executor itself.
+        if (pendingSync != null) {
+            pendingSync.cancel(false);
+            pendingSync = null;
+        }
         if (fileWriter != null) {
             fileWriter.shutdownNow();
             fileWriter = null;
@@ -160,11 +178,24 @@ public class BankSyncPlugin extends Plugin {
         if (!relevant) return;
 
         long now = System.currentTimeMillis();
-        if (now - lastSyncMs < MIN_SYNC_INTERVAL_MS) return;
-        lastSyncMs = now;
+        long sinceLast = now - lastSyncMs;
+        if (sinceLast >= MIN_SYNC_INTERVAL_MS) {
+            lastSyncMs = now;
+            // Read game state on the client thread (RuneLite's API is single-threaded).
+            clientThread.invoke(this::collectAndWrite);
+            return;
+        }
 
-        // Read game state on the client thread (RuneLite's API is single-threaded).
-        clientThread.invoke(this::collectAndWrite);
+        // Inside the throttle window: schedule ONE write for the window's end so
+        // the burst's final state still reaches disk. A single pending write is
+        // enough — when it fires it reads whatever the game state is then.
+        if (pendingSync == null || pendingSync.isDone()) {
+            pendingSync = executor.schedule(() -> {
+                if (!config.syncOnBankChange()) return;
+                lastSyncMs = System.currentTimeMillis();
+                clientThread.invoke(this::collectAndWrite);
+            }, MIN_SYNC_INTERVAL_MS - sinceLast, TimeUnit.MILLISECONDS);
+        }
     }
 
     private void collectAndWrite() {
@@ -235,6 +266,7 @@ public class BankSyncPlugin extends Plugin {
             int id = i.getId();
             if (id <= 0) continue; // empty slots are -1
             if (id == COINS_ITEM_ID) continue; // GP tracked separately
+            if (i.getQuantity() <= 0) continue; // bank placeholders are qty 0 — not owned
             acc.merge(id, i.getQuantity(), Integer::sum);
         }
     }

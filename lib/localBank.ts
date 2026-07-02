@@ -353,7 +353,11 @@ export function parseBankJson(text: string): ParsedBank | null {
     const r = it as Record<string, unknown>;
     const id = r.id;
     if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) continue;
-    const qty = typeof r.qty === "number" && r.qty > 0 ? Math.round(r.qty) : 1;
+    // qty 0 = a bank PLACEHOLDER (RuneLite reports those as quantity 0) — the
+    // player doesn't own the item, so skip it rather than default it to 1.
+    // A missing/malformed qty still defaults to 1 (lenient for hand-made files).
+    if (typeof r.qty === "number" && r.qty <= 0) continue;
+    const qty = typeof r.qty === "number" ? Math.max(1, Math.round(r.qty)) : 1;
     items.push({ id, qty });
   }
 
