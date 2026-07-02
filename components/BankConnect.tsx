@@ -6,7 +6,7 @@
 // player data of its own — everything flows through lib/localBank.ts, which keeps
 // the data in the browser.
 
-import { useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import {
   useLocalBank,
   localBankSupported,
@@ -23,7 +23,17 @@ const FILE_PATH = "…/.runelite/osrs-boss-helper/bank.json";
 export function BankConnect() {
   const s = useLocalBank();
   const fileInput = useRef<HTMLInputElement>(null);
-  const supported = localBankSupported();
+  // File System Access support is a window check, so it can't be read during
+  // the server prerender (no window → fallback branch) without the Chromium
+  // client hydrating a DIFFERENT branch — a hydration mismatch that made React
+  // throw the whole server-rendered tree away. useSyncExternalStore hydrates
+  // with the server snapshot (false) and re-renders with the real value after
+  // mount; the value never changes, so subscribe is a no-op.
+  const supported = useSyncExternalStore(
+    () => () => {},
+    () => localBankSupported(),
+    () => false,
+  );
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];

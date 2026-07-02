@@ -2,6 +2,7 @@
 // popular quick-pick bosses, a link into the full catalog, and a short
 // "load your own bank" guide. Server component.
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { BossSearch } from "@/components/BossSearch";
@@ -58,6 +59,10 @@ const BANK_STEPS = [
     ),
   },
 ];
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage() {
   const quickPicks = QUICK_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(

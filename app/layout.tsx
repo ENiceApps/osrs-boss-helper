@@ -43,7 +43,9 @@ export const metadata: Metadata = {
     "RuneLite plugin",
     "bossing",
   ],
-  alternates: { canonical: "/" },
+  // NOTE: no `alternates.canonical` here — layout metadata cascades to every
+  // page, so a site-wide canonical of "/" would mark all pages as duplicates
+  // of the home page. Each page declares its own canonical instead.
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -92,7 +94,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {process.env.NODE_ENV === "production" && (
-          // eslint-disable-next-line @next/next/no-sync-scripts
           <script dangerouslySetInnerHTML={{ __html: accentBootstrap }} />
         )}
         <AppHeader />
