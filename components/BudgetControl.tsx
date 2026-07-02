@@ -65,7 +65,7 @@ export function BudgetControl({
   const showCapSlider = mode === "budget" || mode === "wildy-risk";
   const showWalletGp = mode === "gp-only" || mode === "sell-to-fund";
   const [gpText, setGpText] = useState(() => String(gp));
-  const [budgetText, setBudgetText] = useState(() => String(budgetGp));
+  const [budgetText, setBudgetText] = useState(() => budgetGp.toLocaleString());
   const [budgetSlider, setBudgetSlider] = useState(() => gpToSlider(budgetGp));
   const commitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const budgetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -93,15 +93,22 @@ export function BudgetControl({
   function handleBudgetSlider(pos: number) {
     setBudgetSlider(pos);
     const gpValue = sliderToGp(pos);
-    setBudgetText(String(gpValue));
+    setBudgetText(gpValue.toLocaleString());
     commitBudget(gpValue);
   }
 
   function handleBudgetInput(text: string) {
+    // Keep whatever the user is typing verbatim (raw digits, shorthand like
+    // "10m", or partial input) — reformatting mid-keystroke would fight the
+    // cursor. Comma-formatting is applied on blur instead.
     setBudgetText(text);
     const gpValue = parseGp(text);
     setBudgetSlider(gpToSlider(gpValue));
     commitBudget(gpValue);
+  }
+
+  function handleBudgetBlur() {
+    setBudgetText(parseGp(budgetText).toLocaleString());
   }
 
   // own-only ignores GP entirely — no control to show.
@@ -157,6 +164,7 @@ export function BudgetControl({
           inputMode="text"
           value={budgetText}
           onChange={(e) => handleBudgetInput(e.target.value)}
+          onBlur={handleBudgetBlur}
           className="w-28 shrink-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm text-right tabular-nums"
           placeholder="100m"
         />
