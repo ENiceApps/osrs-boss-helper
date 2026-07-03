@@ -279,6 +279,9 @@ public class BankSyncPlugin extends Plugin {
             Files.createDirectories(dir);
             Path tmp = dir.resolve(OUTPUT_FILE + ".tmp");
             Path dest = dir.resolve(OUTPUT_FILE);
+            // Checked BEFORE the move: decides whether the chat confirmation is
+            // the full first-time setup message or the short "updated" one.
+            boolean firstCreate = !Files.exists(dest);
             Files.write(tmp, json.getBytes(StandardCharsets.UTF_8));
             try {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
@@ -287,7 +290,7 @@ public class BankSyncPlugin extends Plugin {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
             }
             log.debug("Wrote {} items to {}", itemCount, dest);
-            announceSaveOnce(dest);
+            announceSaveOnce(dest, firstCreate);
         } catch (IOException e) {
             log.warn("Failed to write bank file: {}", e.getMessage());
         }
@@ -295,30 +298,41 @@ public class BankSyncPlugin extends Plugin {
 
     /**
      * On the first successful write since the plugin was enabled, drop a
-     * confirmation into the in-game chat box telling the player the file was saved,
-     * exactly where it lives, and what to do with it. Shown once per enable
-     * (guarded by {@code announcedSave}, reset in startUp) so an active banking run
-     * doesn't spam.
+     * confirmation into the in-game chat box. Which message depends on whether the
+     * write CREATED bank.json:
+     *   - first-ever creation → the full setup walkthrough (file saved, exactly
+     *     where it lives, and what to do with it) — the player has never seen the
+     *     file before, so they need the path;
+     *   - file already existed → a single short "updated" line, so toggling the
+     *     plugin (or relogging) doesn't replay the whole walkthrough every time.
+     * Shown once per enable (guarded by {@code announcedSave}, reset in startUp)
+     * so an active banking run doesn't spam a line every throttled write.
      *
      * These lines are added to the LOCAL chat buffer only — nothing is sent to the
      * server. Chat must be touched on the client thread, so we hop back onto it via
      * {@code clientThread.invoke} (this method runs on the file-writer thread).
      */
-    private void announceSaveOnce(Path dest) {
+    private void announceSaveOnce(Path dest, boolean firstCreate) {
         if (announcedSave) return;
         announcedSave = true;
 
         final String path = dest.toString();
         clientThread.invoke(() -> {
             // Coloured BLUE: the gold/orange brand colour blends into the (often
-            // yellow-ish) chat background, so blue reads far better. The full path
-            // is kept so the player knows exactly where to find the file.
-            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=0066cc>[Boss Helper] Bank file saved.</col>", null);
-            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=0066cc>[Boss Helper] Location: " + path + "</col>", null);
-            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-                "<col=0066cc>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
+            // yellow-ish) chat background, so blue reads far better.
+            if (firstCreate) {
+                // The full path is included so the player knows exactly where to
+                // find the file they're about to connect/upload.
+                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                    "<col=0066cc>[Boss Helper] Bank file created.</col>", null);
+                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                    "<col=0066cc>[Boss Helper] Location: " + path + "</col>", null);
+                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                    "<col=0066cc>[Boss Helper] Open osrsbosshelper.com, then Connect or Upload this file.</col>", null);
+            } else {
+                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+                    "<col=0066cc>[Boss Helper] Bank file updated.</col>", null);
+            }
         });
     }
 

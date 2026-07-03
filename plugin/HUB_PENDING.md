@@ -20,6 +20,13 @@ than sending the maintainers a PR per tweak.
   quantity 0 and aren't owned; `addContainerItems` now filters them out of the
   payload.
 
+- **Quieter chat confirmations** (2026-07-03) — the full 3-line setup message
+  (with the bank.json path and connect instructions) previously replayed on
+  every plugin enable/toggle. It now appears only when the write actually
+  *creates* bank.json for the first time; when the file already exists, the
+  player gets a single short "[Boss Helper] Bank file updated." line instead
+  (still once per enable, so active banking doesn't spam chat).
+
 _Add future plugin changes above this line as they land._
 
 ## Release procedure (when ready)
