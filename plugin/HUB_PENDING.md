@@ -7,6 +7,12 @@ than sending the maintainers a PR per tweak.
 **Hub currently serves:** standalone-repo commit `1167044c6abfa83ab9c55169fa3f53e4016ccbd9`
 (merged via plugin-hub PR #13113 on 2026-07-01).
 
+**Release in flight:** everything below was pushed to the standalone repo as
+`2a4bfa5c7c8e988b366600f021f5dd9e0b5a6b4e` and submitted as plugin-hub
+[PR #13728](https://github.com/runelite/plugin-hub/pull/13728) on 2026-07-14.
+When it merges, move these items under a dated "Shipped" note and update the
+pinned commit above.
+
 ## Unreleased changes
 
 - **Trailing-edge write throttle** (monorepo commit `10f12b7`, 2026-07-02) —
