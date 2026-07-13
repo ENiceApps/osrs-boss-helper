@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 type Status = "idle" | "sending" | "sent" | "error";
 
 /**
- * Floating "Feedback" button pinned to the bottom-right corner on every page
- * (mounted in app/layout.tsx). Opens a small modal with a message box and an
- * optional reply email, then POSTs to /api/feedback which emails the
- * maintainer. No sign-in required.
+ * Floating "Feedback" button pinned to the top-right corner, just below the
+ * sticky header, on every page (mounted in app/layout.tsx). Opens a small
+ * modal with a message box and an optional reply email, then POSTs to
+ * /api/feedback which emails the maintainer. No sign-in required.
  */
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
@@ -72,7 +72,7 @@ export function FeedbackButton() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-40 osrs-panel rounded-full px-4 py-2 text-sm font-semibold text-osrs-gold shadow-lg hover:bg-osrs-gold/15 transition-colors"
+          className="fixed top-16 right-4 z-40 osrs-panel rounded-full px-4 py-2 text-sm font-semibold text-osrs-gold shadow-lg hover:bg-osrs-gold/15 transition-colors"
           aria-label="Send feedback"
         >
           💬 Feedback
