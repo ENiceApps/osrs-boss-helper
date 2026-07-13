@@ -4,16 +4,17 @@ Changes to the plugin that are merged here in the monorepo but **not yet
 shipped to the RuneLite Plugin Hub**. We batch these into one Hub PR rather
 than sending the maintainers a PR per tweak.
 
-**Hub currently serves:** standalone-repo commit `1167044c6abfa83ab9c55169fa3f53e4016ccbd9`
-(merged via plugin-hub PR #13113 on 2026-07-01).
-
-**Release in flight:** everything below was pushed to the standalone repo as
-`2a4bfa5c7c8e988b366600f021f5dd9e0b5a6b4e` and submitted as plugin-hub
-[PR #13728](https://github.com/runelite/plugin-hub/pull/13728) on 2026-07-14.
-When it merges, move these items under a dated "Shipped" note and update the
-pinned commit above.
+**Hub currently serves:** standalone-repo commit `2a4bfa5c7c8e988b366600f021f5dd9e0b5a6b4e`
+(merged via [plugin-hub PR #13728](https://github.com/runelite/plugin-hub/pull/13728)
+on 2026-07-13).
 
 ## Unreleased changes
+
+_None — the Hub is in sync with `plugin/`._
+
+_Add future plugin changes above this line as they land._
+
+## Shipped 2026-07-13 (PR #13728, standalone `2a4bfa5`)
 
 - **Trailing-edge write throttle** (monorepo commit `10f12b7`, 2026-07-02) —
   the 2s throttle was leading-edge only, so the *last* container change in a
@@ -25,15 +26,12 @@ pinned commit above.
 - **Skip qty-0 items** (same commit) — bank placeholders are reported with
   quantity 0 and aren't owned; `addContainerItems` now filters them out of the
   payload.
-
 - **Quieter chat confirmations** (2026-07-03) — the full 3-line setup message
   (with the bank.json path and connect instructions) previously replayed on
   every plugin enable/toggle. It now appears only when the write actually
   *creates* bank.json for the first time; when the file already exists, the
   player gets a single short "[Boss Helper] Bank file updated." line instead
   (still once per enable, so active banking doesn't spam chat).
-
-_Add future plugin changes above this line as they land._
 
 ## Release procedure (when ready)
 
