@@ -31,6 +31,33 @@ const HP_FLOOR = 200;
 // version but the tag in the name).
 const EXCLUDED_TAGS = ["Echo", "Nightmare Zone"];
 
+interface DefenceBonuses {
+  stab: number;
+  slash: number;
+  crush: number;
+  magic: number;
+  rangedHeavy: number;
+  rangedStandard: number;
+  rangedLight: number;
+}
+
+/** One selectable phase/form of a monster — the combat-relevant stat block of
+ *  a vendor version. Spread over the parent entry to get the phased target. */
+interface PhaseEntry {
+  version: string;
+  wikiId: number;
+  combatLevel: number;
+  hp: number;
+  defenceLevel: number;
+  magicLevel: number;
+  defenceBonuses: DefenceBonuses;
+  attributes: string[];
+  weakness: { element: string; severity: number } | null;
+  image: string;
+  size: number;
+  maxHitText: string;
+}
+
 interface CatalogEntry {
   slug: string;
   /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */
@@ -41,15 +68,7 @@ interface CatalogEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
-  defenceBonuses: {
-    stab: number;
-    slash: number;
-    crush: number;
-    magic: number;
-    rangedHeavy: number;
-    rangedStandard: number;
-    rangedLight: number;
-  };
+  defenceBonuses: DefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
   image: string;
@@ -58,6 +77,30 @@ interface CatalogEntry {
   maxHitText: string;
   /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */
   isSlayerMonster: boolean;
+  /**
+   * Selectable phases/forms when the wiki records versions with DIFFERENT
+   * combat stats (Zulrah's forms, Verzik's phases, Muspah's shield, quest /
+   * post-quest / awakened variants…). First entry is the catalog default
+   * (same stats as the top-level fields). Omitted when every version is
+   * combat-identical.
+   */
+  phases?: PhaseEntry[];
+}
+
+// Upstream `max_hit` is free-form wiki infobox text: a bare number, a short
+// string ("30 (Magic)"), or raw HTML when a monster has several max hits —
+// either `<br>`-separated values or a `<div class="plainlist">` of
+// `*`-prefixed lines. Flatten all of those to plain " · "-separated text so
+// the UI never renders markup.
+function cleanMaxHit(raw: unknown): string {
+  if (raw == null) return "";
+  return String(raw)
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .split("\n")
+    .map((line) => line.replace(/^\s*\*\s*/, "").trim())
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function slugify(name: string): string {
@@ -77,7 +120,9 @@ const PREFERRED_VERSION: Record<string, string> = {
 
 function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMonster {
   if (candidates.length === 1) return candidates[0];
-  const named = (v: string) => candidates.find((c) => c.version === v);
+  // Prefix match tolerates compound labels ("Post-quest, Awake" — Duke Sucellus).
+  const named = (v: string) =>
+    candidates.find((c) => c.version === v || c.version?.startsWith(`${v},`));
   return (
     named(PREFERRED_VERSION[name]) ??
     named("Post-quest") ??
@@ -140,6 +185,71 @@ for (const m of eligible) {
   byName.set(m.name, list);
 }
 
+// Phase pool: EVERY non-excluded version of a name, ignoring the HP floor —
+// a real phase can sit below it (e.g. Phantom Muspah's "Shielded" object is
+// 75 HP) and must still be selectable on the parent's page.
+const phasePool = new Map<string, VendorMonster[]>();
+for (const m of monsters) {
+  if (!m.name) continue;
+  if (EXCLUDED_TAGS.some((tag) => m.version?.includes(tag) || m.name?.includes(tag))) continue;
+  const list = phasePool.get(m.name) ?? [];
+  list.push(m);
+  phasePool.set(m.name, list);
+}
+
+function toPhase(m: VendorMonster): PhaseEntry {
+  return {
+    version: m.version ?? "",
+    wikiId: m.id,
+    combatLevel: Number(m.level) || 0,
+    hp: m.skills.hp,
+    defenceLevel: m.skills.def,
+    magicLevel: m.skills.magic,
+    defenceBonuses: {
+      stab: m.defensive.stab,
+      slash: m.defensive.slash,
+      crush: m.defensive.crush,
+      magic: m.defensive.magic,
+      rangedHeavy: m.defensive.heavy,
+      rangedStandard: m.defensive.standard,
+      rangedLight: m.defensive.light,
+    },
+    attributes: m.attributes ?? [],
+    weakness: m.weakness ?? null,
+    image: m.image,
+    size: m.size,
+    maxHitText: cleanMaxHit(m.max_hit),
+  };
+}
+
+/** Combat identity of a version — versions that collide are the same fight
+ *  (recolours like Tormented Demon 1-4) and collapse to one phase. Display
+ *  fields (image, max-hit text, level) don't count. */
+function combatSig(m: VendorMonster): string {
+  return JSON.stringify([
+    m.skills.hp, m.skills.def, m.skills.magic, m.defensive,
+    m.attributes ?? [], m.weakness ?? null, m.size,
+  ]);
+}
+
+/** Distinct-stat phases for a name, primary first. undefined when the fight
+ *  only has one stat block. */
+function phasesFor(name: string, primary: VendorMonster): PhaseEntry[] | undefined {
+  const pool = phasePool.get(name) ?? [];
+  const seen = new Set<string>([combatSig(primary)]);
+  const out: PhaseEntry[] = [toPhase(primary)];
+  for (const m of pool) {
+    // Reference equality, not id — wgloop reuses one wiki id across versions
+    // (e.g. Vardorvis Awakened & Post-quest are both 12223).
+    if (m === primary) continue;
+    const sig = combatSig(m);
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push(toPhase(m));
+  }
+  return out.length >= 2 ? out : undefined;
+}
+
 const entries: CatalogEntry[] = [];
 const usedSlugs = new Set<string>();
 for (const [name, candidates] of byName) {
@@ -152,6 +262,7 @@ for (const [name, candidates] of byName) {
     slug = `${slug}-${i}`;
   }
   usedSlugs.add(slug);
+  const phases = phasesFor(name, primary);
   entries.push({
     slug,
     wikiId: primary.id,
@@ -176,9 +287,9 @@ for (const [name, candidates] of byName) {
     weakness: primary.weakness ?? null,
     image: primary.image,
     size: primary.size,
-    // Coerce defensively — upstream has both string ("30 (Magic)") and number (0) shapes.
-    maxHitText: primary.max_hit == null ? "" : String(primary.max_hit),
+    maxHitText: cleanMaxHit(primary.max_hit),
     isSlayerMonster: primary.is_slayer_monster ?? false,
+    ...(phases ? { phases } : {}),
   });
 }
 
@@ -252,6 +363,33 @@ lines.push(`// GENERATED FILE — do not edit by hand.`);
 lines.push(`// Run \`npm run build-monster-catalog\` to regenerate from data/vendor/wgloop/monsters.json.`);
 lines.push(`// Filter: HP >= ${HP_FLOOR} OR is_slayer_monster, excluding entries tagged ${JSON.stringify(EXCLUDED_TAGS)}.`);
 lines.push(``);
+lines.push(`export interface MonsterDefenceBonuses {`);
+lines.push(`  stab: number;`);
+lines.push(`  slash: number;`);
+lines.push(`  crush: number;`);
+lines.push(`  magic: number;`);
+lines.push(`  rangedHeavy: number;`);
+lines.push(`  rangedStandard: number;`);
+lines.push(`  rangedLight: number;`);
+lines.push(`}`);
+lines.push(``);
+lines.push(`/** One selectable phase/form of a monster. Spread over the parent entry`);
+lines.push(` *  (see lib/phases.ts applyPhase) to get the phased target. */`);
+lines.push(`export interface MonsterPhaseEntry {`);
+lines.push(`  version: string;`);
+lines.push(`  wikiId: number;`);
+lines.push(`  combatLevel: number;`);
+lines.push(`  hp: number;`);
+lines.push(`  defenceLevel: number;`);
+lines.push(`  magicLevel: number;`);
+lines.push(`  defenceBonuses: MonsterDefenceBonuses;`);
+lines.push(`  attributes: string[];`);
+lines.push(`  weakness: { element: string; severity: number } | null;`);
+lines.push(`  image: string;`);
+lines.push(`  size: number;`);
+lines.push(`  maxHitText: string;`);
+lines.push(`}`);
+lines.push(``);
 lines.push(`export interface MonsterCatalogEntry {`);
 lines.push(`  slug: string;`);
 lines.push(`  /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */`);
@@ -262,15 +400,7 @@ lines.push(`  combatLevel: number;`);
 lines.push(`  hp: number;`);
 lines.push(`  defenceLevel: number;`);
 lines.push(`  magicLevel: number;`);
-lines.push(`  defenceBonuses: {`);
-lines.push(`    stab: number;`);
-lines.push(`    slash: number;`);
-lines.push(`    crush: number;`);
-lines.push(`    magic: number;`);
-lines.push(`    rangedHeavy: number;`);
-lines.push(`    rangedStandard: number;`);
-lines.push(`    rangedLight: number;`);
-lines.push(`  };`);
+lines.push(`  defenceBonuses: MonsterDefenceBonuses;`);
 lines.push(`  attributes: string[];`);
 lines.push(`  weakness: { element: string; severity: number } | null;`);
 lines.push(`  image: string;`);
@@ -278,6 +408,8 @@ lines.push(`  size: number;`);
 lines.push(`  maxHitText: string;`);
 lines.push(`  /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */`);
 lines.push(`  isSlayerMonster: boolean;`);
+lines.push(`  /** Distinct-stat phases/forms (first = default). Omitted when the fight has one stat block. */`);
+lines.push(`  phases?: MonsterPhaseEntry[];`);
 lines.push(`}`);
 lines.push(``);
 lines.push(`export const MONSTER_CATALOG: MonsterCatalogEntry[] = ${JSON.stringify(entries, null, 2)};`);

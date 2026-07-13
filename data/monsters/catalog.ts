@@ -2,6 +2,33 @@
 // Run `npm run build-monster-catalog` to regenerate from data/vendor/wgloop/monsters.json.
 // Filter: HP >= 200 OR is_slayer_monster, excluding entries tagged ["Echo","Nightmare Zone"].
 
+export interface MonsterDefenceBonuses {
+  stab: number;
+  slash: number;
+  crush: number;
+  magic: number;
+  rangedHeavy: number;
+  rangedStandard: number;
+  rangedLight: number;
+}
+
+/** One selectable phase/form of a monster. Spread over the parent entry
+ *  (see lib/phases.ts applyPhase) to get the phased target. */
+export interface MonsterPhaseEntry {
+  version: string;
+  wikiId: number;
+  combatLevel: number;
+  hp: number;
+  defenceLevel: number;
+  magicLevel: number;
+  defenceBonuses: MonsterDefenceBonuses;
+  attributes: string[];
+  weakness: { element: string; severity: number } | null;
+  image: string;
+  size: number;
+  maxHitText: string;
+}
+
 export interface MonsterCatalogEntry {
   slug: string;
   /** Numeric monster ID from the weirdgloop/osrs-dps-calc dataset. 0 for synthetic entries. */
@@ -12,15 +39,7 @@ export interface MonsterCatalogEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
-  defenceBonuses: {
-    stab: number;
-    slash: number;
-    crush: number;
-    magic: number;
-    rangedHeavy: number;
-    rangedStandard: number;
-    rangedLight: number;
-  };
+  defenceBonuses: MonsterDefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
   image: string;
@@ -28,6 +47,8 @@ export interface MonsterCatalogEntry {
   maxHitText: string;
   /** True iff this monster can be assigned as a Slayer task (gates the on-task UI + bonus). */
   isSlayerMonster: boolean;
+  /** Distinct-stat phases/forms (first = default). Omitted when the fight has one stat block. */
+  phases?: MonsterPhaseEntry[];
 }
 
 export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
@@ -228,7 +249,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Abyssal Sire (phase 1).png",
     "size": 6,
     "maxHitText": "66 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Phase 1",
+        "wikiId": 5886,
+        "combatLevel": 350,
+        "hp": 425,
+        "defenceLevel": 250,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 60,
+          "crush": 50,
+          "magic": 20,
+          "rangedHeavy": 60,
+          "rangedStandard": 60,
+          "rangedLight": 60
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Abyssal Sire (phase 1).png",
+        "size": 6,
+        "maxHitText": "66 (Melee)"
+      },
+      {
+        "version": "Phase 3 (stage 2)",
+        "wikiId": 5908,
+        "combatLevel": 350,
+        "hp": 425,
+        "defenceLevel": 250,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 30,
+          "crush": 25,
+          "magic": -40,
+          "rangedHeavy": 30,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Abyssal Sire (phase 3, stage 2).png",
+        "size": 6,
+        "maxHitText": "66 (Melee)"
+      }
+    ]
   },
   {
     "slug": "acidic-araxyte",
@@ -482,7 +553,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Amoxliatl.png",
     "size": 3,
-    "maxHitText": "22 (standard)<br>34 (Icicle Crash)",
+    "maxHitText": "22 (standard) · 34 (Icicle Crash)",
     "isSlayerMonster": true
   },
   {
@@ -594,7 +665,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Angry bear (level 40).png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Level 40",
+        "wikiId": 1060,
+        "combatLevel": 40,
+        "hp": 200,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry bear (level 40).png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 47",
+        "wikiId": 4692,
+        "combatLevel": 47,
+        "hp": 50,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry bear (level 47).png",
+        "size": 2,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "angry-giant-rat",
@@ -619,7 +736,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Angry giant rat (level 45, 1).png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Level 45",
+        "wikiId": 1062,
+        "combatLevel": 45,
+        "hp": 200,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry giant rat (level 45, 1).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 47",
+        "wikiId": 4689,
+        "combatLevel": 47,
+        "hp": 50,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry giant rat (level 47, 1).png",
+        "size": 1,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "angry-goblin",
@@ -644,7 +807,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Angry goblin.png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Level 45",
+        "wikiId": 1065,
+        "combatLevel": 45,
+        "hp": 200,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry goblin.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 47",
+        "wikiId": 4691,
+        "combatLevel": 47,
+        "hp": 50,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry goblin.png",
+        "size": 1,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "angry-unicorn",
@@ -669,7 +878,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Angry unicorn.png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Level 45",
+        "wikiId": 1061,
+        "combatLevel": 45,
+        "hp": 200,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry unicorn.png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 47",
+        "wikiId": 4688,
+        "combatLevel": 47,
+        "hp": 50,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Angry unicorn.png",
+        "size": 2,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "ankou",
@@ -700,7 +955,149 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ankou.png",
     "size": 1,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 98",
+        "wikiId": 7864,
+        "combatLevel": 98,
+        "hp": 100,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Ankou.png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 75",
+        "wikiId": 2514,
+        "combatLevel": 75,
+        "hp": 60,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Ankou.png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 82",
+        "wikiId": 2515,
+        "combatLevel": 82,
+        "hp": 65,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Ankou.png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 86",
+        "wikiId": 2516,
+        "combatLevel": 86,
+        "hp": 70,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Ankou.png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 95",
+        "wikiId": 7257,
+        "combatLevel": 95,
+        "hp": 60,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Ankou.png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "aquanite",
@@ -725,7 +1122,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Aquanite.png",
     "size": 2,
     "maxHitText": "18",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Lure",
+        "wikiId": 15497,
+        "combatLevel": 145,
+        "hp": 180,
+        "defenceLevel": 70,
+        "magicLevel": 170,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 80,
+          "crush": 80,
+          "magic": 140,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Aquanite.png",
+        "size": 2,
+        "maxHitText": "18"
+      },
+      {
+        "version": "No lure",
+        "wikiId": 15498,
+        "combatLevel": 145,
+        "hp": 180,
+        "defenceLevel": 70,
+        "magicLevel": 170,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 80,
+          "crush": 80,
+          "magic": 140,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Aquanite (no lure).png",
+        "size": 2,
+        "maxHitText": "18"
+      }
+    ]
   },
   {
     "slug": "araxxor",
@@ -752,7 +1195,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Araxxor.png",
     "size": 7,
-    "maxHitText": "38 (melee) <br/> 21 (magic) <br/> 34 (ranged)",
+    "maxHitText": "38 (melee) · 21 (magic) · 34 (ranged)",
     "isSlayerMonster": true
   },
   {
@@ -781,7 +1224,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Araxyte (lv 146).png",
     "size": 2,
     "maxHitText": "17",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 146",
+        "wikiId": 11176,
+        "combatLevel": 146,
+        "hp": 100,
+        "defenceLevel": 70,
+        "magicLevel": 80,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 30,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Araxyte (lv 146).png",
+        "size": 2,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Level 96",
+        "wikiId": 11175,
+        "combatLevel": 96,
+        "hp": 60,
+        "defenceLevel": 60,
+        "magicLevel": 60,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 30,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Araxyte (lv 96).png",
+        "size": 1,
+        "maxHitText": "13"
+      }
+    ]
   },
   {
     "slug": "arianwyn",
@@ -1029,7 +1524,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Arzinian Avatar of Magic.png",
     "size": 1,
     "maxHitText": "15",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Invincible",
+        "wikiId": 1233,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 130,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Magic.png",
+        "size": 1,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 125",
+        "wikiId": 1234,
+        "combatLevel": 125,
+        "hp": 100,
+        "defenceLevel": 120,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 80,
+          "slash": 80,
+          "crush": 80,
+          "magic": 20,
+          "rangedHeavy": 15,
+          "rangedStandard": 15,
+          "rangedLight": 15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Magic (level 125).png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 75",
+        "wikiId": 1235,
+        "combatLevel": 75,
+        "hp": 70,
+        "defenceLevel": 75,
+        "magicLevel": 75,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 40,
+          "magic": 15,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Magic (level 75).png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "arzinian-avatar-of-ranging",
@@ -1054,7 +1617,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Arzinian Avatar of Ranging.png",
     "size": 1,
     "maxHitText": "17",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Invincible",
+        "wikiId": 1230,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 130,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Ranging.png",
+        "size": 1,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Level 125",
+        "wikiId": 1231,
+        "combatLevel": 125,
+        "hp": 100,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 15,
+          "slash": 15,
+          "crush": 15,
+          "magic": 80,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Ranging (level 125).png",
+        "size": 1,
+        "maxHitText": "14"
+      },
+      {
+        "version": "Level 75",
+        "wikiId": 1232,
+        "combatLevel": 75,
+        "hp": 70,
+        "defenceLevel": 75,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 40,
+          "rangedHeavy": 15,
+          "rangedStandard": 15,
+          "rangedLight": 15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Ranging (level 75).png",
+        "size": 1,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "arzinian-avatar-of-strength",
@@ -1079,7 +1710,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Arzinian Avatar of Strength.png",
     "size": 1,
     "maxHitText": "14",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Invincible",
+        "wikiId": 1227,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Strength.png",
+        "size": 1,
+        "maxHitText": "14"
+      },
+      {
+        "version": "Level 125",
+        "wikiId": 1228,
+        "combatLevel": 125,
+        "hp": 100,
+        "defenceLevel": 95,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 20,
+          "magic": 15,
+          "rangedHeavy": 80,
+          "rangedStandard": 80,
+          "rangedLight": 80
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Strength (level 125).png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 75",
+        "wikiId": 1229,
+        "combatLevel": 75,
+        "hp": 70,
+        "defenceLevel": 50,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 15,
+          "slash": 15,
+          "crush": 15,
+          "magic": 10,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Arzinian Avatar of Strength (level 75).png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "assassin",
@@ -1161,7 +1860,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Asyn Shade.png",
     "size": 1,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 1284,
+        "combatLevel": 100,
+        "hp": 90,
+        "defenceLevel": 70,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Asyn Shade.png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 1283,
+        "combatLevel": 100,
+        "hp": 90,
+        "defenceLevel": 70,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Asyn Shadow.png",
+        "size": 1,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "asyn-shadow-temple-trekking",
@@ -1269,7 +2027,414 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Aviansie (level 148).png",
     "size": 2,
     "maxHitText": "16",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 148",
+        "wikiId": 3176,
+        "combatLevel": 148,
+        "hp": 139,
+        "defenceLevel": 160,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 148).png",
+        "size": 2,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Level 131",
+        "wikiId": 3183,
+        "combatLevel": 131,
+        "hp": 115,
+        "defenceLevel": 175,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 131).png",
+        "size": 2,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 137",
+        "wikiId": 3175,
+        "combatLevel": 137,
+        "hp": 124,
+        "defenceLevel": 160,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 137).png",
+        "size": 2,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 69",
+        "wikiId": 3169,
+        "combatLevel": 69,
+        "hp": 70,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 69).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 71",
+        "wikiId": 3177,
+        "combatLevel": 71,
+        "hp": 63,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 71).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 73",
+        "wikiId": 3178,
+        "combatLevel": 73,
+        "hp": 67,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 73).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 79 (1)",
+        "wikiId": 3170,
+        "combatLevel": 79,
+        "hp": 83,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 79, 1).png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 79 (2)",
+        "wikiId": 3179,
+        "combatLevel": 79,
+        "hp": 77,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 79, 2).png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 83",
+        "wikiId": 3172,
+        "combatLevel": 83,
+        "hp": 86,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 83).png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 84",
+        "wikiId": 3171,
+        "combatLevel": 84,
+        "hp": 86,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 84).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 89",
+        "wikiId": 3180,
+        "combatLevel": 89,
+        "hp": 69,
+        "defenceLevel": 115,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 89).png",
+        "size": 2,
+        "maxHitText": "12"
+      },
+      {
+        "version": "Level 92",
+        "wikiId": 3173,
+        "combatLevel": 92,
+        "hp": 95,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 92).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 94",
+        "wikiId": 3181,
+        "combatLevel": 94,
+        "hp": 75,
+        "defenceLevel": 115,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 94).png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 97 (1)",
+        "wikiId": 3174,
+        "combatLevel": 97,
+        "hp": 98,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 97, 1).png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 97 (2)",
+        "wikiId": 3182,
+        "combatLevel": 97,
+        "hp": 79,
+        "defenceLevel": 115,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 45
+        },
+        "image": "Aviansie (level 97, 2).png",
+        "size": 2,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "ba-ba",
@@ -1324,7 +2489,60 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Baby black dragon.png",
     "size": 2,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 1871,
+        "combatLevel": 83,
+        "hp": 80,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 50,
+          "crush": 50,
+          "magic": 40,
+          "rangedHeavy": 5,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Baby black dragon.png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Myths' Guild",
+        "wikiId": 7955,
+        "combatLevel": 83,
+        "hp": 80,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 50,
+          "crush": 50,
+          "magic": 40,
+          "rangedHeavy": 5,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": null,
+        "image": "Baby black dragon.png",
+        "size": 2,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "baby-blue-dragon",
@@ -1354,7 +2572,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Baby blue dragon (1).png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "1",
+        "wikiId": 241,
+        "combatLevel": 48,
+        "hp": 50,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 50,
+          "crush": 50,
+          "magic": 40,
+          "rangedHeavy": 5,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Baby blue dragon (1).png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Ruins of Tapoyauik, 1",
+        "wikiId": 14105,
+        "combatLevel": 48,
+        "hp": 50,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 50,
+          "crush": 50,
+          "magic": 40,
+          "rangedHeavy": 5,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Baby blue dragon (Ruins of Tapoyauik, 1).png",
+        "size": 2,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "baby-red-dragon",
@@ -1436,7 +2710,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Balance Elemental (magic).png",
     "size": 3,
-    "maxHitText": "40 (standard)<br>89 (stat-draining)",
+    "maxHitText": "40 (standard) · 89 (stat-draining)",
     "isSlayerMonster": false
   },
   {
@@ -1492,7 +2766,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Bandit.png",
     "size": 1,
     "maxHitText": "12",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 130",
+        "wikiId": 6605,
+        "combatLevel": 130,
+        "hp": 155,
+        "defenceLevel": 57,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 23,
+          "crush": 22,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Bandit.png",
+        "size": 1,
+        "maxHitText": "12"
+      },
+      {
+        "version": "Level 22",
+        "wikiId": 1026,
+        "combatLevel": 22,
+        "hp": 27,
+        "defenceLevel": 17,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 3,
+          "crush": 2,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Bandit.png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "banshee",
@@ -1800,7 +3120,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Big Evil Chicken.png",
     "size": 3,
     "maxHitText": "26",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Annihilation",
+        "wikiId": 15547,
+        "combatLevel": 1047,
+        "hp": 3500,
+        "defenceLevel": 25,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 255,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Big Evil Chicken.png",
+        "size": 3,
+        "maxHitText": "26"
+      },
+      {
+        "version": "Factions",
+        "wikiId": 15547,
+        "combatLevel": 422,
+        "hp": 1000,
+        "defenceLevel": 25,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 255,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Big Evil Chicken.png",
+        "size": 3,
+        "maxHitText": "26"
+      }
+    ]
   },
   {
     "slug": "big-wolf",
@@ -1856,7 +3222,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Bird (level 11).png",
     "size": 1,
     "maxHitText": "2",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 11",
+        "wikiId": 5240,
+        "combatLevel": 11,
+        "hp": 10,
+        "defenceLevel": 10,
+        "magicLevel": 10,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 25
+        },
+        "image": "Bird (level 11).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 5",
+        "wikiId": 5241,
+        "combatLevel": 5,
+        "hp": 5,
+        "defenceLevel": 5,
+        "magicLevel": 5,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 25
+        },
+        "image": "Bird (level 5).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "black-bear",
@@ -1914,7 +3332,117 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Black demon.png",
     "size": 3,
     "maxHitText": "17",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 188",
+        "wikiId": 7874,
+        "combatLevel": 188,
+        "hp": 200,
+        "defenceLevel": 152,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Black demon.png",
+        "size": 3,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Level 172",
+        "wikiId": 240,
+        "combatLevel": 172,
+        "hp": 157,
+        "defenceLevel": 152,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Black demon.png",
+        "size": 3,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Level 178",
+        "wikiId": 7243,
+        "combatLevel": 178,
+        "hp": 160,
+        "defenceLevel": 175,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -5,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Black demon (5).png",
+        "size": 3,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Level 184",
+        "wikiId": 7242,
+        "combatLevel": 184,
+        "hp": 170,
+        "defenceLevel": 162,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Black demon (3).png",
+        "size": 3,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "black-demon-the-grand-tree",
@@ -2005,7 +3533,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Black dragon (3).png",
     "size": 4,
     "maxHitText": "22 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 247",
+        "wikiId": 7861,
+        "combatLevel": 247,
+        "hp": 250,
+        "defenceLevel": 200,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Black dragon (3).png",
+        "size": 4,
+        "maxHitText": "22 (Melee)"
+      },
+      {
+        "version": "Level 227",
+        "wikiId": 252,
+        "combatLevel": 227,
+        "hp": 190,
+        "defenceLevel": 200,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Black dragon.png",
+        "size": 4,
+        "maxHitText": "21 (Melee)"
+      }
+    ]
   },
   {
     "slug": "black-guard",
@@ -2030,7 +3616,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Black Guard (level 48, 1).png",
     "size": 1,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 48, 1",
+        "wikiId": 6046,
+        "combatLevel": 48,
+        "hp": 40,
+        "defenceLevel": 45,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 40,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Black Guard (level 48, 1).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 25, 1",
+        "wikiId": 1409,
+        "combatLevel": 25,
+        "hp": 30,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 3,
+          "slash": 4,
+          "crush": 4,
+          "magic": 2,
+          "rangedHeavy": 3,
+          "rangedStandard": 3,
+          "rangedLight": 3
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Black Guard (level 25, 1).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "black-guard-berserker",
@@ -2215,7 +3847,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Bloodveld.png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 484,
+        "combatLevel": 76,
+        "hp": 120,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Bloodveld.png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "GWD",
+        "wikiId": 3138,
+        "combatLevel": 81,
+        "hp": 134,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Bloodveld (God Wars Dungeon).png",
+        "size": 2,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "blue-dagannoth",
@@ -2274,7 +3956,93 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Blue dragon (2).png",
     "size": 4,
     "maxHitText": "10 (Slash)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "1",
+        "wikiId": 265,
+        "combatLevel": 111,
+        "hp": 105,
+        "defenceLevel": 95,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Blue dragon (2).png",
+        "size": 4,
+        "maxHitText": "10 (Slash)"
+      },
+      {
+        "version": "Ruins of Tapoyauik, 1",
+        "wikiId": 14103,
+        "combatLevel": 111,
+        "hp": 105,
+        "defenceLevel": 95,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 15,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Blue dragon (Ruins of Tapoyauik, 1).png",
+        "size": 4,
+        "maxHitText": "10 (Slash)"
+      },
+      {
+        "version": "Task only, 1",
+        "wikiId": 5878,
+        "combatLevel": 111,
+        "hp": 105,
+        "defenceLevel": 95,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 15,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Blue dragon (2).png",
+        "size": 4,
+        "maxHitText": "10 (Slash)"
+      }
+    ]
   },
   {
     "slug": "blue-moon",
@@ -2417,7 +4185,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Bronze dragon.png",
     "size": 4,
     "maxHitText": "14 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Catacombs of Kourend",
+        "wikiId": 7253,
+        "combatLevel": 143,
+        "hp": 122,
+        "defenceLevel": 112,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Bronze dragon.png",
+        "size": 4,
+        "maxHitText": "14 (Melee)"
+      },
+      {
+        "version": "Standard",
+        "wikiId": 270,
+        "combatLevel": 131,
+        "hp": 122,
+        "defenceLevel": 112,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Bronze dragon.png",
+        "size": 4,
+        "maxHitText": "12 (Melee)"
+      }
+    ]
   },
   {
     "slug": "brutal-black-dragon",
@@ -2479,7 +4305,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Brutal blue dragon.png",
     "size": 4,
     "maxHitText": "21 (Melee; Magic)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Catacombs of Kourend",
+        "wikiId": 7273,
+        "combatLevel": 271,
+        "hp": 245,
+        "defenceLevel": 198,
+        "magicLevel": 198,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Brutal blue dragon.png",
+        "size": 4,
+        "maxHitText": "21 (Melee; Magic)"
+      },
+      {
+        "version": "Ruins of Tapoyauik",
+        "wikiId": 13795,
+        "combatLevel": 271,
+        "hp": 245,
+        "defenceLevel": 198,
+        "magicLevel": 198,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Brutal blue dragon (Ruins of Tapoyauik).png",
+        "size": 4,
+        "maxHitText": "21 (Melee; Magic)"
+      }
+    ]
   },
   {
     "slug": "brutal-red-dragon",
@@ -2671,7 +4555,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Catablepon.png",
     "size": 2,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 64",
+        "wikiId": 2475,
+        "combatLevel": 64,
+        "hp": 70,
+        "defenceLevel": 50,
+        "magicLevel": 45,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 30,
+          "magic": 30,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Catablepon.png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 49",
+        "wikiId": 2474,
+        "combatLevel": 49,
+        "hp": 40,
+        "defenceLevel": 40,
+        "magicLevel": 60,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 30,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Catablepon.png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 68",
+        "wikiId": 2476,
+        "combatLevel": 68,
+        "hp": 50,
+        "defenceLevel": 60,
+        "magicLevel": 60,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 30,
+          "magic": 30,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Catablepon.png",
+        "size": 2,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "cave-abomination",
@@ -2724,7 +4676,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cave bug (level 96).png",
     "size": 2,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 96",
+        "wikiId": 483,
+        "combatLevel": 96,
+        "hp": 93,
+        "defenceLevel": 84,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 72,
+          "slash": 59,
+          "crush": 35,
+          "magic": 25,
+          "rangedHeavy": 95,
+          "rangedStandard": 95,
+          "rangedLight": 95
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Cave bug (level 96).png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 6",
+        "wikiId": 481,
+        "combatLevel": 6,
+        "hp": 5,
+        "defenceLevel": 6,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 5,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Cave bug (level 6).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "cave-crawler",
@@ -2752,7 +4756,56 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cave crawler (icy) (1).png",
     "size": 2,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Icy (1)",
+        "wikiId": 13800,
+        "combatLevel": 23,
+        "hp": 22,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 5,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Cave crawler (icy) (1).png",
+        "size": 2,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Standard (1)",
+        "wikiId": 406,
+        "combatLevel": 23,
+        "hp": 22,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 5,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cave crawler (1).png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "cave-goblin-monster",
@@ -2808,7 +4861,56 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cave goblin guard (level 24).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 24",
+        "wikiId": 5335,
+        "combatLevel": 24,
+        "hp": 26,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 15,
+          "crush": 19,
+          "magic": -3,
+          "rangedHeavy": 12,
+          "rangedStandard": 12,
+          "rangedLight": 12
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Cave goblin guard (level 24).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 26",
+        "wikiId": 5334,
+        "combatLevel": 26,
+        "hp": 26,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 1,
+          "slash": 16,
+          "crush": 19,
+          "magic": -3,
+          "rangedHeavy": 12,
+          "rangedStandard": 12,
+          "rangedLight": 12
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cave goblin guard (level 26).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "cave-goblin-miner",
@@ -2892,7 +4994,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cave kraken.png",
     "size": 2,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Cave kraken",
+        "wikiId": 492,
+        "combatLevel": 127,
+        "hp": 125,
+        "defenceLevel": 150,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -63,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Cave kraken.png",
+        "size": 2,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Whirlpool",
+        "wikiId": 493,
+        "combatLevel": 127,
+        "hp": 125,
+        "defenceLevel": 150,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -63,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "none",
+          "severity": 0
+        },
+        "image": "Whirlpool (cave kraken).png",
+        "size": 2,
+        "maxHitText": "13"
+      }
+    ]
   },
   {
     "slug": "cave-slime",
@@ -3136,7 +5290,56 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Chasm Crawler (icy).png",
     "size": 3,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Icy",
+        "wikiId": 14031,
+        "combatLevel": 68,
+        "hp": 60,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 41,
+          "slash": 43,
+          "crush": 23,
+          "magic": 24,
+          "rangedHeavy": 40,
+          "rangedStandard": 20,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Chasm Crawler (icy).png",
+        "size": 3,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Standard",
+        "wikiId": 7389,
+        "combatLevel": 68,
+        "hp": 60,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 41,
+          "slash": 43,
+          "crush": 23,
+          "magic": 24,
+          "rangedHeavy": 40,
+          "rangedStandard": 20,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Chasm Crawler.png",
+        "size": 3,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "chicken",
@@ -3602,7 +5805,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cow calf.png",
     "size": 2,
     "maxHitText": "1",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "1",
+        "wikiId": 2792,
+        "combatLevel": 2,
+        "hp": 6,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -26,
+          "slash": -26,
+          "crush": -26,
+          "magic": -26,
+          "rangedHeavy": -26,
+          "rangedStandard": -26,
+          "rangedLight": -26
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cow calf.png",
+        "size": 2,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Farmland",
+        "wikiId": 2801,
+        "combatLevel": 2,
+        "hp": 6,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -26,
+          "slash": -26,
+          "crush": -26,
+          "magic": -26,
+          "rangedHeavy": -26,
+          "rangedStandard": -26,
+          "rangedLight": -26
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cow calf.png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "crab",
@@ -3630,7 +5879,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Crab.png",
     "size": 2,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 23",
+        "wikiId": 4819,
+        "combatLevel": 23,
+        "hp": 19,
+        "defenceLevel": 26,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Crab.png",
+        "size": 2,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 21",
+        "wikiId": 4822,
+        "combatLevel": 21,
+        "hp": 18,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Crab.png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "crawling-hand",
@@ -3657,7 +5958,153 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Crawling Hand (level 12, 1).png",
     "size": 2,
     "maxHitText": "2",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 12 (1)",
+        "wikiId": 453,
+        "combatLevel": 12,
+        "hp": 19,
+        "defenceLevel": 7,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (level 12, 1).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 11 (unused)",
+        "wikiId": 455,
+        "combatLevel": 11,
+        "hp": 18,
+        "defenceLevel": 6,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (unused, 1).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 12 (unused 1)",
+        "wikiId": 456,
+        "combatLevel": 12,
+        "hp": 19,
+        "defenceLevel": 9,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (unused, 2).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 12 (unused 2)",
+        "wikiId": 457,
+        "combatLevel": 12,
+        "hp": 19,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (unused, 3).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 7",
+        "wikiId": 450,
+        "combatLevel": 7,
+        "hp": 15,
+        "defenceLevel": 3,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (level 7).png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 8 (1)",
+        "wikiId": 448,
+        "combatLevel": 8,
+        "hp": 16,
+        "defenceLevel": 4,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Crawling Hand (level 8).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "crazy-archaeologist",
@@ -3867,7 +6314,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cyclops (level 56, 2).png",
     "size": 2,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 106",
+        "wikiId": 2137,
+        "combatLevel": 106,
+        "hp": 150,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cyclops (level 56, 2).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 56",
+        "wikiId": 2463,
+        "combatLevel": 56,
+        "hp": 75,
+        "defenceLevel": 26,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cyclops.png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 76",
+        "wikiId": 2464,
+        "combatLevel": 76,
+        "hp": 100,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cyclops (level 76, 1).png",
+        "size": 2,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "cyclops-ardougne-zoo",
@@ -3917,7 +6432,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Cyclops (level 76, 2).png",
     "size": 2,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 76",
+        "wikiId": 7270,
+        "combatLevel": 76,
+        "hp": 100,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cyclops (level 76, 2).png",
+        "size": 2,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 56",
+        "wikiId": 7271,
+        "combatLevel": 56,
+        "hp": 75,
+        "defenceLevel": 26,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Cyclops (level 56, 4).png",
+        "size": 2,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "cyclops-god-wars-dungeon",
@@ -4026,7 +6587,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dagannoth.png",
     "size": 2,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 92 (1)",
+        "wikiId": 973,
+        "combatLevel": 92,
+        "hp": 120,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 50,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Dagannoth.png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 74 (1)",
+        "wikiId": 970,
+        "combatLevel": 74,
+        "hp": 70,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Dagannoth.png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "dagannoth-waterbirth-island",
@@ -4054,7 +6667,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dagannoth (Waterbirth Island, level 90).png",
     "size": 1,
     "maxHitText": "15",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 90",
+        "wikiId": 3185,
+        "combatLevel": 90,
+        "hp": 95,
+        "defenceLevel": 65,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 50,
+          "magic": 50,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Dagannoth (Waterbirth Island, level 90).png",
+        "size": 1,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 88",
+        "wikiId": 2259,
+        "combatLevel": 88,
+        "hp": 85,
+        "defenceLevel": 75,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 90,
+          "magic": 200,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Dagannoth (Waterbirth Island, level 88).png",
+        "size": 1,
+        "maxHitText": "20"
+      }
+    ]
   },
   {
     "slug": "dagannoth-fledgeling",
@@ -4274,7 +6939,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Damis.png",
     "size": 1,
     "maxHitText": "28",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Second form",
+        "wikiId": 683,
+        "combatLevel": 174,
+        "hp": 200,
+        "defenceLevel": 160,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 80,
+          "rangedHeavy": 120,
+          "rangedStandard": 120,
+          "rangedLight": 120
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Damis.png",
+        "size": 1,
+        "maxHitText": "28"
+      },
+      {
+        "version": "First form",
+        "wikiId": 682,
+        "combatLevel": 103,
+        "hp": 90,
+        "defenceLevel": 90,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 60,
+          "crush": 60,
+          "magic": 60,
+          "rangedHeavy": 60,
+          "rangedStandard": 60,
+          "rangedLight": 60
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Damis first form.png",
+        "size": 1,
+        "maxHitText": "22"
+      }
+    ]
   },
   {
     "slug": "dark-ankou",
@@ -4380,7 +7091,119 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dark warrior.png",
     "size": 1,
     "maxHitText": "18",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 145",
+        "wikiId": 6606,
+        "combatLevel": 145,
+        "hp": 165,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 106,
+          "slash": 109,
+          "crush": 139,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dark warrior.png",
+        "size": 1,
+        "maxHitText": "18"
+      },
+      {
+        "version": "Level 37",
+        "wikiId": 11111,
+        "combatLevel": 37,
+        "hp": 50,
+        "defenceLevel": 20,
+        "magicLevel": 10,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 20,
+          "crush": 40,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dark warrior.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 51",
+        "wikiId": 11110,
+        "combatLevel": 51,
+        "hp": 70,
+        "defenceLevel": 30,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 20,
+          "crush": 40,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dark warrior.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 62",
+        "wikiId": 11109,
+        "combatLevel": 62,
+        "hp": 80,
+        "defenceLevel": 40,
+        "magicLevel": 20,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 20,
+          "crush": 40,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dark warrior.png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 8",
+        "wikiId": 531,
+        "combatLevel": 8,
+        "hp": 17,
+        "defenceLevel": 5,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 96,
+          "slash": 79,
+          "crush": 59,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dark warrior.png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "dawn",
@@ -4796,7 +7619,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dire Wolf.png",
     "size": 2,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 88",
+        "wikiId": 3426,
+        "combatLevel": 88,
+        "hp": 85,
+        "defenceLevel": 75,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dire Wolf.png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 72",
+        "wikiId": 9181,
+        "combatLevel": 72,
+        "hp": 74,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dire Wolf (albino).png",
+        "size": 2,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Meat and Greet",
+        "wikiId": 13813,
+        "combatLevel": 72,
+        "hp": 10,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dire Wolf.png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "dire-wolf-alpha",
@@ -4928,8 +7819,178 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Doom of Mokhaiotl.png",
     "size": 5,
-    "maxHitText": "65 <br/>99 (charge)",
-    "isSlayerMonster": false
+    "maxHitText": "65 · 99 (charge)",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Delve 8",
+        "wikiId": 14707,
+        "combatLevel": 908,
+        "hp": 675,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "65 · 99 (charge)"
+      },
+      {
+        "version": "Deep Delve",
+        "wikiId": 14707,
+        "combatLevel": 908,
+        "hp": 625,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "65 · 99 (charge)"
+      },
+      {
+        "version": "Delve 1",
+        "wikiId": 14707,
+        "combatLevel": 558,
+        "hp": 525,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "47 · 60 (charge)"
+      },
+      {
+        "version": "Delve 2",
+        "wikiId": 14707,
+        "combatLevel": 608,
+        "hp": 550,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "50 · 60 (charge)"
+      },
+      {
+        "version": "Delve 3",
+        "wikiId": 14707,
+        "combatLevel": 658,
+        "hp": 575,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "50 · 80 (charge)"
+      },
+      {
+        "version": "Delve 4",
+        "wikiId": 14707,
+        "combatLevel": 708,
+        "hp": 600,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "80 (charge)"
+      },
+      {
+        "version": "Delve 6",
+        "wikiId": 14707,
+        "combatLevel": 808,
+        "hp": 650,
+        "defenceLevel": 90,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 300,
+          "slash": 300,
+          "crush": 60,
+          "magic": 160,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Doom of Mokhaiotl.png",
+        "size": 5,
+        "maxHitText": "99 (charge)"
+      }
+    ]
   },
   {
     "slug": "drake",
@@ -5121,14 +8182,14 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "duke-sucellus",
     "wikiId": 12191,
     "name": "Duke Sucellus",
-    "version": "Awakened, Awake",
-    "combatLevel": 1099,
-    "hp": 1697,
-    "defenceLevel": 316,
-    "magicLevel": 465,
+    "version": "Post-quest, Awake",
+    "combatLevel": 758,
+    "hp": 485,
+    "defenceLevel": 275,
+    "magicLevel": 310,
     "defenceBonuses": {
       "stab": 255,
-      "slash": 65,
+      "slash": 45,
       "crush": 190,
       "magic": 440,
       "rangedHeavy": 320,
@@ -5141,8 +8202,82 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Duke Sucellus.png",
     "size": 7,
-    "maxHitText": "81 (Melee)",
-    "isSlayerMonster": false
+    "maxHitText": "56 (Melee)",
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest, Awake",
+        "wikiId": 12191,
+        "combatLevel": 758,
+        "hp": 485,
+        "defenceLevel": 275,
+        "magicLevel": 310,
+        "defenceBonuses": {
+          "stab": 255,
+          "slash": 45,
+          "crush": 190,
+          "magic": 440,
+          "rangedHeavy": 320,
+          "rangedStandard": 320,
+          "rangedLight": 320
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Duke Sucellus.png",
+        "size": 7,
+        "maxHitText": "56 (Melee)"
+      },
+      {
+        "version": "Awakened, Awake",
+        "wikiId": 12191,
+        "combatLevel": 1099,
+        "hp": 1697,
+        "defenceLevel": 316,
+        "magicLevel": 465,
+        "defenceBonuses": {
+          "stab": 255,
+          "slash": 65,
+          "crush": 190,
+          "magic": 440,
+          "rangedHeavy": 320,
+          "rangedStandard": 320,
+          "rangedLight": 320
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Duke Sucellus.png",
+        "size": 7,
+        "maxHitText": "81 (Melee)"
+      },
+      {
+        "version": "Quest, Awake",
+        "wikiId": 12195,
+        "combatLevel": 538,
+        "hp": 330,
+        "defenceLevel": 215,
+        "magicLevel": 230,
+        "defenceBonuses": {
+          "stab": 210,
+          "slash": 30,
+          "crush": 160,
+          "magic": 400,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Duke Sucellus.png",
+        "size": 7,
+        "maxHitText": "36 (Melee)"
+      }
+    ]
   },
   {
     "slug": "dungeon-rat",
@@ -5169,7 +8304,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dungeon rat.png",
     "size": 2,
     "maxHitText": "2",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Full tail",
+        "wikiId": 2865,
+        "combatLevel": 12,
+        "hp": 12,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Dungeon rat.png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Small",
+        "wikiId": 3607,
+        "combatLevel": 12,
+        "hp": 12,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Dungeon rat.png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "dusk",
@@ -5199,7 +8384,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dusk.png",
     "size": 4,
     "maxHitText": "15 (melee) 33 (special attack)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "First form",
+        "wikiId": 7851,
+        "combatLevel": 248,
+        "hp": 450,
+        "defenceLevel": 100,
+        "magicLevel": 140,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "golem"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Dusk.png",
+        "size": 4,
+        "maxHitText": "15 (melee) 33 (special attack)"
+      },
+      {
+        "version": "Second form",
+        "wikiId": 7887,
+        "combatLevel": 328,
+        "hp": 450,
+        "defenceLevel": 150,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "golem"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Dusk (2nd form).png",
+        "size": 6,
+        "maxHitText": "26 (melee) · 15x2 (ranged) · 65 (special attack)"
+      }
+    ]
   },
   {
     "slug": "dust-devil",
@@ -5227,7 +8468,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dust devil.png",
     "size": 1,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Catacombs of Kourend",
+        "wikiId": 7249,
+        "combatLevel": 110,
+        "hp": 130,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 35
+        },
+        "image": "Dust devil.png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Smoke Dungeon",
+        "wikiId": 423,
+        "combatLevel": 93,
+        "hp": 105,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 35
+        },
+        "image": "Dust devil.png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "dwarf",
@@ -5252,7 +8545,229 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dwarf (Level 20).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Standard (Level 20)",
+        "wikiId": 292,
+        "combatLevel": 20,
+        "hp": 26,
+        "defenceLevel": 16,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Level 20).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Mining Guild (1)",
+        "wikiId": 294,
+        "combatLevel": 11,
+        "hp": 16,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Falador, 1).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Mining Guild (2)",
+        "wikiId": 295,
+        "combatLevel": 11,
+        "hp": 16,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Falador, 2).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Mining Guild (3)",
+        "wikiId": 296,
+        "combatLevel": 10,
+        "hp": 12,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Falador, 3).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Standard",
+        "wikiId": 290,
+        "combatLevel": 10,
+        "hp": 16,
+        "defenceLevel": 6,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Worker (3)",
+        "wikiId": 1403,
+        "combatLevel": 11,
+        "hp": 16,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 10,
+          "crush": 10,
+          "magic": 10,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Worker, 3).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Worker (5)",
+        "wikiId": 1405,
+        "combatLevel": 10,
+        "hp": 12,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Worker, 5).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Worker (6)",
+        "wikiId": 1406,
+        "combatLevel": 11,
+        "hp": 18,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Worker, 6).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Worker (7)",
+        "wikiId": 1407,
+        "combatLevel": 11,
+        "hp": 13,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Worker, 7).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Worker (8)",
+        "wikiId": 1408,
+        "combatLevel": 7,
+        "hp": 10,
+        "defenceLevel": 6,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 5,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf (Worker, 8).png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "dwarf-gang-member",
@@ -5277,7 +8792,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Dwarf gang member (1).png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 44",
+        "wikiId": 1354,
+        "combatLevel": 44,
+        "hp": 40,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 7,
+          "slash": 7,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 7,
+          "rangedStandard": 7,
+          "rangedLight": 7
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf gang member (1).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 48",
+        "wikiId": 1355,
+        "combatLevel": 48,
+        "hp": 25,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 7,
+          "slash": 7,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 7,
+          "rangedStandard": 7,
+          "rangedLight": 7
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf gang member (2).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 49",
+        "wikiId": 1356,
+        "combatLevel": 49,
+        "hp": 25,
+        "defenceLevel": 57,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 7,
+          "slash": 7,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 7,
+          "rangedStandard": 7,
+          "rangedLight": 7
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Dwarf gang member (3).png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "earth-warrior",
@@ -5332,7 +8915,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Earthen Nagua.png",
     "size": 2,
     "maxHitText": "13 total",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 14420,
+        "combatLevel": 128,
+        "hp": 160,
+        "defenceLevel": 40,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 50,
+          "crush": 50,
+          "magic": 60,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 15
+        },
+        "image": "Earthen Nagua.png",
+        "size": 2,
+        "maxHitText": "13 total"
+      },
+      {
+        "version": "Reinforced",
+        "wikiId": 14421,
+        "combatLevel": 128,
+        "hp": 160,
+        "defenceLevel": 40,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 70,
+          "crush": 10,
+          "magic": 60,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 15
+        },
+        "image": "Earthen Nagua (reinforced).png",
+        "size": 2,
+        "maxHitText": "13 total"
+      },
+      {
+        "version": "Weakened",
+        "wikiId": 14420,
+        "combatLevel": 128,
+        "hp": 160,
+        "defenceLevel": 40,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 60,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 15
+        },
+        "image": "Earthen Nagua (weakened).png",
+        "size": 2,
+        "maxHitText": "13 total"
+      }
+    ]
   },
   {
     "slug": "eclipse-moon",
@@ -5360,7 +9026,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Eclipse Moon.png",
     "size": 5,
     "maxHitText": "32 total 4+8+20",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Clone",
+        "wikiId": 13012,
+        "combatLevel": 329,
+        "hp": 500,
+        "defenceLevel": 60,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 100,
+          "crush": 100,
+          "magic": 500,
+          "rangedHeavy": 500,
+          "rangedStandard": 500,
+          "rangedLight": 500
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 15
+        },
+        "image": "Eclipse Moon.png",
+        "size": 5,
+        "maxHitText": "32 total 4+8+20"
+      },
+      {
+        "version": "Regular",
+        "wikiId": 13012,
+        "combatLevel": 329,
+        "hp": 500,
+        "defenceLevel": 60,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 100,
+          "crush": 100,
+          "magic": 500,
+          "rangedHeavy": 500,
+          "rangedStandard": 500,
+          "rangedLight": 500
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 15
+        },
+        "image": "Eclipse Moon.png",
+        "size": 5,
+        "maxHitText": "32 total 4+8+20"
+      }
+    ]
   },
   {
     "slug": "elder-aquanite",
@@ -5385,7 +9103,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Elder aquanite (lure).png",
     "size": 3,
     "maxHitText": "34 (normal)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Lure",
+        "wikiId": 15502,
+        "combatLevel": 305,
+        "hp": 400,
+        "defenceLevel": 180,
+        "magicLevel": 330,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 80,
+          "crush": 80,
+          "magic": 140,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Elder aquanite (lure).png",
+        "size": 3,
+        "maxHitText": "34 (normal)"
+      },
+      {
+        "version": "No lure",
+        "wikiId": 15503,
+        "combatLevel": 305,
+        "hp": 400,
+        "defenceLevel": 180,
+        "magicLevel": 330,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 80,
+          "crush": 80,
+          "magic": 140,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Elder aquanite (no lure).png",
+        "size": 3,
+        "maxHitText": "34 (normal)"
+      }
+    ]
   },
   {
     "slug": "elder-chaos-druid",
@@ -5544,7 +9308,109 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Elidinis' Warden (level-489, core-ejected).png",
     "size": 5,
     "maxHitText": "20",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Core-ejected",
+        "wikiId": 11755,
+        "combatLevel": 489,
+        "hp": 4500,
+        "defenceLevel": 100,
+        "magicLevel": 190,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 70,
+          "crush": 70,
+          "magic": -30,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Elidinis' Warden (level-489, core-ejected).png",
+        "size": 5,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Active",
+        "wikiId": 11753,
+        "combatLevel": 489,
+        "hp": 140,
+        "defenceLevel": 100,
+        "magicLevel": 190,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 70,
+          "crush": 70,
+          "magic": -30,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Elidinis' Warden (level-489).png",
+        "size": 5,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Damaged",
+        "wikiId": 11761,
+        "combatLevel": 544,
+        "hp": 880,
+        "defenceLevel": 150,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Elidinis' Warden (level-544).png",
+        "size": 5,
+        "maxHitText": "26"
+      },
+      {
+        "version": "Enraged",
+        "wikiId": 11761,
+        "combatLevel": 544,
+        "hp": 880,
+        "defenceLevel": 180,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Elidinis' Warden (level-544, immune).png",
+        "size": 5,
+        "maxHitText": "26"
+      }
+    ]
   },
   {
     "slug": "elvarg",
@@ -5650,7 +9516,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ent (lv 101).png",
     "size": 2,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Wilderness",
+        "wikiId": 6594,
+        "combatLevel": 101,
+        "hp": 105,
+        "defenceLevel": 75,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 70,
+          "crush": 70,
+          "magic": 40,
+          "rangedHeavy": 30,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Ent (lv 101).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Woodcutting Guild",
+        "wikiId": 7234,
+        "combatLevel": 86,
+        "hp": 75,
+        "defenceLevel": 75,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 70,
+          "crush": 70,
+          "magic": 40,
+          "rangedHeavy": 30,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Ent (lv 86).png",
+        "size": 2,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "entrana-firebird",
@@ -5780,7 +9698,177 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Feral Vampyre (Temple Trekking).png",
     "size": 1,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 130 (Temple Trekking)",
+        "wikiId": 5642,
+        "combatLevel": 130,
+        "hp": 185,
+        "defenceLevel": 30,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre (Temple Trekking).png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 100 (Temple Trekking)",
+        "wikiId": 5641,
+        "combatLevel": 100,
+        "hp": 135,
+        "defenceLevel": 30,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre (Temple Trekking).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 61",
+        "wikiId": 3237,
+        "combatLevel": 61,
+        "hp": 40,
+        "defenceLevel": 55,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre.png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 64 (Juvenile/Juvinate)",
+        "wikiId": 3707,
+        "combatLevel": 64,
+        "hp": 80,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Angry vampyre.png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 70 (Temple Trekking)",
+        "wikiId": 5640,
+        "combatLevel": 70,
+        "hp": 75,
+        "defenceLevel": 30,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre (Temple Trekking).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 72 (Spider)",
+        "wikiId": 3234,
+        "combatLevel": 72,
+        "hp": 50,
+        "defenceLevel": 65,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre (lv 72).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 77 (God Wars Dungeon)",
+        "wikiId": 3137,
+        "combatLevel": 77,
+        "hp": 60,
+        "defenceLevel": 81,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre1"
+        ],
+        "weakness": null,
+        "image": "Feral Vampyre (GWD).png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "fever-spider",
@@ -5838,7 +9926,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Fire giant (5).png",
     "size": 2,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 109",
+        "wikiId": 7251,
+        "combatLevel": 109,
+        "hp": 150,
+        "defenceLevel": 65,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 3,
+          "crush": 2,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 100
+        },
+        "image": "Fire giant (5).png",
+        "size": 2,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 104",
+        "wikiId": 7252,
+        "combatLevel": 104,
+        "hp": 130,
+        "defenceLevel": 120,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 10,
+          "crush": 10,
+          "magic": 50,
+          "rangedHeavy": -10,
+          "rangedStandard": -10,
+          "rangedLight": -10
+        },
+        "attributes": [
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 100
+        },
+        "image": "Fire giant (6).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 86",
+        "wikiId": 2075,
+        "combatLevel": 86,
+        "hp": 111,
+        "defenceLevel": 65,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 3,
+          "crush": 2,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 100
+        },
+        "image": "Fire giant.png",
+        "size": 2,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "fiyr-shade",
@@ -5870,7 +10041,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Fiyr Shade.png",
     "size": 1,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 1286,
+        "combatLevel": 120,
+        "hp": 110,
+        "defenceLevel": 85,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Fiyr Shade.png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 1285,
+        "combatLevel": 120,
+        "hp": 110,
+        "defenceLevel": 85,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Fiyr Shadow.png",
+        "size": 1,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "flambeed",
@@ -6242,7 +10472,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Frost dragon.png",
     "size": 4,
-    "maxHitText": "16 (Stab)<br/>50 (Dragonfire)",
+    "maxHitText": "16 (Stab) · 50 (Dragonfire)",
     "isSlayerMonster": true
   },
   {
@@ -6468,7 +10698,93 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ghost.png",
     "size": 1,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 77",
+        "wikiId": 2527,
+        "combatLevel": 77,
+        "hp": 80,
+        "defenceLevel": 68,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 55,
+          "slash": 55,
+          "crush": 5,
+          "magic": 55,
+          "rangedHeavy": 55,
+          "rangedStandard": 55,
+          "rangedLight": 55
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Ghost.png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 19",
+        "wikiId": 85,
+        "combatLevel": 19,
+        "hp": 25,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": 5,
+          "magic": -5,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Ghost.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 76",
+        "wikiId": 2531,
+        "combatLevel": 76,
+        "hp": 75,
+        "defenceLevel": 68,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 45,
+          "slash": 45,
+          "crush": 5,
+          "magic": -5,
+          "rangedHeavy": 45,
+          "rangedStandard": 45,
+          "rangedLight": 45
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Ghost.png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "ghost-grave-of-scorpius",
@@ -6691,7 +11007,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Giant goblin.png",
     "size": 2,
     "maxHitText": "27",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Annihilation",
+        "wikiId": 12452,
+        "combatLevel": 1022,
+        "hp": 3500,
+        "defenceLevel": 200,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -15,
+          "slash": -15,
+          "crush": -15,
+          "magic": -15,
+          "rangedHeavy": -15,
+          "rangedStandard": -15,
+          "rangedLight": -15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Giant goblin.png",
+        "size": 2,
+        "maxHitText": "27"
+      },
+      {
+        "version": "Apocalypse",
+        "wikiId": 12452,
+        "combatLevel": 347,
+        "hp": 750,
+        "defenceLevel": 250,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -15,
+          "slash": -15,
+          "crush": -15,
+          "magic": -15,
+          "rangedHeavy": -15,
+          "rangedStandard": -15,
+          "rangedLight": -15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Giant goblin.png",
+        "size": 2,
+        "maxHitText": "27"
+      },
+      {
+        "version": "Armageddon",
+        "wikiId": 12452,
+        "combatLevel": 397,
+        "hp": 1000,
+        "defenceLevel": 200,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -15,
+          "slash": -15,
+          "crush": -15,
+          "magic": -15,
+          "rangedHeavy": -15,
+          "rangedStandard": -15,
+          "rangedLight": -15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Giant goblin.png",
+        "size": 2,
+        "maxHitText": "27"
+      }
+    ]
   },
   {
     "slug": "giant-lobster",
@@ -6799,7 +11183,81 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Giant rat.png",
     "size": 2,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 26",
+        "wikiId": 2510,
+        "combatLevel": 26,
+        "hp": 25,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Giant rat.png",
+        "size": 2,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 3",
+        "wikiId": 2856,
+        "combatLevel": 3,
+        "hp": 5,
+        "defenceLevel": 2,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Giant rat.png",
+        "size": 2,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 6",
+        "wikiId": 2862,
+        "combatLevel": 6,
+        "hp": 10,
+        "defenceLevel": 2,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Giant rat.png",
+        "size": 2,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "giant-rat-scurrius",
@@ -6882,7 +11340,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Giant Rock Crab.png",
     "size": 2,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "1",
+        "wikiId": 2261,
+        "combatLevel": 137,
+        "hp": 180,
+        "defenceLevel": 200,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 225,
+          "slash": 200,
+          "crush": 175,
+          "magic": -10,
+          "rangedHeavy": 80,
+          "rangedStandard": 250,
+          "rangedLight": 250
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Giant Rock Crab.png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "2",
+        "wikiId": 5940,
+        "combatLevel": 137,
+        "hp": 180,
+        "defenceLevel": 200,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 225,
+          "slash": 200,
+          "crush": 175,
+          "magic": 10,
+          "rangedHeavy": 80,
+          "rangedStandard": 250,
+          "rangedLight": 250
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Giant Rock Crab.png",
+        "size": 2,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "giant-rockslug",
@@ -7028,7 +11538,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Giant spider (Level 50).png",
     "size": 1,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 50",
+        "wikiId": 2477,
+        "combatLevel": 50,
+        "hp": 50,
+        "defenceLevel": 31,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 10,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Giant spider (Level 50).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 2",
+        "wikiId": 3017,
+        "combatLevel": 2,
+        "hp": 5,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -10,
+          "slash": -10,
+          "crush": -10,
+          "magic": -10,
+          "rangedHeavy": -10,
+          "rangedStandard": -10,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Giant spider (Level 2).png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 27",
+        "wikiId": 3018,
+        "combatLevel": 27,
+        "hp": 32,
+        "defenceLevel": 21,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Giant spider (Level 27).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "glacies",
@@ -7103,7 +11690,97 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Goblin (level 13).png",
     "size": 1,
     "maxHitText": "2",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 13",
+        "wikiId": 3046,
+        "combatLevel": 13,
+        "hp": 16,
+        "defenceLevel": 7,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 4,
+          "slash": 6,
+          "crush": 8,
+          "magic": 4,
+          "rangedHeavy": 4,
+          "rangedStandard": 4,
+          "rangedLight": 4
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 13).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 2",
+        "wikiId": 3028,
+        "combatLevel": 2,
+        "hp": 5,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -15,
+          "slash": -15,
+          "crush": -15,
+          "magic": -15,
+          "rangedHeavy": -15,
+          "rangedStandard": -15,
+          "rangedLight": -15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin.png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 2 (armed)",
+        "wikiId": 5192,
+        "combatLevel": 2,
+        "hp": 5,
+        "defenceLevel": 4,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -15,
+          "slash": -15,
+          "crush": -15,
+          "magic": -15,
+          "rangedHeavy": -15,
+          "rangedStandard": -15,
+          "rangedLight": -15
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (armed).png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 5",
+        "wikiId": 3045,
+        "combatLevel": 5,
+        "hp": 12,
+        "defenceLevel": 4,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 5).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "goblin-goblin-village",
@@ -7153,7 +11830,119 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Goblin (level 17).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 17",
+        "wikiId": 2245,
+        "combatLevel": 17,
+        "hp": 18,
+        "defenceLevel": 14,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 17).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 12",
+        "wikiId": 2246,
+        "combatLevel": 12,
+        "hp": 15,
+        "defenceLevel": 13,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 12).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 12 (banner)",
+        "wikiId": 2247,
+        "combatLevel": 12,
+        "hp": 3,
+        "defenceLevel": 19,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 12, banner).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 13",
+        "wikiId": 2249,
+        "combatLevel": 13,
+        "hp": 13,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 13, GWD).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 15",
+        "wikiId": 2248,
+        "combatLevel": 15,
+        "hp": 16,
+        "defenceLevel": 19,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 15).png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "goblin-vault-of-war",
@@ -7178,7 +11967,119 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Goblin (level 25).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 25",
+        "wikiId": 2488,
+        "combatLevel": 25,
+        "hp": 26,
+        "defenceLevel": 17,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 14,
+          "slash": 16,
+          "crush": 18,
+          "magic": 14,
+          "rangedHeavy": 14,
+          "rangedStandard": 14,
+          "rangedLight": 14
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 25).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 11",
+        "wikiId": 2486,
+        "combatLevel": 11,
+        "hp": 7,
+        "defenceLevel": 7,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 11).png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 13",
+        "wikiId": 2485,
+        "combatLevel": 13,
+        "hp": 16,
+        "defenceLevel": 7,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 4,
+          "slash": 6,
+          "crush": 8,
+          "magic": 4,
+          "rangedHeavy": 4,
+          "rangedStandard": 4,
+          "rangedLight": 4
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 13, SoS).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 16",
+        "wikiId": 2487,
+        "combatLevel": 16,
+        "hp": 22,
+        "defenceLevel": 14,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 16, helmet).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 5",
+        "wikiId": 2484,
+        "combatLevel": 5,
+        "hp": 5,
+        "defenceLevel": 4,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Goblin (level 5, Stronghold).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "goblin-guard",
@@ -7286,8 +12187,94 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Great Olm.png",
     "size": 5,
-    "maxHitText": "27 <br/> 28 <br/> 29 (phase 4)",
-    "isSlayerMonster": false
+    "maxHitText": "27 · 28 · 29 (phase 4)",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Head (Normal)",
+        "wikiId": 7551,
+        "combatLevel": 1043,
+        "hp": 800,
+        "defenceLevel": 150,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 200,
+          "slash": 200,
+          "crush": 200,
+          "magic": 200,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "xerician"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Great Olm.png",
+        "size": 5,
+        "maxHitText": "27 · 28 · 29 (phase 4)"
+      },
+      {
+        "version": "Left claw (Normal)",
+        "wikiId": 7552,
+        "combatLevel": 750,
+        "hp": 600,
+        "defenceLevel": 175,
+        "magicLevel": 175,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 50,
+          "magic": 200,
+          "rangedHeavy": 200,
+          "rangedStandard": 200,
+          "rangedLight": 200
+        },
+        "attributes": [
+          "dragon",
+          "xerician"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Great Olm.png",
+        "size": 5,
+        "maxHitText": "0"
+      },
+      {
+        "version": "Right claw (Normal)",
+        "wikiId": 7550,
+        "combatLevel": 549,
+        "hp": 600,
+        "defenceLevel": 175,
+        "magicLevel": 87,
+        "defenceBonuses": {
+          "stab": 200,
+          "slash": 200,
+          "crush": 200,
+          "magic": 50,
+          "rangedHeavy": 200,
+          "rangedStandard": 200,
+          "rangedLight": 200
+        },
+        "attributes": [
+          "dragon",
+          "xerician"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Great Olm.png",
+        "size": 5,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "great-white-shark",
@@ -7369,7 +12356,144 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Greater demon (5).png",
     "size": 3,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 113",
+        "wikiId": 7246,
+        "combatLevel": 113,
+        "hp": 130,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Greater demon (5).png",
+        "size": 3,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 100",
+        "wikiId": 7245,
+        "combatLevel": 100,
+        "hp": 115,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Greater demon (4).png",
+        "size": 3,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 101",
+        "wikiId": 7244,
+        "combatLevel": 101,
+        "hp": 120,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Greater demon (2).png",
+        "size": 3,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 104 (Wilderness Slayer Cave)",
+        "wikiId": 7871,
+        "combatLevel": 104,
+        "hp": 120,
+        "defenceLevel": 81,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Greater demon.png",
+        "size": 3,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 92",
+        "wikiId": 2025,
+        "combatLevel": 92,
+        "hp": 87,
+        "defenceLevel": 81,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Greater demon.png",
+        "size": 3,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "greater-demon-the-scar",
@@ -7517,7 +12641,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Green dragon (3).png",
     "size": 4,
     "maxHitText": "8 (Slash)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 88",
+        "wikiId": 7868,
+        "combatLevel": 88,
+        "hp": 100,
+        "defenceLevel": 68,
+        "magicLevel": 75,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 40,
+          "crush": 40,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Green dragon (3).png",
+        "size": 4,
+        "maxHitText": "8 (Slash)"
+      },
+      {
+        "version": "Level 79",
+        "wikiId": 260,
+        "combatLevel": 79,
+        "hp": 75,
+        "defenceLevel": 68,
+        "magicLevel": 68,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 40,
+          "crush": 40,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Green dragon.png",
+        "size": 4,
+        "maxHitText": "8 (Slash)"
+      }
+    ]
   },
   {
     "slug": "grimy-lizard",
@@ -7570,7 +12752,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Grizzly bear (level 42).png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 42",
+        "wikiId": 3423,
+        "combatLevel": 42,
+        "hp": 35,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 20
+        },
+        "image": "Grizzly bear (level 42).png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 21",
+        "wikiId": 2838,
+        "combatLevel": 21,
+        "hp": 27,
+        "defenceLevel": 15,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 20
+        },
+        "image": "Grizzly bear (level 21).png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "grizzly-bear-escape-caves",
@@ -7626,7 +12860,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Grizzly bear cub (level 33).png",
     "size": 2,
     "maxHitText": "4",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 33",
+        "wikiId": 3424,
+        "combatLevel": 33,
+        "hp": 35,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 20
+        },
+        "image": "Grizzly bear cub (level 33).png",
+        "size": 2,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 36",
+        "wikiId": 3425,
+        "combatLevel": 36,
+        "hp": 35,
+        "defenceLevel": 28,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 20
+        },
+        "image": "Grizzly bear cub (level 36).png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "gryphon",
@@ -7707,7 +12993,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Guard (Cave goblin with bone club).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Bone club",
+        "wikiId": 2316,
+        "combatLevel": 26,
+        "hp": 26,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 1,
+          "slash": 16,
+          "crush": 19,
+          "magic": -3,
+          "rangedHeavy": 12,
+          "rangedStandard": 12,
+          "rangedLight": 12
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Guard (Cave goblin with bone club).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Bone spear",
+        "wikiId": 2317,
+        "combatLevel": 24,
+        "hp": 26,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 15,
+          "crush": 19,
+          "magic": -3,
+          "rangedHeavy": 12,
+          "rangedStandard": 12,
+          "rangedLight": 12
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Guard (Cave goblin with bone spear).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "guard-dwarf",
@@ -8008,7 +13340,87 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Hellhound.png",
     "size": 2,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 136",
+        "wikiId": 7877,
+        "combatLevel": 136,
+        "hp": 150,
+        "defenceLevel": 102,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Hellhound.png",
+        "size": 2,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 122",
+        "wikiId": 104,
+        "combatLevel": 122,
+        "hp": 116,
+        "defenceLevel": 102,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Hellhound.png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 127",
+        "wikiId": 3133,
+        "combatLevel": 127,
+        "hp": 116,
+        "defenceLevel": 106,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Hellhound (GWD).png",
+        "size": 2,
+        "maxHitText": "13"
+      }
+    ]
   },
   {
     "slug": "hespori",
@@ -8114,7 +13526,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Hobgoblin (God Wars Dungeon).png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Hobgoblin (GWD)",
+        "wikiId": 2241,
+        "combatLevel": 47,
+        "hp": 52,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Hobgoblin (God Wars Dungeon).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Hobgoblin",
+        "wikiId": 3049,
+        "combatLevel": 28,
+        "hp": 29,
+        "defenceLevel": 24,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Hobgoblin.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Hobgoblin (armed)",
+        "wikiId": 3050,
+        "combatLevel": 42,
+        "hp": 49,
+        "defenceLevel": 36,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 1,
+          "slash": 1,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Hobgoblin (armed).png",
+        "size": 1,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "hobgoblin-the-slug-menace",
@@ -8225,7 +13705,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ice giant.png",
     "size": 2,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Wilderness Slayer Cave 1",
+        "wikiId": 7878,
+        "combatLevel": 67,
+        "hp": 100,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 3,
+          "crush": 2,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice giant.png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "1",
+        "wikiId": 2085,
+        "combatLevel": 53,
+        "hp": 70,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 3,
+          "crush": 2,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice giant.png",
+        "size": 2,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "ice-spider",
@@ -8281,7 +13813,109 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ice troll (level 120, 1).png",
     "size": 1,
     "maxHitText": "21",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 120",
+        "wikiId": 650,
+        "combatLevel": 120,
+        "hp": 100,
+        "defenceLevel": 120,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice troll (level 120, 1).png",
+        "size": 1,
+        "maxHitText": "21"
+      },
+      {
+        "version": "Level 121",
+        "wikiId": 651,
+        "combatLevel": 121,
+        "hp": 90,
+        "defenceLevel": 110,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice troll (level 121, 1).png",
+        "size": 1,
+        "maxHitText": "23"
+      },
+      {
+        "version": "Level 123",
+        "wikiId": 649,
+        "combatLevel": 123,
+        "hp": 80,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice Troll (level 123).png",
+        "size": 1,
+        "maxHitText": "25"
+      },
+      {
+        "version": "Level 124",
+        "wikiId": 648,
+        "combatLevel": 124,
+        "hp": 80,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice Troll (level 124).png",
+        "size": 1,
+        "maxHitText": "25"
+      }
+    ]
   },
   {
     "slug": "ice-troll-female",
@@ -8309,7 +13943,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ice troll female.png",
     "size": 1,
     "maxHitText": "17",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Variant 1",
+        "wikiId": 5830,
+        "combatLevel": 82,
+        "hp": 80,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice troll female.png",
+        "size": 1,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Variant 2",
+        "wikiId": 1876,
+        "combatLevel": 82,
+        "hp": 80,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Ice troll female.png",
+        "size": 1,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "ice-troll-grunt",
@@ -8393,7 +14079,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ice troll male.png",
     "size": 1,
     "maxHitText": "17",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Variant 1",
+        "wikiId": 5829,
+        "combatLevel": 82,
+        "hp": 80,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice troll male.png",
+        "size": 1,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Variant 2",
+        "wikiId": 1875,
+        "combatLevel": 82,
+        "hp": 80,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Ice troll male.png",
+        "size": 1,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "ice-troll-runt",
@@ -8421,7 +14159,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ice troll runt.png",
     "size": 1,
     "maxHitText": "15",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Variant 1",
+        "wikiId": 5828,
+        "combatLevel": 74,
+        "hp": 60,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Ice troll runt.png",
+        "size": 1,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Variant 2",
+        "wikiId": 1874,
+        "combatLevel": 74,
+        "hp": 60,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 60,
+          "crush": 30,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Ice troll runt.png",
+        "size": 1,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "ice-warrior",
@@ -8507,7 +14297,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Icefiend.png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 18",
+        "wikiId": 3140,
+        "combatLevel": 18,
+        "hp": 20,
+        "defenceLevel": 19,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Icefiend.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 13",
+        "wikiId": 4813,
+        "combatLevel": 13,
+        "hp": 15,
+        "defenceLevel": 12,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Icefiend.png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "icelord",
@@ -8722,7 +14568,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Iron dragon.png",
     "size": 4,
     "maxHitText": "19 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Catacombs of Kourend",
+        "wikiId": 7254,
+        "combatLevel": 215,
+        "hp": 195,
+        "defenceLevel": 185,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Iron dragon.png",
+        "size": 4,
+        "maxHitText": "19 (Melee)"
+      },
+      {
+        "version": "Standard",
+        "wikiId": 272,
+        "combatLevel": 189,
+        "hp": 165,
+        "defenceLevel": 165,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Iron dragon.png",
+        "size": 4,
+        "maxHitText": "17 (Melee)"
+      }
+    ]
   },
   {
     "slug": "jackal",
@@ -9136,7 +15040,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Jhallan.png",
     "size": 2,
     "maxHitText": "26",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "",
+        "wikiId": 12353,
+        "combatLevel": 491,
+        "hp": 1500,
+        "defenceLevel": 250,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 200,
+          "slash": 200,
+          "crush": 200,
+          "magic": 300,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Jhallan.png",
+        "size": 2,
+        "maxHitText": "26"
+      },
+      {
+        "version": "",
+        "wikiId": 12353,
+        "combatLevel": 491,
+        "hp": 1,
+        "defenceLevel": 83,
+        "magicLevel": 83,
+        "defenceBonuses": {
+          "stab": 200,
+          "slash": 200,
+          "crush": 200,
+          "magic": 300,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Jhallan.png",
+        "size": 2,
+        "maxHitText": "26"
+      }
+    ]
   },
   {
     "slug": "jubbly-bird",
@@ -9246,7 +15196,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Jungle horror (pink eyes).png",
     "size": 2,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Guard",
+        "wikiId": 1046,
+        "combatLevel": 70,
+        "hp": 45,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Jungle horror (pink eyes).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Young warrior",
+        "wikiId": 1045,
+        "combatLevel": 70,
+        "hp": 45,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Jungle horror (blue eyes).png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "jungle-spider",
@@ -9473,7 +15475,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Kalphite Queen 2nd form.png",
     "size": 5,
     "maxHitText": "31",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Airborne",
+        "wikiId": 965,
+        "combatLevel": 333,
+        "hp": 255,
+        "defenceLevel": 300,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 10,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Kalphite Queen 2nd form.png",
+        "size": 5,
+        "maxHitText": "31"
+      },
+      {
+        "version": "Crawling",
+        "wikiId": 963,
+        "combatLevel": 333,
+        "hp": 255,
+        "defenceLevel": 300,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 10,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Kalphite Queen.png",
+        "size": 5,
+        "maxHitText": "31"
+      }
+    ]
   },
   {
     "slug": "kalphite-soldier",
@@ -9726,7 +15784,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ketla the Unworthy.png",
     "size": 1,
     "maxHitText": "18",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Regular",
+        "wikiId": 12329,
+        "combatLevel": 236,
+        "hp": 200,
+        "defenceLevel": 130,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 30,
+          "crush": 80,
+          "magic": 200,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": null,
+        "image": "Ketla the Unworthy.png",
+        "size": 1,
+        "maxHitText": "18"
+      },
+      {
+        "version": "Shadow Clone",
+        "wikiId": 12330,
+        "combatLevel": 236,
+        "hp": 1,
+        "defenceLevel": 130,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 30,
+          "crush": 80,
+          "magic": 200,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": null,
+        "image": "Ketla the Unworthy (shadow).png",
+        "size": 1,
+        "maxHitText": "18"
+      }
+    ]
   },
   {
     "slug": "killerwatt",
@@ -9921,7 +16029,119 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Kolodion demon form.png",
     "size": 3,
     "maxHitText": "20",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Demon",
+        "wikiId": 1609,
+        "combatLevel": 112,
+        "hp": 107,
+        "defenceLevel": 105,
+        "magicLevel": 400,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Kolodion demon form.png",
+        "size": 3,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Ghost",
+        "wikiId": 1608,
+        "combatLevel": 0,
+        "hp": 78,
+        "defenceLevel": 58,
+        "magicLevel": 30,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Kolodion ghost form.png",
+        "size": 1,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Human",
+        "wikiId": 1605,
+        "combatLevel": 0,
+        "hp": 3,
+        "defenceLevel": 20,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Kolodion.png",
+        "size": 1,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Ogre",
+        "wikiId": 1606,
+        "combatLevel": 0,
+        "hp": 65,
+        "defenceLevel": 72,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Kolodion ogre form.png",
+        "size": 1,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Spider",
+        "wikiId": 1607,
+        "combatLevel": 0,
+        "hp": 78,
+        "defenceLevel": 47,
+        "magicLevel": 70,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Kolodion spider form.png",
+        "size": 3,
+        "maxHitText": "20"
+      }
+    ]
   },
   {
     "slug": "koschei-the-deathless",
@@ -9946,7 +16166,97 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Koschei the deathless.png",
     "size": 1,
     "maxHitText": "1",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "The Fremennik Trials (Form 4)",
+        "wikiId": 3900,
+        "combatLevel": 0,
+        "hp": 255,
+        "defenceLevel": 255,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Koschei the deathless.png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "The Fremennik Trials (Form 1)",
+        "wikiId": 3897,
+        "combatLevel": 0,
+        "hp": 30,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Koschei the deathless.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "The Fremennik Trials (Form 2)",
+        "wikiId": 3898,
+        "combatLevel": 0,
+        "hp": 50,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 40,
+          "magic": 40,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Koschei the deathless.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "The Fremennik Trials (Form 3)",
+        "wikiId": 3899,
+        "combatLevel": 0,
+        "hp": 70,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 60,
+          "crush": 60,
+          "magic": 60,
+          "rangedHeavy": 60,
+          "rangedStandard": 60,
+          "rangedLight": 60
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Koschei the deathless.png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "kraka",
@@ -10002,7 +16312,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Kraken.png",
     "size": 4,
     "maxHitText": "28",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Kraken",
+        "wikiId": 494,
+        "combatLevel": 291,
+        "hp": 255,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 130,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Kraken.png",
+        "size": 4,
+        "maxHitText": "28"
+      },
+      {
+        "version": "Whirlpool",
+        "wikiId": 496,
+        "combatLevel": 0,
+        "hp": 255,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 130,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "none",
+          "severity": 0
+        },
+        "image": "Whirlpool.png",
+        "size": 5,
+        "maxHitText": "28"
+      }
+    ]
   },
   {
     "slug": "kreearra",
@@ -10227,7 +16589,117 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Lesser demon.png",
     "size": 2,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 94 (Wilderness Slayer Cave)",
+        "wikiId": 7865,
+        "combatLevel": 94,
+        "hp": 110,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon.png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 82",
+        "wikiId": 2005,
+        "combatLevel": 82,
+        "hp": 79,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon.png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 87",
+        "wikiId": 7247,
+        "combatLevel": 87,
+        "hp": 87,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon (lv 87).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 94",
+        "wikiId": 7248,
+        "combatLevel": 94,
+        "hp": 98,
+        "defenceLevel": 85,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon (lv 94).png",
+        "size": 2,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "lesser-demon-melzars-maze",
@@ -10287,7 +16759,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Lesser demon (level 39).png",
     "size": 1,
     "maxHitText": "1",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 39",
+        "wikiId": 12376,
+        "combatLevel": 39,
+        "hp": 40,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon (level 39).png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 82",
+        "wikiId": 12389,
+        "combatLevel": 82,
+        "hp": 79,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -10,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon (level 82, Scar).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 94 (mage)",
+        "wikiId": 12361,
+        "combatLevel": 94,
+        "hp": 80,
+        "defenceLevel": 110,
+        "magicLevel": 110,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Lesser demon (level 94, mage).png",
+        "size": 2,
+        "maxHitText": "12"
+      }
+    ]
   },
   {
     "slug": "lizard",
@@ -10337,7 +16892,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Lizardman (level 53).png",
     "size": 1,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 53",
+        "wikiId": 6914,
+        "combatLevel": 53,
+        "hp": 60,
+        "defenceLevel": 43,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -20,
+          "slash": 25,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Lizardman (level 53).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 62",
+        "wikiId": 6916,
+        "combatLevel": 62,
+        "hp": 60,
+        "defenceLevel": 52,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -20,
+          "slash": 20,
+          "crush": 5,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Lizardman (level 62).png",
+        "size": 1,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "lizardman-brute",
@@ -10387,7 +16988,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Lizardman shaman (Lizardman Temple).png",
     "size": 2,
     "maxHitText": "31 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Lizardman Temple",
+        "wikiId": 8565,
+        "combatLevel": 150,
+        "hp": 150,
+        "defenceLevel": 140,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": -20,
+          "slash": 40,
+          "crush": 30,
+          "magic": 50,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Lizardman shaman (Lizardman Temple).png",
+        "size": 2,
+        "maxHitText": "31 (Melee)"
+      },
+      {
+        "version": "Standard",
+        "wikiId": 6766,
+        "combatLevel": 150,
+        "hp": 150,
+        "defenceLevel": 140,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": -20,
+          "slash": 40,
+          "crush": 30,
+          "magic": 50,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Lizardman shaman (1).png",
+        "size": 3,
+        "maxHitText": "31 (Melee)"
+      }
+    ]
   },
   {
     "slug": "lizardman-shaman-chambers-of-xeric",
@@ -10446,7 +17093,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Loar Shade.png",
     "size": 1,
     "maxHitText": "4",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 1277,
+        "combatLevel": 40,
+        "hp": 38,
+        "defenceLevel": 26,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Loar Shade.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 1276,
+        "combatLevel": 40,
+        "hp": 38,
+        "defenceLevel": 26,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Loar Shadow.png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "lobstrosity",
@@ -10504,7 +17210,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Locust rider (melee).png",
     "size": 2,
     "maxHitText": "15",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Lancer",
+        "wikiId": 795,
+        "combatLevel": 106,
+        "hp": 90,
+        "defenceLevel": 90,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 90,
+          "slash": 90,
+          "crush": 40,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Locust rider (melee).png",
+        "size": 2,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Ranger",
+        "wikiId": 796,
+        "combatLevel": 98,
+        "hp": 90,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 90,
+          "crush": 50,
+          "magic": 34,
+          "rangedHeavy": 66,
+          "rangedStandard": 66,
+          "rangedLight": 66
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Locust rider (ranged).png",
+        "size": 2,
+        "maxHitText": "22"
+      }
+    ]
   },
   {
     "slug": "long-tailed-wyvern",
@@ -10612,7 +17374,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Magic Mark.png",
     "size": 1,
     "maxHitText": "18",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Annihilation",
+        "wikiId": 13663,
+        "combatLevel": 967,
+        "hp": 3500,
+        "defenceLevel": 30,
+        "magicLevel": 175,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 150,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Magic Mark.png",
+        "size": 1,
+        "maxHitText": "18"
+      },
+      {
+        "version": "All-Stars",
+        "wikiId": 13663,
+        "combatLevel": 217,
+        "hp": 500,
+        "defenceLevel": 30,
+        "magicLevel": 175,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 150,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Magic Mark.png",
+        "size": 1,
+        "maxHitText": "18"
+      },
+      {
+        "version": "Armageddon",
+        "wikiId": 13663,
+        "combatLevel": 467,
+        "hp": 1500,
+        "defenceLevel": 30,
+        "magicLevel": 175,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 150,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Magic Mark.png",
+        "size": 1,
+        "maxHitText": "18"
+      }
+    ]
   },
   {
     "slug": "magma-strykewyrm",
@@ -10771,7 +17601,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Marble gargoyle.png",
     "size": 3,
-    "maxHitText": "26 (melee)\n30 (ranged)\n38 (special)",
+    "maxHitText": "26 (melee) · 30 (ranged) · 38 (special)",
     "isSlayerMonster": true
   },
   {
@@ -10878,7 +17708,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Minotaur.png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 27",
+        "wikiId": 2483,
+        "combatLevel": 27,
+        "hp": 22,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -10,
+          "slash": -10,
+          "crush": -10,
+          "magic": -21,
+          "rangedHeavy": -10,
+          "rangedStandard": -10,
+          "rangedLight": -10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Minotaur.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 12",
+        "wikiId": 2481,
+        "combatLevel": 12,
+        "hp": 10,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -21,
+          "slash": -21,
+          "crush": -21,
+          "magic": -21,
+          "rangedHeavy": -21,
+          "rangedStandard": -21,
+          "rangedLight": -21
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Minotaur.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Unused",
+        "wikiId": 2482,
+        "combatLevel": 19,
+        "hp": 13,
+        "defenceLevel": 15,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 1,
+          "slash": 1,
+          "crush": 1,
+          "magic": 1,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Minotaur.png",
+        "size": 1,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "minotaur-fortis-colosseum",
@@ -11201,7 +18099,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Monkey Zombie.png",
     "size": 1,
     "maxHitText": "12",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 129",
+        "wikiId": 5282,
+        "combatLevel": 129,
+        "hp": 90,
+        "defenceLevel": 90,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Monkey Zombie.png",
+        "size": 1,
+        "maxHitText": "12"
+      },
+      {
+        "version": "Level 82",
+        "wikiId": 5283,
+        "combatLevel": 82,
+        "hp": 60,
+        "defenceLevel": 60,
+        "magicLevel": 60,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Monkey Zombie.png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "monstrous-basilisk",
@@ -11307,7 +18261,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Moss giant (level 48, 1).png",
     "size": 2,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 48",
+        "wikiId": 3851,
+        "combatLevel": 48,
+        "hp": 85,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Moss giant (level 48, 1).png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 42",
+        "wikiId": 2090,
+        "combatLevel": 42,
+        "hp": 60,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Moss giant.png",
+        "size": 2,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "moss-giant-iorwerth-dungeon",
@@ -11438,7 +18444,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Mountain troll.png",
     "size": 1,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 69",
+        "wikiId": 936,
+        "combatLevel": 69,
+        "hp": 90,
+        "defenceLevel": 40,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 10,
+          "magic": 200,
+          "rangedHeavy": 200,
+          "rangedStandard": 40,
+          "rangedLight": 200
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Mountain troll.png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 71",
+        "wikiId": 4143,
+        "combatLevel": 71,
+        "hp": 90,
+        "defenceLevel": 25,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 10,
+          "magic": 200,
+          "rangedHeavy": 200,
+          "rangedStandard": 40,
+          "rangedLight": 200
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Mountain troll.png",
+        "size": 1,
+        "maxHitText": "13"
+      }
+    ]
   },
   {
     "slug": "mounted-terrorbird-gnome",
@@ -11463,7 +18521,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Mounted terrorbird gnome.png",
     "size": 2,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 49",
+        "wikiId": 2068,
+        "combatLevel": 49,
+        "hp": 55,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 16,
+          "slash": 16,
+          "crush": 18,
+          "magic": 15,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Mounted terrorbird gnome.png",
+        "size": 2,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 31",
+        "wikiId": 2067,
+        "combatLevel": 31,
+        "hp": 36,
+        "defenceLevel": 25,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 16,
+          "slash": 16,
+          "crush": 18,
+          "magic": 15,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Mounted terrorbird gnome.png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "mourner",
@@ -11488,7 +18592,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Mourner (level 108).png",
     "size": 1,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "level 108",
+        "wikiId": 9017,
+        "combatLevel": 108,
+        "hp": 105,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 70,
+          "crush": 70,
+          "magic": 60,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Mourner (level 108).png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "level 11",
+        "wikiId": 9013,
+        "combatLevel": 11,
+        "hp": 19,
+        "defenceLevel": 8,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 6,
+          "slash": 6,
+          "crush": 9,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Mourner.png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "mutated-bloodveld",
@@ -11598,7 +18748,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Muttadile.png",
     "size": 5,
     "maxHitText": "72 (Stomp)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Large",
+        "wikiId": 7561,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 220,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": -5,
+          "slash": 82,
+          "crush": 60,
+          "magic": 75,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "xerician"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Muttadile.png",
+        "size": 5,
+        "maxHitText": "72 (Stomp)"
+      },
+      {
+        "version": "Small",
+        "wikiId": 7562,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 138,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -5,
+          "slash": 72,
+          "crush": 50,
+          "magic": 60,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "xerician"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Muttadile.png",
+        "size": 3,
+        "maxHitText": "28 (Melee)"
+      }
+    ]
   },
   {
     "slug": "mysterious-figure",
@@ -11654,7 +18860,91 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Nazastarool (Ghost).png",
     "size": 2,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Ghost",
+        "wikiId": 5355,
+        "combatLevel": 93,
+        "hp": 80,
+        "defenceLevel": 80,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 20
+        },
+        "image": "Nazastarool (Ghost).png",
+        "size": 2,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Skeleton",
+        "wikiId": 5354,
+        "combatLevel": 68,
+        "hp": 70,
+        "defenceLevel": 58,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": 5,
+          "magic": 5,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Nazastarool (Skeleton).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Zombie",
+        "wikiId": 5353,
+        "combatLevel": 91,
+        "hp": 70,
+        "defenceLevel": 80,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Nazastarool.png",
+        "size": 2,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "nechryael",
@@ -11814,7 +19104,109 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Nylocas Matomenos.png",
     "size": 2,
     "maxHitText": "11",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Hard Mode Verzik",
+        "wikiId": 10862,
+        "combatLevel": 138,
+        "hp": 200,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Matomenos.png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Entry Mode Maiden",
+        "wikiId": 10820,
+        "combatLevel": 68,
+        "hp": 64,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Matomenos.png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Hard Mode Maiden",
+        "wikiId": 10828,
+        "combatLevel": 138,
+        "hp": 100,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Matomenos.png",
+        "size": 2,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Normal Mode Verzik",
+        "wikiId": 8385,
+        "combatLevel": 115,
+        "hp": 200,
+        "defenceLevel": 50,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Matomenos.png",
+        "size": 2,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "nylocas-prinkipas",
@@ -11870,7 +19262,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Nylocas Vasilias (melee).png",
     "size": 4,
     "maxHitText": "70",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 8354,
+        "combatLevel": 800,
+        "hp": 2500,
+        "defenceLevel": 50,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Vasilias (melee).png",
+        "size": 4,
+        "maxHitText": "70"
+      },
+      {
+        "version": "Entry",
+        "wikiId": 10786,
+        "combatLevel": 301,
+        "hp": 1440,
+        "defenceLevel": 50,
+        "magicLevel": 20,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 15
+        },
+        "image": "Nylocas Vasilias (melee).png",
+        "size": 4,
+        "maxHitText": "24"
+      }
+    ]
   },
   {
     "slug": "obelisk-tombs-of-amascut",
@@ -11951,7 +19395,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ogre (GWD).png",
     "size": 2,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "GWD",
+        "wikiId": 2233,
+        "combatLevel": 58,
+        "hp": 70,
+        "defenceLevel": 43,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Ogre (GWD).png",
+        "size": 2,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 53",
+        "wikiId": 136,
+        "combatLevel": 53,
+        "hp": 60,
+        "defenceLevel": 43,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Ogre.png",
+        "size": 2,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 63",
+        "wikiId": 1153,
+        "combatLevel": 63,
+        "hp": 60,
+        "defenceLevel": 54,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 19,
+          "slash": 23,
+          "crush": 24,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "Ogre.png",
+        "size": 2,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "ogre-chieftain",
@@ -12300,7 +19821,81 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Pestilent Bloat.png",
     "size": 5,
     "maxHitText": "20 (Flies)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 8359,
+        "combatLevel": 870,
+        "hp": 2000,
+        "defenceLevel": 100,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 20,
+          "crush": 40,
+          "magic": 600,
+          "rangedHeavy": 800,
+          "rangedStandard": 800,
+          "rangedLight": 800
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Pestilent Bloat.png",
+        "size": 5,
+        "maxHitText": "20 (Flies)"
+      },
+      {
+        "version": "Entry",
+        "wikiId": 10812,
+        "combatLevel": 312,
+        "hp": 1280,
+        "defenceLevel": 80,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 5,
+          "crush": 10,
+          "magic": 600,
+          "rangedHeavy": 800,
+          "rangedStandard": 800,
+          "rangedLight": 800
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Pestilent Bloat.png",
+        "size": 5,
+        "maxHitText": "8 (Flies)"
+      },
+      {
+        "version": "Hard",
+        "wikiId": 10813,
+        "combatLevel": 1044,
+        "hp": 2400,
+        "defenceLevel": 100,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 20,
+          "crush": 40,
+          "magic": 600,
+          "rangedHeavy": 800,
+          "rangedStandard": 800,
+          "rangedLight": 800
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Pestilent Bloat.png",
+        "size": 5,
+        "maxHitText": "20 (Flies)"
+      }
+    ]
   },
   {
     "slug": "phantom-muspah",
@@ -12330,7 +19925,117 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Phantom Muspah (melee).png",
     "size": 5,
     "maxHitText": "34",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Melee",
+        "wikiId": 12078,
+        "combatLevel": 741,
+        "hp": 850,
+        "defenceLevel": 200,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 185,
+          "slash": 134,
+          "crush": 120,
+          "magic": 34,
+          "rangedHeavy": 261,
+          "rangedStandard": 261,
+          "rangedLight": 261
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 65
+        },
+        "image": "Phantom Muspah (melee).png",
+        "size": 5,
+        "maxHitText": "34"
+      },
+      {
+        "version": "Post-shield",
+        "wikiId": 12080,
+        "combatLevel": 741,
+        "hp": 850,
+        "defenceLevel": 200,
+        "magicLevel": 179,
+        "defenceBonuses": {
+          "stab": 185,
+          "slash": 134,
+          "crush": 120,
+          "magic": 437,
+          "rangedHeavy": 56,
+          "rangedStandard": 56,
+          "rangedLight": 56
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 65
+        },
+        "image": "Phantom Muspah (ranged).png",
+        "size": 5,
+        "maxHitText": "72 (Ranged)"
+      },
+      {
+        "version": "Ranged",
+        "wikiId": 12077,
+        "combatLevel": 741,
+        "hp": 850,
+        "defenceLevel": 200,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 185,
+          "slash": 134,
+          "crush": 120,
+          "magic": 437,
+          "rangedHeavy": 56,
+          "rangedStandard": 56,
+          "rangedLight": 56
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 65
+        },
+        "image": "Phantom Muspah (ranged).png",
+        "size": 5,
+        "maxHitText": "61 (Ranged)"
+      },
+      {
+        "version": "Shielded",
+        "wikiId": 12079,
+        "combatLevel": 741,
+        "hp": 75,
+        "defenceLevel": 200,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 185,
+          "slash": 134,
+          "crush": 120,
+          "magic": 437,
+          "rangedHeavy": 56,
+          "rangedStandard": 56,
+          "rangedLight": 56
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 65
+        },
+        "image": "Phantom Muspah (shielded).png",
+        "size": 5,
+        "maxHitText": "72 (Ranged)"
+      }
+    ]
   },
   {
     "slug": "phosanis-nightmare",
@@ -12387,7 +20092,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Phrin Shade.png",
     "size": 1,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 1280,
+        "combatLevel": 60,
+        "hp": 56,
+        "defenceLevel": 42,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Phrin Shade.png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 1279,
+        "combatLevel": 60,
+        "hp": 56,
+        "defenceLevel": 42,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Phrin Shadow.png",
+        "size": 1,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "pirate",
@@ -12412,7 +20176,97 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Pirate (Cabin Fever).png",
     "size": 1,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Cabin Fever",
+        "wikiId": 4043,
+        "combatLevel": 57,
+        "hp": 52,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pirate (Cabin Fever).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Asgarnian Ice Dungeon",
+        "wikiId": 523,
+        "combatLevel": 26,
+        "hp": 23,
+        "defenceLevel": 23,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 3,
+          "slash": 2,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pirate (Asgarnian Ice Dungeon).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Brimhaven",
+        "wikiId": 522,
+        "combatLevel": 23,
+        "hp": 20,
+        "defenceLevel": 21,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 3,
+          "slash": 2,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pirate (Brimhaven).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Pirate's Cove",
+        "wikiId": 521,
+        "combatLevel": 23,
+        "hp": 20,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 1,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pirate (Pirates' Cove).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "pit-scorpion",
@@ -12496,7 +20350,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Poison spider (Level 64).png",
     "size": 1,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 64",
+        "wikiId": 3023,
+        "combatLevel": 64,
+        "hp": 64,
+        "defenceLevel": 52,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 17,
+          "crush": 10,
+          "magic": 14,
+          "rangedHeavy": 14,
+          "rangedStandard": 14,
+          "rangedLight": 14
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Poison spider (Level 64).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 31",
+        "wikiId": 5373,
+        "combatLevel": 31,
+        "hp": 25,
+        "defenceLevel": 28,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 17,
+          "crush": 10,
+          "magic": 14,
+          "rangedHeavy": 14,
+          "rangedStandard": 14,
+          "rangedLight": 14
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Poison spider (Level 31).png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "poison-spider-escape-caves",
@@ -12576,7 +20482,185 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Blue Portal.png",
     "size": 3,
     "maxHitText": "0 (Does not attack)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Blue, Intermediate/veteran",
+        "wikiId": 1740,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 0,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Blue Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Blue, Novice",
+        "wikiId": 1748,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 0,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Blue Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Purple, Intermediate/veteran",
+        "wikiId": 1739,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 100,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pink Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Purple, Novice",
+        "wikiId": 1747,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 100,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Pink Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Red, Intermediate/veteran",
+        "wikiId": 1742,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 0,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Red Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Red, Novice",
+        "wikiId": 1750,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 0,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Red Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Yellow, Intermediate/veteran",
+        "wikiId": 1741,
+        "combatLevel": 0,
+        "hp": 250,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 100,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Yellow Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      },
+      {
+        "version": "Yellow, Novice",
+        "wikiId": 1749,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 120,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 100,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Yellow Portal.png",
+        "size": 3,
+        "maxHitText": "0 (Does not attack)"
+      }
+    ]
   },
   {
     "slug": "prince-itzla-arkan",
@@ -12632,7 +20716,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Pyrefiend.png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 48",
+        "wikiId": 3139,
+        "combatLevel": 48,
+        "hp": 48,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "fiery",
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 100
+        },
+        "image": "Pyrefiend.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 43",
+        "wikiId": 433,
+        "combatLevel": 43,
+        "hp": 45,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "fiery",
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 100
+        },
+        "image": "Pyrefiend.png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "pyrelord",
@@ -12712,7 +20854,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Ranging Ro (Annihilation).png",
     "size": 1,
     "maxHitText": "16",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Annihilation",
+        "wikiId": 13664,
+        "combatLevel": 973,
+        "hp": 3500,
+        "defenceLevel": 100,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 200,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Ranging Ro (Annihilation).png",
+        "size": 1,
+        "maxHitText": "16"
+      },
+      {
+        "version": "All-Stars",
+        "wikiId": 13664,
+        "combatLevel": 223,
+        "hp": 500,
+        "defenceLevel": 100,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 200,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Ranging Ro.png",
+        "size": 1,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Armageddon",
+        "wikiId": 13664,
+        "combatLevel": 473,
+        "hp": 1500,
+        "defenceLevel": 100,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 200,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Ranging Ro.png",
+        "size": 1,
+        "maxHitText": "16"
+      }
+    ]
   },
   {
     "slug": "ranis-drakan",
@@ -13789,7 +21999,159 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "River troll.png",
     "size": 1,
     "maxHitText": "14",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 159",
+        "wikiId": 6737,
+        "combatLevel": 159,
+        "hp": 170,
+        "defenceLevel": 130,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "14"
+      },
+      {
+        "version": "Level 120",
+        "wikiId": 6736,
+        "combatLevel": 120,
+        "hp": 120,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 14",
+        "wikiId": 6732,
+        "combatLevel": 14,
+        "hp": 25,
+        "defenceLevel": 9,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 29",
+        "wikiId": 6733,
+        "combatLevel": 29,
+        "hp": 40,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 49",
+        "wikiId": 6734,
+        "combatLevel": 49,
+        "hp": 60,
+        "defenceLevel": 38,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 79",
+        "wikiId": 6735,
+        "combatLevel": 79,
+        "hp": 85,
+        "defenceLevel": 65,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 20
+        },
+        "image": "River troll.png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "riyl-shade",
@@ -13821,7 +22183,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Riyl Shade.png",
     "size": 1,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 1282,
+        "combatLevel": 80,
+        "hp": 76,
+        "defenceLevel": 60,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Riyl Shade.png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 1281,
+        "combatLevel": 80,
+        "hp": 76,
+        "defenceLevel": 60,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Riyl Shadow.png",
+        "size": 1,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "riyl-shadow-temple-trekking",
@@ -13983,7 +22404,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Rogue (lv 135).png",
     "size": 1,
     "maxHitText": "15",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 135",
+        "wikiId": 6603,
+        "combatLevel": 135,
+        "hp": 125,
+        "defenceLevel": 150,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Rogue (lv 135).png",
+        "size": 1,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 15",
+        "wikiId": 526,
+        "combatLevel": 15,
+        "hp": 17,
+        "defenceLevel": 13,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 6,
+          "slash": 9,
+          "crush": 11,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Rogue.png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "rooster",
@@ -14008,7 +22475,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Rooster.png",
     "size": 1,
     "maxHitText": "1",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 3",
+        "wikiId": 1175,
+        "combatLevel": 3,
+        "hp": 7,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -42,
+          "slash": -42,
+          "crush": -42,
+          "magic": -42,
+          "rangedHeavy": -42,
+          "rangedStandard": -42,
+          "rangedLight": -42
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Rooster.png",
+        "size": 1,
+        "maxHitText": "1"
+      },
+      {
+        "version": "Level 2",
+        "wikiId": 3663,
+        "combatLevel": 2,
+        "hp": 5,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -42,
+          "slash": -42,
+          "crush": -42,
+          "magic": -42,
+          "rangedHeavy": -42,
+          "rangedStandard": -42,
+          "rangedLight": -42
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Rooster.png",
+        "size": 1,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "rune-dragon",
@@ -14208,7 +22721,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Scarab Mage.png",
     "size": 1,
     "maxHitText": "16",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 119 (Beneath Cursed Sands)",
+        "wikiId": 11508,
+        "combatLevel": 119,
+        "hp": 120,
+        "defenceLevel": 60,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 20,
+          "crush": 20,
+          "magic": 30,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Scarab Mage.png",
+        "size": 1,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Level 66 (Contact!)",
+        "wikiId": 799,
+        "combatLevel": 66,
+        "hp": 50,
+        "defenceLevel": 90,
+        "magicLevel": 70,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 90,
+          "crush": 90,
+          "magic": 34,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "kalphite"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Scarab Mage.png",
+        "size": 1,
+        "maxHitText": "17"
+      }
+    ]
   },
   {
     "slug": "scarab-swarm",
@@ -14374,7 +22943,134 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Scorpion.png",
     "size": 2,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 59",
+        "wikiId": 2479,
+        "combatLevel": 59,
+        "hp": 55,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 15,
+          "crush": 15,
+          "magic": 0,
+          "rangedHeavy": 55,
+          "rangedStandard": 55,
+          "rangedLight": 55
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Scorpion.png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 1",
+        "wikiId": 14940,
+        "combatLevel": 1,
+        "hp": 2,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -53,
+          "slash": -53,
+          "crush": -53,
+          "magic": -53,
+          "rangedHeavy": -53,
+          "rangedStandard": -53,
+          "rangedLight": -53
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Scorpion (Sailing).png",
+        "size": 1,
+        "maxHitText": "0"
+      },
+      {
+        "version": "Level 14",
+        "wikiId": 3024,
+        "combatLevel": 14,
+        "hp": 17,
+        "defenceLevel": 11,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 15,
+          "crush": 15,
+          "magic": 0,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Scorpion.png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 37",
+        "wikiId": 2480,
+        "combatLevel": 37,
+        "hp": 37,
+        "defenceLevel": 31,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 35,
+          "slash": 15,
+          "crush": 15,
+          "magic": 30,
+          "rangedHeavy": 35,
+          "rangedStandard": 35,
+          "rangedLight": 35
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Scorpion (Level 37).png",
+        "size": 2,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 38",
+        "wikiId": 5242,
+        "combatLevel": 38,
+        "hp": 15,
+        "defenceLevel": 10,
+        "magicLevel": 10,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Scorpion (Level 38).png",
+        "size": 1,
+        "maxHitText": "15"
+      }
+    ]
   },
   {
     "slug": "screaming-banshee",
@@ -14463,7 +23159,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Scurrius.png",
     "size": 3,
     "maxHitText": "13 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Group",
+        "wikiId": 7221,
+        "combatLevel": 250,
+        "hp": 1500,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 20,
+          "magic": 10,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Scurrius.png",
+        "size": 3,
+        "maxHitText": "13 (Melee)"
+      },
+      {
+        "version": "Solo",
+        "wikiId": 7222,
+        "combatLevel": 200,
+        "hp": 500,
+        "defenceLevel": 60,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 20,
+          "magic": 10,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [
+          "rat"
+        ],
+        "weakness": null,
+        "image": "Scurrius.png",
+        "size": 3,
+        "maxHitText": "13 (Melee)"
+      }
+    ]
   },
   {
     "slug": "sea-snake-hatchling",
@@ -14575,7 +23321,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Seagull (level 3).png",
     "size": 1,
     "maxHitText": "0",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 3",
+        "wikiId": 1339,
+        "combatLevel": 3,
+        "hp": 10,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -42,
+          "slash": -42,
+          "crush": -42,
+          "magic": -42,
+          "rangedHeavy": -42,
+          "rangedStandard": -42,
+          "rangedLight": -42
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 20
+        },
+        "image": "Seagull (level 3).png",
+        "size": 1,
+        "maxHitText": "0"
+      },
+      {
+        "version": "Level 2",
+        "wikiId": 1338,
+        "combatLevel": 2,
+        "hp": 6,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -42,
+          "slash": -42,
+          "crush": -42,
+          "magic": -42,
+          "rangedHeavy": -42,
+          "rangedStandard": -42,
+          "rangedLight": -42
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 20
+        },
+        "image": "Seagull.png",
+        "size": 1,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "seagull-icyene-graveyard",
@@ -14706,7 +23504,62 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Shade.png",
     "size": 1,
     "maxHitText": "14",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Stronghold of Security",
+        "wikiId": 6740,
+        "combatLevel": 159,
+        "hp": 170,
+        "defenceLevel": 130,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": null,
+        "image": "Shade.png",
+        "size": 1,
+        "maxHitText": "14"
+      },
+      {
+        "version": "Catacombs of Kourend",
+        "wikiId": 7258,
+        "combatLevel": 140,
+        "hp": 115,
+        "defenceLevel": 100,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Shade (Catacombs of Kourend).png",
+        "size": 1,
+        "maxHitText": "15"
+      }
+    ]
   },
   {
     "slug": "shade-temple-trekking",
@@ -14894,7 +23747,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Shellbane gryphon.png",
     "size": 4,
-    "maxHitText": "22 <br/> 64 (whirlwinds) <br/> 30 (knockback)",
+    "maxHitText": "22 · 64 (whirlwinds) · 30 (knockback)",
     "isSlayerMonster": true
   },
   {
@@ -15036,7 +23889,144 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton (level 45, 1).png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 45, 1",
+        "wikiId": 82,
+        "combatLevel": 45,
+        "hp": 59,
+        "defenceLevel": 36,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 9,
+          "slash": 11,
+          "crush": -2,
+          "magic": 1,
+          "rangedHeavy": 4,
+          "rangedStandard": 4,
+          "rangedLight": 4
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (level 45, 1).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 21, 1",
+        "wikiId": 74,
+        "combatLevel": 21,
+        "hp": 24,
+        "defenceLevel": 17,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": -5,
+          "magic": 0,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (level 21, 1).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 22, 1",
+        "wikiId": 70,
+        "combatLevel": 22,
+        "hp": 29,
+        "defenceLevel": 17,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": -5,
+          "magic": 0,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (level 22, 1).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 25, 1",
+        "wikiId": 77,
+        "combatLevel": 25,
+        "hp": 17,
+        "defenceLevel": 24,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 9,
+          "slash": 11,
+          "crush": -2,
+          "magic": 1,
+          "rangedHeavy": 4,
+          "rangedStandard": 4,
+          "rangedLight": 4
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (level 25, 1).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 29, 1",
+        "wikiId": 14426,
+        "combatLevel": 29,
+        "hp": 30,
+        "defenceLevel": 24,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": -5,
+          "magic": 0,
+          "rangedHeavy": 5,
+          "rangedStandard": 5,
+          "rangedLight": 5
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 35
+        },
+        "image": "Skeleton (level 29, 1).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "skeleton-ape-atoll",
@@ -15306,7 +24296,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton (Shayzien Crypts, magic).png",
     "size": 1,
     "maxHitText": "19",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Magic",
+        "wikiId": 8072,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 35,
+          "slash": 30,
+          "crush": 35,
+          "magic": 20,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Shayzien Crypts, magic).png",
+        "size": 1,
+        "maxHitText": "19"
+      },
+      {
+        "version": "Melee",
+        "wikiId": 8070,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 20,
+          "crush": 25,
+          "magic": 10,
+          "rangedHeavy": 30,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Shayzien Crypts, melee).png",
+        "size": 1,
+        "maxHitText": "19"
+      },
+      {
+        "version": "Range",
+        "wikiId": 8071,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 15,
+          "slash": 10,
+          "crush": 15,
+          "magic": 30,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Shayzien Crypts, range).png",
+        "size": 1,
+        "maxHitText": "19"
+      }
+    ]
   },
   {
     "slug": "skeleton-stronghold-of-security",
@@ -15336,7 +24409,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton (Stronghold of Security, 5).png",
     "size": 1,
     "maxHitText": "10?",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "5",
+        "wikiId": 2524,
+        "combatLevel": 85,
+        "hp": 77,
+        "defenceLevel": 74,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 79,
+          "slash": 31,
+          "crush": 20,
+          "magic": 5,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Stronghold of Security, 5).png",
+        "size": 1,
+        "maxHitText": "10?"
+      },
+      {
+        "version": "1",
+        "wikiId": 2521,
+        "combatLevel": 60,
+        "hp": 70,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 35,
+          "slash": 35,
+          "crush": -5,
+          "magic": 0,
+          "rangedHeavy": 35,
+          "rangedStandard": 35,
+          "rangedLight": 35
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Stronghold of Security, 1).png",
+        "size": 1,
+        "maxHitText": "10?"
+      },
+      {
+        "version": "4",
+        "wikiId": 2520,
+        "combatLevel": 68,
+        "hp": 70,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 35,
+          "slash": 35,
+          "crush": -5,
+          "magic": 0,
+          "rangedHeavy": 35,
+          "rangedStandard": 35,
+          "rangedLight": 35
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Stronghold of Security, 4).png",
+        "size": 1,
+        "maxHitText": "10?"
+      }
+    ]
   },
   {
     "slug": "skeleton-tarns-lair",
@@ -15366,7 +24522,252 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton (Tarn's Lair, 9).png",
     "size": 1,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 87",
+        "wikiId": 6468,
+        "combatLevel": 87,
+        "hp": 92,
+        "defenceLevel": 55,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 9).png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 40",
+        "wikiId": 6448,
+        "combatLevel": 40,
+        "hp": 26,
+        "defenceLevel": 52,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 7).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 42 (Hammer)",
+        "wikiId": 6446,
+        "combatLevel": 42,
+        "hp": 42,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 5).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 42 (Sword)",
+        "wikiId": 6444,
+        "combatLevel": 42,
+        "hp": 40,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 3).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 59",
+        "wikiId": 6445,
+        "combatLevel": 59,
+        "hp": 53,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 4).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 63",
+        "wikiId": 6447,
+        "combatLevel": 63,
+        "hp": 58,
+        "defenceLevel": 45,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 6).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 72",
+        "wikiId": 6467,
+        "combatLevel": 72,
+        "hp": 69,
+        "defenceLevel": 45,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 8).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 77",
+        "wikiId": 6442,
+        "combatLevel": 77,
+        "hp": 80,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 81",
+        "wikiId": 6443,
+        "combatLevel": 81,
+        "hp": 71,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 40,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 40,
+          "rangedStandard": 40,
+          "rangedLight": 40
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton (Tarn's Lair, 2).png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "skeleton-the-restless-ghost",
@@ -15483,7 +24884,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton fremennik (Level 60).png",
     "size": 1,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 60",
+        "wikiId": 4497,
+        "combatLevel": 60,
+        "hp": 40,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 14,
+          "slash": 18,
+          "crush": 15,
+          "magic": -4,
+          "rangedHeavy": 15,
+          "rangedStandard": 15,
+          "rangedLight": 15
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton fremennik (Level 60).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 40",
+        "wikiId": 4491,
+        "combatLevel": 40,
+        "hp": 25,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 14,
+          "slash": 18,
+          "crush": 15,
+          "magic": -4,
+          "rangedHeavy": 15,
+          "rangedStandard": 15,
+          "rangedLight": 15
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton fremennik.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 50",
+        "wikiId": 4494,
+        "combatLevel": 50,
+        "hp": 35,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 14,
+          "slash": 18,
+          "crush": 15,
+          "magic": -4,
+          "rangedHeavy": 15,
+          "rangedStandard": 15,
+          "rangedLight": 15
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
+        "image": "Skeleton fremennik (Level 50).png",
+        "size": 1,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "skeleton-heavy",
@@ -15658,7 +25142,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Skeleton Mage (lv 83).png",
     "size": 1,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 83",
+        "wikiId": 4319,
+        "combatLevel": 83,
+        "hp": 80,
+        "defenceLevel": 60,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 15,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Skeleton Mage (lv 83).png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 16",
+        "wikiId": 84,
+        "combatLevel": 16,
+        "hp": 17,
+        "defenceLevel": 14,
+        "magicLevel": 18,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Skeleton Mage (lv 16).png",
+        "size": 1,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "skeleton-thug",
@@ -16035,7 +25569,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Sotetseg.png",
     "size": 5,
     "maxHitText": "45 (Melee)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 8387,
+        "combatLevel": 995,
+        "hp": 4000,
+        "defenceLevel": 200,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 150,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Sotetseg.png",
+        "size": 5,
+        "maxHitText": "45 (Melee)"
+      },
+      {
+        "version": "Entry",
+        "wikiId": 10864,
+        "combatLevel": 336,
+        "hp": 2240,
+        "defenceLevel": 150,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 30,
+          "crush": 30,
+          "magic": 10,
+          "rangedHeavy": 120,
+          "rangedStandard": 120,
+          "rangedLight": 120
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Sotetseg.png",
+        "size": 5,
+        "maxHitText": "20 (Melee)"
+      }
+    ]
   },
   {
     "slug": "sourhog",
@@ -16085,7 +25665,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Spawn of Sarachnis (melee).png",
     "size": 2,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 107",
+        "wikiId": 8714,
+        "combatLevel": 107,
+        "hp": 30,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 20,
+          "magic": -10,
+          "rangedHeavy": 20,
+          "rangedStandard": 150,
+          "rangedLight": 150
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Spawn of Sarachnis (melee).png",
+        "size": 2,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 68",
+        "wikiId": 8715,
+        "combatLevel": 68,
+        "hp": 30,
+        "defenceLevel": 50,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 50,
+          "magic": 150,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Spawn of Sarachnis (magic).png",
+        "size": 2,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "speedy-keith",
@@ -16138,7 +25764,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Spider.png",
     "size": 1,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Stronghold of Security",
+        "wikiId": 2478,
+        "combatLevel": 24,
+        "hp": 22,
+        "defenceLevel": 21,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 53,
+          "slash": 53,
+          "crush": 53,
+          "magic": 53,
+          "rangedHeavy": 53,
+          "rangedStandard": 53,
+          "rangedLight": 53
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Spider.png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Common",
+        "wikiId": 3019,
+        "combatLevel": 1,
+        "hp": 2,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -53,
+          "slash": -53,
+          "crush": -53,
+          "magic": -53,
+          "rangedHeavy": -53,
+          "rangedStandard": -53,
+          "rangedLight": -53
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Spider.png",
+        "size": 1,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "spider-ape-atoll",
@@ -16279,7 +25957,144 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Spiritual Mage (Zaros).png",
     "size": 1,
     "maxHitText": "38",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Zaros",
+        "wikiId": 11292,
+        "combatLevel": 182,
+        "hp": 125,
+        "defenceLevel": 100,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 420,
+          "slash": 400,
+          "crush": 420,
+          "magic": 200,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 200
+        },
+        "image": "Spiritual Mage (Zaros).png",
+        "size": 1,
+        "maxHitText": "38"
+      },
+      {
+        "version": "Armadyl",
+        "wikiId": 3168,
+        "combatLevel": 123,
+        "hp": 86,
+        "defenceLevel": 111,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 9,
+          "slash": 12,
+          "crush": 5,
+          "magic": 45,
+          "rangedHeavy": 28,
+          "rangedStandard": 28,
+          "rangedLight": 28
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual mage (Armadyl).png",
+        "size": 2,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Bandos",
+        "wikiId": 2244,
+        "combatLevel": 121,
+        "hp": 106,
+        "defenceLevel": 103,
+        "magicLevel": 142,
+        "defenceBonuses": {
+          "stab": 12,
+          "slash": 14,
+          "crush": 13,
+          "magic": 35,
+          "rangedHeavy": 13,
+          "rangedStandard": 13,
+          "rangedLight": 13
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual mage (Bandos).png",
+        "size": 1,
+        "maxHitText": "17"
+      },
+      {
+        "version": "Saradomin",
+        "wikiId": 2212,
+        "combatLevel": 120,
+        "hp": 85,
+        "defenceLevel": 86,
+        "magicLevel": 160,
+        "defenceBonuses": {
+          "stab": 8,
+          "slash": 7,
+          "crush": 3,
+          "magic": 16,
+          "rangedHeavy": 2,
+          "rangedStandard": 2,
+          "rangedLight": 2
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual mage (Saradomin).png",
+        "size": 1,
+        "maxHitText": "20"
+      },
+      {
+        "version": "Zamorak",
+        "wikiId": 3161,
+        "combatLevel": 121,
+        "hp": 75,
+        "defenceLevel": 61,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual mage (Zamorak).png",
+        "size": 1,
+        "maxHitText": "19"
+      }
+    ]
   },
   {
     "slug": "spiritual-ranger",
@@ -16309,7 +26124,144 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Spiritual ranger (Bandos).png",
     "size": 1,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Bandos",
+        "wikiId": 2242,
+        "combatLevel": 115,
+        "hp": 131,
+        "defenceLevel": 96,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 12,
+          "slash": 14,
+          "crush": 13,
+          "magic": 5,
+          "rangedHeavy": 13,
+          "rangedStandard": 13,
+          "rangedLight": 13
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual ranger (Bandos).png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Armadyl",
+        "wikiId": 3167,
+        "combatLevel": 127,
+        "hp": 89,
+        "defenceLevel": 130,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 17,
+          "slash": 16,
+          "crush": 8,
+          "magic": 35,
+          "rangedHeavy": 41,
+          "rangedStandard": 41,
+          "rangedLight": 41
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual ranger (Armadyl).png",
+        "size": 2,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Saradomin",
+        "wikiId": 2211,
+        "combatLevel": 122,
+        "hp": 106,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 3,
+          "slash": 5,
+          "crush": 13,
+          "magic": 16,
+          "rangedHeavy": 23,
+          "rangedStandard": 23,
+          "rangedLight": 23
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual ranger (Saradomin).png",
+        "size": 1,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Zamorak",
+        "wikiId": 3160,
+        "combatLevel": 118,
+        "hp": 120,
+        "defenceLevel": 80,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual ranger (Zamorak).png",
+        "size": 1,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Zaros",
+        "wikiId": 11291,
+        "combatLevel": 158,
+        "hp": 110,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 0,
+          "crush": 20,
+          "magic": 300,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 200
+        },
+        "image": "Spiritual Ranger (Zaros).png",
+        "size": 1,
+        "maxHitText": "20"
+      }
+    ]
   },
   {
     "slug": "spiritual-warrior",
@@ -16339,7 +26291,144 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Spiritual warrior (Bandos).png",
     "size": 1,
     "maxHitText": "16",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Bandos",
+        "wikiId": 2243,
+        "combatLevel": 134,
+        "hp": 131,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 12,
+          "slash": 14,
+          "crush": 13,
+          "magic": 5,
+          "rangedHeavy": 13,
+          "rangedStandard": 13,
+          "rangedLight": 13
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual warrior (Bandos).png",
+        "size": 1,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Armadyl",
+        "wikiId": 3166,
+        "combatLevel": 123,
+        "hp": 98,
+        "defenceLevel": 120,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 23,
+          "slash": 25,
+          "crush": 13,
+          "magic": 35,
+          "rangedHeavy": 35,
+          "rangedStandard": 35,
+          "rangedLight": 35
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual warrior (Armadyl).png",
+        "size": 2,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Saradomin",
+        "wikiId": 2210,
+        "combatLevel": 125,
+        "hp": 110,
+        "defenceLevel": 110,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 12,
+          "slash": 14,
+          "crush": 13,
+          "magic": 5,
+          "rangedHeavy": 13,
+          "rangedStandard": 13,
+          "rangedLight": 13
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual warrior (Saradomin).png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Zamorak",
+        "wikiId": 3159,
+        "combatLevel": 115,
+        "hp": 100,
+        "defenceLevel": 100,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 30
+        },
+        "image": "Spiritual warrior (Zamorak).png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Zaros",
+        "wikiId": 11290,
+        "combatLevel": 158,
+        "hp": 100,
+        "defenceLevel": 100,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 80,
+          "magic": 0,
+          "rangedHeavy": 250,
+          "rangedStandard": 250,
+          "rangedLight": 250
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 200
+        },
+        "image": "Spiritual Warrior (Zaros).png",
+        "size": 1,
+        "maxHitText": "20"
+      }
+    ]
   },
   {
     "slug": "spitting-wyvern",
@@ -16400,7 +26489,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Steel dragon.png",
     "size": 4,
     "maxHitText": "24 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 274",
+        "wikiId": 7255,
+        "combatLevel": 274,
+        "hp": 250,
+        "defenceLevel": 235,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Steel dragon.png",
+        "size": 4,
+        "maxHitText": "24 (Melee)"
+      },
+      {
+        "version": "Level 246",
+        "wikiId": 274,
+        "combatLevel": 246,
+        "hp": 210,
+        "defenceLevel": 215,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 70,
+          "crush": 70,
+          "magic": 30,
+          "rangedHeavy": 10,
+          "rangedStandard": 90,
+          "rangedLight": 90
+        },
+        "attributes": [
+          "dragon",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Steel dragon.png",
+        "size": 4,
+        "maxHitText": "22 (Melee)"
+      }
+    ]
   },
   {
     "slug": "steel-dragon-construction",
@@ -16481,7 +26628,97 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Strange Creature (melee).png",
     "size": 5,
     "maxHitText": "24",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Melee",
+        "wikiId": 12063,
+        "combatLevel": 368,
+        "hp": 550,
+        "defenceLevel": 200,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 110,
+          "slash": 90,
+          "crush": 80,
+          "magic": -10,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Strange Creature (melee).png",
+        "size": 5,
+        "maxHitText": "24"
+      },
+      {
+        "version": "Post-shield",
+        "wikiId": 12076,
+        "combatLevel": 368,
+        "hp": 550,
+        "defenceLevel": 200,
+        "magicLevel": 179,
+        "defenceBonuses": {
+          "stab": 110,
+          "slash": 90,
+          "crush": 80,
+          "magic": 280,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Strange Creature (ranged).png",
+        "size": 5,
+        "maxHitText": "38 (Ranged)"
+      },
+      {
+        "version": "Ranged",
+        "wikiId": 12073,
+        "combatLevel": 368,
+        "hp": 550,
+        "defenceLevel": 200,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 110,
+          "slash": 90,
+          "crush": 80,
+          "magic": 280,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Strange Creature (ranged).png",
+        "size": 5,
+        "maxHitText": "32 (Ranged)"
+      },
+      {
+        "version": "Shielded",
+        "wikiId": 12075,
+        "combatLevel": 368,
+        "hp": 75,
+        "defenceLevel": 200,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 110,
+          "slash": 90,
+          "crush": 80,
+          "magic": 280,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Strange Creature (shielded).png",
+        "size": 5,
+        "maxHitText": "38 (Ranged)"
+      }
+    ]
   },
   {
     "slug": "strange-creature-shadows-of-custodia",
@@ -16804,7 +27041,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Tekton.png",
     "size": 4,
     "maxHitText": "52",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 7540,
+        "combatLevel": 0,
+        "hp": 300,
+        "defenceLevel": 205,
+        "magicLevel": 205,
+        "defenceBonuses": {
+          "stab": 155,
+          "slash": 165,
+          "crush": 105,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "xerician"
+        ],
+        "weakness": null,
+        "image": "Tekton.png",
+        "size": 4,
+        "maxHitText": "52"
+      },
+      {
+        "version": "Enraged",
+        "wikiId": 7543,
+        "combatLevel": 0,
+        "hp": 300,
+        "defenceLevel": 205,
+        "magicLevel": 205,
+        "defenceBonuses": {
+          "stab": 280,
+          "slash": 290,
+          "crush": 180,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "xerician"
+        ],
+        "weakness": null,
+        "image": "Tekton (enraged).png",
+        "size": 4,
+        "maxHitText": "59"
+      }
+    ]
   },
   {
     "slug": "temple-guardian",
@@ -16909,7 +27196,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Terror dog (level 110).png",
     "size": 2,
     "maxHitText": "15",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 110",
+        "wikiId": 6473,
+        "combatLevel": 110,
+        "hp": 87,
+        "defenceLevel": 78,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Terror dog (level 110).png",
+        "size": 2,
+        "maxHitText": "15"
+      },
+      {
+        "version": "Level 100",
+        "wikiId": 6474,
+        "combatLevel": 100,
+        "hp": 82,
+        "defenceLevel": 74,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Terror dog (level 100).png",
+        "size": 1,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "terrorbird",
@@ -17019,7 +27352,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "The Hueycoatl.png",
     "size": 7,
     "maxHitText": "14",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 14009,
+        "combatLevel": 642,
+        "hp": 2500,
+        "defenceLevel": 125,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 0,
+          "magic": 200,
+          "rangedHeavy": 350,
+          "rangedStandard": 350,
+          "rangedLight": 350
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "The Hueycoatl.png",
+        "size": 7,
+        "maxHitText": "14"
+      },
+      {
+        "version": "Body",
+        "wikiId": 14017,
+        "combatLevel": 642,
+        "hp": 250,
+        "defenceLevel": 125,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 0,
+          "magic": 200,
+          "rangedHeavy": 350,
+          "rangedStandard": 350,
+          "rangedLight": 350
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "Hueycoatl body.png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Tail",
+        "wikiId": 14014,
+        "combatLevel": 642,
+        "hp": 300,
+        "defenceLevel": 125,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 0,
+          "magic": 200,
+          "rangedHeavy": 350,
+          "rangedStandard": 350,
+          "rangedLight": 350
+        },
+        "attributes": [
+          "dragon"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "Hueycoatl tail.png",
+        "size": 5,
+        "maxHitText": "25"
+      }
+    ]
   },
   {
     "slug": "the-jormungand",
@@ -17072,7 +27488,75 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "The Leviathan.png",
     "size": 7,
     "maxHitText": "50 (Melee orb & Bite)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 12214,
+        "combatLevel": 798,
+        "hp": 900,
+        "defenceLevel": 250,
+        "magicLevel": 160,
+        "defenceBonuses": {
+          "stab": 260,
+          "slash": 190,
+          "crush": 230,
+          "magic": 280,
+          "rangedHeavy": 25,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Leviathan.png",
+        "size": 7,
+        "maxHitText": "50 (Melee orb & Bite)"
+      },
+      {
+        "version": "Awakened",
+        "wikiId": 12214,
+        "combatLevel": 1157,
+        "hp": 2700,
+        "defenceLevel": 287,
+        "magicLevel": 280,
+        "defenceBonuses": {
+          "stab": 260,
+          "slash": 190,
+          "crush": 230,
+          "magic": 280,
+          "rangedHeavy": 25,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Leviathan.png",
+        "size": 7,
+        "maxHitText": "86 (Melee orb & Bite)"
+      },
+      {
+        "version": "Quest",
+        "wikiId": 12215,
+        "combatLevel": 593,
+        "hp": 720,
+        "defenceLevel": 200,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 200,
+          "slash": 150,
+          "crush": 180,
+          "magic": 220,
+          "rangedHeavy": 25,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Leviathan.png",
+        "size": 7,
+        "maxHitText": "34 (Melee orb & Bite)"
+      }
+    ]
   },
   {
     "slug": "the-maiden-of-sugadinti",
@@ -17097,7 +27581,119 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "The Maiden of Sugadinti.png",
     "size": 6,
     "maxHitText": "36",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 8360,
+        "combatLevel": 940,
+        "hp": 3500,
+        "defenceLevel": 200,
+        "magicLevel": 350,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Maiden of Sugadinti.png",
+        "size": 6,
+        "maxHitText": "36"
+      },
+      {
+        "version": "30% Health",
+        "wikiId": 8363,
+        "combatLevel": 940,
+        "hp": 1050,
+        "defenceLevel": 200,
+        "magicLevel": 350,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Maiden of Sugadinti (30% health).png",
+        "size": 6,
+        "maxHitText": "36"
+      },
+      {
+        "version": "50% Health",
+        "wikiId": 8362,
+        "combatLevel": 940,
+        "hp": 1750,
+        "defenceLevel": 200,
+        "magicLevel": 350,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Maiden of Sugadinti (50% health).png",
+        "size": 6,
+        "maxHitText": "36"
+      },
+      {
+        "version": "70% Health",
+        "wikiId": 8361,
+        "combatLevel": 940,
+        "hp": 2450,
+        "defenceLevel": 200,
+        "magicLevel": 350,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Maiden of Sugadinti (70% health).png",
+        "size": 6,
+        "maxHitText": "36"
+      },
+      {
+        "version": "Entry Mode",
+        "wikiId": 10814,
+        "combatLevel": 324,
+        "hp": 2000,
+        "defenceLevel": 80,
+        "magicLevel": 140,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "The Maiden of Sugadinti.png",
+        "size": 6,
+        "maxHitText": "18"
+      }
+    ]
   },
   {
     "slug": "the-mimic",
@@ -17174,7 +27770,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "The rocks.png",
     "size": 1,
-    "maxHitText": "? (Magic)\n23 (Melee)",
+    "maxHitText": "? (Magic) · 23 (Melee)",
     "isSlayerMonster": true
   },
   {
@@ -17203,7 +27799,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "The Whisperer.png",
     "size": 3,
     "maxHitText": "42 (x2) (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 12204,
+        "combatLevel": 791,
+        "hp": 900,
+        "defenceLevel": 250,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 180,
+          "slash": 300,
+          "crush": 220,
+          "magic": 10,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "The Whisperer.png",
+        "size": 3,
+        "maxHitText": "42 (x2) (Melee)"
+      },
+      {
+        "version": "Awakened",
+        "wikiId": 12204,
+        "combatLevel": 1146,
+        "hp": 2700,
+        "defenceLevel": 300,
+        "magicLevel": 225,
+        "defenceBonuses": {
+          "stab": 180,
+          "slash": 300,
+          "crush": 220,
+          "magic": 10,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "The Whisperer.png",
+        "size": 3,
+        "maxHitText": "70+ (x2) (Melee)"
+      },
+      {
+        "version": "Quest",
+        "wikiId": 12206,
+        "combatLevel": 587,
+        "hp": 660,
+        "defenceLevel": 200,
+        "magicLevel": 130,
+        "defenceBonuses": {
+          "stab": 180,
+          "slash": 300,
+          "crush": 220,
+          "magic": 10,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 60
+        },
+        "image": "The Whisperer.png",
+        "size": 3,
+        "maxHitText": "30 (x2) (Melee)"
+      }
+    ]
   },
   {
     "slug": "thermonuclear-smoke-devil",
@@ -17374,7 +28047,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Tormented Demon (1).png",
     "size": 3,
-    "maxHitText": "<div class=\"plainlist \" >\n*31 (auto)\n*45 (special)\n</div>",
+    "maxHitText": "31 (auto) · 45 (special)",
     "isSlayerMonster": true
   },
   {
@@ -17400,7 +28073,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Tortured gorilla.png",
     "size": 2,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 141",
+        "wikiId": 7150,
+        "combatLevel": 141,
+        "hp": 210,
+        "defenceLevel": 95,
+        "magicLevel": 95,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 25,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Tortured gorilla.png",
+        "size": 2,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 142",
+        "wikiId": 7095,
+        "combatLevel": 142,
+        "hp": 110,
+        "defenceLevel": 110,
+        "magicLevel": 110,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Tortured gorilla.png",
+        "size": 2,
+        "maxHitText": "29"
+      }
+    ]
   },
   {
     "slug": "tortured-soul",
@@ -17456,7 +28175,56 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Totem (Phosani's Nightmare, uncharged).png",
     "size": 3,
     "maxHitText": "0",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "",
+        "wikiId": 9435,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 0,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 70
+        },
+        "image": "Totem (Phosani's Nightmare, uncharged).png",
+        "size": 3,
+        "maxHitText": "0"
+      },
+      {
+        "version": "",
+        "wikiId": 9436,
+        "combatLevel": 0,
+        "hp": 200,
+        "defenceLevel": 0,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Totem (Phosani's Nightmare, charged).png",
+        "size": 3,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "totem-the-nightmare",
@@ -17484,7 +28252,56 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Totem (The Nightmare, uncharged).png",
     "size": 3,
     "maxHitText": "0",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "",
+        "wikiId": 9435,
+        "combatLevel": 0,
+        "hp": 300,
+        "defenceLevel": 0,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 70
+        },
+        "image": "Totem (The Nightmare, uncharged).png",
+        "size": 3,
+        "maxHitText": "0"
+      },
+      {
+        "version": "",
+        "wikiId": 9436,
+        "combatLevel": 0,
+        "hp": 300,
+        "defenceLevel": 0,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Totem (The Nightmare, charged).png",
+        "size": 3,
+        "maxHitText": "0"
+      }
+    ]
   },
   {
     "slug": "tree-spirit-lost-city",
@@ -17660,7 +28477,109 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Tumeken's Warden (level-489, core-ejected).png",
     "size": 5,
     "maxHitText": "22",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Core-ejected",
+        "wikiId": 11758,
+        "combatLevel": 489,
+        "hp": 4500,
+        "defenceLevel": 100,
+        "magicLevel": 190,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 70,
+          "crush": 70,
+          "magic": -30,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Tumeken's Warden (level-489, core-ejected).png",
+        "size": 5,
+        "maxHitText": "22"
+      },
+      {
+        "version": "Active",
+        "wikiId": 11756,
+        "combatLevel": 489,
+        "hp": 140,
+        "defenceLevel": 100,
+        "magicLevel": 190,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 70,
+          "crush": 70,
+          "magic": -30,
+          "rangedHeavy": 70,
+          "rangedStandard": 70,
+          "rangedLight": 70
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Tumeken's Warden (level-489).png",
+        "size": 5,
+        "maxHitText": "22"
+      },
+      {
+        "version": "Damaged",
+        "wikiId": 11762,
+        "combatLevel": 544,
+        "hp": 880,
+        "defenceLevel": 150,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Tumeken's Warden (level-544).png",
+        "size": 5,
+        "maxHitText": "26"
+      },
+      {
+        "version": "Enraged",
+        "wikiId": 11762,
+        "combatLevel": 544,
+        "hp": 880,
+        "defenceLevel": 180,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 40,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Tumeken's Warden (level-544, immune).png",
+        "size": 5,
+        "maxHitText": "26"
+      }
+    ]
   },
   {
     "slug": "turoth",
@@ -17687,7 +28606,105 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Turoth (lv 89).png",
     "size": 2,
     "maxHitText": "10",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Dad",
+        "wikiId": 427,
+        "combatLevel": 89,
+        "hp": 81,
+        "defenceLevel": 88,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 20,
+          "crush": 20,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "leafy"
+        ],
+        "weakness": null,
+        "image": "Turoth (lv 89).png",
+        "size": 2,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Baby",
+        "wikiId": 430,
+        "combatLevel": 83,
+        "hp": 76,
+        "defenceLevel": 83,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 20,
+          "crush": 20,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "leafy"
+        ],
+        "weakness": null,
+        "image": "Turoth (lv 83).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Child",
+        "wikiId": 429,
+        "combatLevel": 85,
+        "hp": 77,
+        "defenceLevel": 84,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 20,
+          "crush": 20,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "leafy"
+        ],
+        "weakness": null,
+        "image": "Turoth (lv 85).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Mum",
+        "wikiId": 428,
+        "combatLevel": 87,
+        "hp": 79,
+        "defenceLevel": 86,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 20,
+          "crush": 20,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "leafy"
+        ],
+        "weakness": null,
+        "image": "Turoth (lv 87).png",
+        "size": 2,
+        "maxHitText": "10"
+      }
+    ]
   },
   {
     "slug": "twig",
@@ -17799,7 +28816,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Tz-Kek (level 45).png",
     "size": 2,
     "maxHitText": "7",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 45",
+        "wikiId": 2191,
+        "combatLevel": 45,
+        "hp": 20,
+        "defenceLevel": 30,
+        "magicLevel": 30,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Tz-Kek (level 45).png",
+        "size": 2,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 22",
+        "wikiId": 3120,
+        "combatLevel": 22,
+        "hp": 10,
+        "defenceLevel": 15,
+        "magicLevel": 15,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Tz-Kek (level 22).png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "tz-kih",
@@ -17883,7 +28952,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "TzHaar-Ket (level 221).png",
     "size": 1,
     "maxHitText": "19",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 221",
+        "wikiId": 7679,
+        "combatLevel": 221,
+        "hp": 200,
+        "defenceLevel": 190,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "TzHaar-Ket (level 221).png",
+        "size": 1,
+        "maxHitText": "19"
+      },
+      {
+        "version": "Level 149",
+        "wikiId": 2173,
+        "combatLevel": 149,
+        "hp": 140,
+        "defenceLevel": 120,
+        "magicLevel": 40,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "TzHaar-Ket (level 149).png",
+        "size": 1,
+        "maxHitText": "15"
+      }
+    ]
   },
   {
     "slug": "tzhaar-mej",
@@ -18195,7 +29316,252 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Undead Lumberjack.png",
     "size": 1,
     "maxHitText": "4",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 70",
+        "wikiId": 5713,
+        "combatLevel": 70,
+        "hp": 18,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 30",
+        "wikiId": 5648,
+        "combatLevel": 30,
+        "hp": 10,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 35",
+        "wikiId": 5656,
+        "combatLevel": 35,
+        "hp": 11,
+        "defenceLevel": 11,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 40",
+        "wikiId": 5665,
+        "combatLevel": 40,
+        "hp": 12,
+        "defenceLevel": 12,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 45",
+        "wikiId": 5673,
+        "combatLevel": 45,
+        "hp": 13,
+        "defenceLevel": 13,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 50",
+        "wikiId": 5681,
+        "combatLevel": 50,
+        "hp": 14,
+        "defenceLevel": 14,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 55",
+        "wikiId": 5689,
+        "combatLevel": 55,
+        "hp": 15,
+        "defenceLevel": 15,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 60",
+        "wikiId": 5697,
+        "combatLevel": 60,
+        "hp": 16,
+        "defenceLevel": 16,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 64",
+        "wikiId": 5705,
+        "combatLevel": 64,
+        "hp": 17,
+        "defenceLevel": 17,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead Lumberjack.png",
+        "size": 1,
+        "maxHitText": "4"
+      }
+    ]
   },
   {
     "slug": "undead-one",
@@ -18225,7 +29591,117 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Undead one (Zombie, 4).png",
     "size": 1,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 73",
+        "wikiId": 5349,
+        "combatLevel": 73,
+        "hp": 59,
+        "defenceLevel": 65,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead one (Zombie, 4).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 61",
+        "wikiId": 5344,
+        "combatLevel": 61,
+        "hp": 47,
+        "defenceLevel": 55,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 5,
+          "slash": 5,
+          "crush": 3,
+          "magic": 1,
+          "rangedHeavy": 4,
+          "rangedStandard": 4,
+          "rangedLight": 4
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Undead one (Skeletal, 3).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 68 (Skeletal)",
+        "wikiId": 5342,
+        "combatLevel": 68,
+        "hp": 47,
+        "defenceLevel": 63,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 50
+        },
+        "image": "Undead one (Skeletal).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 68 (Zombie)",
+        "wikiId": 5346,
+        "combatLevel": 68,
+        "hp": 47,
+        "defenceLevel": 63,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Undead one (Zombie).png",
+        "size": 1,
+        "maxHitText": "7"
+      }
+    ]
   },
   {
     "slug": "uodai",
@@ -18282,7 +29758,66 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Urium Shade.png",
     "size": 1,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Shade",
+        "wikiId": 10589,
+        "combatLevel": 140,
+        "hp": 130,
+        "defenceLevel": 100,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "shade",
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Urium Shade.png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Shadow",
+        "wikiId": 6143,
+        "combatLevel": 140,
+        "hp": 130,
+        "defenceLevel": 100,
+        "magicLevel": 0,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead",
+          "spectral"
+        ],
+        "weakness": {
+          "element": "air",
+          "severity": 40
+        },
+        "image": "Urium Shadow.png",
+        "size": 1,
+        "maxHitText": "13"
+      }
+    ]
   },
   {
     "slug": "uyoro",
@@ -18361,7 +29896,153 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Vampyre Juvinate (Sins of the Father).png",
     "size": 1,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 119 (Sins of the Father)",
+        "wikiId": 9614,
+        "combatLevel": 119,
+        "hp": 150,
+        "defenceLevel": 65,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate (Sins of the Father).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 50 (In Aid of the Myreque)",
+        "wikiId": 4443,
+        "combatLevel": 50,
+        "hp": 60,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate (In Aid of the Myreque, level 50).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 54 (Burgh de Rott)",
+        "wikiId": 4427,
+        "combatLevel": 54,
+        "hp": 85,
+        "defenceLevel": 30,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate.png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 59 (Temple Trekking)",
+        "wikiId": 5634,
+        "combatLevel": 59,
+        "hp": 50,
+        "defenceLevel": 45,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate (Temple Trekking, level 59).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 75 (In Aid of the Myreque)",
+        "wikiId": 4442,
+        "combatLevel": 75,
+        "hp": 110,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate (In Aid of the Myreque, level 75).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 90 (Temple Trekking)",
+        "wikiId": 5635,
+        "combatLevel": 90,
+        "hp": 100,
+        "defenceLevel": 55,
+        "magicLevel": 50,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre2"
+        ],
+        "weakness": null,
+        "image": "Vampyre Juvinate (Temple Trekking, level 90).png",
+        "size": 1,
+        "maxHitText": "6"
+      }
+    ]
   },
   {
     "slug": "vampyre-kraken",
@@ -18416,7 +30097,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Vanstrom Klause (vampyre).png",
     "size": 1,
     "maxHitText": "24 (Standard)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Sins of the Father",
+        "wikiId": 9567,
+        "combatLevel": 459,
+        "hp": 750,
+        "defenceLevel": 180,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 34,
+          "slash": 34,
+          "crush": 34,
+          "magic": 34,
+          "rangedHeavy": 34,
+          "rangedStandard": 34,
+          "rangedLight": 34
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vanstrom Klause (vampyre).png",
+        "size": 1,
+        "maxHitText": "24 (Standard)"
+      },
+      {
+        "version": "Vampyre",
+        "wikiId": 3734,
+        "combatLevel": 169,
+        "hp": 155,
+        "defenceLevel": 150,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vanstrom Klause (vampyre).png",
+        "size": 1,
+        "maxHitText": "16"
+      }
+    ]
   },
   {
     "slug": "vardorvis",
@@ -18444,7 +30175,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Vardorvis.png",
     "size": 2,
     "maxHitText": "32-43 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 12223,
+        "combatLevel": 784,
+        "hp": 700,
+        "defenceLevel": 200,
+        "magicLevel": 215,
+        "defenceBonuses": {
+          "stab": 215,
+          "slash": 65,
+          "crush": 85,
+          "magic": 580,
+          "rangedHeavy": 580,
+          "rangedStandard": 580,
+          "rangedLight": 580
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 35
+        },
+        "image": "Vardorvis.png",
+        "size": 2,
+        "maxHitText": "32-43 (Melee)"
+      },
+      {
+        "version": "Awakened",
+        "wikiId": 12223,
+        "combatLevel": 1136,
+        "hp": 1400,
+        "defenceLevel": 200,
+        "magicLevel": 215,
+        "defenceBonuses": {
+          "stab": 215,
+          "slash": 65,
+          "crush": 85,
+          "magic": 580,
+          "rangedHeavy": 580,
+          "rangedStandard": 580,
+          "rangedLight": 580
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 35
+        },
+        "image": "Vardorvis.png",
+        "size": 2,
+        "maxHitText": "46-61 (Melee)"
+      },
+      {
+        "version": "Quest",
+        "wikiId": 12224,
+        "combatLevel": 572,
+        "hp": 500,
+        "defenceLevel": 200,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 150,
+          "slash": 25,
+          "crush": 50,
+          "magic": 560,
+          "rangedHeavy": 560,
+          "rangedStandard": 560,
+          "rangedLight": 560
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 35
+        },
+        "image": "Vardorvis.png",
+        "size": 2,
+        "maxHitText": "30-37 (Melee)"
+      }
+    ]
   },
   {
     "slug": "vasa-nistirio",
@@ -18606,7 +30414,147 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Verzik Vitur (flying).png",
     "size": 3,
     "maxHitText": "44",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Hard mode, Phase 2",
+        "wikiId": 10850,
+        "combatLevel": 1265,
+        "hp": 3500,
+        "defenceLevel": 200,
+        "magicLevel": 400,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 60,
+          "crush": 100,
+          "magic": 70,
+          "rangedHeavy": 250,
+          "rangedStandard": 250,
+          "rangedLight": 250
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Verzik Vitur (flying).png",
+        "size": 3,
+        "maxHitText": "44"
+      },
+      {
+        "version": "Entry mode, Phase 1",
+        "wikiId": 10830,
+        "combatLevel": 425,
+        "hp": 1200,
+        "defenceLevel": 10,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 10,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Verzik Vitur.png",
+        "size": 5,
+        "maxHitText": "60"
+      },
+      {
+        "version": "Entry mode, Phase 2",
+        "wikiId": 10833,
+        "combatLevel": 488,
+        "hp": 1600,
+        "defenceLevel": 120,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 20,
+          "crush": 40,
+          "magic": 40,
+          "rangedHeavy": 180,
+          "rangedStandard": 180,
+          "rangedLight": 180
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Verzik Vitur (flying).png",
+        "size": 3,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Entry mode, Phase 3",
+        "wikiId": 10835,
+        "combatLevel": 512,
+        "hp": 2400,
+        "defenceLevel": 120,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 30,
+          "slash": 10,
+          "crush": 30,
+          "magic": 60,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Verzik Vitur (final form).png",
+        "size": 7,
+        "maxHitText": "36 (melee)"
+      },
+      {
+        "version": "Hard mode, Phase 1",
+        "wikiId": 10847,
+        "combatLevel": 1040,
+        "hp": 2000,
+        "defenceLevel": 20,
+        "magicLevel": 400,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 20,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Verzik Vitur.png",
+        "size": 5,
+        "maxHitText": "137"
+      },
+      {
+        "version": "Hard mode, Phase 3",
+        "wikiId": 10852,
+        "combatLevel": 1520,
+        "hp": 3500,
+        "defenceLevel": 150,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 70,
+          "slash": 30,
+          "crush": 70,
+          "magic": 100,
+          "rangedHeavy": 230,
+          "rangedStandard": 230,
+          "rangedLight": 230
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Verzik Vitur (final form).png",
+        "size": 7,
+        "maxHitText": "63 (melee)"
+      }
+    ]
   },
   {
     "slug": "vespula",
@@ -18805,7 +30753,67 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Vorkath.png",
     "size": 7,
     "maxHitText": "30 (Magic)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 8059,
+        "combatLevel": 732,
+        "hp": 750,
+        "defenceLevel": 214,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 26,
+          "slash": 108,
+          "crush": 108,
+          "magic": 240,
+          "rangedHeavy": 26,
+          "rangedStandard": 26,
+          "rangedLight": 26
+        },
+        "attributes": [
+          "dragon",
+          "undead",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Vorkath.png",
+        "size": 7,
+        "maxHitText": "30 (Magic)"
+      },
+      {
+        "version": "Dragon Slayer II",
+        "wikiId": 8058,
+        "combatLevel": 392,
+        "hp": 460,
+        "defenceLevel": 164,
+        "magicLevel": 148,
+        "defenceBonuses": {
+          "stab": 66,
+          "slash": 126,
+          "crush": 126,
+          "magic": 204,
+          "rangedHeavy": 80,
+          "rangedStandard": 80,
+          "rangedLight": 80
+        },
+        "attributes": [
+          "dragon",
+          "undead",
+          "fiery"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Vorkath.png",
+        "size": 7,
+        "maxHitText": "30 (Magic)"
+      }
+    ]
   },
   {
     "slug": "vulture",
@@ -18860,7 +30868,129 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Vyrewatch.png",
     "size": 1,
     "maxHitText": "13",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 125",
+        "wikiId": 3712,
+        "combatLevel": 125,
+        "hp": 110,
+        "defenceLevel": 85,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vyrewatch.png",
+        "size": 1,
+        "maxHitText": "13"
+      },
+      {
+        "version": "Level 105",
+        "wikiId": 3709,
+        "combatLevel": 105,
+        "hp": 90,
+        "defenceLevel": 85,
+        "magicLevel": 105,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vyrewatch.png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 110",
+        "wikiId": 3710,
+        "combatLevel": 110,
+        "hp": 90,
+        "defenceLevel": 85,
+        "magicLevel": 110,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vyrewatch.png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 120",
+        "wikiId": 3711,
+        "combatLevel": 120,
+        "hp": 105,
+        "defenceLevel": 85,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vyrewatch.png",
+        "size": 1,
+        "maxHitText": "12"
+      },
+      {
+        "version": "Level 87",
+        "wikiId": 8252,
+        "combatLevel": 87,
+        "hp": 75,
+        "defenceLevel": 75,
+        "magicLevel": 75,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "vampyre3"
+        ],
+        "weakness": null,
+        "image": "Vyrewatch.png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "vyrewatch-sentinel",
@@ -18965,7 +31095,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Warped Terrorbird (lv 138).png",
     "size": 2,
     "maxHitText": "16",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 138",
+        "wikiId": 12499,
+        "combatLevel": 138,
+        "hp": 200,
+        "defenceLevel": 60,
+        "magicLevel": 160,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 62,
+          "rangedStandard": 62,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Warped Terrorbird (lv 138).png",
+        "size": 2,
+        "maxHitText": "16"
+      },
+      {
+        "version": "Level 96",
+        "wikiId": 12491,
+        "combatLevel": 96,
+        "hp": 150,
+        "defenceLevel": 20,
+        "magicLevel": 60,
+        "defenceBonuses": {
+          "stab": 50,
+          "slash": 50,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 62,
+          "rangedStandard": 62,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Warped Terrorbird (lv 96).png",
+        "size": 2,
+        "maxHitText": "10"
+      }
+    ]
   },
   {
     "slug": "warped-tortoise",
@@ -19048,7 +31224,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Werewolf (Alexis).png",
     "size": 1,
     "maxHitText": "8",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Alexis",
+        "wikiId": 2603,
+        "combatLevel": 88,
+        "hp": 100,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 60,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Werewolf (Alexis).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "God Wars Dungeon (1)",
+        "wikiId": 3135,
+        "combatLevel": 93,
+        "hp": 92,
+        "defenceLevel": 85,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": -21,
+          "slash": -21,
+          "crush": -21,
+          "magic": -21,
+          "rangedHeavy": -21,
+          "rangedStandard": -21,
+          "rangedLight": -21
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Werewolf (God Wars Dungeon, 1).png",
+        "size": 1,
+        "maxHitText": "9"
+      }
+    ]
   },
   {
     "slug": "white-wolf",
@@ -19076,7 +31298,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "White wolf.png",
     "size": 2,
     "maxHitText": "4",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 38",
+        "wikiId": 108,
+        "combatLevel": 38,
+        "hp": 44,
+        "defenceLevel": 32,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "White wolf.png",
+        "size": 2,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 25",
+        "wikiId": 107,
+        "combatLevel": 25,
+        "hp": 34,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "White wolf.png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "wild-dog",
@@ -19159,7 +31433,109 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Wolf.png",
     "size": 2,
     "maxHitText": "6",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 64",
+        "wikiId": 106,
+        "combatLevel": 64,
+        "hp": 69,
+        "defenceLevel": 52,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Wolf.png",
+        "size": 2,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 11",
+        "wikiId": 2491,
+        "combatLevel": 11,
+        "hp": 10,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Wolf (level 11).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 14",
+        "wikiId": 2490,
+        "combatLevel": 14,
+        "hp": 15,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Wolf (level 14).png",
+        "size": 2,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 25",
+        "wikiId": 110,
+        "combatLevel": 25,
+        "hp": 34,
+        "defenceLevel": 22,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 25
+        },
+        "image": "Wolf (level 25).png",
+        "size": 2,
+        "maxHitText": "3"
+      }
+    ]
   },
   {
     "slug": "wormbrain",
@@ -19297,7 +31673,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Xarpus.png",
     "size": 5,
     "maxHitText": "11 (50+ recoil)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Hard mode",
+        "wikiId": 10772,
+        "combatLevel": 1160,
+        "hp": 6000,
+        "defenceLevel": 200,
+        "magicLevel": 220,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Xarpus.png",
+        "size": 5,
+        "maxHitText": "11 (50+ recoil)"
+      },
+      {
+        "version": "Entry mode",
+        "wikiId": 10768,
+        "combatLevel": 331,
+        "hp": 3400,
+        "defenceLevel": 100,
+        "magicLevel": 80,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Xarpus.png",
+        "size": 5,
+        "maxHitText": "6 (38+ recoil)"
+      },
+      {
+        "version": "Normal mode",
+        "wikiId": 8340,
+        "combatLevel": 960,
+        "hp": 5000,
+        "defenceLevel": 250,
+        "magicLevel": 220,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 160,
+          "rangedStandard": 160,
+          "rangedLight": 160
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "air",
+          "severity": 50
+        },
+        "image": "Xarpus.png",
+        "size": 5,
+        "maxHitText": "11 (50+ recoil)"
+      }
+    ]
   },
   {
     "slug": "yama",
@@ -19327,7 +31780,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Yama.png",
     "size": 5,
     "maxHitText": "46 (auto-attacks)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 14176,
+        "combatLevel": 1238,
+        "hp": 2500,
+        "defenceLevel": 225,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 80,
+          "crush": 333,
+          "magic": 0,
+          "rangedHeavy": 333,
+          "rangedStandard": 220,
+          "rangedLight": 333
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Yama.png",
+        "size": 5,
+        "maxHitText": "46 (auto-attacks)"
+      },
+      {
+        "version": "Phase 3",
+        "wikiId": 14176,
+        "combatLevel": 1238,
+        "hp": 2500,
+        "defenceLevel": 225,
+        "magicLevel": 250,
+        "defenceBonuses": {
+          "stab": 135,
+          "slash": 108,
+          "crush": 449,
+          "magic": 81,
+          "rangedHeavy": 449,
+          "rangedStandard": 297,
+          "rangedLight": 449
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Yama.png",
+        "size": 5,
+        "maxHitText": "46 (auto-attacks)"
+      }
+    ]
   },
   {
     "slug": "yt-hurkot",
@@ -19355,7 +31864,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Yt-HurKot.png",
     "size": 1,
     "maxHitText": "18",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 141",
+        "wikiId": 7701,
+        "combatLevel": 141,
+        "hp": 90,
+        "defenceLevel": 100,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 130,
+          "rangedHeavy": 130,
+          "rangedStandard": 130,
+          "rangedLight": 130
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Yt-HurKot.png",
+        "size": 1,
+        "maxHitText": "18"
+      },
+      {
+        "version": "Level 108",
+        "wikiId": 3128,
+        "combatLevel": 108,
+        "hp": 60,
+        "defenceLevel": 60,
+        "magicLevel": 120,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 100,
+          "rangedHeavy": 100,
+          "rangedStandard": 100,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Yt-HurKot.png",
+        "size": 1,
+        "maxHitText": "14"
+      }
+    ]
   },
   {
     "slug": "yt-mejkot",
@@ -19438,7 +31999,53 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zalcano (weakened).png",
     "size": 5,
     "maxHitText": "N/A",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Weakened",
+        "wikiId": 9050,
+        "combatLevel": 336,
+        "hp": 1000,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Zalcano (weakened).png",
+        "size": 5,
+        "maxHitText": "N/A"
+      },
+      {
+        "version": "Armoured",
+        "wikiId": 9049,
+        "combatLevel": 336,
+        "hp": 300,
+        "defenceLevel": 1,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Zalcano.png",
+        "size": 5,
+        "maxHitText": "53"
+      }
+    ]
   },
   {
     "slug": "zebak",
@@ -19520,7 +32127,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Level 24).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 24, 1",
+        "wikiId": 49,
+        "combatLevel": 24,
+        "hp": 30,
+        "defenceLevel": 16,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 9,
+          "slash": 8,
+          "crush": 12,
+          "magic": 10,
+          "rangedHeavy": 11,
+          "rangedStandard": 11,
+          "rangedLight": 11
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Level 24).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 13, 1",
+        "wikiId": 26,
+        "combatLevel": 13,
+        "hp": 22,
+        "defenceLevel": 10,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Level 13).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 18, 1",
+        "wikiId": 42,
+        "combatLevel": 18,
+        "hp": 24,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Level 18).png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "zombie-entrana-dungeon",
@@ -19577,7 +32267,105 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Level 76).png",
     "size": 1,
     "maxHitText": "9",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 76",
+        "wikiId": 7487,
+        "combatLevel": 76,
+        "hp": 71,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Level 76).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 56",
+        "wikiId": 7486,
+        "combatLevel": 56,
+        "hp": 50,
+        "defenceLevel": 47,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Level 56).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 70",
+        "wikiId": 7485,
+        "combatLevel": 70,
+        "hp": 65,
+        "defenceLevel": 61,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Level 70).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 72",
+        "wikiId": 7488,
+        "combatLevel": 72,
+        "hp": 68,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Level 72).png",
+        "size": 1,
+        "maxHitText": "8"
+      }
+    ]
   },
   {
     "slug": "zombie-melzars-maze",
@@ -19661,7 +32449,81 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Shayzien Crypts, Magic).png",
     "size": 1,
     "maxHitText": "19",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Magic",
+        "wikiId": 8069,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 180,
+        "defenceBonuses": {
+          "stab": 35,
+          "slash": 30,
+          "crush": 35,
+          "magic": 20,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Shayzien Crypts, Magic).png",
+        "size": 1,
+        "maxHitText": "19"
+      },
+      {
+        "version": "Melee",
+        "wikiId": 8067,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 20,
+          "crush": 25,
+          "magic": 10,
+          "rangedHeavy": 30,
+          "rangedStandard": 30,
+          "rangedLight": 30
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Shayzien Crypts, Melee).png",
+        "size": 1,
+        "maxHitText": "19"
+      },
+      {
+        "version": "Range",
+        "wikiId": 8068,
+        "combatLevel": 132,
+        "hp": 54,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 15,
+          "slash": 10,
+          "crush": 15,
+          "magic": 30,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Shayzien Crypts, Range).png",
+        "size": 1,
+        "maxHitText": "19"
+      }
+    ]
   },
   {
     "slug": "zombie-stronghold-of-security",
@@ -19688,7 +32550,81 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Stronghold of Security, level 53, 1).png",
     "size": 1,
     "maxHitText": "5",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 53, 1",
+        "wikiId": 2507,
+        "combatLevel": 53,
+        "hp": 50,
+        "defenceLevel": 48,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 19,
+          "slash": 18,
+          "crush": 0,
+          "magic": 20,
+          "rangedHeavy": 21,
+          "rangedStandard": 21,
+          "rangedLight": 21
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Stronghold of Security, level 53, 1).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 30, 1",
+        "wikiId": 2501,
+        "combatLevel": 30,
+        "hp": 30,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Stronghold of Security, level 30, 1).png",
+        "size": 1,
+        "maxHitText": "4"
+      },
+      {
+        "version": "Level 44, 1",
+        "wikiId": 2504,
+        "combatLevel": 44,
+        "hp": 40,
+        "defenceLevel": 40,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 22,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Stronghold of Security, level 44, 1).png",
+        "size": 1,
+        "maxHitText": "5"
+      }
+    ]
   },
   {
     "slug": "zombie-tarns-lair",
@@ -19718,7 +32654,468 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Tarn's Lair, Level 100).png",
     "size": 1,
     "maxHitText": "11",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 100",
+        "wikiId": 6465,
+        "combatLevel": 100,
+        "hp": 102,
+        "defenceLevel": 81,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 100).png",
+        "size": 1,
+        "maxHitText": "11"
+      },
+      {
+        "version": "Level 40",
+        "wikiId": 6449,
+        "combatLevel": 40,
+        "hp": 38,
+        "defenceLevel": 33,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 40).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 42",
+        "wikiId": 6450,
+        "combatLevel": 42,
+        "hp": 40,
+        "defenceLevel": 35,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 42).png",
+        "size": 1,
+        "maxHitText": "5"
+      },
+      {
+        "version": "Level 47",
+        "wikiId": 6451,
+        "combatLevel": 47,
+        "hp": 42,
+        "defenceLevel": 42,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 47).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 50",
+        "wikiId": 6452,
+        "combatLevel": 50,
+        "hp": 48,
+        "defenceLevel": 44,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 50).png",
+        "size": 1,
+        "maxHitText": "6"
+      },
+      {
+        "version": "Level 56",
+        "wikiId": 6453,
+        "combatLevel": 56,
+        "hp": 50,
+        "defenceLevel": 47,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 56).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 61",
+        "wikiId": 6454,
+        "combatLevel": 61,
+        "hp": 57,
+        "defenceLevel": 50,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 61).png",
+        "size": 1,
+        "maxHitText": "7"
+      },
+      {
+        "version": "Level 67",
+        "wikiId": 6455,
+        "combatLevel": 67,
+        "hp": 63,
+        "defenceLevel": 60,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 67).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 70",
+        "wikiId": 6456,
+        "combatLevel": 70,
+        "hp": 65,
+        "defenceLevel": 61,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 70).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 72",
+        "wikiId": 6457,
+        "combatLevel": 72,
+        "hp": 68,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 72).png",
+        "size": 1,
+        "maxHitText": "8"
+      },
+      {
+        "version": "Level 76",
+        "wikiId": 6458,
+        "combatLevel": 76,
+        "hp": 71,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 76).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 80",
+        "wikiId": 6459,
+        "combatLevel": 80,
+        "hp": 73,
+        "defenceLevel": 62,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 80).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 81",
+        "wikiId": 6466,
+        "combatLevel": 81,
+        "hp": 76,
+        "defenceLevel": 71,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 81).png",
+        "size": 1,
+        "maxHitText": "9"
+      },
+      {
+        "version": "Level 85",
+        "wikiId": 6460,
+        "combatLevel": 85,
+        "hp": 75,
+        "defenceLevel": 70,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 85).png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 90",
+        "wikiId": 6462,
+        "combatLevel": 90,
+        "hp": 81,
+        "defenceLevel": 72,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 90).png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 95",
+        "wikiId": 6463,
+        "combatLevel": 95,
+        "hp": 92,
+        "defenceLevel": 75,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 95).png",
+        "size": 1,
+        "maxHitText": "10"
+      },
+      {
+        "version": "Level 98",
+        "wikiId": 6464,
+        "combatLevel": 98,
+        "hp": 96,
+        "defenceLevel": 81,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 20,
+          "slash": 20,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie (Tarn's Lair, Level 98).png",
+        "size": 1,
+        "maxHitText": "11"
+      }
+    ]
   },
   {
     "slug": "zombie-temple-trekking",
@@ -19772,7 +33169,57 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie (Wilderness, level 24, 1).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 24, 1",
+        "wikiId": 59,
+        "combatLevel": 24,
+        "hp": 30,
+        "defenceLevel": 16,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 9,
+          "slash": 8,
+          "crush": 12,
+          "magic": 10,
+          "rangedHeavy": 11,
+          "rangedStandard": 11,
+          "rangedLight": 11
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Wilderness, level 24, 1).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 18, 1",
+        "wikiId": 45,
+        "combatLevel": 18,
+        "hp": 24,
+        "defenceLevel": 18,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": null,
+        "image": "Zombie (Wilderness, level 18, 1).png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "zombie-zogre-flesh-eaters",
@@ -19832,7 +33279,90 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie pirate (4).png",
     "size": 1,
     "maxHitText": "3",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 34",
+        "wikiId": 13492,
+        "combatLevel": 34,
+        "hp": 40,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie pirate (4).png",
+        "size": 1,
+        "maxHitText": "3"
+      },
+      {
+        "version": "Level 22",
+        "wikiId": 13489,
+        "combatLevel": 22,
+        "hp": 30,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie pirate (1).png",
+        "size": 1,
+        "maxHitText": "2"
+      },
+      {
+        "version": "Level 28",
+        "wikiId": 13490,
+        "combatLevel": 28,
+        "hp": 35,
+        "defenceLevel": 20,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie pirate (2).png",
+        "size": 1,
+        "maxHitText": "2"
+      }
+    ]
   },
   {
     "slug": "zombie-pirate-braindeath-island",
@@ -19920,7 +33450,65 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zombie rat (1).png",
     "size": 2,
     "maxHitText": "1",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "1",
+        "wikiId": 3969,
+        "combatLevel": 3,
+        "hp": 5,
+        "defenceLevel": 2,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat",
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie rat (1).png",
+        "size": 2,
+        "maxHitText": "1"
+      },
+      {
+        "version": "3",
+        "wikiId": 3971,
+        "combatLevel": 3,
+        "hp": 5,
+        "defenceLevel": 2,
+        "magicLevel": 1,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [
+          "rat",
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zombie rat (3).png",
+        "size": 1,
+        "maxHitText": "1"
+      }
+    ]
   },
   {
     "slug": "zombie-swab",
@@ -19978,7 +33566,84 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zulrah (serpentine).png",
     "size": 5,
     "maxHitText": "41",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Serpentine",
+        "wikiId": 2042,
+        "combatLevel": 725,
+        "hp": 500,
+        "defenceLevel": 300,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": -45,
+          "rangedHeavy": 50,
+          "rangedStandard": 50,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zulrah (serpentine).png",
+        "size": 5,
+        "maxHitText": "41"
+      },
+      {
+        "version": "Magma",
+        "wikiId": 2043,
+        "combatLevel": 725,
+        "hp": 500,
+        "defenceLevel": 300,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 0,
+          "rangedHeavy": 300,
+          "rangedStandard": 300,
+          "rangedLight": 300
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zulrah (magma).png",
+        "size": 5,
+        "maxHitText": "30"
+      },
+      {
+        "version": "Tanzanite",
+        "wikiId": 2044,
+        "combatLevel": 725,
+        "hp": 500,
+        "defenceLevel": 300,
+        "magicLevel": 300,
+        "defenceBonuses": {
+          "stab": 0,
+          "slash": 0,
+          "crush": 0,
+          "magic": 300,
+          "rangedHeavy": 0,
+          "rangedStandard": 0,
+          "rangedLight": 0
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "Zulrah (tanzanite).png",
+        "size": 5,
+        "maxHitText": "41"
+      }
+    ]
   },
   {
     "slug": "zygomite",
@@ -20006,7 +33671,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Zygomite (level 86).png",
     "size": 2,
     "maxHitText": "8 (Melee)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Level 86",
+        "wikiId": 1024,
+        "combatLevel": 86,
+        "hp": 75,
+        "defenceLevel": 75,
+        "magicLevel": 75,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Zygomite (level 86).png",
+        "size": 2,
+        "maxHitText": "8 (Melee)"
+      },
+      {
+        "version": "Level 74",
+        "wikiId": 537,
+        "combatLevel": 74,
+        "hp": 65,
+        "defenceLevel": 65,
+        "magicLevel": 65,
+        "defenceBonuses": {
+          "stab": 10,
+          "slash": 10,
+          "crush": 10,
+          "magic": 20,
+          "rangedHeavy": 20,
+          "rangedStandard": 20,
+          "rangedLight": 20
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Zygomite (level 74).png",
+        "size": 1,
+        "maxHitText": "7 (Melee)"
+      }
+    ]
   }
 ];
 
