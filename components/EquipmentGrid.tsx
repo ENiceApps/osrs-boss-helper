@@ -6,11 +6,13 @@
 // item picker and shows a "why this item" tooltip. Used by LoadoutPanel and
 // HybridPanel.
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ItemIcon } from "./ItemIcon";
 import { fmtGp } from "@/lib/format";
 import { usePrices, priceForItem } from "@/lib/prices";
 import type { SlotExplanation } from "@/lib/loadout-explain";
+import type { SlotAlternative } from "@/lib/slot-alternatives";
+import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { MappingEntry } from "@/types/osrs";
 
@@ -31,6 +33,14 @@ interface Props {
    * shows a rich tooltip card instead of the native title attribute.
    */
   slotDetails?: Partial<Record<LoadoutSlotKey, SlotExplanation>>;
+  /**
+   * Ranked "next best options" for a slot. Called lazily for the hovered slot
+   * only (candidate scoring re-runs the DPS engine). When provided together
+   * with `onAlternativePick`, the tooltip grows a clickable alternatives list.
+   */
+  slotAlternatives?: (slot: LoadoutSlotKey) => SlotAlternative[];
+  /** Apply an alternative to the loadout (same effect as picking it in the modal). */
+  onAlternativePick?: (slot: LoadoutSlotKey, item: ItemCatalogEntry) => void;
 }
 
 const ALL_SLOTS: LoadoutSlotKey[] = [
@@ -79,6 +89,8 @@ export function EquipmentGrid({
   slotSize = 48,
   editedSlots,
   slotDetails,
+  slotAlternatives,
+  onAlternativePick,
 }: Props) {
   const { data: prices } = usePrices();
   // Only fade missing items when we actually know what the player owns —
@@ -88,6 +100,12 @@ export function EquipmentGrid({
   // State-driven (not CSS :hover) so focus shows tooltips too, and only one
   // card can ever be open.
   const [hoverSlot, setHoverSlot] = useState<LoadoutSlotKey | null>(null);
+  // Next-best options for the hovered slot only — each candidate is a DPS
+  // engine run, so this is deliberately lazy rather than precomputed per slot.
+  const alternatives = useMemo<SlotAlternative[]>(() => {
+    if (!hoverSlot || !slotAlternatives || !set?.slots[hoverSlot]) return [];
+    return slotAlternatives(hoverSlot);
+  }, [hoverSlot, slotAlternatives, set]);
   return (
     <div
       className="grid mx-auto"
@@ -124,19 +142,30 @@ export function EquipmentGrid({
           .join(" ");
         const Element = clickable ? "button" : "div";
         const showTooltip = hoverSlot === slot && Boolean(slotDetails) && Boolean(piece);
+        // The tooltip only takes pointer events when it has clickable
+        // alternatives — a passive card must not block hovers on neighbours.
+        const interactive =
+          showTooltip && alternatives.length > 0 && Boolean(onAlternativePick);
         return (
           <div
             key={slot}
             className="relative"
             style={{ gridArea: AREA_NAMES[slot], width: slotSize, height: slotSize }}
+            // Hover/focus lives on the wrapper (not the slot button) so the
+            // pointer — or the tab focus — can travel into the tooltip's
+            // alternative rows without the card closing under it.
+            onMouseEnter={() => setHoverSlot(slot)}
+            onMouseLeave={() => setHoverSlot((s) => (s === slot ? null : s))}
+            onFocus={() => setHoverSlot(slot)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setHoverSlot((s) => (s === slot ? null : s));
+              }
+            }}
           >
             <Element
               type={clickable ? "button" : undefined}
               onClick={clickable ? () => onSlotClick?.(slot) : undefined}
-              onMouseEnter={() => setHoverSlot(slot)}
-              onMouseLeave={() => setHoverSlot((s) => (s === slot ? null : s))}
-              onFocus={() => setHoverSlot(slot)}
-              onBlur={() => setHoverSlot((s) => (s === slot ? null : s))}
               className={className}
               style={{
                 width: slotSize,
@@ -159,6 +188,9 @@ export function EquipmentGrid({
                   mapping={mapping}
                   faded={hasBank && !owned}
                   title={piece.itemName}
+                  // The rich hover card already names the item — a native
+                  // tooltip on top of it would double up.
+                  nativeTooltip={!slotDetails}
                 />
               )}
             </Element>
@@ -167,8 +199,14 @@ export function EquipmentGrid({
               <div
                 id={`slot-tip-${slot}`}
                 role="tooltip"
-                className={`absolute top-0 z-20 w-56 pointer-events-none osrs-panel rounded p-2.5 text-left shadow-lg ${
-                  RIGHT_COLUMN.has(slot) ? "right-full mr-2" : "left-full ml-2"
+                // The gap to the slot is padding (not margin) so an interactive
+                // card stays hovered while the pointer crosses it.
+                className={`absolute top-0 z-20 w-56 osrs-panel rounded p-2.5 text-left shadow-lg ${
+                  interactive ? "" : "pointer-events-none"
+                } ${
+                  RIGHT_COLUMN.has(slot)
+                    ? "right-full mr-2 before:absolute before:top-0 before:bottom-0 before:left-full before:w-2 before:content-['']"
+                    : "left-full ml-2 before:absolute before:top-0 before:bottom-0 before:right-full before:w-2 before:content-['']"
                 }`}
               >
                 <div className="text-caption font-semibold text-osrs-brown leading-snug">
@@ -222,8 +260,49 @@ export function EquipmentGrid({
                     ★ {reason}
                   </div>
                 ))}
+                {interactive && (
+                  <div className="mt-1.5 border-t border-osrs-brown/20 pt-1.5">
+                    <div className="label-eyebrow text-osrs-muted mb-0.5">
+                      next best options
+                    </div>
+                    {alternatives.map((alt) => (
+                      <button
+                        key={alt.item.id}
+                        type="button"
+                        onClick={() => onAlternativePick?.(slot, alt.item)}
+                        title={`Swap to ${alt.item.name}`}
+                        className="w-full flex items-center gap-1.5 rounded px-1 py-0.5 text-left cursor-pointer hover:bg-osrs-gold/10"
+                      >
+                        <ItemIcon
+                          itemId={alt.item.id}
+                          size={18}
+                          mapping={mapping}
+                          // Title feeds the wiki-filename icon fallback for
+                          // items the GE mapping doesn't cover; the row's own
+                          // hover title carries the meaning, so no native tip.
+                          title={alt.item.name}
+                          nativeTooltip={false}
+                        />
+                        <span className="flex-1 min-w-0 truncate text-caption text-osrs-brown">
+                          {alt.item.name}
+                        </span>
+                        <span
+                          className={`shrink-0 tabular-nums text-caption font-semibold ${
+                            alt.delta >= -0.005 ? "text-status-owned" : "text-status-missing"
+                          }`}
+                          title="DPS change vs the current loadout"
+                        >
+                          {alt.delta >= 0 ? "+" : "−"}
+                          {Math.abs(alt.delta).toFixed(2)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {clickable && (
-                  <div className="text-caption text-osrs-muted italic mt-1">click to change</div>
+                  <div className="text-caption text-osrs-muted italic mt-1">
+                    click slot for all options
+                  </div>
                 )}
               </div>
             )}

@@ -11,7 +11,9 @@ import { EquipmentGrid } from "@/components/EquipmentGrid";
 import { MetaChip } from "@/components/ui";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import type { SlotExplanation } from "@/lib/loadout-explain";
+import type { SlotAlternative } from "@/lib/slot-alternatives";
 import type { SetupMechanicStatus } from "@/lib/setup-mechanics";
+import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, MappingEntry } from "@/types/osrs";
 
@@ -46,6 +48,10 @@ interface Props<TabId extends string> {
   onSpellClick?: () => void;
   /** Per-slot "why this item" details for the hover tooltips. */
   slotDetails?: Partial<Record<LoadoutSlotKey, SlotExplanation>>;
+  /** Ranked next-best options for a slot — the tooltip's clickable list. */
+  slotAlternatives?: (slot: LoadoutSlotKey) => SlotAlternative[];
+  /** Apply a next-best option to the loadout. */
+  onAlternativePick?: (slot: LoadoutSlotKey, item: ItemCatalogEntry) => void;
   /** Slots the user has manually overridden. */
   editedSlots: LoadoutSlotKey[];
   onResetEdits: () => void;
@@ -92,6 +98,8 @@ export function LoadoutPanel<TabId extends string>({
   onSlotClick,
   onSpellClick,
   slotDetails,
+  slotAlternatives,
+  onAlternativePick,
   editedSlots,
   onResetEdits,
   conflicts,
@@ -229,7 +237,8 @@ export function LoadoutPanel<TabId extends string>({
       )}
       {connected && set && (
         <p className="text-caption text-osrs-muted mb-3">
-          Hover a slot to see why it was picked — click to swap items.
+          Hover a slot to see why it was picked and your next best options —
+          click to swap items.
         </p>
       )}
 
@@ -241,6 +250,8 @@ export function LoadoutPanel<TabId extends string>({
         slotSize={56}
         editedSlots={new Set(editedSlots)}
         slotDetails={slotDetails}
+        slotAlternatives={slotAlternatives}
+        onAlternativePick={onAlternativePick}
       />
 
       {set && (
@@ -299,9 +310,11 @@ export function LoadoutPanel<TabId extends string>({
           {edited && (
             <div className="mt-3 text-caption text-osrs-brown flex items-center justify-between gap-2 bg-parchment-raised border border-osrs-gold/60 rounded px-2 py-1.5">
               <span>
-                <strong>Custom loadout</strong> — {editedSlots.length} slot
-                {editedSlots.length === 1 ? "" : "s"} edited on top of the
-                optimizer&apos;s pick.
+                <strong>Custom loadout</strong> —{" "}
+                {editedSlots.length === 1 ? "1 slot" : `${editedSlots.length} slots`}
+                {/* Explicit space: this JSX transform eats a leading space in a
+                    text node that follows an expression and wraps lines. */}
+                {" edited on top of the optimizer's pick."}
               </span>
               <button
                 type="button"

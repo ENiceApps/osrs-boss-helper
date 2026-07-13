@@ -10,6 +10,12 @@ interface ItemIconProps {
   mapping?: MappingEntry[];
   faded?: boolean;
   title?: string;
+  /**
+   * Set false to suppress the native browser tooltip — `title` still feeds
+   * the fallback icon URL and alt text. Use when a parent renders its own
+   * rich tooltip so the two don't stack.
+   */
+  nativeTooltip?: boolean;
 }
 
 /**
@@ -31,7 +37,14 @@ interface ItemIconProps {
  * a position-relative parent. Pixelated rendering keeps the sharp OSRS
  * sprite look at larger zooms.
  */
-export function ItemIcon({ itemId, size = 32, mapping, faded, title }: ItemIconProps) {
+export function ItemIcon({
+  itemId,
+  size = 32,
+  mapping,
+  faded,
+  title,
+  nativeTooltip = true,
+}: ItemIconProps) {
   const entry = mapping?.find((m) => m.id === itemId);
   let url: string | null = null;
   if (entry?.icon) {
@@ -48,7 +61,7 @@ export function ItemIcon({ itemId, size = 32, mapping, faded, title }: ItemIconP
     <div
       className={`flex items-center justify-center ${faded ? "opacity-30 grayscale" : ""}`}
       style={{ width: size, height: size }}
-      title={label}
+      title={nativeTooltip ? label : undefined}
     >
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
