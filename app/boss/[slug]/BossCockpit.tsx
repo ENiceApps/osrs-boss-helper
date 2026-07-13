@@ -25,6 +25,7 @@ import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { explainSlots } from "@/lib/loadout-explain";
+import { rankSlotAlternatives, type SlotAlternative } from "@/lib/slot-alternatives";
 import { compareSlotsVsReference, type SlotVsBank } from "@/lib/loadout-compare";
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
@@ -46,6 +47,8 @@ import { prayerById, DEFAULT_PRAYER_ID } from "@/data/prayers";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
 import { MetaChip, WeaknessBadge, AttributePill, CollapsibleSection } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
+import { BossPhasePanel } from "@/components/BossPhasePanel";
+import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import { DittoEditorPanel } from "@/components/DittoEditorPanel";
 import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides, findCatalogItem } from "@/lib/loadout-edit";
@@ -112,7 +115,21 @@ export function BossCockpit({ slug }: { slug: string }) {
   // every other boss `monster` is just the static catalog entry.
   const isDitto = slug === "ditto";
   const [dittoMonster, setDittoMonster] = useState<MonsterCatalogEntry>(baseMonster);
-  const monster = isDitto ? dittoMonster : baseMonster;
+
+  // Boss phase (Zulrah's forms, Verzik's phases, Tormented Demon's shield…).
+  // The selection is keyed by slug so a client-side navigation to another boss
+  // can never carry a stale phase across. Empty options = fight has one state.
+  const phaseOptions = useMemo(() => phaseOptionsFor(baseMonster), [baseMonster]);
+  const [phaseSel, setPhaseSel] = useState<{ slug: string; id: string } | null>(null);
+  const activePhase =
+    (phaseSel?.slug === slug
+      ? phaseOptions.find((o) => o.id === phaseSel.id)
+      : undefined) ?? phaseOptions[0];
+  const phasedMonster = useMemo(
+    () => applyPhase(baseMonster, activePhase),
+    [baseMonster, activePhase],
+  );
+  const monster = isDitto ? dittoMonster : phasedMonster;
 
   // Local bank bridge — see lib/liveBank.ts / lib/localBank.ts. `live` reads the
   // bank file the RuneLite plugin writes on this machine; until you connect that
@@ -502,8 +519,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       soulreaper: soulreaperMaxStacks || undefined,
       dharokHp: dharokCurrentHp,
       prayers: encodeNonDefaultPrayers(prayerIds),
+      phase:
+        activePhase && activePhase.id !== phaseOptions[0]?.id ? activePhase.id : undefined,
     });
-  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds]);
+  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, activePhase, phaseOptions]);
 
   // Hydrate page state from a share link once on mount. Garbage/absent param →
   // decodeLoadout returns null and we leave defaults untouched.
@@ -539,6 +558,10 @@ export function BossCockpit({ slug }: { slug: string }) {
     if (state.tab) setActiveTab(state.tab as LoadoutTabId);
     if (typeof state.soulreaper === "boolean") setSoulreaperMaxStacks(state.soulreaper);
     if (typeof state.dharokHp === "number") setDharokCurrentHp(state.dharokHp);
+    // Unknown ids fall back to the default phase at render time, so a link
+    // from an older/newer catalog can't break the page.
+    if (typeof state.phase === "string") setPhaseSel({ slug, id: state.phase });
+    // (hydratedRef guards re-runs, so the `slug` dep never re-fires this.)
     if (state.prayers && typeof state.prayers === "object") {
       setPrayerIds((prev) => {
         const next = { ...prev };
@@ -550,7 +573,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         return next;
       });
     }
-  }, []);
+  }, [slug]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // Soulreaper: only meaningful when the axe is actually equipped.
@@ -578,16 +601,23 @@ export function BossCockpit({ slug }: { slug: string }) {
     setOverrides({});
     setSpellOverride(null);
   }
+  // Apply one slot pick as a manual override — shared by the item picker and
+  // the tooltip's next-best-option rows.
+  const applySlotOverride = useCallback(
+    (slot: LoadoutSlotKey, item: ItemCatalogEntry | null) => {
+      setOverrides((prev) => {
+        const next = { ...prev, [slot]: item };
+        // A 2H weapon can't coexist with a shield — clear the shield slot so the
+        // picked weapon doesn't leave a stranded off-hand (defender/shield) behind.
+        if (slot === "weapon" && item?.isTwoHanded) next.shield = null;
+        return next;
+      });
+    },
+    [],
+  );
   function onPickerSelect(item: ItemCatalogEntry | null) {
     if (!pickerSlot) return;
-    const slot = pickerSlot;
-    setOverrides((prev) => {
-      const next = { ...prev, [slot]: item };
-      // A 2H weapon can't coexist with a shield — clear the shield slot so the
-      // picked weapon doesn't leave a stranded off-hand (defender/shield) behind.
-      if (slot === "weapon" && item?.isTwoHanded) next.shield = null;
-      return next;
-    });
+    applySlotOverride(pickerSlot, item);
     setPickerSlot(null);
   }
   function onSpellSelect(spell: SpellEntry | null) {
@@ -667,6 +697,27 @@ export function BossCockpit({ slug }: { slug: string }) {
       ).dps;
     },
     [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds],
+  );
+
+  // Ranked "next best options" for one slot — the loadout doll's tooltip calls
+  // this lazily for the hovered slot. Bank-driven modes rank what the player
+  // owns (the honest "what else could I wear right now"); Budget mode has no
+  // bank, so it ranks the whole catalog.
+  const alternativesForSlot = useCallback(
+    (slot: LoadoutSlotKey): SlotAlternative[] => {
+      if (!selectedSet || !selectedDps) return [];
+      const weaponId = selectedSet.slots.weapon?.itemId;
+      return rankSlotAlternatives({
+        slot,
+        currentItemName: selectedSet.slots[slot]?.itemName,
+        currentDps: selectedDps.dps,
+        ownedItemIds: !fromScratchMode && bank ? ownedItemIds : undefined,
+        skills,
+        weapon: weaponId !== undefined ? findCatalogItem(weaponId) : undefined,
+        dpsForItem: dpsForSlotItem,
+      });
+    },
+    [selectedSet, selectedDps, fromScratchMode, bank, ownedItemIds, skills, dpsForSlotItem],
   );
 
   // Flag worn-slot mechanics the ACTIVE setup drops (e.g. no dragonfire
@@ -847,6 +898,19 @@ export function BossCockpit({ slug }: { slug: string }) {
             <BossStatsPanel monster={monster} />
           )}
         </div>
+
+        {/* Phase selector — swaps the target's stat block / mechanic state for
+            the whole cockpit. Hidden for single-state fights and for Ditto
+            (whose stats are hand-edited above instead). */}
+        {!isDitto && phaseOptions.length >= 2 && (
+          <div className="mt-2">
+            <BossPhasePanel
+              options={phaseOptions}
+              activeId={activePhase?.id ?? ""}
+              onChange={(id) => setPhaseSel({ slug, id })}
+            />
+          </div>
+        )}
       </header>
 
       {/* The cockpit: setup rail (inputs) → loadout (the editable answer) →
@@ -984,6 +1048,8 @@ export function BossCockpit({ slug }: { slug: string }) {
             onSlotClick={(slot) => setPickerSlot(slot)}
             onSpellClick={() => setSpellPickerOpen(true)}
             slotDetails={slotDetails}
+            slotAlternatives={alternativesForSlot}
+            onAlternativePick={applySlotOverride}
             editedSlots={overridesActive ? (Object.keys(overrides) as LoadoutSlotKey[]) : []}
             onResetEdits={resetOverrides}
             conflicts={setupConflicts}

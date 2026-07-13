@@ -2,7 +2,7 @@
 // The wiki calc accepts a full JSON state blob POSTed to its shortlink API,
 // returning an ID that prefills equipment, skills, and target monster.
 
-import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import type { PhasedMonster } from "@/lib/phases";
 import type { CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
 import type { AttackStyleChoice, CombatStyle, Skills } from "@/types/osrs";
@@ -64,11 +64,12 @@ function toWikiStance(choice: AttackStyleChoice, style: string): WikiStance {
   }
 }
 
-/** Build the ImportableData payload the wiki calc shortlink API accepts. */
-function buildPayload(
+/** Build the ImportableData payload the wiki calc shortlink API accepts.
+ *  Exported for tests only — callers use openInWikiCalc. */
+export function buildWikiPayload(
   set: LoadoutSet,
   skills: Skills,
-  monster: MonsterCatalogEntry,
+  monster: PhasedMonster,
   onTask: boolean,
   boost: CombatBoost | undefined,
 ): object {
@@ -143,6 +144,10 @@ function buildPayload(
     immunities: { burn: null },
     is_slayer_monster: false,
     inputs: {
+      // Mechanic phase (e.g. Tormented Demon "Shielded"/"Unshielded") — the
+      // wiki calc reads it as monster.inputs.phase. undefined is dropped by
+      // JSON.stringify, leaving the calc on its own default.
+      phase: monster.wikiPhase,
       isFromCoxCm: false,
       toaInvocationLevel: 0,
       toaPathLevel: 0,
@@ -218,7 +223,7 @@ function buildPayload(
 export async function openInWikiCalc(
   set: LoadoutSet,
   skills: Skills,
-  monster: MonsterCatalogEntry,
+  monster: PhasedMonster,
   onTask: boolean,
   boost: CombatBoost | undefined,
 ): Promise<string> {
@@ -226,7 +231,7 @@ export async function openInWikiCalc(
   // serves the same purpose in the wiki calc: all-zero defence bonuses, used
   // for pure max-hit / DPS sanity checks. Swap it in so the calc opens with a
   // meaningful target instead of nothing.
-  const wikiMonster: MonsterCatalogEntry =
+  const wikiMonster: PhasedMonster =
     monster.wikiId === 0
       ? {
           ...monster,
@@ -244,7 +249,7 @@ export async function openInWikiCalc(
         }
       : monster;
 
-  const payload = JSON.stringify(buildPayload(set, skills, wikiMonster, onTask, boost));
+  const payload = JSON.stringify(buildWikiPayload(set, skills, wikiMonster, onTask, boost));
   const res = await fetch(SHORTLINK_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

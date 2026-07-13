@@ -43,6 +43,8 @@ export interface SharedLoadoutState {
   dharokHp?: number;
   /** Chosen offensive prayer id per style (only non-default styles encoded). */
   prayers?: Partial<Record<"melee" | "ranged" | "magic", string>>;
+  /** Active boss-phase option id (see lib/phases.ts), when not the default. */
+  phase?: string;
 }
 
 /** UTF-8-safe base64url encode that works in both the browser and Node (tests). */
