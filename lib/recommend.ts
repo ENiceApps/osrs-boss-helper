@@ -15,7 +15,8 @@ import { resolveBoltProc } from "@/lib/dps/bolts";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
 import type { LoadoutSet } from "@/types/loadout";
-import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { defaultDamageModifier } from "@/data/bosses/mechanic-phases";
+import type { PhasedMonster } from "@/lib/phases";
 import { categoryForMonster } from "@/data/monsters/categories";
 import {
   activeBonusesForTarget,
@@ -52,7 +53,7 @@ function pick(style: LoadoutSet["style"]): { name: string; effect: string } {
 }
 
 /** Resolve which defence-bonus number to feed the DPS calc given the loadout's attack profile. */
-function defenceBonusForSet(set: LoadoutSet, target: MonsterCatalogEntry): number {
+function defenceBonusForSet(set: LoadoutSet, target: PhasedMonster): number {
   if (set.attackType === "ranged") {
     // Dispatch by weapon category: Crossbow → heavy, Bow → standard,
     // Thrown/Blowpipe → light. Falls back to "standard" if the field is
@@ -62,7 +63,7 @@ function defenceBonusForSet(set: LoadoutSet, target: MonsterCatalogEntry): numbe
   return defenceBonusForAttackType(target, set.attackType);
 }
 
-function targetDefenceLevelFor(set: LoadoutSet, target: MonsterCatalogEntry): number {
+function targetDefenceLevelFor(set: LoadoutSet, target: PhasedMonster): number {
   if (set.style !== "magic") return target.defenceLevel;
   // For magic, NPC defence rolls off skills.magic — EXCEPT a curated set of
   // bosses (Verzik, Ice demon, Fragment of Seren, Rabbit, …) that use Defence
@@ -96,7 +97,7 @@ const TZHAAR_MELEE_WEAPON_IDS = new Set([6523, 6525, 6527, 6528]);
 
 export function computeSetDps(
   set: LoadoutSet,
-  target: MonsterCatalogEntry,
+  target: PhasedMonster,
   skills: Skills,
   /** Optional combat-boost potion. Applied to the visible level before the engine. */
   boost?: CombatBoost,
@@ -171,6 +172,41 @@ export function computeSetDps(
         weaponName.endsWith("halberd") ||
         (weaponName.toLowerCase().includes("spear") && weaponName !== "Blue moon spear")));
   const corpDamageHalved = target.slug === "corporeal-beast" && !isCorpbane;
+  // Per-monster/per-phase damage scale (Tormented Demon's shield ×4/5, Abyssal
+  // Sire transition ×1/2, Hueycoatl pillar ×13/10, Doom immunity ×0). The
+  // active phase supplies it on the target (null = a chosen phase with no
+  // modifier); a raw catalog entry falls back to the boss's DEFAULT mechanic
+  // phase, so non-UI callers match the wiki calc's defaults. Pierce rules
+  // mirror wgloop's isUsingDemonbane / isUsingAbyssal: demonbane is the
+  // Silverlight line + Bone/Burning claws (melee), Scorching bow (ranged), or
+  // a Demonbane spell (magic); abyssal is the whip/tentacle/dagger/bludgeon.
+  const modifier =
+    target.damageModifier !== undefined
+      ? target.damageModifier
+      : defaultDamageModifier(target.slug);
+  let targetDamageFactor: [number, number] | undefined;
+  if (modifier && (!modifier.styles || modifier.styles.includes(set.style))) {
+    const demonbanePierce =
+      modifier.piercedByDemonbane === true &&
+      (set.style === "magic"
+        ? (set.autoSpellName ?? "").includes("Demonbane")
+        : set.style === "ranged"
+          ? weaponName === "Scorching bow"
+          : ["Silverlight", "Darklight", "Arclight", "Emberlight", "Bone claws", "Burning claws"]
+              .includes(weaponName));
+    const abyssalPierce =
+      modifier.piercedByAbyssal === true &&
+      set.style === "melee" &&
+      weaponName.toLowerCase().includes("abyssal");
+    targetDamageFactor = demonbanePierce || abyssalPierce ? undefined : modifier.factor;
+  }
+  // Per-phase accuracy scale + can't-miss states (Royal Titans, Doom). These
+  // only exist on phased targets — no slug fallback needed because no boss's
+  // DEFAULT phase carries them.
+  const acc = target.accuracyModifier;
+  const targetAccuracyFactor =
+    acc && (!acc.styles || acc.styles.includes(set.style)) ? acc.factor : undefined;
+  const targetAlwaysHit = target.alwaysHits === true;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -273,6 +309,9 @@ export function computeSetDps(
     bloodrager,
     berserkerObsidian,
     corpDamageHalved,
+    targetDamageFactor,
+    targetAccuracyFactor,
+    targetAlwaysHit,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

@@ -152,6 +152,24 @@ export interface DpsScenario {
    * attack type and target identity are all known.
    */
   corpDamageHalved?: boolean;
+  /**
+   * Per-monster/per-phase damage scale as a [numerator, denominator] factor:
+   * [4, 5] for the Tormented Demon's shield, [1, 2] for the Abyssal Sire's
+   * transition, [13, 10] for the Hueycoatl's pillar buff, [0, 1] for Doom's
+   * immunity. Applied to the final max hit after every other multiplier,
+   * mirroring wgloop's applyNpcTransforms order. Resolved upstream
+   * (computeSetDps) where the target's phase, style gates, and any bypassing
+   * weapons (demonbane/abyssal) are known.
+   */
+  targetDamageFactor?: [number, number];
+  /**
+   * Per-phase attack-roll scale (Royal Titans: ranged ×6 out of melee range).
+   * Applied to the final attack roll just before the hit-chance calc.
+   * Style-gated upstream.
+   */
+  targetAccuracyFactor?: [number, number];
+  /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
+  targetAlwaysHit?: boolean;
 }
 
 interface StyleBonuses {
@@ -393,9 +411,27 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc(maxHit / 2);
   }
 
-  const accuracy = scenario.fangEquipped
-    ? fangHitChance(attackRoll, defenceRoll)
-    : hitChance(attackRoll, defenceRoll);
+  // Per-monster/per-phase damage scale (TD shield, Sire transition, Hueycoatl
+  // pillar, Doom immunity). Like the corp halving above: applied after every
+  // damage multiplier so it scales the final mean, and before the
+  // bolt/multi-hit expected-damage calc.
+  if (scenario.targetDamageFactor) {
+    const [n, d] = scenario.targetDamageFactor;
+    maxHit = Math.trunc((maxHit * n) / d);
+  }
+
+  // Per-phase attack-roll scale (Royal Titans ranged ×6) — the last accuracy
+  // multiplier before rolling, mirroring wgloop's PLAYER_ACCURACY_TITANS_RANGED.
+  if (scenario.targetAccuracyFactor) {
+    const [n, d] = scenario.targetAccuracyFactor;
+    attackRoll = Math.trunc((attackRoll * n) / d);
+  }
+
+  const accuracy = scenario.targetAlwaysHit
+    ? 1
+    : scenario.fangEquipped
+      ? fangHitChance(attackRoll, defenceRoll)
+      : hitChance(attackRoll, defenceRoll);
 
   // Blood moon "Bloodrager" set effect: the Dual macuahuitl's two sequential
   // hits each have a 33% chance to accelerate the next attack by one tick. The
