@@ -36,11 +36,14 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   [33318, (lvl) => Math.floor(lvl / 3) - 4], // (e) (o) Charged
   [33320, (lvl) => Math.floor(lvl / 3) - 4], // (e) (o) Uncharged
 
-  // Sanguinesti staff: floor(magic / 3) - 1  (32 at 99)
-  [22323, (lvl) => Math.floor(lvl / 3) - 1], // Charged
-  [22481, (lvl) => Math.floor(lvl / 3) - 1], // Uncharged
-  [25731, (lvl) => Math.floor(lvl / 3) - 1], // Holy sanguinesti staff (charged)
-  [25733, (lvl) => Math.floor(lvl / 3) - 1], // Holy sanguinesti staff (uncharged)
+  // Sanguinesti staff: floor(magic / 3)  (33 at 99)
+  // Summer Sweep-Up (2026-07-22): base max hit +1, was floor(magic / 3) - 1.
+  // The same patch made the 1/5 life-leech proc deal 8 bonus damage — that
+  // lives in the DPS engine (sanguinestiProc), not in this base formula.
+  [22323, (lvl) => Math.floor(lvl / 3)], // Charged
+  [22481, (lvl) => Math.floor(lvl / 3)], // Uncharged
+  [25731, (lvl) => Math.floor(lvl / 3)], // Holy sanguinesti staff (charged)
+  [25733, (lvl) => Math.floor(lvl / 3)], // Holy sanguinesti staff (uncharged)
 
   // Tumeken's shadow: floor(magic / 3) + 1  (34 at 99)
   [27275, (lvl) => Math.floor(lvl / 3) + 1], // Charged

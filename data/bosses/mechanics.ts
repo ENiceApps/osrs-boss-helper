@@ -1141,7 +1141,7 @@ const SKOTIZO: MechanicRequirement[] = [
     id: "skotizo-altars",
     label: "Kill all 4 Altars — they heal and spawn dark ankou",
     description:
-      "Four Altars around the room heal Skotizo for ~10 HP/tick and continuously spawn Dark ankou. Destroy all four Altars immediately on entry, then focus Skotizo.",
+      "Four Altars around the room heal Skotizo for ~10 HP/tick and continuously spawn Dark ankou. Destroy all four Altars immediately on entry, then focus Skotizo. Since the July 2026 Summer Sweep-Up a destroyed Altar stays down for a full minute (and the arena is smaller), so one clean perimeter lap usually covers the whole kill.",
     remediation: "Run the perimeter and Arclight the Altars (1–2 hits each), then finish the boss.",
   },
   {

@@ -393,6 +393,33 @@ describe("Keris partisan — vs Kalphite bonuses", () => {
     expect(withProc.dps / withoutProc.dps).toBeCloseTo(53 / 51, 5);
   });
 
+  it("Sanguinesti proc adds accuracy × 8/5 expected damage per attack", () => {
+    // Summer Sweep-Up (2026-07-22): the 1/5 life leech deals 8 bonus damage.
+    const base: DpsScenario = {
+      style: "magic",
+      attackStyle: "accurate",
+      prayers: BASE_PRAYERS,
+      skills: BASE_SKILLS,
+      attackBonus: 80,
+      strengthBonus: 0,
+      baseSpellMaxHit: 33,
+      attackSpeedTicks: 4,
+      targetDefenceLevel: 100,
+      targetDefenceBonusForStyle: 50,
+      conditionalBonuses: {},
+    };
+    const withoutProc = calculateDps(base);
+    const withProc = calculateDps({ ...base, sanguinestiProc: true });
+    const interval = 4 * 0.6;
+    expect(withProc.dps - withoutProc.dps).toBeCloseTo(
+      (withProc.accuracy * 8) / 5 / interval,
+      5,
+    );
+    // The flat bonus must not touch max hit or accuracy.
+    expect(withProc.maxHit).toBe(withoutProc.maxHit);
+    expect(withProc.accuracy).toBe(withoutProc.accuracy);
+  });
+
   it("breaching +33% accuracy increases hit chance", () => {
     const base: DpsScenario = {
       style: "melee",

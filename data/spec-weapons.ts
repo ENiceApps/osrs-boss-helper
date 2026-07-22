@@ -101,7 +101,10 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
     name: "Tonalztics of ralos",
     specName: "Division",
     energyCost: 50,
-    effect: "Reduces target's Defence by a percentage of their Magic level.",
+    // Summer Sweep-Up (2026-07-22) buff: 10% → 12.5% per hit, and the spec
+    // now rolls with +50% accuracy.
+    effect:
+      "Reduces target's Defence by 12.5% of their Magic level per hit (two hits when charged), with +50% accuracy.",
     role: "defence-reduction",
   },
   {

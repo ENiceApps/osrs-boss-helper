@@ -530,7 +530,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "amoxliatl",
     "wikiId": 13685,
     "name": "Amoxliatl",
-    "version": "",
+    "version": "Post-quest",
     "combatLevel": 263,
     "hp": 520,
     "defenceLevel": 80,
@@ -554,7 +554,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Amoxliatl.png",
     "size": 3,
     "maxHitText": "22 (standard) · 34 (Icicle Crash)",
-    "isSlayerMonster": true
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 13685,
+        "combatLevel": 263,
+        "hp": 520,
+        "defenceLevel": 80,
+        "magicLevel": 170,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 40,
+          "magic": 100,
+          "rangedHeavy": 200,
+          "rangedStandard": 200,
+          "rangedLight": 200
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 30
+        },
+        "image": "Amoxliatl.png",
+        "size": 3,
+        "maxHitText": "22 (standard) · 34 (Icicle Crash)"
+      },
+      {
+        "version": "Quest",
+        "wikiId": 13686,
+        "combatLevel": 226,
+        "hp": 400,
+        "defenceLevel": 60,
+        "magicLevel": 140,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 40,
+          "magic": 100,
+          "rangedHeavy": 200,
+          "rangedStandard": 200,
+          "rangedLight": 200
+        },
+        "attributes": [
+          "spectral"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 30
+        },
+        "image": "Amoxliatl.png",
+        "size": 3,
+        "maxHitText": "16 (standard) · ? (Icicle Crash)"
+      }
+    ]
   },
   {
     "slug": "ancient-custodian",
@@ -611,7 +667,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Ancient Wyvern.png",
     "size": 5,
-    "maxHitText": "10 (Magic)",
+    "maxHitText": "10 (Ranged)",
     "isSlayerMonster": true
   },
   {
@@ -1943,7 +1999,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "undead",
       "spectral"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "air",
+      "severity": 40
+    },
     "image": "Asyn Shade.png",
     "size": 1,
     "maxHitText": "11",
@@ -2877,7 +2936,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "basilisk-the-fremennik-exiles",
     "wikiId": 9283,
     "name": "Basilisk (The Fremennik Exiles)",
-    "version": "1",
+    "version": "Adult",
     "combatLevel": 61,
     "hp": 75,
     "defenceLevel": 75,
@@ -3145,7 +3204,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": "26"
       },
       {
-        "version": "Factions",
+        "version": "Permanent",
         "wikiId": 15547,
         "combatLevel": 422,
         "hp": 1000,
@@ -3823,6 +3882,33 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": false
   },
   {
+    "slug": "blood-starved-venator",
+    "wikiId": 15770,
+    "name": "Blood-starved venator",
+    "version": "",
+    "combatLevel": 246,
+    "hp": 345,
+    "defenceLevel": 120,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": -5,
+      "slash": 60,
+      "crush": 130,
+      "magic": 110,
+      "rangedHeavy": -5,
+      "rangedStandard": -5,
+      "rangedLight": -5
+    },
+    "attributes": [
+      "vampyre3"
+    ],
+    "weakness": null,
+    "image": "Blood-starved venator.png",
+    "size": 3,
+    "maxHitText": "21 (Melee/ranged)",
+    "isSlayerMonster": true
+  },
+  {
     "slug": "bloodveld",
     "wikiId": 484,
     "name": "Bloodveld",
@@ -4449,7 +4535,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Bryophyta.png",
     "size": 3,
-    "maxHitText": "16",
+    "maxHitText": "16 (Melee)",
     "isSlayerMonster": true
   },
   {
@@ -5261,7 +5347,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Chaos Fanatic.png",
     "size": 1,
-    "maxHitText": "31",
+    "maxHitText": "21 (Magic attack) · 31 (Special attack)",
     "isSlayerMonster": true
   },
   {
@@ -5571,7 +5657,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [],
     "weakness": null,
     "image": "Cockatrice (unused).png",
-    "size": 2,
+    "size": 3,
     "maxHitText": "5",
     "isSlayerMonster": true
   },
@@ -7593,7 +7679,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dire gryphon.png",
     "size": 3,
-    "maxHitText": "0",
+    "maxHitText": "20",
     "isSlayerMonster": true
   },
   {
@@ -13045,7 +13131,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "guard-dwarf",
     "wikiId": 5185,
     "name": "Guard (dwarf)",
-    "version": "",
+    "version": "1",
     "combatLevel": 10,
     "hp": 16,
     "defenceLevel": 9,
@@ -13655,7 +13741,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "i-dscim-you",
     "wikiId": 15553,
     "name": "I DSCIM YOU",
-    "version": "",
+    "version": "Annihilation",
     "combatLevel": 495,
     "hp": 1500,
     "defenceLevel": 25,
@@ -13677,7 +13763,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "I DSCIM YOU.png",
     "size": 1,
     "maxHitText": "21",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Annihilation",
+        "wikiId": 15553,
+        "combatLevel": 495,
+        "hp": 1500,
+        "defenceLevel": 25,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 50,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "I DSCIM YOU.png",
+        "size": 1,
+        "maxHitText": "21"
+      },
+      {
+        "version": "Permanent",
+        "wikiId": 15553,
+        "combatLevel": 307,
+        "hp": 750,
+        "defenceLevel": 25,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 25,
+          "slash": 25,
+          "crush": 25,
+          "magic": 50,
+          "rangedHeavy": 10,
+          "rangedStandard": 10,
+          "rangedLight": 10
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
+        "image": "I DSCIM YOU.png",
+        "size": 1,
+        "maxHitText": "21"
+      }
+    ]
   },
   {
     "slug": "ice-giant",
@@ -17299,10 +17437,37 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "lowerniel-drakan",
+    "wikiId": 16204,
+    "name": "Lowerniel Drakan",
+    "version": "",
+    "combatLevel": 1063,
+    "hp": 3000,
+    "defenceLevel": 100,
+    "magicLevel": 320,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 150,
+      "rangedStandard": 150,
+      "rangedLight": 150
+    },
+    "attributes": [
+      "vampyre3"
+    ],
+    "weakness": null,
+    "image": "Lowerniel Drakan (The Blood Moon Rises, final battle).png",
+    "size": 2,
+    "maxHitText": "69",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "maggot-king",
     "wikiId": 15742,
     "name": "Maggot King",
-    "version": "",
+    "version": "Far",
     "combatLevel": 741,
     "hp": 1500,
     "defenceLevel": 200,
@@ -17323,8 +17488,85 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Maggot King.png",
     "size": 5,
-    "maxHitText": "46 (Magic / Ranged), ~52 (Melee lunge)",
-    "isSlayerMonster": true
+    "maxHitText": "46 (Magic / Ranged)",
+    "isSlayerMonster": true,
+    "phases": [
+      {
+        "version": "Far",
+        "wikiId": 15742,
+        "combatLevel": 741,
+        "hp": 1500,
+        "defenceLevel": 200,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 172,
+          "slash": 100,
+          "crush": 45,
+          "magic": 150,
+          "rangedHeavy": 43,
+          "rangedStandard": 158,
+          "rangedLight": 232
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 80
+        },
+        "image": "Maggot King.png",
+        "size": 5,
+        "maxHitText": "46 (Magic / Ranged)"
+      },
+      {
+        "version": "Nearby",
+        "wikiId": 15742,
+        "combatLevel": 741,
+        "hp": 1500,
+        "defenceLevel": 200,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 172,
+          "slash": 100,
+          "crush": 45,
+          "magic": 400,
+          "rangedHeavy": 43,
+          "rangedStandard": 158,
+          "rangedLight": 232
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 5
+        },
+        "image": "Maggot King.png",
+        "size": 5,
+        "maxHitText": "46 (Magic / Ranged)"
+      },
+      {
+        "version": "Roaring",
+        "wikiId": 15742,
+        "combatLevel": 741,
+        "hp": 1500,
+        "defenceLevel": 100,
+        "magicLevel": 200,
+        "defenceBonuses": {
+          "stab": 172,
+          "slash": 100,
+          "crush": 45,
+          "magic": 150,
+          "rangedHeavy": 43,
+          "rangedStandard": 158,
+          "rangedLight": 232
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 80
+        },
+        "image": "Maggot King.png",
+        "size": 5,
+        "maxHitText": "46 (Magic / Ranged)"
+      }
+    ]
   },
   {
     "slug": "magic-axe",
@@ -17381,28 +17623,6 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 13663,
         "combatLevel": 967,
         "hp": 3500,
-        "defenceLevel": 30,
-        "magicLevel": 175,
-        "defenceBonuses": {
-          "stab": 25,
-          "slash": 25,
-          "crush": 25,
-          "magic": 150,
-          "rangedHeavy": 10,
-          "rangedStandard": 10,
-          "rangedLight": 10
-        },
-        "attributes": [],
-        "weakness": null,
-        "image": "Magic Mark.png",
-        "size": 1,
-        "maxHitText": "18"
-      },
-      {
-        "version": "All-Stars",
-        "wikiId": 13663,
-        "combatLevel": 217,
-        "hp": 500,
         "defenceLevel": 30,
         "magicLevel": 175,
         "defenceBonuses": {
@@ -17631,6 +17851,31 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 1,
     "maxHitText": "8",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "maxilla-beast",
+    "wikiId": 16233,
+    "name": "Maxilla beast",
+    "version": "",
+    "combatLevel": 194,
+    "hp": 200,
+    "defenceLevel": 0,
+    "magicLevel": 0,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 0,
+      "rangedStandard": 0,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Maxilla beast.png",
+    "size": 2,
+    "maxHitText": "53",
+    "isSlayerMonster": false
   },
   {
     "slug": "menaphite-akh",
@@ -17916,9 +18161,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
-    "slug": "mogre-sailing",
+    "slug": "mogre-sea",
     "wikiId": 15230,
-    "name": "Mogre (Sailing)",
+    "name": "Mogre (sea)",
     "version": "",
     "combatLevel": 54,
     "hp": 59,
@@ -17934,10 +18179,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedLight": 0
     },
     "attributes": [],
-    "weakness": {
-      "element": "earth",
-      "severity": 20
-    },
+    "weakness": null,
     "image": "Mogre (Sailing).png",
     "size": 2,
     "maxHitText": "6",
@@ -20811,7 +21053,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "wikiId": 9118,
     "name": "Rabbit (Prifddinas)",
     "version": "",
-    "combatLevel": 2,
+    "combatLevel": 0,
     "hp": 2000,
     "defenceLevel": 450,
     "magicLevel": 300,
@@ -20851,7 +21093,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "attributes": [],
     "weakness": null,
-    "image": "Ranging Ro (Annihilation).png",
+    "image": "Ranging Ro.png",
     "size": 1,
     "maxHitText": "16",
     "isSlayerMonster": false,
@@ -20861,28 +21103,6 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 13664,
         "combatLevel": 973,
         "hp": 3500,
-        "defenceLevel": 100,
-        "magicLevel": 15,
-        "defenceBonuses": {
-          "stab": 100,
-          "slash": 100,
-          "crush": 100,
-          "magic": 200,
-          "rangedHeavy": 100,
-          "rangedStandard": 100,
-          "rangedLight": 100
-        },
-        "attributes": [],
-        "weakness": null,
-        "image": "Ranging Ro (Annihilation).png",
-        "size": 1,
-        "maxHitText": "16"
-      },
-      {
-        "version": "All-Stars",
-        "wikiId": 13664,
-        "combatLevel": 223,
-        "hp": 500,
         "defenceLevel": 100,
         "magicLevel": 15,
         "defenceBonuses": {
@@ -22266,7 +22486,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "undead",
       "spectral"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "air",
+      "severity": 40
+    },
     "image": "Riyl Shade.png",
     "size": 1,
     "maxHitText": "7",
@@ -22357,7 +22580,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "rockslug",
     "wikiId": 421,
     "name": "Rockslug",
-    "version": "Cave",
+    "version": "Adult",
     "combatLevel": 29,
     "hp": 27,
     "defenceLevel": 27,
@@ -22886,7 +23109,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedLight": 0
     },
     "attributes": [],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 35
+    },
     "image": "Scorpia's guardian.png",
     "size": 1,
     "maxHitText": "4",
@@ -23583,7 +23809,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "undead",
       "spectral"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "air",
+      "severity": 40
+    },
     "image": "Fiyr Shade.png",
     "size": 1,
     "maxHitText": "15",
@@ -24200,7 +24429,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "undead"
     ],
     "weakness": {
-      "element": "air",
+      "element": "earth",
       "severity": 35
     },
     "image": "Skeleton (Lucien's camp, 1).png",
@@ -24820,7 +25049,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "earth",
+      "severity": 35
+    },
     "image": "Skeleton Lvl18.png",
     "size": 1,
     "maxHitText": "1",
@@ -25138,7 +25370,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "earth",
+      "severity": 35
+    },
     "image": "Skeleton Mage (lv 83).png",
     "size": 1,
     "maxHitText": "11",
@@ -25163,7 +25398,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
         "image": "Skeleton Mage (lv 83).png",
         "size": 1,
         "maxHitText": "11"
@@ -25187,7 +25425,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "earth",
+          "severity": 35
+        },
         "image": "Skeleton Mage (lv 16).png",
         "size": 1,
         "maxHitText": "3"
@@ -25539,7 +25780,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedStandard": 0,
       "rangedLight": 0
     },
-    "attributes": [],
+    "attributes": [
+      "undead"
+    ],
     "weakness": null,
     "image": "Sorebones (apron).png",
     "size": 1,
@@ -26874,7 +27117,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Summoned Zombie.png",
     "size": 1,
     "maxHitText": "2",
@@ -26988,7 +27234,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Taloned Wyvern.png",
     "size": 3,
-    "maxHitText": "10 (Magic)",
+    "maxHitText": "10 (Ranged)",
     "isSlayerMonster": true
   },
   {
@@ -27037,7 +27283,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "xerician"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "water",
+      "severity": 20
+    },
     "image": "Tekton.png",
     "size": 4,
     "maxHitText": "52",
@@ -27062,7 +27311,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "xerician"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "water",
+          "severity": 20
+        },
         "image": "Tekton.png",
         "size": 4,
         "maxHitText": "52"
@@ -27086,7 +27338,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "xerician"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "water",
+          "severity": 20
+        },
         "image": "Tekton (enraged).png",
         "size": 4,
         "maxHitText": "59"
@@ -30143,7 +30398,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "vampyre3"
         ],
         "weakness": null,
-        "image": "Vanstrom Klause (vampyre).png",
+        "image": "Vanstrom Klause (vampyre, Darkness of Hallowvale).png",
         "size": 1,
         "maxHitText": "16"
       }
@@ -30310,7 +30565,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "venator",
     "wikiId": 15765,
     "name": "Venator",
-    "version": "",
+    "version": "1",
     "combatLevel": 246,
     "hp": 345,
     "defenceLevel": 120,
@@ -30320,9 +30575,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "slash": 20,
       "crush": 90,
       "magic": 100,
-      "rangedHeavy": -5,
-      "rangedStandard": -5,
-      "rangedLight": -5
+      "rangedHeavy": 100,
+      "rangedStandard": 100,
+      "rangedLight": 100
     },
     "attributes": [
       "vampyre3"
@@ -31006,9 +31261,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "slash": 0,
       "crush": 0,
       "magic": 0,
-      "rangedHeavy": 0,
-      "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedHeavy": 100,
+      "rangedStandard": 100,
+      "rangedLight": 100
     },
     "attributes": [
       "vampyre3"
@@ -31198,7 +31453,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Waterfiend.png",
     "size": 1,
-    "maxHitText": "16",
+    "maxHitText": "11",
     "isSlayerMonster": true
   },
   {
@@ -31561,6 +31816,33 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 1,
     "maxHitText": "1",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "wyrd",
+    "wikiId": 16212,
+    "name": "Wyrd",
+    "version": "",
+    "combatLevel": 564,
+    "hp": 1100,
+    "defenceLevel": 180,
+    "magicLevel": 250,
+    "defenceBonuses": {
+      "stab": 30,
+      "slash": 30,
+      "crush": 30,
+      "magic": 30,
+      "rangedHeavy": 150,
+      "rangedStandard": 150,
+      "rangedLight": 150
+    },
+    "attributes": [
+      "vampyre3"
+    ],
+    "weakness": null,
+    "image": "Wyrd.png",
+    "size": 3,
+    "maxHitText": "30 (melee)",
+    "isSlayerMonster": false
   },
   {
     "slug": "wyrm",
@@ -32181,7 +32463,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 13).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "2"
       },
       {
         "version": "Level 18, 1",
@@ -32263,7 +32545,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Zombie (Level 76).png",
     "size": 1,
     "maxHitText": "9",
@@ -32288,7 +32573,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Level 76).png",
         "size": 1,
         "maxHitText": "9"
@@ -32312,7 +32600,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Level 56).png",
         "size": 1,
         "maxHitText": "7"
@@ -32336,7 +32627,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Level 70).png",
         "size": 1,
         "maxHitText": "8"
@@ -32360,7 +32654,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Level 72).png",
         "size": 1,
         "maxHitText": "8"
@@ -32445,7 +32742,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Zombie (Shayzien Crypts, Magic).png",
     "size": 1,
     "maxHitText": "19",
@@ -32470,7 +32770,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Shayzien Crypts, Magic).png",
         "size": 1,
         "maxHitText": "19"
@@ -32494,7 +32797,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Shayzien Crypts, Melee).png",
         "size": 1,
         "maxHitText": "19"
@@ -32518,7 +32824,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Shayzien Crypts, Range).png",
         "size": 1,
         "maxHitText": "19"
@@ -32546,7 +32855,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Zombie (Stronghold of Security, level 53, 1).png",
     "size": 1,
     "maxHitText": "5",
@@ -32571,7 +32883,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Stronghold of Security, level 53, 1).png",
         "size": 1,
         "maxHitText": "5"
@@ -32595,7 +32910,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Stronghold of Security, level 30, 1).png",
         "size": 1,
         "maxHitText": "4"
@@ -32619,7 +32937,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Stronghold of Security, level 44, 1).png",
         "size": 1,
         "maxHitText": "5"
@@ -33165,7 +33486,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Zombie (Wilderness, level 24, 1).png",
     "size": 1,
     "maxHitText": "3",
@@ -33190,7 +33514,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Wilderness, level 24, 1).png",
         "size": 1,
         "maxHitText": "3"
@@ -33214,7 +33541,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [
           "undead"
         ],
-        "weakness": null,
+        "weakness": {
+          "element": "fire",
+          "severity": 50
+        },
         "image": "Zombie (Wilderness, level 18, 1).png",
         "size": 1,
         "maxHitText": "2"
@@ -33415,7 +33745,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "attributes": [
       "undead"
     ],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 50
+    },
     "image": "Zombie pirate (Harmony Island) (1).png",
     "size": 1,
     "maxHitText": "6",

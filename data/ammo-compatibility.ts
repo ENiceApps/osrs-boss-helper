@@ -131,8 +131,16 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Heavy ballista (or)": { class: "javelin", maxTier: 7 },
 
   // Blowpipes — fire darts (loaded into the weapon, not the ammo slot in-game,
-  // but we model them as ammo for totals).
+  // but we model them as ammo for totals). The Hunter's Guild pipes are
+  // tier-capped; Rosewood went adamant → rune in the Summer Sweep-Up
+  // (2026-07-22). Keep these caps in sync with
+  // data/items/internal-ammo-weapons.ts.
   "Toxic blowpipe": { class: "dart", maxTier: 7 },
+  "Blazing blowpipe": { class: "dart", maxTier: 7 },
+  "Drygore blowpipe": { class: "dart", maxTier: 7 },
+  "Camphor blowpipe": { class: "dart", maxTier: 4 },
+  "Ironwood blowpipe": { class: "dart", maxTier: 5 },
+  "Rosewood blowpipe": { class: "dart", maxTier: 6 },
 };
 
 /**

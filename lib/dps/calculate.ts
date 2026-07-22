@@ -68,6 +68,12 @@ export interface DpsScenario {
    */
   kalphiteTripleProc?: boolean;
   /**
+   * Magic-only: Sanguinesti staff's 1/5 life-leech proc deals 8 bonus damage
+   * (Summer Sweep-Up, 2026-07-22). Mean-only — expected +8/5 per landed hit,
+   * flat (no magic-damage scaling). Resolved upstream from the weapon id.
+   */
+  sanguinestiProc?: boolean;
+  /**
    * Magic-only: a demonbane spell (Inferior/Superior/Dark Demonbane) cast vs a
    * demon — raises magic accuracy by this percentage (e.g. 20 → ×120/100).
    * Mark of Darkness would raise it further (not modeled). Damage is unaffected.
@@ -461,6 +467,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // to whichever mean (single-hit / bolt / multi-hit) was computed above.
   if (scenario.kalphiteTripleProc) {
     dps = (dps * 53) / 51;
+  }
+
+  // Sanguinesti staff's life leech (1/5 on landed hits) deals 8 bonus damage
+  // since the 2026-07-22 Summer Sweep-Up. The bonus is flat — it skips every
+  // damage multiplier above — so it's an additive expected-damage term:
+  // accuracy × 8/5 per attack.
+  if (scenario.sanguinestiProc) {
+    dps += (accuracy * 8) / 5 / (bloodragerSpeed * 0.6);
   }
 
   return { dps, maxHit, accuracy };

@@ -94,6 +94,9 @@ const BLOOD_MOON_LEGS_IDS = new Set([29025, 29045, 29070]);
 // TzHaar/obsidian MELEE weapons — Berserker necklace gives +20% damage with these.
 // Toktz-xil-ak (sword), Toktz-xil-ek (dagger), Tzhaar-ket-em (mace), Tzhaar-ket-om (maul).
 const TZHAAR_MELEE_WEAPON_IDS = new Set([6523, 6525, 6527, 6528]);
+// Sanguinesti staff variants (regular + Holy, charged + uncharged) — the same
+// ids as their entries in data/items/powered-staff-spells.ts.
+const SANGUINESTI_STAFF_IDS = new Set([22323, 22481, 25731, 25733]);
 
 export function computeSetDps(
   set: LoadoutSet,
@@ -222,6 +225,13 @@ export function computeSetDps(
   const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
     targetSize: target.size,
   });
+  // Sanguinesti staff (incl. Holy, charged + uncharged catalog variants): the
+  // 1/5 life-leech proc deals 8 bonus damage since the 2026-07-22 Summer
+  // Sweep-Up. Engine adds the expected-value term when this is set.
+  const sanguinestiProc =
+    set.style === "magic" &&
+    weaponId !== undefined &&
+    SANGUINESTI_STAFF_IDS.has(weaponId);
   // Tumeken's shadow (charged 27275 / uncharged 27277) triples worn magic bonuses
   // — quadruples them inside the Tombs of Amascut (magic damage still capped 100%).
   const shadowEquipped = weaponId === 27275 || weaponId === 27277;
@@ -295,6 +305,7 @@ export function computeSetDps(
     shadowEquipped,
     shadowToaQuadruple,
     kalphiteTripleProc: activeBonuses.conditionalBonuses.kerisVsKalphite,
+    sanguinestiProc,
     demonbaneSpellAccuracyPct,
     twinflameStandard,
     twinflameDoubleCast,

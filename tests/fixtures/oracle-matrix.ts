@@ -48,7 +48,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     // Arclight, Neitiznot faceguard, Infernal cape, Amulet of torture,
     // Bandos chestplate, Bandos tassets, Ferocious gloves, Primordial boots,
     // Berserker ring (i)
-    itemIds: [19675, 24271, 21287, 19553, 11832, 11834, 22981, 13239, 11773],
+    itemIds: [19675, 24271, 21295, 19553, 11832, 11834, 22981, 13239, 11773],
     attackType: "slash",
     choice: "aggressive",
     codePaths: [
@@ -102,7 +102,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     bossSlug: "general-graardor",
     // Void melee helm, Void knight top, Void knight robe, Void knight gloves (required),
     // Abyssal whip, Infernal cape, Amulet of torture, Primordial boots, Berserker ring (i)
-    itemIds: [11665, 8839, 8840, 8842, 4151, 21287, 19553, 13239, 11773],
+    itemIds: [11665, 8839, 8840, 8842, 4151, 21295, 19553, 13239, 11773],
     attackType: "slash",
     choice: "accurate",
     codePaths: [
@@ -159,7 +159,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     bossSlug: "general-graardor",
     // Inquisitor's great helm, hauberk, plateskirt, Barrelchest anchor (crush),
     // Infernal cape, Amulet of torture, Ferocious gloves, Primordial boots, Berserker ring (i)
-    itemIds: [24419, 24420, 24421, 10887, 21287, 19553, 22981, 13239, 11773],
+    itemIds: [24419, 24420, 24421, 10887, 21295, 19553, 22981, 13239, 11773],
     attackType: "crush",
     choice: "aggressive",
     codePaths: [
@@ -178,7 +178,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     bossSlug: "cerberus",
     // Toktz-xil-ak (obsidian sword, stab), Obsidian helmet, platebody, platelegs,
     // Infernal cape, Berserker necklace, Ferocious gloves, Primordial boots, Berserker ring (i)
-    itemIds: [6523, 21298, 21301, 21304, 21287, 11128, 22981, 13239, 11773],
+    itemIds: [6523, 21298, 21301, 21304, 21295, 11128, 22981, 13239, 11773],
     attackType: "stab",
     choice: "aggressive",
     codePaths: [

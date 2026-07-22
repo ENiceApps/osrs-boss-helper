@@ -174,11 +174,16 @@ function budgetGreedyFill(
   const ids: number[] = [ws.weapon.id];
   let remaining = budget;
 
-  // Blowpipe internal dart — best affordable dart by ranged strength.
+  // Blowpipe internal dart — best affordable dart by ranged strength, capped
+  // at the blowpipe's dart tier (Hunter's Guild pipes can't load every dart).
   let internalAmmoId: number | undefined;
-  if (INTERNAL_AMMO_WEAPONS.has(ws.weapon.id)) {
+  const internalSpec = INTERNAL_AMMO_WEAPONS.get(ws.weapon.id);
+  if (internalSpec) {
     const darts = (bySlot.get("weapon") ?? [])
-      .filter((i) => AMMO_TYPES[i.name]?.class === "dart" && priceOf(i) <= remaining)
+      .filter((i) => {
+        const ammo = AMMO_TYPES[i.name];
+        return ammo?.class === "dart" && ammo.tier <= internalSpec.maxDartTier && priceOf(i) <= remaining;
+      })
       .sort((a, b) => b.rangedStr - a.rangedStr);
     if (darts[0]) {
       internalAmmoId = darts[0].id;

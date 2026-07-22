@@ -227,13 +227,19 @@ function greedyBuild(
   const ids: number[] = [ws.weapon.id];
   const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
 
-  // Blowpipe — find the best dart in the bank. Darts have slot:"weapon" in
-  // the catalog (they're thrown weapons), so they live in the weapon pool.
+  // Blowpipe — find the best dart in the bank, capped at the blowpipe's dart
+  // tier (Hunter's Guild pipes can't load every dart). Darts have
+  // slot:"weapon" in the catalog (they're thrown weapons), so they live in
+  // the weapon pool.
   let internalAmmoId: number | undefined;
-  if (INTERNAL_AMMO_WEAPONS.has(ws.weapon.id)) {
+  const internalSpec = INTERNAL_AMMO_WEAPONS.get(ws.weapon.id);
+  if (internalSpec) {
     const weaponPool = bySlot.get("weapon") ?? [];
     const bestDart = weaponPool
-      .filter((i) => AMMO_TYPES[i.name]?.class === "dart")
+      .filter((i) => {
+        const ammo = AMMO_TYPES[i.name];
+        return ammo?.class === "dart" && ammo.tier <= internalSpec.maxDartTier;
+      })
       .sort((a, b) => b.rangedStr - a.rangedStr)[0];
     if (bestDart) internalAmmoId = bestDart.id;
   }
