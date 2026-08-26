@@ -69,6 +69,20 @@ describe("resolveBoltProc — gating", () => {
   it("plain (non-enchanted) ammo never procs", () => {
     expect(resolveBoltProc({ ...base, ammoItemId: 21905 /* Dragon bolts */ })).toBeUndefined();
   });
+
+  it("rubyProcEnabled:false silences ruby only — other effects still proc", () => {
+    expect(
+      resolveBoltProc({ ...base, ammoItemId: RUBY_DRAGON_E, rubyProcEnabled: false }),
+    ).toBeUndefined();
+    // Diamond ignores the ruby toggle.
+    expect(
+      resolveBoltProc({ ...base, ammoItemId: DIAMOND_DRAGON_E, rubyProcEnabled: false }),
+    ).toMatchObject({ effect: "diamond" });
+    // Default (omitted) keeps the proc on.
+    expect(resolveBoltProc({ ...base, ammoItemId: RUBY_DRAGON_E })).toMatchObject({
+      effect: "ruby",
+    });
+  });
 });
 
 describe("expectedBoltDamagePerAttack — hand-computed expectations", () => {
@@ -166,5 +180,16 @@ describe("optimizer — proc-aware ammo selection vs Vorkath", () => {
     expect(ruby).toBeGreaterThan(diamond);
     // Ruby's edge at full HP is large — roughly +1 DPS over diamond here.
     expect(ruby - diamond).toBeGreaterThan(0.5);
+  });
+
+  it("rubyProcEnabled:false dethrones ruby — diamond (e) wins the ammo slot instead", () => {
+    const { rankings } = optimizeForBoss({
+      bank: BANK,
+      target: VORKATH,
+      skills: SKILLS_AT_99,
+      rubyProcEnabled: false,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.slots.ammo?.itemId).toBe(DIAMOND_DRAGON_E);
   });
 });

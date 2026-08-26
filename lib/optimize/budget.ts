@@ -84,6 +84,8 @@ export interface FindUpgradesInput {
   onTask?: boolean;
   /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
   /**
@@ -219,6 +221,7 @@ function findCandidates(
   requiresMeleeReach2?: boolean,
   onTask?: boolean,
   soulreaperMaxStacks?: boolean,
+  rubyProcEnabled?: boolean,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -279,6 +282,7 @@ function findCandidates(
           boostResolver,
           onTask,
           soulreaperMaxStacks,
+          rubyProcEnabled,
         });
         if (s.valid && (!scored || !scored.valid || s.dps.dps > scored.dps.dps)) {
           scored = s;
@@ -295,6 +299,7 @@ function findCandidates(
         boostResolver,
         onTask,
         soulreaperMaxStacks,
+        rubyProcEnabled,
       });
     }
     if (!scored || !scored.valid) continue;
@@ -365,6 +370,7 @@ function runUpgradesFromBase(
       input.requiresMeleeReach2,
       input.onTask,
       input.soulreaperMaxStacks,
+      input.rubyProcEnabled,
     );
     if (candidates.length === 0) break;
 
@@ -407,6 +413,7 @@ function runUpgradesFromBase(
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
     });
     if (!rescored.valid) break;
     activeLoadout = rescored.loadout;
@@ -436,6 +443,7 @@ function runUpgradesFromBase(
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }
@@ -479,6 +487,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     boostResolver: input.boostResolver,
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
+    rubyProcEnabled: input.rubyProcEnabled,
     requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0] ?? null;
@@ -578,6 +587,8 @@ export interface RecommendSellInput {
   onTask?: boolean;
   /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   requiresMeleeReach2?: boolean;
 }
 
@@ -607,6 +618,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
     boostResolver: input.boostResolver,
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
+    rubyProcEnabled: input.rubyProcEnabled,
     requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0];
@@ -658,6 +670,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       input.requiresMeleeReach2,
       input.onTask,
       input.soulreaperMaxStacks,
+      input.rubyProcEnabled,
     );
     if (candidates.length === 0) break;
     // Biggest raw DPS gain first; cheaper item wins ties.
@@ -689,6 +702,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
     });
     if (!rescored.valid) break;
     activeLoadout = rescored.loadout;

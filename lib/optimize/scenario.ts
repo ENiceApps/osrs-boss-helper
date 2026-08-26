@@ -64,6 +64,8 @@ export interface ScenarioInput {
   onTask?: boolean;
   /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   /**
    * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
    * it lives inside the weapon, leaving the ammo slot free for a blessing.
@@ -430,6 +432,9 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     input.boostResolver?.(combatStyle),
     input.onTask ?? false,
     input.soulreaperMaxStacks ?? false,
+    undefined,
+    undefined,
+    input.rubyProcEnabled ?? true,
   );
   const activeBonuses = activeBonusesForTarget(loadout, target);
   return { valid: true, loadout, dps, activeBonuses };

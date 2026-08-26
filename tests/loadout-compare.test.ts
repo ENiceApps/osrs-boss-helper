@@ -41,6 +41,7 @@ describe("loadout-compare — slot DPS vs the bank item it replaced", () => {
       boostResolver: () => undefined,
       onTask: true,
       soulreaperMaxStacks: false,
+      rubyProcEnabled: true,
     });
 
     // The weapon slot is compared against the fang by name, with a positive,
@@ -80,6 +81,7 @@ describe("loadout-compare — slot DPS vs the bank item it replaced", () => {
       boostResolver: () => undefined,
       onTask: true,
       soulreaperMaxStacks: false,
+      rubyProcEnabled: true,
     });
 
     // Only the weapon changed, so every other slot is absent from the map.

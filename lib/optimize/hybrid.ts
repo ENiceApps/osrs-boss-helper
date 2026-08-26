@@ -78,6 +78,8 @@ export interface HybridOptimizerInput {
   boostResolver?: BoostResolver;
   onTask?: boolean;
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   requiresMeleeReach2?: boolean;
   /** Magic fallbacks (normally left unset — the engine auto-picks the spell). */
   baseSpellMaxHit?: number;
@@ -209,6 +211,7 @@ export function optimizeHybrid(input: HybridOptimizerInput): HybridResult {
     boostResolver: input.boostResolver,
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
+    rubyProcEnabled: input.rubyProcEnabled,
     requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
@@ -327,6 +330,7 @@ function solveHybrid(
         boostResolver: input.boostResolver,
         onTask: input.onTask,
         soulreaperMaxStacks: input.soulreaperMaxStacks,
+        rubyProcEnabled: input.rubyProcEnabled,
       });
       scenariosScored++;
       out.set(anchor.style, scored.valid ? { dps: scored.dps.dps, scored } : { dps: 0, scored: null });

@@ -134,6 +134,8 @@ export function explainSlots(
   skills: Skills,
   boost: Parameters<typeof computeSetDps>[3],
   activeBonuses: TargetActiveBonuses | null,
+  /** Ruby bolt special assumed to fire (default ON) — mirrors the engine's toggle. */
+  rubyProcEnabled = true,
 ): Partial<Record<LoadoutSlotKey, SlotExplanation>> {
   const out: Partial<Record<LoadoutSlotKey, SlotExplanation>> = {};
   // Enchanted-bolt proc on the ammo slot — same resolution the engine uses.
@@ -144,6 +146,7 @@ export function explainSlots(
         weaponCategory: set.weaponCategory,
         visibleRangedLevel: applyCombatBoost(skills, boost).ranged,
         target: { hp: monster.hp, attributes: monster.attributes, slug: monster.slug },
+        rubyProcEnabled,
       })
     : undefined;
   for (const slot of SLOT_KEYS) {
@@ -159,7 +162,10 @@ export function explainSlots(
     }
     if (slot !== "weapon" && dps.dps > 0) {
       const without = applyOverrides(set, { [slot]: null });
-      const dpsWithout = computeSetDps(without, monster, skills, boost);
+      const dpsWithout = computeSetDps(
+        without, monster, skills, boost,
+        false, false, undefined, undefined, rubyProcEnabled,
+      );
       explanation.marginalDps = Math.max(0, dps.dps - dpsWithout.dps);
     }
     out[slot] = explanation;

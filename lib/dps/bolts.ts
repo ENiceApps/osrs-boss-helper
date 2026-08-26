@@ -54,6 +54,12 @@ export interface ResolveBoltProcInput {
   target: { hp: number; attributes: readonly string[]; slug?: string };
   /** Kandarin Hard diary ×1.1 proc chance. Defaults ON — the wiki calc's default. */
   kandarinDiary?: boolean;
+  /**
+   * User toggle: assume the ruby bolt special fires (default ON). OFF means
+   * ruby bolts are valued on raw stats only — no proc spec is returned — so
+   * the optimizer stops auto-picking them on proc expected value alone.
+   */
+  rubyProcEnabled?: boolean;
 }
 
 const BASE_CHANCE: Record<BoltEffect, number> = {
@@ -90,6 +96,7 @@ export function resolveBoltProc(input: ResolveBoltProcInput): BoltProcSpec | und
   if (input.ammoItemId === undefined) return undefined;
   const effect = BOLT_EFFECT_BY_ITEM_ID.get(input.ammoItemId);
   if (!effect) return undefined;
+  if (effect === "ruby" && input.rubyProcEnabled === false) return undefined;
   if (!boltEffectApplies(effect, input.target.attributes)) return undefined;
 
   const zcb = input.weaponItemId === ZARYTE_CROSSBOW_ID;

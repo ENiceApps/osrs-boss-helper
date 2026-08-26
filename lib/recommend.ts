@@ -120,6 +120,8 @@ export function computeSetDps(
    * page passes the player's chosen prayer here so the displayed DPS reflects it.
    */
   prayer?: PrayerSelection,
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled = true,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
   // Black mask / slayer helm (i): only on-task, and only when no Salve is active
@@ -219,6 +221,7 @@ export function computeSetDps(
         weaponCategory: set.weaponCategory,
         visibleRangedLevel: effectiveSkills.ranged,
         target: { hp: target.hp, attributes: target.attributes, slug: target.slug },
+        rubyProcEnabled,
       })
     : undefined;
   // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow, Tonalztics).

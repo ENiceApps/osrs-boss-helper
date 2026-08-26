@@ -65,6 +65,8 @@ export interface BudgetBuildInput {
   onTask?: boolean;
   /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
 }
@@ -426,6 +428,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
     });
     if (!scored.valid || scored.dps.dps <= 0) continue;
     const cost = totalCost(c.ids, c.internalAmmoId, input.priceLookup);
@@ -470,6 +473,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     boostResolver: input.boostResolver,
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
+    rubyProcEnabled: input.rubyProcEnabled,
     requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,

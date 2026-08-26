@@ -19,6 +19,8 @@ interface Props {
   boostResolver: BoostResolver;
   onTask: boolean;
   soulreaperMaxStacks: boolean;
+  /** Ruby bolt special assumed to fire. OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled: boolean;
   requiresMeleeReach2: boolean;
   mapping?: MappingEntry[];
 }
@@ -41,6 +43,7 @@ export function HybridPanel({
   boostResolver,
   onTask,
   soulreaperMaxStacks,
+  rubyProcEnabled,
   requiresMeleeReach2,
   mapping,
 }: Props) {
@@ -71,11 +74,12 @@ export function HybridPanel({
       boostResolver,
       onTask,
       soulreaperMaxStacks,
+      rubyProcEnabled,
       requiresMeleeReach2,
     }).hybrid;
     // selectedStyles / weights are captured via stylesKey / weightsKey above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownedItemIds, connected, target, skills, switchBudget, stylesKey, weightsKey, boostResolver, onTask, soulreaperMaxStacks, requiresMeleeReach2]);
+  }, [ownedItemIds, connected, target, skills, switchBudget, stylesKey, weightsKey, boostResolver, onTask, soulreaperMaxStacks, rubyProcEnabled, requiresMeleeReach2]);
 
   function toggleStyle(s: CombatStyle) {
     setStyles((prev) => {

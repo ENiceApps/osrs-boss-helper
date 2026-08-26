@@ -44,6 +44,8 @@ export interface CompareInput {
   boostResolver: BoostResolver;
   onTask: boolean;
   soulreaperMaxStacks: boolean;
+  /** Ruby bolt special assumed to fire. OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled: boolean;
 }
 
 /**
@@ -93,6 +95,7 @@ export function compareSlotsVsReference(
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
       ...magicFields,
     });
     // If the revert is an illegal combo (e.g. a 2H bank weapon beside a shield),

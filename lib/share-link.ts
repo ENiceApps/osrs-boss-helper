@@ -39,6 +39,8 @@ export interface SharedLoadoutState {
   tab?: string;
   /** Soulreaper axe max-stacks assumption. */
   soulreaper?: boolean;
+  /** Ruby bolt special toggled OFF (proc excluded from DPS). Absent = on (default). */
+  rubyOff?: boolean;
   /** Dharok's current-HP value for the missing-HP max-hit bonus. */
   dharokHp?: number;
   /** Chosen offensive prayer id per style (only non-default styles encoded). */

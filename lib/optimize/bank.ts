@@ -64,6 +64,8 @@ export interface BankOptimizerInput {
   onTask?: boolean;
   /** Soulreaper axe: assume max 5 stacks (+30% Strength level). */
   soulreaperMaxStacks?: boolean;
+  /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
+  rubyProcEnabled?: boolean;
   /**
    * When true, the target can only be meleed with a 2-tile reach weapon
    * (halberd / Scythe of Vitur). Melee candidates using any other weapon are
@@ -607,6 +609,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       boostResolver: input.boostResolver,
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
+      rubyProcEnabled: input.rubyProcEnabled,
     });
     if (scored.valid) valid.push(scored);
   }

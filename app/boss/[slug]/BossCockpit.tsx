@@ -18,6 +18,7 @@ import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
 import { itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
 import { applyCombatBoost, bankBoostResolver, boostFromBank } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
+import { BOLT_EFFECT_BY_ITEM_ID } from "@/data/items/bolt-procs";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
 import { requiresMeleeReach2 } from "@/data/monsters/melee-reach";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
@@ -181,6 +182,12 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Soulreaper axe: assume max 5 stacks (+30% Strength level). Only shown when
   // the axe is in the active loadout's weapon slot.
   const [soulreaperMaxStacks, setSoulreaperMaxStacks] = useState(false);
+  // Ruby bolt special: whether the 20%-of-HP proc counts toward DPS and bolt
+  // rankings. Defaults ON (the wiki calc's assumption); OFF values ruby bolts
+  // on raw stats only, so the optimizer stops auto-picking them for the proc.
+  // Shown when ruby bolts are equipped — and kept visible while OFF so the
+  // control can't vanish after unchecking swaps the bolts out.
+  const [rubyProcEnabled, setRubyProcEnabled] = useState(true);
   // Dharok's set: current HP for the missing-HP max-hit multiplier. undefined
   // means "full HP" (no bonus). Only shown when the full Dharok set is detected.
   const [dharokCurrentHp, setDharokCurrentHp] = useState<number | undefined>(undefined);
@@ -280,6 +287,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         boostResolver,
         onTask: effectiveOnTask,
         soulreaperMaxStacks,
+        rubyProcEnabled,
         requiresMeleeReach2: meleeReach2,
       });
     }
@@ -296,9 +304,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       boostResolver,
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
+      rubyProcEnabled,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, meleeReach2]);
 
   // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
   // as owned. Ranked by the current build's combat style (stable per boss), with
@@ -386,9 +395,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       boostResolver,
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
+      rubyProcEnabled,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, soulreaperMaxStacks, meleeReach2]);
+  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, meleeReach2]);
 
   const sellableItems = useMemo<SellableItem[]>(() => {
     if (mode !== "sell-to-fund" || !budgetResult?.currentBest) return [];
@@ -517,12 +527,13 @@ export function BossCockpit({ slug }: { slug: string }) {
       onTask,
       tab: selectedSet.style,
       soulreaper: soulreaperMaxStacks || undefined,
+      rubyOff: !rubyProcEnabled || undefined,
       dharokHp: dharokCurrentHp,
       prayers: encodeNonDefaultPrayers(prayerIds),
       phase:
         activePhase && activePhase.id !== phaseOptions[0]?.id ? activePhase.id : undefined,
     });
-  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, activePhase, phaseOptions]);
+  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, rubyProcEnabled, dharokCurrentHp, prayerIds, activePhase, phaseOptions]);
 
   // Hydrate page state from a share link once on mount. Garbage/absent param →
   // decodeLoadout returns null and we leave defaults untouched.
@@ -557,6 +568,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     if (typeof state.onTask === "boolean") setOnTask(state.onTask);
     if (state.tab) setActiveTab(state.tab as LoadoutTabId);
     if (typeof state.soulreaper === "boolean") setSoulreaperMaxStacks(state.soulreaper);
+    if (state.rubyOff === true) setRubyProcEnabled(false);
     if (typeof state.dharokHp === "number") setDharokCurrentHp(state.dharokHp);
     // Unknown ids fall back to the default phase at render time, so a link
     // from an older/newer catalog can't break the page.
@@ -578,6 +590,10 @@ export function BossCockpit({ slug }: { slug: string }) {
 
   // Soulreaper: only meaningful when the axe is actually equipped.
   const soulreaperEquipped = selectedSet?.slots.weapon?.itemId === 28338;
+  // Ruby bolts (e) / Ruby dragon bolts (e) in the ammo slot.
+  const rubyAmmoId = selectedSet?.slots.ammo?.itemId;
+  const rubyBoltsEquipped =
+    rubyAmmoId !== undefined && BOLT_EFFECT_BY_ITEM_ID.get(rubyAmmoId) === "ruby";
   // Dharok's: show the HP slider and apply the bonus only when the full set is worn.
   const DHAROK_GREATAXE_PAGE = new Set([4718, 4886, 4887, 4888]);
   const DHAROK_HELM_PAGE = new Set([4716, 4880, 4881, 4882]);
@@ -633,6 +649,12 @@ export function BossCockpit({ slug }: { slug: string }) {
     setOnTask(checked);
     resetOverrides();
   }
+  // Same deal for the ruby-bolt toggle: the optimizer re-ranks ammo with the
+  // proc excluded/included, so stale manual picks are cleared alongside.
+  function onToggleRubyProc(checked: boolean) {
+    setRubyProcEnabled(checked);
+    resetOverrides();
+  }
 
   // Diagnostic line in the results rail listing which conditional bonuses are
   // firing — DHCB vs dragon, Salve(ei) vs undead, Tbow scaling, etc.
@@ -663,8 +685,9 @@ export function BossCockpit({ slug }: { slug: string }) {
       soulreaperMaxStacks,
       dharokCurrentHp,
       prayerById(selectedSet.style, prayerIds[selectedSet.style]).selection,
+      rubyProcEnabled,
     );
-  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds]);
+  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled]);
 
   // The prayer option backing the displayed DPS — drives the results-rail prayer
   // row, the picker's current selection, and the supply-cost drain effect.
@@ -694,9 +717,10 @@ export function BossCockpit({ slug }: { slug: string }) {
         soulreaperMaxStacks,
         dharokCurrentHp,
         prayerById(trial.style, prayerIds[trial.style]).selection,
+        rubyProcEnabled,
       ).dps;
     },
-    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds],
+    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled],
   );
 
   // Ranked "next best options" for one slot — the loadout doll's tooltip calls
@@ -742,9 +766,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       weaponCategory: selectedSet.weaponCategory,
       visibleRangedLevel: applyCombatBoost(skills, boostResolver(selectedSet.style)).ranged,
       target: { hp: monster.hp, attributes: monster.attributes, slug: monster.slug },
+      rubyProcEnabled,
     });
     return spec ? describeBoltProc(spec) : undefined;
-  }, [selectedSet, skills, boostResolver, monster]);
+  }, [selectedSet, skills, boostResolver, monster, rubyProcEnabled]);
 
   // Per-slot "why this item" details for the doll's hover tooltips: stat
   // contribution, marginal DPS with the slot emptied, conditional bonuses.
@@ -757,6 +782,7 @@ export function BossCockpit({ slug }: { slug: string }) {
       skills,
       boostResolver(selectedSet.style),
       selectedActiveBonuses,
+      rubyProcEnabled,
     );
 
     // In GP / sell-to-fund modes the doll shows the POST-upgrade build, so the
@@ -782,6 +808,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         boostResolver,
         onTask: effectiveOnTask,
         soulreaperMaxStacks,
+        rubyProcEnabled,
       });
       for (const [slot, cmp] of Object.entries(vsBank) as Array<[LoadoutSlotKey, SlotVsBank]>) {
         const d = details[slot];
@@ -789,7 +816,7 @@ export function BossCockpit({ slug }: { slug: string }) {
       }
     }
     return details;
-  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks]);
+  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled]);
 
   const sourceLabel =
     activeTab !== "best"
@@ -981,6 +1008,25 @@ export function BossCockpit({ slug }: { slug: string }) {
               </label>
             )}
 
+            {(rubyBoltsEquipped || !rubyProcEnabled) && (
+              <label className="mt-3 flex items-center gap-2 text-sm select-none text-osrs-brown cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rubyProcEnabled}
+                  onChange={(e) => onToggleRubyProc(e.target.checked)}
+                  className="h-4 w-4 accent-osrs-gold"
+                />
+                <span>
+                  Ruby bolt special{" "}
+                  <span className="text-osrs-brown/60">
+                    {rubyProcEnabled
+                      ? "— 20%-of-HP proc counted in DPS & rankings"
+                      : "— off: bolts ranked on raw stats only"}
+                  </span>
+                </span>
+              </label>
+            )}
+
             {dharokFullSetEquipped && (
               <div className="mt-3 space-y-1">
                 <label className="block text-sm text-osrs-brown select-none">
@@ -1121,6 +1167,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           boostResolver={boostResolver}
           onTask={effectiveOnTask}
           soulreaperMaxStacks={soulreaperMaxStacks}
+          rubyProcEnabled={rubyProcEnabled}
           requiresMeleeReach2={meleeReach2}
           mapping={mapping}
         />
