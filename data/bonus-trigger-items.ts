@@ -10,8 +10,12 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   SALVE_AMULET_E: 10588, // enchanted (non-imbued) → ×6/5
   SALVE_AMULET: 4081, // base → ×7/6
   SALVE_AMULET_I: 12017, // imbued (non-enchanted) → ×7/6
-  ARCLIGHT: 19675, // Charged → demonbane
-  EMBERLIGHT: 29589, // demonbane
+  ARCLIGHT: 19675, // Charged → demonbane +70% acc/dmg
+  EMBERLIGHT: 29589, // demonbane +70% acc/dmg
+  SILVERLIGHT: 2402, // demonbane +60% acc/dmg (weakest tier, incl. Darklight)
+  BURNING_CLAWS: 29577, // demonbane +5% acc/dmg
+  SCORCHING_BOW: 29591, // RANGED demonbane +30% acc/dmg
+  PURGING_STAFF: 29594, // doubles demonbane SPELL bonuses while casting them
   KERIS_PARTISAN: 25979, // any Keris partisan → +33% dmg + 1/51 triple vs Kalphites
   KERIS_PARTISAN_BREACHING: 25981, // breaching → additionally +33% accuracy
   TOME_OF_FIRE_CHARGED: 20714,
@@ -41,6 +45,12 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   SALVE_AMULET_I: [12017, 25250, 26763], // + Soul Wars, Emir's Arena imbues
   ARCLIGHT: [19675], // Charged only — Inactive (30305) has no demonbane
   EMBERLIGHT: [29589],
+  // Silverlight Normal + Dyed and Darklight all share the +60% tier (wgloop
+  // lists all three in the same wearing() check).
+  SILVERLIGHT: [2402, 6745, 6746],
+  BURNING_CLAWS: [29577], // Bone claws share the +5% in wgloop but aren't in the vendor data
+  SCORCHING_BOW: [29591],
+  PURGING_STAFF: [29594],
   // All Keris partisan variants share the +33% damage + 1/51 triple vs Kalphites.
   KERIS_PARTISAN: [25979, 30891, 25981, 27287, 27291], // base, amascut, breaching, corruption, sun
   KERIS_PARTISAN_BREACHING: [25981], // only breaching adds the +33% accuracy

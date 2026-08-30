@@ -46,6 +46,8 @@ export interface CompareInput {
   soulreaperMaxStacks: boolean;
   /** Ruby bolt special assumed to fire. OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled: boolean;
+  /** Mark of Darkness active — boosts demonbane spells vs demons. */
+  markOfDarkness: boolean;
 }
 
 /**
@@ -96,6 +98,7 @@ export function compareSlotsVsReference(
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
       ...magicFields,
     });
     // If the revert is an illegal combo (e.g. a 2H bank weapon beside a shield),

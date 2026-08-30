@@ -46,9 +46,24 @@ export function conditionalMultipliers(
   if (!flags) return { accuracy, damage };
 
   // Demonbane first, mirroring weirdgloop's order (applied before dragonbane).
+  // Only one weapon can be worn, so at most one demonbane tier fires at a time.
   if (flags.demonbane) {
     accuracy.push({ numerator: 70, denominator: 100, additive: true, reason: "Demonbane (Arclight/Emberlight) vs demon" });
     damage.push({ numerator: 70, denominator: 100, additive: true, reason: "Demonbane (Arclight/Emberlight) vs demon" });
+  }
+  if (flags.demonbaneSilverlight) {
+    accuracy.push({ numerator: 60, denominator: 100, additive: true, reason: "Demonbane (Silverlight/Darklight) vs demon" });
+    damage.push({ numerator: 60, denominator: 100, additive: true, reason: "Demonbane (Silverlight/Darklight) vs demon" });
+  }
+  if (flags.demonbaneClaws) {
+    accuracy.push({ numerator: 5, denominator: 100, additive: true, reason: "Demonbane (Burning claws) vs demon" });
+    damage.push({ numerator: 5, denominator: 100, additive: true, reason: "Demonbane (Burning claws) vs demon" });
+  }
+  if (flags.demonbaneScorchingBow) {
+    // Accuracy only — the +30% DAMAGE lives in calculate.ts because on a
+    // slayer task it merges additively into the black-mask multiplier
+    // ((23+6)/20), which this per-factor list can't express.
+    accuracy.push({ numerator: 30, denominator: 100, additive: true, reason: "Demonbane (Scorching bow) vs demon" });
   }
   if (flags.dragonHunterCrossbow) {
     accuracy.push({ numerator: 13, denominator: 10, reason: "Dragon hunter crossbow vs dragon" });

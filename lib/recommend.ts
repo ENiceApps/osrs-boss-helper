@@ -11,6 +11,7 @@ import { calculateDps } from "@/lib/dps/calculate";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
 import { SPELLS_BY_NAME } from "@/data/spells/catalog";
+import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
 import { resolveBoltProc } from "@/lib/dps/bolts";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { applyCombatBoost, type CombatBoost } from "@/lib/dps/boost";
@@ -122,6 +123,12 @@ export function computeSetDps(
   prayer?: PrayerSelection,
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled = true,
+  /**
+   * Mark of Darkness active (default OFF, the wiki calc's default). Only
+   * matters when casting a demonbane spell vs a demon: accuracy 20%→40% and
+   * a +25% damage bonus appears (both doubled by the Purging staff).
+   */
+  markOfDarkness = false,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
   // Black mask / slayer helm (i): only on-task, and only when no Salve is active
@@ -249,15 +256,21 @@ export function computeSetDps(
     set.spellElement !== "none";
   const twinflameDoubleCast =
     twinflameStandard && /(Bolt|Blast|Wave)$/.test(set.autoSpellName ?? "");
-  // Demonbane spell accuracy (Arceuus) — fires only when the cast spell is a
-  // demonbane spell AND the target carries the "demon" attribute.
+  // Demonbane spells (Arceuus) — fire only when the cast spell is a demonbane
+  // spell AND the target carries the "demon" attribute. Mirrors wgloop:
+  //   accuracy: +20% base, +40% with Mark of Darkness, ×2 with Purging staff
+  //   damage:   only with Mark of Darkness — +25%, or +50% with Purging staff
   const castSpell = set.style === "magic" && set.autoSpellName
     ? SPELLS_BY_NAME.get(set.autoSpellName)
     : undefined;
-  const demonbaneSpellAccuracyPct =
-    castSpell?.vsDemonAccuracyPct && target.attributes.includes("demon")
-      ? castSpell.vsDemonAccuracyPct
-      : undefined;
+  const demonbaneSpellActive =
+    castSpell?.vsDemonAccuracyPct !== undefined && target.attributes.includes("demon");
+  const purgingStaffEquipped = weaponId === BONUS_TRIGGER_ITEM_IDS.PURGING_STAFF;
+  const demonbaneSpellAccuracyPct = demonbaneSpellActive
+    ? (markOfDarkness ? 40 : 20) * (purgingStaffEquipped ? 2 : 1)
+    : undefined;
+  const demonbaneSpellDamagePct =
+    demonbaneSpellActive && markOfDarkness ? (purgingStaffEquipped ? 50 : 25) : undefined;
 
   // Virtus armour: the base +2% magic-damage per piece is already in
   // totals.magicDamagePct (vendor magic_str). When casting Ancient Magicks each
@@ -310,6 +323,7 @@ export function computeSetDps(
     kalphiteTripleProc: activeBonuses.conditionalBonuses.kerisVsKalphite,
     sanguinestiProc,
     demonbaneSpellAccuracyPct,
+    demonbaneSpellDamagePct,
     twinflameStandard,
     twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,

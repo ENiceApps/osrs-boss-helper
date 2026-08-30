@@ -76,11 +76,18 @@ export interface DpsScenario {
   /**
    * Magic-only: a demonbane spell (Inferior/Superior/Dark Demonbane) cast vs a
    * demon — raises magic accuracy by this percentage (e.g. 20 → ×120/100).
-   * Mark of Darkness would raise it further (not modeled). Damage is unaffected.
-   * Resolved upstream (computeSetDps) where the cast spell + target attributes
-   * are both known; left undefined when not applicable.
+   * Resolved upstream (computeSetDps) where the cast spell, target attributes,
+   * Mark of Darkness, and Purging staff are all known: base 20, Mark of
+   * Darkness 40, Purging staff doubles either (→ 40/80). Undefined when N/A.
    */
   demonbaneSpellAccuracyPct?: number;
+  /**
+   * Magic-only: demonbane spell DAMAGE bonus percentage — non-zero only with
+   * Mark of Darkness active (25, or 50 with the Purging staff). wgloop applies
+   * it per-hitsplat (h + trunc(h×pct/100)); this mean engine applies it to the
+   * max hit, which matches to within the per-roll truncation (<0.5 damage).
+   */
+  demonbaneSpellDamagePct?: number;
   /** Magic-only: Twinflame staff casting a standard spellbook spell — +10% accuracy & damage. */
   twinflameStandard?: boolean;
   /** Magic-only: Twinflame staff casting a qualifying Bolt/Blast/Wave — second cast (×7/5 damage). */
@@ -362,10 +369,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // Black mask / slayer helmet (i) on-task — same bonus group as Salve/dragonbane.
   // Suppressed upstream when a Salve is active, so this never double-counts.
+  const scorchingBowVsDemon =
+    scenario.style === "ranged" && scenario.conditionalBonuses?.demonbaneScorchingBow === true;
   if (scenario.slayerOnTask) {
     const [n, d] = scenario.style === "melee" ? [7, 6] : [23, 20];
     attackRoll = Math.trunc((attackRoll * n) / d);
-    maxHit = Math.trunc((maxHit * n) / d);
+    // Scorching bow's +30% DAMAGE vs demons folds additively INTO the mask
+    // multiplier on task — (23+6)/20 = ×1.45, NOT ×23/20×13/10 — mirroring
+    // wgloop's `numerator += 6` ranged-bane merge. (Accuracy stays a separate
+    // +30% additive factor, applied above with the other conditionals.)
+    const dmgN = scorchingBowVsDemon ? n + 6 : n;
+    maxHit = Math.trunc((maxHit * dmgN) / d);
+  } else if (scorchingBowVsDemon) {
+    // Off-task the +30% damage stands alone (wgloop's trackAddFactor(30)).
+    maxHit = maxHit + Math.trunc((maxHit * 30) / 100);
   }
 
   // Twisted bow scaling: applies AFTER dragonbane / Salve multipliers per
@@ -401,6 +418,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     if (scenario.tomeOfFireEquipped && el === "fire") maxHit = Math.trunc((maxHit * 11) / 10);
     if (scenario.tomeOfWaterEquipped && el === "water") maxHit = Math.trunc((maxHit * 6) / 5);
     if (scenario.tomeOfEarthEquipped && el === "earth") maxHit = Math.trunc((maxHit * 11) / 10);
+    // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
+    // the very end of the pipeline; applied here to the max hit (additive,
+    // like their h + trunc(h×pct/100)).
+    if (scenario.demonbaneSpellDamagePct) {
+      maxHit = maxHit + Math.trunc((maxHit * scenario.demonbaneSpellDamagePct) / 100);
+    }
   }
 
   // Berserker necklace + TzHaar/obsidian melee weapon: ×6/5 damage, applied last

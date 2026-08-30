@@ -67,6 +67,8 @@ export interface BudgetBuildInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
 }
@@ -108,6 +110,10 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
   if (attrs.includes("demon")) {
     out.push(...ownedTriggerIds(affordable, "ARCLIGHT"));
     out.push(...ownedTriggerIds(affordable, "EMBERLIGHT"));
+    out.push(...ownedTriggerIds(affordable, "SILVERLIGHT"));
+    out.push(...ownedTriggerIds(affordable, "BURNING_CLAWS"));
+    out.push(...ownedTriggerIds(affordable, "SCORCHING_BOW"));
+    out.push(...ownedTriggerIds(affordable, "PURGING_STAFF"));
   }
   out.push(...ownedTriggerIds(affordable, "TWISTED_BOW")); // scales with target magic
   // Wilderness weapons: big ×3/2 vs NPCs in the Wilderness the proxy can't see.
@@ -429,6 +435,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
     });
     if (!scored.valid || scored.dps.dps <= 0) continue;
     const cost = totalCost(c.ids, c.internalAmmoId, input.priceLookup);
@@ -474,6 +481,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
     rubyProcEnabled: input.rubyProcEnabled,
+    markOfDarkness: input.markOfDarkness,
     requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,

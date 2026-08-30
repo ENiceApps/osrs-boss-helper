@@ -158,6 +158,17 @@ export interface ConditionalBonusFlags {
   salveAmulet?: boolean;
   /** Arclight / Emberlight vs demons → +70% accuracy & damage (additive). */
   demonbane?: boolean;
+  /** Silverlight (incl. Dyed) / Darklight vs demons → +60% accuracy & damage (additive). */
+  demonbaneSilverlight?: boolean;
+  /** Burning claws vs demons → +5% accuracy & damage (additive). */
+  demonbaneClaws?: boolean;
+  /**
+   * Scorching bow vs demons → +30% accuracy & damage (additive). The DAMAGE
+   * half is applied in calculate.ts, not conditional.ts — on a slayer task
+   * wgloop folds it additively INTO the black-mask multiplier ((23+6)/20),
+   * so it can't live in the ordinary factor list.
+   */
+  demonbaneScorchingBow?: boolean;
   /** Any Keris partisan vs Kalphites/Scabarites → +33% damage (×4/3). The 1/51
    *  triple-damage proc is modelled separately (dps-mean only) via `kalphiteTripleProc`. */
   kerisVsKalphite?: boolean;

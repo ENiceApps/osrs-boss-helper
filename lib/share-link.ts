@@ -41,6 +41,8 @@ export interface SharedLoadoutState {
   soulreaper?: boolean;
   /** Ruby bolt special toggled OFF (proc excluded from DPS). Absent = on (default). */
   rubyOff?: boolean;
+  /** Mark of Darkness ON (demonbane spell boost). Absent = off (default). */
+  mod?: boolean;
   /** Dharok's current-HP value for the missing-HP max-hit bonus. */
   dharokHp?: number;
   /** Chosen offensive prayer id per style (only non-default styles encoded). */

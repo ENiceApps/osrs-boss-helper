@@ -66,6 +66,8 @@ export interface ScenarioInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   /**
    * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
    * it lives inside the weapon, leaving the ammo slot free for a blessing.
@@ -375,6 +377,9 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    demonbaneSilverlight: hasTrigger(slotItemIds, "SILVERLIGHT"),
+    demonbaneClaws: hasTrigger(slotItemIds, "BURNING_CLAWS"),
+    demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
     kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
     kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
@@ -435,6 +440,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     undefined,
     undefined,
     input.rubyProcEnabled ?? true,
+    input.markOfDarkness ?? false,
   );
   const activeBonuses = activeBonusesForTarget(loadout, target);
   return { valid: true, loadout, dps, activeBonuses };

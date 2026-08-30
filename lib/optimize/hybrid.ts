@@ -80,6 +80,8 @@ export interface HybridOptimizerInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   requiresMeleeReach2?: boolean;
   /** Magic fallbacks (normally left unset — the engine auto-picks the spell). */
   baseSpellMaxHit?: number;
@@ -212,6 +214,7 @@ export function optimizeHybrid(input: HybridOptimizerInput): HybridResult {
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
     rubyProcEnabled: input.rubyProcEnabled,
+    markOfDarkness: input.markOfDarkness,
     requiresMeleeReach2: input.requiresMeleeReach2,
     baseSpellMaxHit: input.baseSpellMaxHit,
     spellElement: input.spellElement,
@@ -331,6 +334,7 @@ function solveHybrid(
         onTask: input.onTask,
         soulreaperMaxStacks: input.soulreaperMaxStacks,
         rubyProcEnabled: input.rubyProcEnabled,
+        markOfDarkness: input.markOfDarkness,
       });
       scenariosScored++;
       out.set(anchor.style, scored.valid ? { dps: scored.dps.dps, scored } : { dps: 0, scored: null });

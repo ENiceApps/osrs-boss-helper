@@ -37,8 +37,14 @@ export interface ItemBonusFlags {
   salveAmuletEi: boolean;
   /** Salve amulet (regular)/(i) — ×7/6 vs undead. */
   salveAmulet: boolean;
-  /** Arclight / Emberlight — demonbane vs demons. */
+  /** Arclight / Emberlight — demonbane vs demons (+70% acc/dmg). */
   demonbane: boolean;
+  /** Silverlight (incl. Dyed) / Darklight — demonbane vs demons (+60% acc/dmg). */
+  demonbaneSilverlight?: boolean;
+  /** Burning claws — demonbane vs demons (+5% acc/dmg). */
+  demonbaneClaws?: boolean;
+  /** Scorching bow — RANGED demonbane vs demons (+30% acc/dmg). */
+  demonbaneScorchingBow?: boolean;
   /** Any Keris partisan — +33% damage + 1/51 triple vs Kalphites/Scabarites. */
   kerisPartisan?: boolean;
   /** Keris partisan of breaching — additionally +33% accuracy vs Kalphites/Scabarites. */

@@ -86,6 +86,8 @@ export interface FindUpgradesInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   /** Target can only be meleed with a 2-tile reach weapon (halberd / Scythe). */
   requiresMeleeReach2?: boolean;
   /**
@@ -222,6 +224,7 @@ function findCandidates(
   onTask?: boolean,
   soulreaperMaxStacks?: boolean,
   rubyProcEnabled?: boolean,
+  markOfDarkness?: boolean,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   const attackStyle = {
@@ -283,6 +286,7 @@ function findCandidates(
           onTask,
           soulreaperMaxStacks,
           rubyProcEnabled,
+          markOfDarkness,
         });
         if (s.valid && (!scored || !scored.valid || s.dps.dps > scored.dps.dps)) {
           scored = s;
@@ -300,6 +304,7 @@ function findCandidates(
         onTask,
         soulreaperMaxStacks,
         rubyProcEnabled,
+        markOfDarkness,
       });
     }
     if (!scored || !scored.valid) continue;
@@ -371,6 +376,7 @@ function runUpgradesFromBase(
       input.onTask,
       input.soulreaperMaxStacks,
       input.rubyProcEnabled,
+      input.markOfDarkness,
     );
     if (candidates.length === 0) break;
 
@@ -414,6 +420,7 @@ function runUpgradesFromBase(
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
     });
     if (!rescored.valid) break;
     activeLoadout = rescored.loadout;
@@ -444,6 +451,7 @@ function runUpgradesFromBase(
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
     });
     if (finalScore.valid) upgradedBest = finalScore;
   }
@@ -488,6 +496,7 @@ export function findUpgrades(input: FindUpgradesInput): BudgetResult {
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
     rubyProcEnabled: input.rubyProcEnabled,
+    markOfDarkness: input.markOfDarkness,
     requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0] ?? null;
@@ -589,6 +598,8 @@ export interface RecommendSellInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   requiresMeleeReach2?: boolean;
 }
 
@@ -619,6 +630,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
     onTask: input.onTask,
     soulreaperMaxStacks: input.soulreaperMaxStacks,
     rubyProcEnabled: input.rubyProcEnabled,
+    markOfDarkness: input.markOfDarkness,
     requiresMeleeReach2: input.requiresMeleeReach2,
   });
   const currentBest = rankings[0];
@@ -671,6 +683,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       input.onTask,
       input.soulreaperMaxStacks,
       input.rubyProcEnabled,
+      input.markOfDarkness,
     );
     if (candidates.length === 0) break;
     // Biggest raw DPS gain first; cheaper item wins ties.
@@ -703,6 +716,7 @@ export function recommendedSellToFund(input: RecommendSellInput): { sellItemIds:
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
     });
     if (!rescored.valid) break;
     activeLoadout = rescored.loadout;

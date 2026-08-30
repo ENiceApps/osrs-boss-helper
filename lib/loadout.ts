@@ -52,6 +52,9 @@ export function activeBonusesForTarget(
       salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive,
       salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive,
       demonbane: set.itemBonusFlags.demonbane && isDemon,
+      demonbaneSilverlight: (set.itemBonusFlags.demonbaneSilverlight ?? false) && isDemon,
+      demonbaneClaws: (set.itemBonusFlags.demonbaneClaws ?? false) && isDemon,
+      demonbaneScorchingBow: (set.itemBonusFlags.demonbaneScorchingBow ?? false) && isDemon,
       kerisVsKalphite: (set.itemBonusFlags.kerisPartisan ?? false) && isKalphite,
       kerisBreachVsKalphite: (set.itemBonusFlags.kerisBreaching ?? false) && isKalphite,
       // Wilderness weapons only get their ×3/2 vs NPCs fought in the Wilderness.

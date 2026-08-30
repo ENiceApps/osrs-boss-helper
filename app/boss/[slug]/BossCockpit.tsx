@@ -188,6 +188,10 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Shown when ruby bolts are equipped — and kept visible while OFF so the
   // control can't vanish after unchecking swaps the bolts out.
   const [rubyProcEnabled, setRubyProcEnabled] = useState(true);
+  // Mark of Darkness: boosts demonbane spells vs demons (acc 20%→40%, +25% dmg;
+  // Purging staff doubles both). Defaults OFF — the wiki calc's default. Shown
+  // when the displayed loadout casts a demonbane spell (kept visible while ON).
+  const [markOfDarkness, setMarkOfDarkness] = useState(false);
   // Dharok's set: current HP for the missing-HP max-hit multiplier. undefined
   // means "full HP" (no bonus). Only shown when the full Dharok set is detected.
   const [dharokCurrentHp, setDharokCurrentHp] = useState<number | undefined>(undefined);
@@ -288,6 +292,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         onTask: effectiveOnTask,
         soulreaperMaxStacks,
         rubyProcEnabled,
+        markOfDarkness,
         requiresMeleeReach2: meleeReach2,
       });
     }
@@ -305,9 +310,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
       rubyProcEnabled,
+      markOfDarkness,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, meleeReach2]);
+  }, [bank, ownedItemIds, monster, skills, gp, budgetGp, mode, fromScratchMode, sellSelections, excludedUpgrades, ownedUntradeables, prices, geIdByName, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, markOfDarkness, meleeReach2]);
 
   // Budget/risk mode: per-slot lists of non-tradeable options the player can mark
   // as owned. Ranked by the current build's combat style (stable per boss), with
@@ -396,9 +402,10 @@ export function BossCockpit({ slug }: { slug: string }) {
       onTask: effectiveOnTask,
       soulreaperMaxStacks,
       rubyProcEnabled,
+      markOfDarkness,
       requiresMeleeReach2: meleeReach2,
     });
-  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, meleeReach2]);
+  }, [mode, bank, ownedItemIds, monster, skills, gp, prices, boostResolver, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, markOfDarkness, meleeReach2]);
 
   const sellableItems = useMemo<SellableItem[]>(() => {
     if (mode !== "sell-to-fund" || !budgetResult?.currentBest) return [];
@@ -528,12 +535,13 @@ export function BossCockpit({ slug }: { slug: string }) {
       tab: selectedSet.style,
       soulreaper: soulreaperMaxStacks || undefined,
       rubyOff: !rubyProcEnabled || undefined,
+      mod: markOfDarkness || undefined,
       dharokHp: dharokCurrentHp,
       prayers: encodeNonDefaultPrayers(prayerIds),
       phase:
         activePhase && activePhase.id !== phaseOptions[0]?.id ? activePhase.id : undefined,
     });
-  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, rubyProcEnabled, dharokCurrentHp, prayerIds, activePhase, phaseOptions]);
+  }, [selectedSet, modeRaw, budgetGp, gpManual, onTask, soulreaperMaxStacks, rubyProcEnabled, markOfDarkness, dharokCurrentHp, prayerIds, activePhase, phaseOptions]);
 
   // Hydrate page state from a share link once on mount. Garbage/absent param →
   // decodeLoadout returns null and we leave defaults untouched.
@@ -569,6 +577,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     if (state.tab) setActiveTab(state.tab as LoadoutTabId);
     if (typeof state.soulreaper === "boolean") setSoulreaperMaxStacks(state.soulreaper);
     if (state.rubyOff === true) setRubyProcEnabled(false);
+    if (state.mod === true) setMarkOfDarkness(true);
     if (typeof state.dharokHp === "number") setDharokCurrentHp(state.dharokHp);
     // Unknown ids fall back to the default phase at render time, so a link
     // from an older/newer catalog can't break the page.
@@ -594,6 +603,9 @@ export function BossCockpit({ slug }: { slug: string }) {
   const rubyAmmoId = selectedSet?.slots.ammo?.itemId;
   const rubyBoltsEquipped =
     rubyAmmoId !== undefined && BOLT_EFFECT_BY_ITEM_ID.get(rubyAmmoId) === "ruby";
+  // Mark of Darkness only matters while a demonbane spell is the cast spell.
+  const demonbaneSpellActive =
+    selectedSet?.style === "magic" && (selectedSet.autoSpellName ?? "").includes("Demonbane");
   // Dharok's: show the HP slider and apply the bonus only when the full set is worn.
   const DHAROK_GREATAXE_PAGE = new Set([4718, 4886, 4887, 4888]);
   const DHAROK_HELM_PAGE = new Set([4716, 4880, 4881, 4882]);
@@ -686,8 +698,9 @@ export function BossCockpit({ slug }: { slug: string }) {
       dharokCurrentHp,
       prayerById(selectedSet.style, prayerIds[selectedSet.style]).selection,
       rubyProcEnabled,
+      markOfDarkness,
     );
-  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled]);
+  }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled, markOfDarkness]);
 
   // The prayer option backing the displayed DPS — drives the results-rail prayer
   // row, the picker's current selection, and the supply-cost drain effect.
@@ -718,9 +731,10 @@ export function BossCockpit({ slug }: { slug: string }) {
         dharokCurrentHp,
         prayerById(trial.style, prayerIds[trial.style]).selection,
         rubyProcEnabled,
+        markOfDarkness,
       ).dps;
     },
-    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled],
+    [baseSet, overrides, spellOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled, markOfDarkness],
   );
 
   // Ranked "next best options" for one slot — the loadout doll's tooltip calls
@@ -783,6 +797,7 @@ export function BossCockpit({ slug }: { slug: string }) {
       boostResolver(selectedSet.style),
       selectedActiveBonuses,
       rubyProcEnabled,
+      markOfDarkness,
     );
 
     // In GP / sell-to-fund modes the doll shows the POST-upgrade build, so the
@@ -809,6 +824,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         onTask: effectiveOnTask,
         soulreaperMaxStacks,
         rubyProcEnabled,
+        markOfDarkness,
       });
       for (const [slot, cmp] of Object.entries(vsBank) as Array<[LoadoutSlotKey, SlotVsBank]>) {
         const d = details[slot];
@@ -816,7 +832,7 @@ export function BossCockpit({ slug }: { slug: string }) {
       }
     }
     return details;
-  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled]);
+  }, [selectedSet, selectedDps, monster, skills, boostResolver, selectedActiveBonuses, mode, overridesActive, activeScenario, budgetResult, styleResults, activeTab, effectiveOnTask, soulreaperMaxStacks, rubyProcEnabled, markOfDarkness]);
 
   const sourceLabel =
     activeTab !== "best"
@@ -1027,6 +1043,23 @@ export function BossCockpit({ slug }: { slug: string }) {
               </label>
             )}
 
+            {(demonbaneSpellActive || markOfDarkness) && (
+              <label className="mt-3 flex items-center gap-2 text-sm select-none text-osrs-brown cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={markOfDarkness}
+                  onChange={(e) => setMarkOfDarkness(e.target.checked)}
+                  className="h-4 w-4 accent-osrs-gold"
+                />
+                <span>
+                  Mark of Darkness{" "}
+                  <span className="text-osrs-brown/60">
+                    — demonbane spells +40% acc, +25% dmg (Purging staff doubles)
+                  </span>
+                </span>
+              </label>
+            )}
+
             {dharokFullSetEquipped && (
               <div className="mt-3 space-y-1">
                 <label className="block text-sm text-osrs-brown select-none">
@@ -1168,6 +1201,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           onTask={effectiveOnTask}
           soulreaperMaxStacks={soulreaperMaxStacks}
           rubyProcEnabled={rubyProcEnabled}
+          markOfDarkness={markOfDarkness}
           requiresMeleeReach2={meleeReach2}
           mapping={mapping}
         />

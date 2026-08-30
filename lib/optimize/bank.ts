@@ -66,6 +66,8 @@ export interface BankOptimizerInput {
   soulreaperMaxStacks?: boolean;
   /** Ruby bolt special assumed to fire (default ON). OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled?: boolean;
+  /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
+  markOfDarkness?: boolean;
   /**
    * When true, the target can only be meleed with a 2-tile reach weapon
    * (halberd / Scythe of Vitur). Melee candidates using any other weapon are
@@ -315,8 +317,15 @@ function applicableForceIncludes(
     out.push(...ownedTriggerIds(bank, "SALVE_AMULET_I"));
     out.push(...ownedTriggerIds(bank, "SALVE_AMULET"));
   }
-  if (isDemon) out.push(...ownedTriggerIds(bank, "ARCLIGHT"));
-  if (isDemon) out.push(...ownedTriggerIds(bank, "EMBERLIGHT"));
+  if (isDemon) {
+    out.push(...ownedTriggerIds(bank, "ARCLIGHT"));
+    out.push(...ownedTriggerIds(bank, "EMBERLIGHT"));
+    out.push(...ownedTriggerIds(bank, "SILVERLIGHT"));
+    out.push(...ownedTriggerIds(bank, "BURNING_CLAWS"));
+    out.push(...ownedTriggerIds(bank, "SCORCHING_BOW"));
+    // Purging staff doubles demonbane-spell bonuses — only relevant vs demons.
+    out.push(...ownedTriggerIds(bank, "PURGING_STAFF"));
+  }
   out.push(...ownedTriggerIds(bank, "TWISTED_BOW")); // always relevant (scales with target magic)
   // Tomes boost their element's spells vs all NPCs — push them unconditionally
   // so the optimizer tries them for any magic build, not only element-weak targets.
@@ -610,6 +619,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       onTask: input.onTask,
       soulreaperMaxStacks: input.soulreaperMaxStacks,
       rubyProcEnabled: input.rubyProcEnabled,
+      markOfDarkness: input.markOfDarkness,
     });
     if (scored.valid) valid.push(scored);
   }

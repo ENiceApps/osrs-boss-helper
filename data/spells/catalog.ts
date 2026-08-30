@@ -85,8 +85,10 @@ const ARCEUUS: readonly SpellEntry[] = [
   { name: "Undead Grasp", spellbook: "arceuus", element: "none", minLevel: 79, baseMaxHit: 24 },
   { name: "Skeletal Grasp", spellbook: "arceuus", element: "none", minLevel: 56, baseMaxHit: 17 },
   { name: "Ghostly Grasp", spellbook: "arceuus", element: "none", minLevel: 35, baseMaxHit: 12 },
-  // Demonbane spells — demon-only, +20% accuracy baseline (Mark of Darkness's
-  // extra +25% dmg / +40% acc is not modeled yet).
+  // Demonbane spells — demon-only. vsDemonAccuracyPct marks them for the
+  // engine's demonbane-spell handling (lib/recommend.ts): +20% accuracy base,
+  // 40% with Mark of Darkness (which also adds +25% damage), and the Purging
+  // staff doubles both.
   { name: "Dark Demonbane", spellbook: "arceuus", element: "none", minLevel: 82, baseMaxHit: 30, requiresAttribute: "demon", vsDemonAccuracyPct: 20 },
   { name: "Superior Demonbane", spellbook: "arceuus", element: "none", minLevel: 62, baseMaxHit: 23, requiresAttribute: "demon", vsDemonAccuracyPct: 20 },
   { name: "Inferior Demonbane", spellbook: "arceuus", element: "none", minLevel: 44, baseMaxHit: 16, requiresAttribute: "demon", vsDemonAccuracyPct: 20 },

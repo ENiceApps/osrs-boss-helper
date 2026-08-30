@@ -99,7 +99,10 @@ function buildReasons(
     if (cb?.dragonHunterCrossbow) reasons.push("+30% accuracy / +25% damage vs this dragon");
     if (cb?.dragonHunterLance) reasons.push("+20% accuracy & damage vs this dragon");
     if (cb?.dragonHunterWand) reasons.push("+75% accuracy / +40% damage vs this dragon");
-    if (cb?.demonbane) reasons.push("+70% damage vs this demon");
+    if (cb?.demonbane) reasons.push("+70% accuracy & damage vs this demon");
+    if (cb?.demonbaneSilverlight) reasons.push("+60% accuracy & damage vs this demon");
+    if (cb?.demonbaneClaws) reasons.push("+5% accuracy & damage vs this demon");
+    if (cb?.demonbaneScorchingBow) reasons.push("+30% accuracy & damage vs this demon");
     if (activeBonuses?.twistedBowEquipped)
       reasons.push(
         `scales with the target's magic level (${activeBonuses.targetMonsterMagicLevel})`,
@@ -136,6 +139,8 @@ export function explainSlots(
   activeBonuses: TargetActiveBonuses | null,
   /** Ruby bolt special assumed to fire (default ON) — mirrors the engine's toggle. */
   rubyProcEnabled = true,
+  /** Mark of Darkness active (default OFF) — mirrors the engine's toggle. */
+  markOfDarkness = false,
 ): Partial<Record<LoadoutSlotKey, SlotExplanation>> {
   const out: Partial<Record<LoadoutSlotKey, SlotExplanation>> = {};
   // Enchanted-bolt proc on the ammo slot — same resolution the engine uses.
@@ -164,7 +169,7 @@ export function explainSlots(
       const without = applyOverrides(set, { [slot]: null });
       const dpsWithout = computeSetDps(
         without, monster, skills, boost,
-        false, false, undefined, undefined, rubyProcEnabled,
+        false, false, undefined, undefined, rubyProcEnabled, markOfDarkness,
       );
       explanation.marginalDps = Math.max(0, dps.dps - dpsWithout.dps);
     }

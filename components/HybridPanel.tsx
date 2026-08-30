@@ -21,6 +21,8 @@ interface Props {
   soulreaperMaxStacks: boolean;
   /** Ruby bolt special assumed to fire. OFF = ruby bolts valued on raw stats only. */
   rubyProcEnabled: boolean;
+  /** Mark of Darkness active — boosts demonbane spells vs demons. */
+  markOfDarkness: boolean;
   requiresMeleeReach2: boolean;
   mapping?: MappingEntry[];
 }
@@ -44,6 +46,7 @@ export function HybridPanel({
   onTask,
   soulreaperMaxStacks,
   rubyProcEnabled,
+  markOfDarkness,
   requiresMeleeReach2,
   mapping,
 }: Props) {
@@ -75,11 +78,12 @@ export function HybridPanel({
       onTask,
       soulreaperMaxStacks,
       rubyProcEnabled,
+      markOfDarkness,
       requiresMeleeReach2,
     }).hybrid;
     // selectedStyles / weights are captured via stylesKey / weightsKey above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownedItemIds, connected, target, skills, switchBudget, stylesKey, weightsKey, boostResolver, onTask, soulreaperMaxStacks, rubyProcEnabled, requiresMeleeReach2]);
+  }, [ownedItemIds, connected, target, skills, switchBudget, stylesKey, weightsKey, boostResolver, onTask, soulreaperMaxStacks, rubyProcEnabled, markOfDarkness, requiresMeleeReach2]);
 
   function toggleStyle(s: CombatStyle) {
     setStyles((prev) => {

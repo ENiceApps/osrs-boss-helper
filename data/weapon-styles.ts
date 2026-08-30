@@ -71,6 +71,13 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Lunge", attackType: "stab", choice: "controlled", defensive: false },
     { name: "Block", attackType: "slash", choice: "defensive", defensive: true },
   ],
+  Claw: [
+    // Burning claws, dragon claws — same four options as a slash sword.
+    { name: "Chop", attackType: "slash", choice: "accurate", defensive: false },
+    { name: "Slash", attackType: "slash", choice: "aggressive", defensive: false },
+    { name: "Lunge", attackType: "stab", choice: "controlled", defensive: false },
+    { name: "Block", attackType: "slash", choice: "defensive", defensive: true },
+  ],
   "Stab Sword": [
     // Osmumten's fang, rapiers, daggers.
     { name: "Stab", attackType: "stab", choice: "accurate", defensive: false },
