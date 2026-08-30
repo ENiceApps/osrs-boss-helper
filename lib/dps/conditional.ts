@@ -40,6 +40,15 @@ export interface ConditionalMultipliers {
 
 export function conditionalMultipliers(
   flags: ConditionalBonusFlags | undefined,
+  /**
+   * On-task RANGED only: wgloop folds ranged-bane DAMAGE bonuses additively
+   * into the imbued-black-mask multiplier — DHCB +5/20, wilderness weapon
+   * +10/20, Scorching bow +6/20 → ×(23+bonus)/20 — instead of stacking them
+   * multiplicatively. When true, the standalone DHCB/wilderness damage
+   * factors are omitted here and calculate.ts adds them to the mask
+   * numerator. Accuracy factors are unaffected either way.
+   */
+  foldRangedBaneDamage = false,
 ): ConditionalMultipliers {
   const accuracy: ConditionalFactor[] = [];
   const damage: ConditionalFactor[] = [];
@@ -67,7 +76,9 @@ export function conditionalMultipliers(
   }
   if (flags.dragonHunterCrossbow) {
     accuracy.push({ numerator: 13, denominator: 10, reason: "Dragon hunter crossbow vs dragon" });
-    damage.push({ numerator: 5, denominator: 4, reason: "Dragon hunter crossbow vs dragon" });
+    if (!foldRangedBaneDamage) {
+      damage.push({ numerator: 5, denominator: 4, reason: "Dragon hunter crossbow vs dragon" });
+    }
   }
   if (flags.dragonHunterLance) {
     accuracy.push({ numerator: 6, denominator: 5, reason: "Dragon hunter lance vs dragon" });
@@ -99,10 +110,13 @@ export function conditionalMultipliers(
   }
   if (flags.wildernessWeapon) {
     // Charged wilderness weapon vs an NPC in the Wilderness: +50% accuracy AND
-    // damage, multiplicative (stacks on top of Salve/Slayer). Same ×3/2 for all
-    // six weapons (Craw's/Webweaver, Viggora's/Ursine, Thammaron's/Accursed).
+    // damage. Same ×3/2 for all six weapons (Craw's/Webweaver, Viggora's/
+    // Ursine, Thammaron's/Accursed). Multiplicative — EXCEPT on-task ranged,
+    // where the damage half folds into the mask (see foldRangedBaneDamage).
     accuracy.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
-    damage.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+    if (!foldRangedBaneDamage) {
+      damage.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+    }
   }
   return { accuracy, damage };
 }

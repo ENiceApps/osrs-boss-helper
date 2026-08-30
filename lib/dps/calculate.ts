@@ -216,7 +216,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // wgloop's `weapon.speed || DEFAULT_ATTACK_SPEED`.
   const baseSpeedTicks = scenario.attackSpeedTicks > 0 ? scenario.attackSpeedTicks : 4;
   const effectiveAttackSpeed = Math.max(1, baseSpeedTicks + sb.attackSpeedAdjust);
-  const mult = conditionalMultipliers(scenario.conditionalBonuses);
+  // On-task ranged: ranged-bane damage folds into the mask (see below), so
+  // the standalone DHCB/wilderness damage factors are omitted from the list.
+  const foldRangedBane = scenario.slayerOnTask === true && scenario.style === "ranged";
+  const mult = conditionalMultipliers(scenario.conditionalBonuses, foldRangedBane);
   const defenceRoll = npcDefenceRoll(scenario.targetDefenceLevel, scenario.targetDefenceBonusForStyle);
 
   let attackRoll: number;
@@ -369,19 +372,29 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // Black mask / slayer helmet (i) on-task — same bonus group as Salve/dragonbane.
   // Suppressed upstream when a Salve is active, so this never double-counts.
+  const cbFlags = scenario.conditionalBonuses;
   const scorchingBowVsDemon =
-    scenario.style === "ranged" && scenario.conditionalBonuses?.demonbaneScorchingBow === true;
+    scenario.style === "ranged" && cbFlags?.demonbaneScorchingBow === true;
   if (scenario.slayerOnTask) {
     const [n, d] = scenario.style === "melee" ? [7, 6] : [23, 20];
     attackRoll = Math.trunc((attackRoll * n) / d);
-    // Scorching bow's +30% DAMAGE vs demons folds additively INTO the mask
-    // multiplier on task — (23+6)/20 = ×1.45, NOT ×23/20×13/10 — mirroring
-    // wgloop's `numerator += 6` ranged-bane merge. (Accuracy stays a separate
-    // +30% additive factor, applied above with the other conditionals.)
-    const dmgN = scorchingBowVsDemon ? n + 6 : n;
+    // Ranged-bane DAMAGE bonuses fold additively INTO the mask multiplier on
+    // task — wilderness weapon +10, DHCB +5, Scorching bow +6 on the 23/20
+    // numerator (e.g. DHCB = ×28/20, NOT ×23/20 × 5/4) — mirroring wgloop's
+    // "additive with slayer only" merge. When folding, the standalone
+    // DHCB/wilderness DAMAGE factors were omitted from `mult` above (see
+    // conditionalMultipliers' foldRangedBaneDamage); accuracy is untouched.
+    let dmgN = n;
+    if (foldRangedBane) {
+      if (cbFlags?.wildernessWeapon) dmgN += 10;
+      if (cbFlags?.dragonHunterCrossbow) dmgN += 5;
+      if (scorchingBowVsDemon) dmgN += 6;
+    }
     maxHit = Math.trunc((maxHit * dmgN) / d);
   } else if (scorchingBowVsDemon) {
-    // Off-task the +30% damage stands alone (wgloop's trackAddFactor(30)).
+    // Off-task the +30% damage stands alone (wgloop's trackAddFactor(30));
+    // DHCB/wilderness damage stayed in `mult` as ordinary multiplicative
+    // factors, so only the Scorching bow needs handling here.
     maxHit = maxHit + Math.trunc((maxHit * 30) / 100);
   }
 
