@@ -18,7 +18,7 @@ export type SpecRole =
   | "healing"
   /** Crowd control: freeze, stun, bind (ZGS, Dragon spear, Abyssal tentacle) */
   | "freeze-stun"
-  /** Restore your prayer or drain target's (Ancient mace, Eldritch nightmare staff) */
+  /** Restore your prayer or drain target's (Ancient mace, Eldritch Nightmare staff) */
   | "prayer-management"
   /** Disable target's protection prayers (Dragon scimitar's Sever) */
   | "anti-prayer"

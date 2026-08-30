@@ -118,7 +118,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     id: "tome-fire-zulrah-weakness",
     bossSlug: "zulrah",
     // Kodai wand, Ancestral hat, Ancestral robe top, Ancestral robe bottom,
-    // Occult necklace, Tome of fire (charged), Eternal boots, Seers ring (i)
+    // Occult necklace, Tome of Fire (charged), Eternal boots, Seers ring (i)
     itemIds: [21006, 21018, 21021, 21024, 12002, 20714, 13235, 11770],
     attackType: "magic",
     choice: "longrange",

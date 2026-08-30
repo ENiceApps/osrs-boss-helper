@@ -222,7 +222,7 @@ const CRYSTAL_HELM = 23971;
 const CRYSTAL_BODY = 23975;
 const CRYSTAL_LEGS = 23979;
 const CRYSTAL_BOW = 23983;
-const BOFA = 25865; // regular Bow of faerdhinen
+const BOFA = 25865; // regular Bow of Faerdhinen
 const BOFA_CORRUPTED = 25867; // (c) — does NOT benefit from crystal armour
 const MAGIC_SHORTBOW = 861; // ordinary bow — should never fire crystal
 
@@ -235,12 +235,12 @@ describe("Crystal armour — crystal-weapon constraint", () => {
     expect(bonus?.damageFactor).toEqual([23, 20]);
   });
 
-  it("fires with the regular Bow of faerdhinen", () => {
+  it("fires with the regular Bow of Faerdhinen", () => {
     const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, BOFA]);
     expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA })?.id).toBe("crystal-armour");
   });
 
-  it("does NOT fire with the corrupted Bow of faerdhinen (c)", () => {
+  it("does NOT fire with the corrupted Bow of Faerdhinen (c)", () => {
     const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, BOFA_CORRUPTED]);
     expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA_CORRUPTED })).toBeUndefined();
   });

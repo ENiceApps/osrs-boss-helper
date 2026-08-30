@@ -66,7 +66,7 @@ export const VERIFIED_SETUPS: VerifiedSetup[] = [
     baseSpellMaxHit: 24,
     spellElement: "fire",
     itemIds: [21018, 21791, 12002, 24423, 21021, 20714, 21024, 19544, 13235, 28313],
-    // dps omitted: the Harmonised nightmare staff (24423) casts standard spells
+    // dps omitted: the Harmonised Nightmare staff (24423) casts standard spells
     // at 4 ticks, not its raw 5 — scoreScenario uses the raw weapon speed, so
     // its dps (~3.25) understates the true wiki value (4.065). maxHit/accuracy
     // are correct. TODO: model Harmonised's 5→4 speed, then restore dps: 4.065.

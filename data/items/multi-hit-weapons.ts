@@ -8,7 +8,7 @@
 
 import type { HitProfile } from "@/lib/dps/multihit";
 
-// Scythe of vitur — charged, uncharged, Holy, Sanguine. Same mechanic.
+// Scythe of Vitur — charged, uncharged, Holy, Sanguine. Same mechanic.
 const SCYTHE_IDS = new Set([22325, 22486, 25736, 25739]);
 // Dark bow — base + cosmetic/deadman variants.
 const DARK_BOW_IDS = new Set([12766, 12765, 11235, 12768, 12767]);

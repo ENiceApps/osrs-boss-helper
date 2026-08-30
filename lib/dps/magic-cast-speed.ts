@@ -4,7 +4,7 @@
 // spell, not the staff's melee speed: standard / ancient / arceuus spells all
 // autocast at 5 ticks. So a fast wand (Kodai wand = 4-tick melee) still casts at
 // 5. Two weapons override this:
-//   • Harmonised nightmare staff — standard-spellbook spells cast at 4 ticks
+//   • Harmonised Nightmare staff — standard-spellbook spells cast at 4 ticks
 //   • Twinflame staff — casts at 6 ticks
 // Powered staves (Trident / Sanguinesti / Tumeken's shadow, etc.) fire their own
 // built-in attack at the weapon's listed speed and are returned unchanged.

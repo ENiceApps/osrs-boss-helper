@@ -74,7 +74,7 @@ describe("checkAmmoCompat", () => {
     // would skip — that's caught instead by the slot-not-being-set on the
     // preset itself.)
     expect(checkAmmoCompat("Dragon hunter lance", "Ruby bolts (e)")).toEqual({ ok: true });
-    expect(checkAmmoCompat("Harmonised nightmare staff", "Diamond bolts (e)")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Harmonised Nightmare staff", "Diamond bolts (e)")).toEqual({ ok: true });
   });
 });
 

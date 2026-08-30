@@ -32,6 +32,8 @@ export type PhasedMonster = MonsterCatalogEntry & {
   alwaysHits?: boolean;
   /** Attack-roll scale for the listed styles (Royal Titans at range). */
   accuracyModifier?: MechanicPhase["accuracyModifier"];
+  /** Raised minimum hit as a fraction of max hit (Mad Angel reaction buffs). */
+  minHitFactor?: [number, number];
   /** Active phase option id — carried into share links. */
   phaseId?: string;
   /** The wiki calc's `monster.inputs.phase` string for the active mechanic
@@ -86,6 +88,7 @@ export function applyPhase(
     out.damageModifier = mech.damageModifier ?? null;
     if (mech.alwaysHits) out.alwaysHits = true;
     if (mech.accuracyModifier) out.accuracyModifier = mech.accuracyModifier;
+    if (mech.minHitFactor) out.minHitFactor = mech.minHitFactor;
     if (mech.wikiPhase !== undefined) out.wikiPhase = mech.wikiPhase;
     const adj = mech.statAdjust;
     if (adj) {

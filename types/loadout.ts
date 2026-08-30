@@ -49,6 +49,10 @@ export interface ItemBonusFlags {
   kerisPartisan?: boolean;
   /** Keris partisan of breaching — additionally +33% accuracy vs Kalphites/Scabarites. */
   kerisBreaching?: boolean;
+  /** Barronite mace — golembane (×23/20 damage vs golems). */
+  golembaneBarronite?: boolean;
+  /** Granite hammer — golembane (×13/10 accuracy AND damage vs golems). */
+  golembaneGraniteHammer?: boolean;
   tomeOfFire: boolean;
   /** Tome of Water (charged) — ×6/5 accuracy + ×6/5 damage on water spells. */
   tomeOfWater: boolean;

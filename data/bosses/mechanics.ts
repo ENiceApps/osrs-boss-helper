@@ -503,7 +503,7 @@ const DAGANNOTH_REX: MechanicRequirement[] = [
     label: "Kill with magic",
     description:
       "Rex tanks melee and ranged (255 defence bonus to each) but has just 10 magic defence and a magic level of 0 — magic obliterates him.",
-    remediation: "Trident of the swamp / Sanguinesti / Shadow. (He attacks with melee — pray Melee.)",
+    remediation: "Trident of the Swamp / Sanguinesti / Shadow. (He attacks with melee — pray Melee.)",
   },
   {
     id: "rex-stand-under",
@@ -934,7 +934,7 @@ const KRAKEN: MechanicRequirement[] = [
     id: "kraken-magic-only",
     label: "Use magic (Trident) — the AFK standard",
     description:
-      "You fight Kraken from a fixed tile out of melee range, so magic (or ranged) is the practical choice — and its defence level is only 1, so anything hits. A powered staff is the go-to: Trident of the swamp / Sang / Harmonised Surge.",
+      "You fight Kraken from a fixed tile out of melee range, so magic (or ranged) is the practical choice — and its defence level is only 1, so anything hits. A powered staff is the go-to: Trident of the Swamp / Sang / Harmonised Surge.",
     remediation: "Trident of swamp + Occult + Tormented bracelet is the AFK setup.",
   },
   {
@@ -1451,6 +1451,67 @@ const SOL_HEREDIT: MechanicRequirement[] = [
   },
 ];
 
+// ---------------- Mad Angel (Wyrmscraig) ----------------
+const MAD_ANGEL: MechanicRequirement[] = [
+  {
+    id: "mad-angel-unlock",
+    label: "Unlocked by Fallen From Grace",
+    description:
+      "The repeatable Mad Angel (level 588) sits in the Ardeaglais cathedral on Wyrmscraig and unlocks after the Fallen From Grace quest (62 Sailing). The in-quest version is a tuned-down level 270.",
+    remediation: "Finish Fallen From Grace, then return via the Ardeaglais teleport it drops (1/25).",
+  },
+  {
+    id: "mad-angel-pray-melee",
+    label: "Pray Melee for the standard attacks",
+    description:
+      "Standard attacks are 6-tick melee hitting up to 31 — Protect from Melee cuts that to 5. Magic only appears in its specials, so Melee is the default overhead.",
+    remediation: "Keep Protect from Melee up between specials; switch to Protect from Magic only for the smite.",
+  },
+  {
+    id: "mad-angel-specials",
+    label: "Counter the three rotating specials — each rewards your DPS",
+    description:
+      "Every 3 autos it rotates a special, and countering it buffs YOUR next attack: Sweep — side-step away from the telegraphed cleave side; your next attack can't miss and its minimum hit is 50% of max. Blast — stand on the shadowed tile to bounce the light ball back (18–22 to the boss) instead of eating a 30+ arena hit. Smite — flick Protect from Magic on the exact strike tick (~4 ticks after the charge starts) to negate it fully AND guarantee your next attack's max hit; just having the prayer up still cuts ~75%.",
+    remediation:
+      "Use the phase selector (Sword Cleave / Perfect Lightning) to see what the reaction buffs are worth for your setup.",
+  },
+  {
+    id: "mad-angel-enrage",
+    label: "Enrage at 350 HP",
+    description:
+      "At 350 HP (~45%) it enrages: all three specials fire back-to-back immediately, then keep coming faster — and the smite becomes a triple strike (second 4 ticks after the first, third 2 ticks after the second).",
+    remediation: "Bank the reaction buffs pre-enrage; save brews for the chained specials at the phase flip.",
+  },
+  {
+    id: "mad-angel-golembane",
+    label: "It's a golem — golembane weapons and crush work",
+    description:
+      "As a golem it takes bonus damage from golembane weapons: Granite hammer (+30% accuracy and damage) and Barronite mace (+15% damage). Crush is also its weakest melee defence (+20 vs +40 stab / +60 slash), and it has a 15% weakness to earth spells.",
+    worn: {
+      slot: "weapon",
+      items: [
+        id(21742), // Granite hammer
+        id(25641), id(25643), // Barronite mace (Normal / Locked)
+      ],
+    },
+    remediation: "Granite hammer beats much higher-tier melee here; earth spells with a Tome of Earth also perform.",
+  },
+  {
+    id: "mad-angel-immunities",
+    label: "Immune to poison, venom, freezes, and cannon",
+    description:
+      "Poison, venom, and freezes do nothing, the dwarf multicannon can't be set up, and it strongly resists burn — don't budget DPS around any of them.",
+    remediation: "Skip serp helm/venom gear for offence; pick bolts for raw damage (ruby works, diamond vs its 175 defence).",
+  },
+  {
+    id: "food",
+    label: "Food + prayer pots",
+    description: "Missed specials hit 30+ through the fight and prayer stays up constantly.",
+    satisfiedBy: { anyOf: [[id(385)], [id(391)], [id(2434)], [id(3024)]] },
+    remediation: "Sharks/Manta rays + Prayer potions or Super restores; brews for learning trips.",
+  },
+];
+
 export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   vorkath: VORKATH,
   "king-black-dragon": KBD,
@@ -1498,6 +1559,8 @@ export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   "eclipse-moon": ECLIPSE_MOON,
   // Fortis Colosseum
   "sol-heredit": SOL_HEREDIT,
+  // Wyrmscraig
+  "mad-angel": MAD_ANGEL,
 };
 
 /**

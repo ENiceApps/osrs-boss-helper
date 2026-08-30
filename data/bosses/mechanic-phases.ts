@@ -51,6 +51,14 @@ export interface MechanicPhase {
   };
   /** Player attacks cannot miss during this phase (Doom burrowing/shielded). */
   alwaysHits?: boolean;
+  /**
+   * Raised minimum hit as a fraction of the player's max hit (Mad Angel's
+   * reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1] i.e.
+   * every hit is the max). Lifts the per-hit mean from max/2 to
+   * (trunc(max×n/d) + max)/2. Pair with alwaysHits — wgloop's
+   * firstHitAccurate/firstHitMinimum/firstHitMax states.
+   */
+  minHitFactor?: [number, number];
   /** Attack-roll scale during this phase (Royal Titans: ranged ×6 at range). */
   accuracyModifier?: { factor: [number, number]; styles?: CombatStyle[] };
   /**
@@ -202,6 +210,37 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
       note: "Punish window: melee damage ×1.5.",
       damageModifier: { factor: [3, 2], styles: ["melee"] },
       wikiPhase: "Melee Punish",
+    },
+  ],
+
+  // Mad Angel's reaction buffs: countering a special perfectly buffs the
+  // player's NEXT attack. wgloop models each buff as a selectable state
+  // (MAD_ANGEL_PHASES) — Sword Cleave (side-stepped the sweep) = can't miss +
+  // minimum hit 50% of max; Perfect Lightning (flicked Protect from Magic on
+  // the strike tick) = can't miss + guaranteed max hit.
+  // https://oldschool.runescape.wiki/w/Mad_Angel
+  "mad-angel": [
+    {
+      id: "standard",
+      label: "Standard",
+      note: "No reaction buff active: normal accuracy and damage.",
+      wikiPhase: "Standard", // MAD_ANGEL_PHASES in wgloop constants.ts
+    },
+    {
+      id: "sword-cleave",
+      label: "Sword Cleave (dodged)",
+      note: "After side-stepping the sweep: your next attack cannot miss and its minimum hit is 50% of your max.",
+      alwaysHits: true,
+      minHitFactor: [1, 2],
+      wikiPhase: "Sword Cleave",
+    },
+    {
+      id: "perfect-lightning",
+      label: "Perfect Lightning (flicked)",
+      note: "After a perfect Protect from Magic flick on the smite: your next attack cannot miss and deals your max hit.",
+      alwaysHits: true,
+      minHitFactor: [1, 1],
+      wikiPhase: "Perfect Lightning",
     },
   ],
 };

@@ -219,6 +219,7 @@ export function computeSetDps(
   const targetAccuracyFactor =
     acc && (!acc.styles || acc.styles.includes(set.style)) ? acc.factor : undefined;
   const targetAlwaysHit = target.alwaysHits === true;
+  const targetMinHitFactor = target.minHitFactor;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -340,6 +341,7 @@ export function computeSetDps(
     targetDamageFactor,
     targetAccuracyFactor,
     targetAlwaysHit,
+    targetMinHitFactor,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

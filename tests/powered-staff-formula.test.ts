@@ -8,7 +8,7 @@ import type { LoadoutSet } from "@/types/loadout";
 
 const CATALOG_IDS = new Set(ITEM_CATALOG.map((i) => i.id));
 
-// The equippable "Trident of the seas" the generated catalog exposes (Uncharged
+// The equippable "Trident of the Seas" the generated catalog exposes (Uncharged
 // row) — this is the id the optimizer/loadout actually carries. Before the fix
 // it was absent from POWERED_STAFF_FORMULA, so magic DPS computed as ~0.
 const TRIDENT_OF_THE_SEAS_UNCHARGED = 11908;
@@ -26,24 +26,24 @@ describe("POWERED_STAFF_FORMULA — catalog reconciliation", () => {
     }
   });
 
-  it("includes the equippable Trident of the seas id the catalog exposes", () => {
+  it("includes the equippable Trident of the Seas id the catalog exposes", () => {
     expect(POWERED_STAFF_FORMULA.has(TRIDENT_OF_THE_SEAS_UNCHARGED)).toBe(true);
   });
 });
 
-// Build a Trident of the seas magic loadout exactly the way lib/optimize/bank.ts
+// Build a Trident of the Seas magic loadout exactly the way lib/optimize/bank.ts
 // does: derive baseSpellMaxHit from POWERED_STAFF_FORMULA keyed by the weapon id.
 // If the id is missing from the map (the old bug) this is undefined → ~0 DPS.
 function tridentSet(weaponId: number): LoadoutSet {
   const formula = POWERED_STAFF_FORMULA.get(weaponId);
   return {
     id: "trident-test",
-    name: "Trident of the seas",
+    name: "Trident of the Seas",
     style: "magic",
     tier: "mid",
     attackType: "magic",
     attackStyleChoice: "accurate",
-    slots: { weapon: { itemId: weaponId, itemName: "Trident of the seas" } },
+    slots: { weapon: { itemId: weaponId, itemName: "Trident of the Seas" } },
     totals: { attackBonus: 15, strengthBonus: 0, prayerBonus: 0, magicDamagePct: 0 },
     attackSpeedTicks: 4,
     weaponCategory: "Powered Staff",
@@ -66,7 +66,7 @@ function tridentSet(weaponId: number): LoadoutSet {
   };
 }
 
-describe("Trident of the seas — magic loadout", () => {
+describe("Trident of the Seas — magic loadout", () => {
   const target = MONSTER_BY_SLUG["general-graardor"];
 
   it("computes non-zero magic DPS for the catalog's trident id", () => {

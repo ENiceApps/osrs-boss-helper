@@ -305,6 +305,7 @@ function applicableForceIncludes(
   const isDragon = target.attributes.includes("dragon");
   const isUndead = target.attributes.includes("undead");
   const isDemon = target.attributes.includes("demon");
+  const isGolem = target.attributes.includes("golem");
   const out: number[] = [];
   // Variant-aware (ownedTriggerIds): force-include the id the player actually
   // owns — a Salve(ei) Soul Wars/Emir's Arena imbue or DHCB (t)/(b) kit
@@ -325,6 +326,12 @@ function applicableForceIncludes(
     out.push(...ownedTriggerIds(bank, "SCORCHING_BOW"));
     // Purging staff doubles demonbane-spell bonuses — only relevant vs demons.
     out.push(...ownedTriggerIds(bank, "PURGING_STAFF"));
+  }
+  if (isGolem) {
+    // Golembane weapons — Barronite mace (×23/20 dmg), Granite hammer (×13/10
+    // acc+dmg) — are low-tier maces itemScore would otherwise prune.
+    out.push(...ownedTriggerIds(bank, "BARRONITE_MACE"));
+    out.push(...ownedTriggerIds(bank, "GRANITE_HAMMER"));
   }
   out.push(...ownedTriggerIds(bank, "TWISTED_BOW")); // always relevant (scales with target magic)
   // Tomes boost their element's spells vs all NPCs — push them unconditionally

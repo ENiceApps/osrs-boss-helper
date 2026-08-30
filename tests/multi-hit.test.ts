@@ -41,12 +41,12 @@ describe("multi-hit weapon registry", () => {
 function scytheSet(): LoadoutSet {
   return {
     id: "scythe-test",
-    name: "Scythe of vitur",
+    name: "Scythe of Vitur",
     style: "melee",
     tier: "end",
     attackType: "slash",
     attackStyleChoice: "aggressive",
-    slots: { weapon: { itemId: 22325, itemName: "Scythe of vitur" } },
+    slots: { weapon: { itemId: 22325, itemName: "Scythe of Vitur" } },
     totals: { attackBonus: 110, strengthBonus: 75, prayerBonus: 0 },
     attackSpeedTicks: 5,
     weaponCategory: "Scythe",

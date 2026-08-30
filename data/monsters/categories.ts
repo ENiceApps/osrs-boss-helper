@@ -61,6 +61,7 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "chaos-elemental": "mid",
   "phantom-muspah": "mid",
   "the-hueycoatl": "mid",
+  "mad-angel": "mid", // Wyrmscraig cathedral golem (2026-07-29), post-Fallen From Grace
   "tztok-jad": "mid",
   "blood-moon": "mid",
   "blue-moon": "mid",

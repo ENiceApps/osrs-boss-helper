@@ -39,4 +39,9 @@ export const REQUIREMENT_OVERRIDES: Record<string, CombatRequirement> = {
   "Void melee helm": { attack: 42, strength: 42, defence: 42, ranged: 42, magic: 42, hitpoints: 42, prayer: 22 },
   "Elite void top": { attack: 42, strength: 42, defence: 42, ranged: 42, magic: 42, hitpoints: 42, prayer: 22 },
   "Elite void robe": { attack: 42, strength: 42, defence: 42, ranged: 42, magic: 42, hitpoints: 42, prayer: 22 },
+
+  // Wyrmscraig (2026-07-29) — released after the vendored scrape, so the item
+  // is absent from item-requirements.json entirely. Verified: "requires level
+  // 75 Attack to wield" on the Hallowfell wiki page.
+  "Hallowfell": { attack: 75 },
 };

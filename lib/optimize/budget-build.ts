@@ -115,6 +115,10 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
     out.push(...ownedTriggerIds(affordable, "SCORCHING_BOW"));
     out.push(...ownedTriggerIds(affordable, "PURGING_STAFF"));
   }
+  if (attrs.includes("golem")) {
+    out.push(...ownedTriggerIds(affordable, "BARRONITE_MACE"));
+    out.push(...ownedTriggerIds(affordable, "GRANITE_HAMMER"));
+  }
   out.push(...ownedTriggerIds(affordable, "TWISTED_BOW")); // scales with target magic
   // Wilderness weapons: big ×3/2 vs NPCs in the Wilderness the proxy can't see.
   if (isWildernessBoss(target.slug)) out.push(...ownedTriggerIds(affordable, "WILDERNESS_WEAPON"));

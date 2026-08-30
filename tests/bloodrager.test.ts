@@ -87,7 +87,7 @@ function bloodMoonSet(broken: boolean): LoadoutSet {
     attackStyleChoice: "aggressive",
     slots: {
       weapon: { itemId: 28997, itemName: "Dual macuahuitl" },
-      head: { itemId: broken ? 10828 : 29028, itemName: "head" }, // Helm of neitiznot breaks the set
+      head: { itemId: broken ? 10828 : 29028, itemName: "head" }, // Helm of Neitiznot breaks the set
       body: { itemId: 29022, itemName: "Blood moon chestplate" },
       legs: { itemId: 29025, itemName: "Blood moon tassets" },
     },
@@ -132,7 +132,7 @@ describe("Bloodrager force-include in the bank optimizer", () => {
     ...BLOOD_MOON,
     11832, // Bandos chestplate — the competing body slot (same str, more defence)
     11834, // Bandos tassets — competing legs
-    10828, // Helm of neitiznot — competing head
+    10828, // Helm of Neitiznot — competing head
   ]);
 
   it("assembles macuahuitl + the full Blood moon set when the macuahuitl is owned", () => {

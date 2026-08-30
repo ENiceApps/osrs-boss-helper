@@ -95,6 +95,8 @@ function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.salveAmuletEi) flags.push("Salve(ei) +20%");
   if (activeBonuses?.conditionalBonuses.salveAmulet) flags.push("Salve +16.7%");
   if (activeBonuses?.conditionalBonuses.wildernessWeapon) flags.push("Wilderness weapon +50%");
+  if (activeBonuses?.conditionalBonuses.golembaneGraniteHammer) flags.push("Golembane (Granite hammer) +30%");
+  if (activeBonuses?.conditionalBonuses.golembaneBarronite) flags.push("Golembane (Barronite mace) +15% dmg");
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc+dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% acc+dmg");

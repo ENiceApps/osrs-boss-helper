@@ -66,7 +66,9 @@ export const PRAYER_OPTIONS: Record<CombatStyle, PrayerOption[]> = {
     },
     {
       id: "chivalry", name: "Chivalry", effect: "+15% atk · +18% str",
-      style: "melee", level: 60, drainEffect: 24,
+      // Drain halved 2026-08-12 (Summer Sweep-Up: Agility & CoX) to match
+      // Deadeye/Mystic Vigour — 1 point per 3s at 0 prayer bonus.
+      style: "melee", level: 60, drainEffect: 12,
       selection: sel({ attackMultiplier: 1.15, strengthMultiplier: 1.18, defenceMultiplier: 1.2 }),
     },
     {

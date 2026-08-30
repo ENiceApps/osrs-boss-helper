@@ -36,11 +36,11 @@ import type {
 } from "@/types/osrs";
 
 // Cape variants that grant the Dizana passive (+10 ranged atk / +1 ranged str
-// with compatible ammo): Blessed dizana's quiver, Dizana's max cape, and the
+// with compatible ammo): Blessed Dizana's quiver, Dizana's max cape, and the
 // Charged Dizana's quiver — all version ids. Uncharged/broken base quiver and
 // the cosmetic max hood do NOT qualify.
 const DIZANA_PASSIVE_CAPE_IDS: ReadonlySet<number> = new Set([
-  28828, 28957, 28955, // Blessed dizana's quiver (Broken / Locked / Normal)
+  28828, 28957, 28955, // Blessed Dizana's quiver (Broken / Locked / Normal)
   28830, 28906, 28902, // Dizana's max cape (Broken / Locked / Normal)
   28951, 28953, // Dizana's quiver (Charged / Charged + Locked)
 ]);
@@ -335,7 +335,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   // Dizana's quiver / max cape passive: +10 ranged attack and +1 ranged strength
   // when compatible ammo is loaded — a bonus NOT in the cape's base stats. Only
   // the charged/blessed/max variants grant it. Mirrors wgloop's
-  // calculateEquipmentBonusesFromGear (Blessed dizana's quiver et al.).
+  // calculateEquipmentBonusesFromGear (Blessed Dizana's quiver et al.).
   // Only real ammo in the AMMO SLOT counts — a blowpipe's internal dart does
   // not (wgloop checks the ammo-slot item, which is empty for a blowpipe), so
   // the passive does not apply to self-ammo weapons.
@@ -347,7 +347,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     }
   }
 
-  // Powered staves (Trident, Sanguinesti, Eye of ayak, …) embed their own
+  // Powered staves (Trident, Sanguinesti, Eye of Ayak, …) embed their own
   // max-hit formula keyed by weapon id. Derive it here from the weapon so any
   // caller that doesn't pre-resolve a spell — notably the budget upgrade path,
   // which re-scores without re-running autoPickSpell — still gets correct magic
@@ -382,6 +382,8 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
     kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
     kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
+    golembaneBarronite: hasTrigger(slotItemIds, "BARRONITE_MACE"),
+    golembaneGraniteHammer: hasTrigger(slotItemIds, "GRANITE_HAMMER"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
     tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
     tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),

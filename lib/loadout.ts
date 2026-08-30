@@ -36,6 +36,7 @@ export function activeBonusesForTarget(
   const isUndead = target.attributes.includes("undead");
   const isDemon = target.attributes.includes("demon");
   const isKalphite = target.attributes.includes("kalphite");
+  const isGolem = target.attributes.includes("golem");
   // Dragon hunter wand's dragonbane is active vs dragons AND does NOT stack with
   // Salve (unlike DHCB/DHL, which do). On an undead dragon (e.g. Vorkath) the
   // wand wins (+75/+40 ≫ Salve's +20/+20), so suppress Salve when it's active.
@@ -57,6 +58,8 @@ export function activeBonusesForTarget(
       demonbaneScorchingBow: (set.itemBonusFlags.demonbaneScorchingBow ?? false) && isDemon,
       kerisVsKalphite: (set.itemBonusFlags.kerisPartisan ?? false) && isKalphite,
       kerisBreachVsKalphite: (set.itemBonusFlags.kerisBreaching ?? false) && isKalphite,
+      golembaneBarronite: (set.itemBonusFlags.golembaneBarronite ?? false) && isGolem,
+      golembaneGraniteHammer: (set.itemBonusFlags.golembaneGraniteHammer ?? false) && isGolem,
       // Wilderness weapons only get their ×3/2 vs NPCs fought in the Wilderness.
       wildernessWeapon:
         (set.itemBonusFlags.wildernessWeapon ?? false) && isWildernessBoss(target.slug),

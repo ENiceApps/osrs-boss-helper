@@ -136,12 +136,12 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "legs", itemIds: [23979, 23981] }, // Crystal legs
     ],
     // Full set: +30% accuracy, +15% damage — but ONLY for the crystal bow and
-    // the regular Bow of faerdhinen. The corrupted Bow of faerdhinen (c) (25867)
+    // the regular Bow of Faerdhinen. The corrupted Bow of Faerdhinen (c) (25867)
     // does NOT benefit (it's used with regular ranged gear) and is excluded.
     // Per-piece scaling (helm 5/2.5%, body 15/7.5%, legs 10/5%) isn't modeled —
     // all-or-nothing, matching every other set here.
     bonus: { accuracyFactor: [13, 10], damageFactor: [23, 20] },
-    requiredWeaponIds: [23983, 25862, 25865], // Crystal bow, Bow of faerdhinen
+    requiredWeaponIds: [23983, 25862, 25865], // Crystal bow, Bow of Faerdhinen
   },
 
   // ============ Magic ============

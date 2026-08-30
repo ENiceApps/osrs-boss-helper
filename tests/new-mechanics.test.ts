@@ -1,7 +1,7 @@
 /**
  * Unit tests for Phase 1 and Phase 3 mechanics:
  *   - Tumeken's Shadow ×3 (overworld) / ×4 (ToA)
- *   - Harmonised nightmare staff 4-tick speed
+ *   - Harmonised Nightmare staff 4-tick speed
  *   - Virtus armour +3%/piece with Ancient Magicks
  *   - Keris partisan +33% damage + 1/51 triple proc vs Kalphites
  *   - Keris partisan of breaching +33% accuracy vs Kalphites
@@ -248,9 +248,9 @@ describe("Dharok's set detection in computeSetDps", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Harmonised nightmare staff 4-tick speed
+// Harmonised Nightmare staff 4-tick speed
 // ---------------------------------------------------------------------------
-describe("Harmonised nightmare staff — 4-tick autocast speed", () => {
+describe("Harmonised Nightmare staff — 4-tick autocast speed", () => {
   it("standard-spell autocast uses 4 ticks, not the vendor speed of 5", () => {
     // We can't call computeSetDps with a real magic LoadoutSet easily, but we can
     // verify the DPS calculation directly: same scenario, speed 4 vs 5.

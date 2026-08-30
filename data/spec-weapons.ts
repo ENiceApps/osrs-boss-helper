@@ -98,7 +98,7 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
   },
   {
     itemId: id(28922),
-    name: "Tonalztics of ralos",
+    name: "Tonalztics of Ralos",
     specName: "Division",
     energyCost: 50,
     // Summer Sweep-Up (2026-07-22) buff: 10% → 12.5% per hit, and the spec
@@ -109,7 +109,7 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
   },
   {
     itemId: id(31113),
-    name: "Eye of ayak",
+    name: "Eye of Ayak",
     specName: "Soul Rend",
     energyCost: 50,
     effect: "Drains target's Magic defence equal to damage dealt.",
@@ -249,7 +249,7 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
   },
   {
     itemId: id(24424),
-    name: "Volatile nightmare staff",
+    name: "Volatile Nightmare staff",
     specName: "Immolate",
     energyCost: 55,
     effect: "Fires a powerful spell with +50% accuracy.",
@@ -399,7 +399,7 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
   },
   {
     itemId: id(24425),
-    name: "Eldritch nightmare staff",
+    name: "Eldritch Nightmare staff",
     specName: "Invocate",
     energyCost: 55,
     effect: "Restores prayer points equal to half the damage dealt.",
@@ -553,8 +553,8 @@ export const SPEC_MAX_HIT: Record<number, SpecMaxHit> = {
 
   // ---- Magic ----
   27665: { factor: [3, 2] }, //   Accursed sceptre — Condemn (+50%)
-  31113: { factor: [13, 10] }, //  Eye of ayak — Soul Rend (+30%)
-  24424: { varies: "scales with Magic level (max 58)" }, // Volatile nightmare staff
+  31113: { factor: [13, 10] }, //  Eye of Ayak — Soul Rend (+30%)
+  24424: { varies: "scales with Magic level (max 58)" }, // Volatile Nightmare staff
 
   // ---- True-max / variable ----
   26219: { uncapped: true }, //   Osmumten's fang — Eviscerate (rolls true max)

@@ -4,7 +4,7 @@
 //      not in the bank (Tbow swap)
 //  (3) honour force-include branches for demonbane against demon targets
 //  (4) not crash on degenerate inputs (empty bank, weaponless bank)
-//  (5) score powered staves (Trident of the seas/swamp) with their built-in
+//  (5) score powered staves (Trident of the Seas/swamp) with their built-in
 //      damage formula — not zero — so magic is considered for magic-weak bosses
 
 import { describe, expect, it } from "vitest";
@@ -349,9 +349,9 @@ describe("optimize/bank — parity check vs Phase 1 scoreScenario", () => {
 const REX = MONSTER_BY_SLUG["dagannoth-rex"];
 
 describe("optimize/bank — powered staff formula (Trident fix)", () => {
-  it("Trident of the swamp alone yields non-zero magic DPS", () => {
+  it("Trident of the Swamp alone yields non-zero magic DPS", () => {
     const { rankings } = optimizeForBoss({
-      bank: [12899], // Trident of the swamp
+      bank: [12899], // Trident of the Swamp
       target: REX,
       skills: SKILLS_AT_99,
     });
@@ -362,7 +362,7 @@ describe("optimize/bank — powered staff formula (Trident fix)", () => {
     expect(top.dps.dps).toBeGreaterThan(0);
   });
 
-  it("Trident of the swamp max hit at 99 magic = 30 (formula 29 + Augury +4%)", () => {
+  it("Trident of the Swamp max hit at 99 magic = 30 (formula 29 + Augury +4%)", () => {
     const { rankings } = optimizeForBoss({
       bank: [12899],
       target: REX,
@@ -373,9 +373,9 @@ describe("optimize/bank — powered staff formula (Trident fix)", () => {
     expect(rankings[0].dps.maxHit).toBe(30);
   });
 
-  it("Trident of the seas max hit at 99 magic = 29 (formula 28 + Augury +4%)", () => {
+  it("Trident of the Seas max hit at 99 magic = 29 (formula 28 + Augury +4%)", () => {
     const { rankings } = optimizeForBoss({
-      bank: [11907], // Trident of the seas
+      bank: [11907], // Trident of the Seas
       target: REX,
       skills: SKILLS_AT_99,
     });
@@ -388,7 +388,7 @@ describe("optimize/bank — powered staff formula (Trident fix)", () => {
     // against Rex's 255 ranged def it would have scored 0 pre-fix (magic=0)
     // and still loses post-fix because Rex's magic def is only 10.
     const bank = [
-      12899, // Trident of the swamp
+      12899, // Trident of the Swamp
       21012, // Dragon hunter crossbow
       9243,  // Diamond bolts (e)
       22109, // Ava's assembler

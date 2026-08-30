@@ -183,6 +183,12 @@ export interface DpsScenario {
   targetAccuracyFactor?: [number, number];
   /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
   targetAlwaysHit?: boolean;
+  /**
+   * Raised minimum hit as [numerator, denominator] of the final max hit (Mad
+   * Angel reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1]).
+   * Lifts the landed-hit mean from max/2 to (trunc(max×n/d) + max)/2.
+   */
+  targetMinHitFactor?: [number, number];
 }
 
 interface StyleBonuses {
@@ -486,6 +492,17 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     : effectiveAttackSpeed;
 
   let dps = dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
+
+  // Raised minimum hit (Mad Angel reaction buffs): landed-hit mean becomes
+  // (min + max)/2 instead of max/2. Single-hit path only — the bolt/multi-hit
+  // branches below overwrite dps with their own means (wgloop applies the buff
+  // to the FIRST hit only there; leaving those paths unbuffed is the
+  // conservative mean-model equivalent).
+  if (scenario.targetMinHitFactor) {
+    const [n, d] = scenario.targetMinHitFactor;
+    const minHit = Math.trunc((maxHit * n) / d);
+    dps = (accuracy * ((minHit + maxHit) / 2)) / (bloodragerSpeed * 0.6);
+  }
 
   if (scenario.boltProc && scenario.style === "ranged") {
     const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc);

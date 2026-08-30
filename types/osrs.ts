@@ -174,6 +174,10 @@ export interface ConditionalBonusFlags {
   kerisVsKalphite?: boolean;
   /** Keris partisan of breaching vs Kalphites/Scabarites → +33% accuracy (×4/3). */
   kerisBreachVsKalphite?: boolean;
+  /** Barronite mace vs golem → ×23/20 damage (multiplicative, damage only). */
+  golembaneBarronite?: boolean;
+  /** Granite hammer vs golem → ×13/10 accuracy AND damage (multiplicative). */
+  golembaneGraniteHammer?: boolean;
   /**
    * A charged wilderness weapon (Craw's/Webweaver bow, Viggora's/Ursine
    * chainmace, Thammaron's/Accursed sceptre) attacking an NPC in the Wilderness

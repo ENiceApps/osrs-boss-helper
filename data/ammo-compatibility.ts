@@ -96,16 +96,16 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   // maxTier: 0 ensures every real ammo tier (1+) fails the tier check.
   "Craw's bow": { class: "arrow", maxTier: 0 },   // Wilderness bow — built-in unlimited ammo
   "Webweaver bow": { class: "arrow", maxTier: 0 }, // upgraded Craw's bow — same mechanic
-  "Bow of faerdhinen": { class: "arrow", maxTier: 0 },      // uncharged form
-  "Bow of faerdhinen (c)": { class: "arrow", maxTier: 0 },  // charged (all clan colour variants below)
-  "Bow of faerdhinen (c) (Amlodd)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Cadarn)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Crwys)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Iorwerth)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Ithell)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Meilyr)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (Trahaearn)": { class: "arrow", maxTier: 0 },
-  "Bow of faerdhinen (c) (deadman)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen": { class: "arrow", maxTier: 0 },      // uncharged form
+  "Bow of Faerdhinen (c)": { class: "arrow", maxTier: 0 },  // charged (all clan colour variants below)
+  "Bow of Faerdhinen (c) (Amlodd)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Cadarn)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Crwys)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Iorwerth)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Ithell)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Meilyr)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (Trahaearn)": { class: "arrow", maxTier: 0 },
+  "Bow of Faerdhinen (c) (deadman)": { class: "arrow", maxTier: 0 },
   // Crystal bows (regular + Gauntlet variants) — fire from charges, no arrows.
   "Crystal bow": { class: "arrow", maxTier: 0 },
   "Crystal bow (i)": { class: "arrow", maxTier: 0 },

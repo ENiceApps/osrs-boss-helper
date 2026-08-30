@@ -15,7 +15,7 @@ import type { Spellbook } from "@/data/spells/catalog";
 
 const NAME_BY_ID = new Map<number, string>(ITEM_CATALOG.map((i) => [i.id, i.name]));
 
-// Weapons that add Ancient Magicks autocast. NOTE the Harmonised nightmare staff
+// Weapons that add Ancient Magicks autocast. NOTE the Harmonised Nightmare staff
 // matches "nightmare staff" but is Standard-only (it speeds up standard spells),
 // so it is explicitly excluded below.
 const ANCIENT_CAPABLE =

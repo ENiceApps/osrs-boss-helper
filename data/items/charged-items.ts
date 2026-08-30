@@ -1,6 +1,6 @@
 // Charged combat items are worn untradeable, but you buy and sell them in an
 // UNCHARGED (tradeable) form — Tumeken's shadow, the tridents, Toxic blowpipe,
-// Scythe of vitur, Bow of faerdhinen, the wilderness weapons, etc. For Budget
+// Scythe of Vitur, Bow of Faerdhinen, the wilderness weapons, etc. For Budget
 // mode that means they shouldn't sit in the "owned untradeables" list: the
 // optimizer should be free to EQUIP the charged item (its real combat stats)
 // while pricing it at the uncharged GE value — you buy the uncharged item and
@@ -13,8 +13,8 @@
 // bows/crossbows/amulets it means *unstrung* (a fletching/crafting step), which
 // would wrongly pull every shortbow/longbow in.
 //
-// Recolour / autocast / ornament variants ("Bow of faerdhinen (c) (Crwys)",
-// "Accursed sceptre (a)", "Trident of the swamp (e) (o)") resolve to the same
+// Recolour / autocast / ornament variants ("Bow of Faerdhinen (c) (Crwys)",
+// "Accursed sceptre (a)", "Trident of the Swamp (e) (o)") resolve to the same
 // uncharged price by stripping a trailing parenthetical (see chargedKey).
 //
 // Not mapped (no tradeable uncharged form): Magma/Tanzanite helm (Serpentine
@@ -27,16 +27,16 @@ import { ITEM_CATALOG } from "@/data/items/catalog";
 const CHARGED_UNCHARGED_ID: Record<string, number> = {
   "Tumeken's shadow": 27277,
   "Sanguinesti staff": 22481,
-  "Scythe of vitur": 22486,
-  "Trident of the seas": 11908,
-  "Trident of the seas (e)": 22290,
-  "Trident of the swamp": 12900,
-  "Trident of the swamp (e)": 22294,
+  "Scythe of Vitur": 22486,
+  "Trident of the Seas": 11908,
+  "Trident of the Seas (e)": 22290,
+  "Trident of the Swamp": 12900,
+  "Trident of the Swamp (e)": 22294,
   "Toxic blowpipe": 12924,
-  "Bow of faerdhinen": 25862,
-  "Bow of faerdhinen (c)": 25862,
-  "Blade of saeldor": 23997,
-  "Blade of saeldor (c)": 23997,
+  "Bow of Faerdhinen": 25862,
+  "Bow of Faerdhinen (c)": 25862,
+  "Blade of Saeldor": 23997,
+  "Blade of Saeldor (c)": 23997,
   "Craw's bow": 22547,
   "Webweaver bow": 27652,
   "Ursine chainmace": 27657,
@@ -45,9 +45,9 @@ const CHARGED_UNCHARGED_ID: Record<string, number> = {
   "Thammaron's sceptre": 22552,
   "Warped sceptre": 28583,
   "Venator bow": 27612,
-  "Tonalztics of ralos": 28919,
+  "Tonalztics of Ralos": 28919,
   "Serpentine helm": 12929,
-  "Eye of ayak": 31115,
+  "Eye of Ayak": 31115,
   "Bryophyta's staff": 22368,
   "Camphor blowpipe": 31577,
   "Ironwood blowpipe": 31581,

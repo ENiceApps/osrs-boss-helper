@@ -50,6 +50,7 @@ const NOTABLE_SLUGS = [
   "the-hueycoatl",
   "yama",
   "maggot-king",
+  "mad-angel",
   // Slayer bosses
   "alchemical-hydra",
   "abyssal-sire",

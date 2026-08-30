@@ -119,7 +119,7 @@ describe("magic weapon autocast capability", () => {
     expect(autocastableSpellbooks(KODAI_WAND).sort()).toEqual(["ancient", "arceuus", "standard"]);
   });
 
-  it("the Harmonised nightmare staff is Standard-only despite matching 'nightmare staff'", () => {
+  it("the Harmonised Nightmare staff is Standard-only despite matching 'nightmare staff'", () => {
     expect(weaponCanAutocastSpellbook(HARMONISED_NIGHTMARE_STAFF, "ancient")).toBe(false);
     expect(weaponCanAutocastSpellbook(NIGHTMARE_STAFF, "ancient")).toBe(true);
   });

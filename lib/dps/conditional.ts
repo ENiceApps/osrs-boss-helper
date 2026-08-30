@@ -100,6 +100,16 @@ export function conditionalMultipliers(
     // (persists outside the Tombs of Amascut).
     accuracy.push({ numerator: 4, denominator: 3, reason: "Keris partisan of breaching vs Kalphite/Scabarite" });
   }
+  if (flags.golembaneGraniteHammer) {
+    // Granite hammer vs golem: ×13/10 accuracy AND damage, multiplicative
+    // (wgloop PLAYER_ACCURACY_GOLEMBANE / MAX_HIT_GOLEMBANE trackFactor).
+    accuracy.push({ numerator: 13, denominator: 10, reason: "Granite hammer vs golem" });
+    damage.push({ numerator: 13, denominator: 10, reason: "Granite hammer vs golem" });
+  }
+  if (flags.golembaneBarronite) {
+    // Barronite mace vs golem: damage only — no accuracy component in wgloop.
+    damage.push({ numerator: 23, denominator: 20, reason: "Barronite mace vs golem" });
+  }
   if (flags.salveAmuletEi) {
     accuracy.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
     damage.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });

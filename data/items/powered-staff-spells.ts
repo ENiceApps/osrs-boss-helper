@@ -15,7 +15,7 @@ export type PoweredStaffFormula = (magicLevel: number) => number;
 // missing here would get ~0 magic DPS and be misread as a regular autocast staff.
 // The tests/powered-staff-formula.test.ts guard fails if a key drifts from the catalog.
 export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
-  // Trident of the seas: floor(magic / 3) - 5  (28 at 99)
+  // Trident of the Seas: floor(magic / 3) - 5  (28 at 99)
   [11905, (lvl) => Math.floor(lvl / 3) - 5], // Charged
   [11907, (lvl) => Math.floor(lvl / 3) - 5], // Partially charged
   [11908, (lvl) => Math.floor(lvl / 3) - 5], // Uncharged
@@ -26,7 +26,7 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   [33326, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Charged
   [33328, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Uncharged
 
-  // Trident of the swamp: floor(magic / 3) - 4  (29 at 99)
+  // Trident of the Swamp: floor(magic / 3) - 4  (29 at 99)
   [12899, (lvl) => Math.floor(lvl / 3) - 4], // Charged
   [12900, (lvl) => Math.floor(lvl / 3) - 4], // Uncharged
   [22292, (lvl) => Math.floor(lvl / 3) - 4], // (e) Charged
@@ -52,7 +52,7 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Dawnbringer: floor(magic / 6) - 1  (15 at 99)
   [22516, (lvl) => Math.floor(lvl / 6) - 1],
 
-  // Eye of ayak: max(1, trunc(magic / 3) - 6)  (27 at 99)
+  // Eye of Ayak: max(1, trunc(magic / 3) - 6)  (27 at 99)
   [31113, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Charged
   [31115, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Uncharged
 ]);

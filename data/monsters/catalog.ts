@@ -3589,7 +3589,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "element": "water",
       "severity": 50
     },
-    "image": "Black dragon (3).png",
+    "image": "Black dragon.png",
     "size": 4,
     "maxHitText": "22 (Melee)",
     "isSlayerMonster": true,
@@ -3618,7 +3618,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "element": "water",
           "severity": 50
         },
-        "image": "Black dragon (3).png",
+        "image": "Black dragon.png",
         "size": 4,
         "maxHitText": "22 (Melee)"
       },
@@ -12724,7 +12724,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "element": "water",
       "severity": 50
     },
-    "image": "Green dragon (3).png",
+    "image": "Green dragon.png",
     "size": 4,
     "maxHitText": "8 (Slash)",
     "isSlayerMonster": true,
@@ -12753,7 +12753,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "element": "water",
           "severity": 50
         },
-        "image": "Green dragon (3).png",
+        "image": "Green dragon.png",
         "size": 4,
         "maxHitText": "8 (Slash)"
       },
@@ -14080,7 +14080,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Ice troll female.png",
     "size": 1,
-    "maxHitText": "17",
+    "maxHitText": "6",
     "isSlayerMonster": true,
     "phases": [
       {
@@ -14106,7 +14106,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll female.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "6"
       },
       {
         "version": "Variant 2",
@@ -14131,7 +14131,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll female.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "6"
       }
     ]
   },
@@ -17464,6 +17464,92 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": false
   },
   {
+    "slug": "mad-angel",
+    "wikiId": 16305,
+    "name": "Mad Angel",
+    "version": "Post-quest",
+    "combatLevel": 588,
+    "hp": 755,
+    "defenceLevel": 175,
+    "magicLevel": 150,
+    "defenceBonuses": {
+      "stab": 60,
+      "slash": 80,
+      "crush": 40,
+      "magic": 185,
+      "rangedHeavy": 165,
+      "rangedStandard": 185,
+      "rangedLight": 205
+    },
+    "attributes": [
+      "golem"
+    ],
+    "weakness": {
+      "element": "earth",
+      "severity": 15
+    },
+    "image": "Mad Angel.png",
+    "size": 3,
+    "maxHitText": "31",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Post-quest",
+        "wikiId": 16305,
+        "combatLevel": 588,
+        "hp": 755,
+        "defenceLevel": 175,
+        "magicLevel": 150,
+        "defenceBonuses": {
+          "stab": 60,
+          "slash": 80,
+          "crush": 40,
+          "magic": 185,
+          "rangedHeavy": 165,
+          "rangedStandard": 185,
+          "rangedLight": 205
+        },
+        "attributes": [
+          "golem"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 15
+        },
+        "image": "Mad Angel.png",
+        "size": 3,
+        "maxHitText": "31"
+      },
+      {
+        "version": "Quest",
+        "wikiId": 16309,
+        "combatLevel": 270,
+        "hp": 565,
+        "defenceLevel": 125,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 60,
+          "crush": 20,
+          "magic": 165,
+          "rangedHeavy": 135,
+          "rangedStandard": 155,
+          "rangedLight": 175
+        },
+        "attributes": [
+          "golem"
+        ],
+        "weakness": {
+          "element": "earth",
+          "severity": 15
+        },
+        "image": "Mad Angel.png",
+        "size": 3,
+        "maxHitText": "31"
+      }
+    ]
+  },
+  {
     "slug": "maggot-king",
     "wikiId": 15742,
     "name": "Maggot King",
@@ -18022,31 +18108,6 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": "0"
       }
     ]
-  },
-  {
-    "slug": "minotaur-fortis-colosseum",
-    "wikiId": 12812,
-    "name": "Minotaur (Fortis Colosseum)",
-    "version": "Normal",
-    "combatLevel": 318,
-    "hp": 225,
-    "defenceLevel": 190,
-    "magicLevel": 250,
-    "defenceBonuses": {
-      "stab": 0,
-      "slash": 0,
-      "crush": 0,
-      "magic": 0,
-      "rangedHeavy": 12,
-      "rangedStandard": 12,
-      "rangedLight": 12
-    },
-    "attributes": [],
-    "weakness": null,
-    "image": "Minotaur (Fortis Colosseum).png",
-    "size": 3,
-    "maxHitText": "74",
-    "isSlayerMonster": false
   },
   {
     "slug": "minotaur-meat-and-greet",
@@ -18734,7 +18795,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "element": "earth",
           "severity": 50
         },
-        "image": "Mountain troll.png",
+        "image": "Mountain troll (level 71).png",
         "size": 1,
         "maxHitText": "13"
       }
@@ -21053,7 +21114,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "wikiId": 9118,
     "name": "Rabbit (Prifddinas)",
     "version": "",
-    "combatLevel": 0,
+    "combatLevel": 2,
     "hp": 2000,
     "defenceLevel": 450,
     "magicLevel": 300,
@@ -23137,7 +23198,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedLight": 0
     },
     "attributes": [],
-    "weakness": null,
+    "weakness": {
+      "element": "fire",
+      "severity": 35
+    },
     "image": "Scorpia's offspring (monster).png",
     "size": 1,
     "maxHitText": "2",
@@ -28186,7 +28250,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Thrower Troll.png",
     "size": 1,
-    "maxHitText": "10 Ranged",
+    "maxHitText": "6",
     "isSlayerMonster": true
   },
   {
@@ -30328,6 +30392,34 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": false
   },
   {
+    "slug": "vampyre-snail",
+    "wikiId": 16344,
+    "name": "Vampyre Snail",
+    "version": "",
+    "combatLevel": 346,
+    "hp": 500,
+    "defenceLevel": 300,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": 600,
+      "slash": 600,
+      "crush": 50,
+      "magic": 600,
+      "rangedHeavy": 50,
+      "rangedStandard": 50,
+      "rangedLight": 50
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 5
+    },
+    "image": "Vampyre Snail.png",
+    "size": 1,
+    "maxHitText": "87+",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "vanstrom-klause",
     "wikiId": 9567,
     "name": "Vanstrom Klause",
@@ -31878,7 +31970,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "wyrmling",
     "wikiId": 13032,
     "name": "Wyrmling",
-    "version": "Attacking",
+    "version": "Attacking (Neypotzli)",
     "combatLevel": 55,
     "hp": 65,
     "defenceLevel": 40,
@@ -32106,6 +32198,60 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "rangedHeavy": 449,
           "rangedStandard": 297,
           "rangedLight": 449
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Yama.png",
+        "size": 5,
+        "maxHitText": "46 (auto-attacks)"
+      },
+      {
+        "version": "Glyphic Attenuation",
+        "wikiId": 100001,
+        "combatLevel": 1238,
+        "hp": 2875,
+        "defenceLevel": 247,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 666,
+          "slash": 666,
+          "crush": 80,
+          "magic": 666,
+          "rangedHeavy": 666,
+          "rangedStandard": 666,
+          "rangedLight": 666
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 50
+        },
+        "image": "Yama.png",
+        "size": 5,
+        "maxHitText": "46 (auto-attacks)"
+      },
+      {
+        "version": "Glyphic Attenuation, Phase 3",
+        "wikiId": 100001,
+        "combatLevel": 1238,
+        "hp": 2875,
+        "defenceLevel": 247,
+        "magicLevel": 275,
+        "defenceBonuses": {
+          "stab": 666,
+          "slash": 666,
+          "crush": 108,
+          "magic": 666,
+          "rangedHeavy": 666,
+          "rangedStandard": 666,
+          "rangedLight": 666
         },
         "attributes": [
           "demon"
