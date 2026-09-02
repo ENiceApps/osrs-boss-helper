@@ -13,6 +13,12 @@
 //   2. Manual import (`importLocalBankFile`) via a plain <input type="file">:
 //      a one-shot read for browsers without the FSA API (Firefox/Safari).
 //
+// The parsed bank is also cached in IndexedDB after every successful read, so
+// closing the app doesn't lose it: on the next visit the last known bank renders
+// immediately (flagged `fromCache`) and is replaced the moment the file is read
+// again. That's what makes the import-only browsers usable across sessions at
+// all — they have no handle to restore.
+//
 // State is exposed through a tiny useSyncExternalStore-backed store (same pattern
 // the old lib/syncKey.ts used) so components re-render the moment the bank
 // updates.
@@ -58,11 +64,21 @@ export interface ParsedBank {
   gp: number;
   skills: Skills;
   items: Array<{ id: number; qty: number }>;
+  /** When the plugin last read the BANK container itself (v2 files), or null.
+   *  Differs from the file's mtime: the file is rewritten on every inventory
+   *  change, but the bank section only refreshes when a bank is opened. */
+  bankUpdatedAt: number | null;
+  /** True when the file's bank section was carried over from a previous session
+   *  rather than read live — i.e. the player hasn't opened a bank since login. */
+  bankCached: boolean;
 }
 
 export interface LocalBankState {
   /** A file is connected and readable (handle granted, or manually imported). */
   connected: boolean;
+  /** The bank shown came from the IndexedDB cache, not a file read this session.
+   *  It's real data from the last visit, but nothing is watching the file yet. */
+  fromCache: boolean;
   /** A saved handle exists but needs the user to re-grant read permission. */
   needsPermission: boolean;
   bank: ParsedBank | null;
@@ -74,6 +90,7 @@ export interface LocalBankState {
 
 const IDLE: LocalBankState = {
   connected: false,
+  fromCache: false,
   needsPermission: false,
   bank: null,
   fileName: null,
@@ -94,6 +111,20 @@ function emit(next: Partial<LocalBankState>): void {
 const IDB_NAME = "osrs-boss-helper";
 const IDB_STORE = "handles";
 const IDB_KEY = "bankFile";
+// The parsed bank lives in the same object store under its own key rather than
+// in a store of its own: adding a store means an IndexedDB version bump, and a
+// bump has to be handled for every existing user for no real gain here.
+const IDB_BANK_KEY = "lastBank";
+
+/** The last successfully parsed bank, kept so the app has data on open. */
+interface CachedBank {
+  bank: ParsedBank;
+  fileName: string | null;
+  /** mtime of the file it was parsed from. */
+  updatedAt: number | null;
+  /** When this cache entry was written. */
+  savedAt: number;
+}
 
 function openIdb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -104,38 +135,50 @@ function openIdb(): Promise<IDBDatabase> {
   });
 }
 
-async function idbPut(handle: BankFileHandle): Promise<void> {
+async function idbPut(key: string, value: unknown): Promise<void> {
   const db = await openIdb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(IDB_STORE, "readwrite");
-    tx.objectStore(IDB_STORE).put(handle, IDB_KEY);
+    tx.objectStore(IDB_STORE).put(value, key);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
   db.close();
 }
 
-async function idbGet(): Promise<BankFileHandle | null> {
+async function idbGet<T>(key: string): Promise<T | null> {
   const db = await openIdb();
-  const result = await new Promise<BankFileHandle | null>((resolve, reject) => {
+  const result = await new Promise<T | null>((resolve, reject) => {
     const tx = db.transaction(IDB_STORE, "readonly");
-    const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
-    req.onsuccess = () => resolve((req.result as BankFileHandle | undefined) ?? null);
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => resolve((req.result as T | undefined) ?? null);
     req.onerror = () => reject(req.error);
   });
   db.close();
   return result;
 }
 
-async function idbDelete(): Promise<void> {
+async function idbDelete(key: string): Promise<void> {
   const db = await openIdb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(IDB_STORE, "readwrite");
-    tx.objectStore(IDB_STORE).delete(IDB_KEY);
+    tx.objectStore(IDB_STORE).delete(key);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
   db.close();
+}
+
+/** Remember the bank we just parsed. Failures are swallowed: the cache is a
+ *  convenience, and a browser that refuses IndexedDB (private mode) must still
+ *  work normally for the rest of the session. */
+async function cacheBank(bank: ParsedBank, fileName: string | null, updatedAt: number | null): Promise<void> {
+  try {
+    const rec: CachedBank = { bank, fileName, updatedAt, savedAt: Date.now() };
+    await idbPut(IDB_BANK_KEY, rec);
+  } catch {
+    // Ignore — see above.
+  }
 }
 
 // --- Active handle + polling -------------------------------------------------
@@ -168,12 +211,14 @@ async function readHandle(force: boolean): Promise<void> {
     }
     emit({
       connected: true,
+      fromCache: false,
       needsPermission: false,
       bank: parsed,
       fileName: file.name,
       updatedAt: file.lastModified,
       error: null,
     });
+    void cacheBank(parsed, file.name, file.lastModified);
   } catch (e) {
     emit({ error: e instanceof Error ? e.message : "Couldn't read the bank file." });
   } finally {
@@ -213,7 +258,7 @@ export async function connectLocalBank(): Promise<void> {
     }
     handle = h;
     lastModified = -1;
-    await idbPut(h);
+    await idbPut(IDB_KEY, h);
     await readHandle(true);
     startPolling();
   } catch (e) {
@@ -250,23 +295,29 @@ export async function importLocalBankFile(file: File): Promise<void> {
     }
     emit({
       connected: true,
+      fromCache: false,
       needsPermission: false,
       bank: parsed,
       fileName: file.name,
       updatedAt: file.lastModified,
       error: null,
     });
+    // Cached so a browser without the File System Access API — which has no
+    // handle to restore — still shows this bank the next time the app opens.
+    void cacheBank(parsed, file.name, file.lastModified);
   } catch {
     emit({ error: "Couldn't parse that file as JSON." });
   }
 }
 
-/** Forget the connected file. */
+/** Forget the connected file AND the cached bank — "disconnect" has to mean the
+ *  player's data is gone from this browser, not just that polling stopped. */
 export function disconnectLocalBank(): void {
   stopPolling();
   handle = null;
   lastModified = -1;
-  void idbDelete();
+  void idbDelete(IDB_KEY);
+  void idbDelete(IDB_BANK_KEY);
   state = IDLE;
   for (const l of listeners) l();
 }
@@ -275,9 +326,24 @@ export function disconnectLocalBank(): void {
 let initStarted = false;
 
 async function restore(): Promise<void> {
+  // Show the last bank we parsed before going near the file. It's a real snapshot
+  // from a previous visit, so the app opens with the player's gear already there
+  // instead of an empty state — and on browsers with no file handle to restore,
+  // this is the only thing that survives closing the tab.
   let saved: BankFileHandle | null = null;
   try {
-    saved = await idbGet();
+    const cached = await idbGet<CachedBank>(IDB_BANK_KEY);
+    if (cached?.bank) {
+      emit({
+        connected: true,
+        fromCache: true,
+        bank: cached.bank,
+        fileName: cached.fileName,
+        updatedAt: cached.updatedAt,
+        error: null,
+      });
+    }
+    saved = await idbGet<BankFileHandle>(IDB_KEY);
   } catch {
     return; // IndexedDB unavailable (e.g. private mode) — start idle.
   }
@@ -290,6 +356,8 @@ async function restore(): Promise<void> {
     await readHandle(true);
     startPolling();
   } else {
+    // Keep whatever the cache put on screen — the player can still use the app,
+    // they just need one click to resume live updates.
     emit({ needsPermission: true, fileName: saved.name });
   }
 }
@@ -364,5 +432,12 @@ export function parseBankJson(text: string): ParsedBank | null {
   const rsn = typeof o.rsn === "string" && o.rsn.trim() ? o.rsn.trim().slice(0, 64) : "Your bank";
   const gp = typeof o.gp === "number" && Number.isFinite(o.gp) && o.gp >= 0 ? Math.round(o.gp) : 0;
 
-  return { rsn, gp, skills, items };
+  // v2 fields. Absent in v1 files (and in hand-made ones), which read as "we
+  // don't know when the bank was last seen" rather than as an error.
+  const rawBankAt = o.bankUpdatedAt;
+  const bankUpdatedAt =
+    typeof rawBankAt === "number" && Number.isFinite(rawBankAt) && rawBankAt > 0 ? rawBankAt : null;
+  const bankCached = o.bankCached === true;
+
+  return { rsn, gp, skills, items, bankUpdatedAt, bankCached };
 }

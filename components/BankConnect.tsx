@@ -15,7 +15,7 @@ import {
   importLocalBankFile,
   disconnectLocalBank,
 } from "@/lib/localBank";
-import { secondsSince } from "@/lib/liveBank";
+import { formatAgo, secondsSince } from "@/lib/liveBank";
 
 // Where the plugin writes the file (shown so users can find it in the picker).
 const FILE_PATH = "…/.runelite/osrs-boss-helper/bank.json";
@@ -41,29 +41,73 @@ export function BankConnect() {
     e.target.value = ""; // allow re-importing the same filename
   }
 
-  // Connected: show who's loaded + freshness.
+  // Loaded: show who's loaded + freshness. Two flavours of "loaded" — a file
+  // we're watching right now, and the bank remembered from a previous visit,
+  // which is real data but isn't updating until the file is reconnected.
   if (s.connected && s.bank) {
     const ago = secondsSince(s.updatedAt);
+    const live = !s.fromCache;
+    // The plugin refreshes the file's bank section only when a bank is actually
+    // opened in-game, so a live file can still carry a days-old bank. Say so
+    // rather than letting "updated 3s ago" imply the bank was just read.
+    const bankAgo = s.bank.bankCached ? formatAgo(s.bank.bankUpdatedAt) : null;
     return (
       <div className="osrs-panel p-3 rounded text-caption text-osrs-brown leading-snug space-y-1">
         <div className="flex items-center gap-2">
           <span
             aria-hidden
-            className="w-2 h-2 rounded-full bg-status-owned"
-            style={{ boxShadow: "0 0 5px var(--color-status-owned)" }}
+            className={`w-2 h-2 rounded-full ${live ? "bg-status-owned" : "bg-status-affordable"}`}
+            style={{
+              boxShadow: `0 0 5px var(--color-status-${live ? "owned" : "affordable"})`,
+            }}
           />
           <span className="font-semibold text-foreground">{s.bank.rsn}</span>
           <span className="text-parchment-dark">
-            {s.bank.items.length} items{ago != null ? ` · updated ${ago}s ago` : ""}
+            {s.bank.items.length} items
+            {live ? (ago != null ? ` · updated ${ago}s ago` : "") : " · from your last visit"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={disconnectLocalBank}
-          className="text-osrs-gold hover:underline font-semibold"
-        >
-          Disconnect
-        </button>
+        {bankAgo && (
+          <p className="text-osrs-muted">
+            Bank last read {bankAgo} — open your bank in-game to refresh it.
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {!live &&
+            (supported ? (
+              <button
+                type="button"
+                onClick={() => void connectLocalBank()}
+                className="text-osrs-gold hover:underline font-semibold"
+              >
+                Reconnect for live updates →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="text-osrs-gold hover:underline font-semibold"
+              >
+                Re-upload bank.json →
+              </button>
+            ))}
+          <button
+            type="button"
+            onClick={disconnectLocalBank}
+            className={live ? "text-osrs-gold hover:underline font-semibold" : "text-osrs-brown hover:text-osrs-gold hover:underline"}
+          >
+            Disconnect
+          </button>
+        </div>
+        {/* Lives here too because the cached branch can offer a re-upload, and
+            the input is only rendered in the idle branch below otherwise. */}
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={onPickFile}
+        />
         {s.error && <p className="text-status-missing">{s.error}</p>}
       </div>
     );

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLiveBank, secondsSince } from "@/lib/liveBank";
+import { useLiveBank, formatAgo } from "@/lib/liveBank";
 import { AccentPicker } from "@/components/AccentPicker";
 
 /**
@@ -66,17 +66,24 @@ function NavLink({
 function ConnectionStatus() {
   const live = useLiveBank();
   if (live.isLive) {
+    // Gold dot for a bank restored from the browser cache: the data is real but
+    // no file is being watched, so it isn't the same "live" as a green dot.
+    const dot = live.fromCache ? "affordable" : "owned";
     return (
       <span className="inline-flex items-center gap-2 text-caption text-foreground">
         <span
           aria-hidden
-          className="w-2 h-2 rounded-full bg-status-owned"
-          style={{ boxShadow: "0 0 5px var(--color-status-owned)" }}
+          className={`w-2 h-2 rounded-full bg-status-${dot}`}
+          style={{ boxShadow: `0 0 5px var(--color-status-${dot})` }}
         />
         <span className="font-semibold">{live.playerName ?? "Loaded"}</span>
         <span className="text-parchment-dark hidden sm:inline">
-          {live.bank?.itemIds.size ?? 0} items · updated{" "}
-          {secondsSince(live.receivedAt) ?? 0}s ago
+          {live.bank?.itemIds.size ?? 0} items ·{" "}
+          {live.fromCache
+            ? "from your last visit"
+            : // formatAgo, not raw seconds: a cached or long-idle bank turned
+              // "updated 259205s ago" into arithmetic homework.
+              `updated ${formatAgo(live.receivedAt) ?? "just now"}`}
         </span>
       </span>
     );

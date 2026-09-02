@@ -7,6 +7,8 @@ interface Props {
   skills: Skills;
   /** True when these came from the live RuneLite plugin (vs the 99s default). */
   isLive: boolean;
+  /** Levels came from the cached bank of a previous visit, not a live file. */
+  fromCache?: boolean;
 }
 
 const SKILL_KEYS: Array<keyof Skills> = [
@@ -24,7 +26,7 @@ const SKILL_KEYS: Array<keyof Skills> = [
  * from the RuneLite plugin when it's connected, otherwise they default to 99s.
  * Designed to embed inside the "Your character" card (no own panel wrapper).
  */
-export function PlayerStatsPanel({ skills, isLive }: Props) {
+export function PlayerStatsPanel({ skills, isLive, fromCache = false }: Props) {
   return (
     <div>
       <h4 className="label-eyebrow font-semibold text-osrs-muted mb-2">
@@ -32,7 +34,11 @@ export function PlayerStatsPanel({ skills, isLive }: Props) {
       </h4>
       <p className="text-xs text-osrs-muted mb-2">
         {isLive
-          ? "Live from the RuneLite plugin."
+          ? fromCache
+            ? // Real levels, but from the last visit — calling that "live" would
+              // be a lie the moment the player trains a skill.
+              "Your levels from your last visit — reconnect the file for live updates."
+            : "Live from the RuneLite plugin."
           : "Assuming 99s — connect the RuneLite plugin to use your real levels."}
       </p>
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-osrs-brown">

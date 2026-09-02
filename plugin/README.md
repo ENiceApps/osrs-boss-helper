@@ -26,14 +26,41 @@ When enabled, the plugin writes (atomically) to:
 
 The web app then reads that file locally (via the browser's File System Access
 API on Chrome/Edge/Brave, or a manual "Import bank.json" on other browsers).
-Open your bank in-game once after login so RuneLite knows its contents.
+
+Open your bank in-game once so RuneLite can read its contents — after that the
+plugin **remembers it**. RuneLite forgets the bank on every logout, but the
+plugin keeps the last bank it saw in the file and carries it forward, so closing
+the game (or the app) no longer empties your gear list. Opening a bank again
+just refreshes that section. The remembered bank is tied to the account name it
+came from, so logging into an alt neither shows nor erases your main's items —
+each account's bank is remembered separately.
 
 The file is small JSON:
 
 ```json
-{ "version": 1, "rsn": "Name", "gp": 0, "skills": { "attack": 99, ... },
-  "items": [ { "id": 4151, "qty": 1 } ], "updatedAt": 1700000000000 }
+{ "version": 2, "rsn": "Name", "gp": 0, "skills": { "attack": 99, ... },
+  "items": [ { "id": 4151, "qty": 1 } ],
+  "bank": [ { "id": 4151, "qty": 1 } ], "equipment": [], "inventory": [],
+  "bankGp": 0, "bankUpdatedAt": 1700000000000, "bankCached": false,
+  "accounts": { "Name": { "rsn": "Name", "bank": [ ... ], "bankGp": 0,
+                          "bankUpdatedAt": 1700000000000 } },
+  "updatedAt": 1700000000000 }
 ```
+
+`items` is the merged pool of everything you own (bank + worn + carried) and is
+what the app reads; the per-container sections are what let the next session
+tell your bank apart from what you happen to be wearing. `bankUpdatedAt` is when
+the bank itself was last read in-game, and `bankCached` says whether this file's
+bank section is remembered rather than freshly read — the app uses both to show
+how stale your bank is. Everything above `accounts` describes the account you're
+logged into; `accounts` holds the remembered bank of every account that has
+banked with the plugin, which is what keeps playing an alt from erasing your
+main's.
+
+One caveat worth knowing: a remembered bank is a snapshot, not the truth. If you
+bank on mobile or in another client, the file keeps showing what the plugin last
+saw until you open a bank in RuneLite again — which is what the app's "bank last
+read" line is there to tell you.
 
 ## Configuration
 

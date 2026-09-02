@@ -28,6 +28,52 @@ function fileWith(items: unknown[]): string {
 }
 
 describe("parseBankJson", () => {
+  it("reads the v2 bank-freshness fields", () => {
+    const parsed = parseBankJson(
+      JSON.stringify({
+        version: 2,
+        rsn: "Tester",
+        gp: 5,
+        skills: SKILLS,
+        items: [{ id: 4151, qty: 1 }],
+        bank: [{ id: 4151, qty: 1 }],
+        equipment: [],
+        inventory: [],
+        bankGp: 5,
+        bankUpdatedAt: 1_700_000_000_000,
+        bankCached: true,
+        updatedAt: Date.now(),
+      }),
+    );
+    expect(parsed!.bankUpdatedAt).toBe(1_700_000_000_000);
+    expect(parsed!.bankCached).toBe(true);
+  });
+
+  it("treats a v1 file as bank freshness unknown, not stale", () => {
+    // v1 has no bank section at all, so there is nothing to report — the app
+    // must not render "bank last read 56 years ago" off a missing field.
+    const parsed = parseBankJson(fileWith([{ id: 4151, qty: 1 }]));
+    expect(parsed!.bankUpdatedAt).toBeNull();
+    expect(parsed!.bankCached).toBe(false);
+  });
+
+  it("ignores a junk bankUpdatedAt rather than failing the whole parse", () => {
+    const parsed = parseBankJson(
+      JSON.stringify({
+        version: 2,
+        rsn: "Tester",
+        gp: 0,
+        skills: SKILLS,
+        items: [{ id: 4151, qty: 1 }],
+        bankUpdatedAt: "yesterday",
+        bankCached: "yes",
+      }),
+    );
+    expect(parsed).not.toBeNull();
+    expect(parsed!.bankUpdatedAt).toBeNull();
+    expect(parsed!.bankCached).toBe(false);
+  });
+
   it("parses a well-formed plugin file", () => {
     const parsed = parseBankJson(fileWith([{ id: 4151, qty: 1 }, { id: 11840, qty: 2 }]));
     expect(parsed).not.toBeNull();

@@ -972,7 +972,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           <div className="space-y-2">
             <BankConnect />
             <CollapsibleSection title="Skills">
-              <PlayerStatsPanel skills={skills} isLive={live.isLive} />
+              <PlayerStatsPanel skills={skills} isLive={live.isLive} fromCache={live.fromCache} />
             </CollapsibleSection>
           </div>
           <SetupPanel
