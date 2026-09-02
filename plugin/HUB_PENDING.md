@@ -10,6 +10,11 @@ on 2026-07-13).
 
 ## Unreleased changes
 
+**Submitted 2026-09-02:** [plugin-hub PR #15936](https://github.com/runelite/plugin-hub/pull/15936)
+pins standalone commit `e275b7d5a7e42ab8511424c72a74809d17619d23`. Awaiting
+review — the items below are in that PR, not yet on the Hub. Move them to a
+"Shipped" note once it merges.
+
 - **Remember the bank across sessions** (2026-09-02) — `collectAndWrite` rebuilt
   the item list purely from live containers, and `InventoryID.BANK` is null until
   the player opens a bank that session. So the first inventory/equipment change
