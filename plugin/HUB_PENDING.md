@@ -4,16 +4,17 @@ Changes to the plugin that are merged here in the monorepo but **not yet
 shipped to the RuneLite Plugin Hub**. We batch these into one Hub PR rather
 than sending the maintainers a PR per tweak.
 
-**Hub currently serves:** standalone-repo commit `2a4bfa5c7c8e988b366600f021f5dd9e0b5a6b4e`
-(merged via [plugin-hub PR #13728](https://github.com/runelite/plugin-hub/pull/13728)
-on 2026-07-13).
+**Hub currently serves:** standalone-repo commit `e275b7d5a7e42ab8511424c72a74809d17619d23`
+(plugin 1.1, merged via [plugin-hub PR #15936](https://github.com/runelite/plugin-hub/pull/15936)
+on 2026-09-03).
 
 ## Unreleased changes
 
-**Submitted 2026-09-02:** [plugin-hub PR #15936](https://github.com/runelite/plugin-hub/pull/15936)
-pins standalone commit `e275b7d5a7e42ab8511424c72a74809d17619d23`. Awaiting
-review — the items below are in that PR, not yet on the Hub. Move them to a
-"Shipped" note once it merges.
+_None — the Hub is in sync with `plugin/`._
+
+_Add future plugin changes above this line as they land._
+
+## Shipped 2026-09-03 (PR #15936, standalone `e275b7d`, plugin 1.1)
 
 - **Remember the bank across sessions** (2026-09-02) — `collectAndWrite` rebuilt
   the item list purely from live containers, and `InventoryID.BANK` is null until
@@ -40,8 +41,6 @@ review — the items below are in that PR, not yet on the Hub. Move them to a
   remembered rather than freshly read, the enable-time confirmation adds
   "Using your bank from last time — open your bank to refresh it."
 - **Version bumped to 1.1** in `runelite-plugin.properties`.
-
-_Add future plugin changes above this line as they land._
 
 ## Shipped 2026-07-13 (PR #13728, standalone `2a4bfa5`)
 
