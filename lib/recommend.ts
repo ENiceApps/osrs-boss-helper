@@ -379,6 +379,7 @@ export function computeSetDps(
     fangHitTrim: set.style === "melee" && set.itemBonusFlags.fang === true,
     seekingArrows,
     targetMonsterMagicLevel: activeBonuses.targetMonsterMagicLevel,
+    targetMagicAttackBonus: activeBonuses.targetMagicAttackBonus,
     targetIsXerician: activeBonuses.targetIsXerician,
     armorSetBonus: set.armorSetBonus,
     boltProc,

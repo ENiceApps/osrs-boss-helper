@@ -46,6 +46,7 @@ import {
 } from "./multihit";
 import { armouredHit, meanArmouredHit, sumArmouredHits } from "./flat-armour";
 import { twinflameDamage, twinflameSecondHit } from "./twinflame";
+import { applyTwistedBow, twistedBowMagic } from "./twisted-bow";
 import {
   DEFAULT_DEMONBANE_VULNERABILITY,
   scaleDemonbanePct,
@@ -161,10 +162,15 @@ export interface DpsScenario {
    * hitsplat (lib/dps/twinflame.ts), not as 7/10 of that max.
    */
   twinflameDoubleCast?: boolean;
-  /** Ranged-only: Twisted bow is equipped — scales accuracy/damage by target magic level. */
+  /**
+   * Ranged-only: Twisted bow is equipped — scales accuracy/damage by the higher
+   * of the target's Magic level and magic attack bonus (lib/dps/twisted-bow.ts).
+   */
   twistedBowEquipped?: boolean;
-  /** Target's magic level for Tbow scaling (max(skills.magic, offensive.magic)). */
+  /** Target's Magic level (upstream `skills.magic`) — one Tbow scaling input. */
   targetMonsterMagicLevel?: number;
+  /** Target's magic attack bonus (upstream `offensive.magic`) — the other. */
+  targetMagicAttackBonus?: number;
   /** True when target is a Chambers of Xeric monster (Tbow cap 350 instead of 250). */
   targetIsXerician?: boolean;
   /**
@@ -662,22 +668,28 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     }
   }
 
-  // Twisted bow scaling: applies AFTER dragonbane / Salve multipliers per
-  // wgloop's order of operations. The bonus % is computed with INTEGER-truncated
-  // intermediate terms and has NO upper clamp (the natural peak is e.g. 141%
-  // accuracy at magic 250, not 140) — mirroring wgloop's tbowScaling exactly.
-  // Source: https://oldschool.runescape.wiki/w/Twisted_bow
+  // Twisted bow scaling: after the Salve / black mask, as wgloop orders it (no
+  // other weapon bane can be worn alongside it). The bow scales off the higher
+  // of the target's Magic level and magic attack bonus, capped at 250 (350 vs
+  // Xerician targets), and the bonus percents are CLAMPED to 140% accuracy /
+  // 250% damage — upstream PlayerVsNPCCalc L566-573 / L744-748 and tbowScaling
+  // (L2429-2438) @ 89c3e25; see lib/dps/twisted-bow.ts. Magic 250 is 140%, not
+  // the unclamped 141%; a Xerician 350 is 140%, not 150%.
+  //
+  // Not modelled: at the P2 Wardens (Elidinis' / Tumeken's Warden "Active")
+  // upstream applies the ACCURACY scaling twice (a game behaviour since
+  // 2023-06-21). There it only feeds applyP2WardensDamageModifier — upstream
+  // forces P2 accuracy to 1 and turns the attack roll into a 15-40% damage
+  // modifier — and this engine models neither, so doubling the roll alone
+  // would only inflate an accuracy that is already the wrong model there.
   if (scenario.twistedBowEquipped && scenario.style === "ranged") {
-    const cap = scenario.targetIsXerician ? 350 : 250;
-    const m = Math.min(cap, scenario.targetMonsterMagicLevel ?? 0);
-    // factor/base differ for accuracy (10/140) vs damage (14/250).
-    const tbowBonus = (factor: number, base: number): number => {
-      const t2 = Math.trunc((3 * m - factor) / 100);
-      const t3 = Math.trunc((Math.trunc((3 * m) / 10) - 10 * factor) ** 2 / 100);
-      return base + t2 - t3;
-    };
-    attackRoll = Math.trunc((attackRoll * tbowBonus(10, 140)) / 100);
-    maxHit = Math.trunc((maxHit * tbowBonus(14, 250)) / 100);
+    const { magic } = twistedBowMagic(
+      scenario.targetMonsterMagicLevel ?? 0,
+      scenario.targetMagicAttackBonus ?? 0,
+      scenario.targetIsXerician === true,
+    );
+    attackRoll = applyTwistedBow(attackRoll, magic, "accuracy");
+    maxHit = applyTwistedBow(maxHit, magic, "damage");
   }
 
   // The Twinflame's first-cast max, kept for the per-hitsplat model below.

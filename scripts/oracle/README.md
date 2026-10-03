@@ -122,6 +122,19 @@ damage. They run with `strictDps`; their wgloop numbers are locked in
 combo: upstream's Stab Sword "Slash" is Aggressive, ours Controlled, so the
 worker can't match the stance — the unit tests cover it.
 
+## Twisted bow combos
+
+`twistedBowCombos()` in `combos.ts` checks the Twisted bow's scaling (upstream
+PlayerVsNPCCalc L566-573 / L744-748, `tbowScaling` L2429-2438): the bow scales
+off min(cap, max(Magic level, magic attack bonus)), cap 250 (350 vs Xerician),
+with the bonus percents clamped to 140% accuracy / 250% damage. One combo per
+way the input is reached: Great Olm's head (Magic 250 under the Xerician cap:
+141% → 140%), Commander Zilyana (Magic 300 → 250), Araxxor (magic attack 260
+over Magic 190), Nylocas Vasilias (600 over 50) and Zebak (215 over 100, under
+the cap). They run with `exactRoll`, which is what catches the clamp (the
+roll moves under 1%); their numbers are locked in `tests/twisted-bow.test.ts`.
+The engine had no clamp and read the Magic level alone until 2026-10-03.
+
 ## Sharding
 
 `--style=` runs one combat style. Fan three background agents out in parallel
@@ -169,8 +182,9 @@ localize to specific mechanics:
 - ~~**Inquisitor's set** (47 vs 46)~~ — was data skew (clone had pre-buff item
   stats); **resolved** by replaying our stat-overrides into the worker. Matches
   exactly now. Our engine was correct all along.
-- **Twisted bow with no arrows** — fixture omits ammo; the app always fills it.
-  Not an engine bug.
+- ~~**Twisted bow with no arrows** — fixture omits ammo; the app always fills
+  it. Not an engine bug.~~ **FIXED** 2026-10-03 — the `tbow-cerberus` fixture
+  carries Dragon arrows now and matches wgloop exactly.
 - ~~**Multiplier order** — Salve / slayer helm vs weapon banes, magic Salve and
   smoke-staff percents, Inquisitor's / Obsidian / Elite Void magic placement.~~
   **FIXED** 2026-10-03 (`lib/dps/calculate.ts`); see the ordering combos.
@@ -233,6 +247,23 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
 - **Harness: Tormented Demon** — the worker's TD instance reports accuracy
   1.0000 (max hits match ours), so TD rows can't be oracle-checked yet. The
   shield's ×4/5 minimum-1 transform is covered by the unit tests instead.
+- ~~**Twisted bow scaling** — no 140% / 250% clamp (141% accuracy at magic
+  250, 150% at a Xerician 350), and only the Magic level read, never the magic
+  attack bonus (Araxxor 190 instead of 260 → 250: max 57 vs 66).~~ **FIXED**
+  2026-10-03 — the catalog carries `magicAttackBonus` and the engine scales off
+  the clamped max (`lib/dps/twisted-bow.ts`); see the Twisted bow combos.
+- **P2 Wardens** (Elidinis' / Tumeken's Warden "Active", 11753/11754/11756/
+  11757): upstream forces accuracy to 1 and turns the attack roll into a
+  15-40% damage modifier (`applyP2WardensDamageModifier`), and the Twisted
+  bow's accuracy scaling applies TWICE there (a game behaviour since
+  2023-06-21). None of it is modelled: Tbow vs Elidinis' Warden Active is
+  8.631 dps here, 10.167 upstream (max 62 vs 37, accuracy 0.83 vs 1).
+- **Zulrah's damage cap** — upstream rerolls every hit over 50 into 45-50
+  (`cappedRerollTransformer(50, 5, 45)`); we don't, so big hitters run high
+  (Tbow + Dragon arrows: max 66 vs 50, 6.746 vs 6.209 dps).
+- **Per-NPC immunities** — upstream's `isImmune` lists (e.g. melee vs Kraken,
+  TzKal-Zuk, Jal-MejJak, the Leviathan, Zulrah bar polearms, the Abyssal
+  portal) aren't modelled; only leafy / flying are.
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).

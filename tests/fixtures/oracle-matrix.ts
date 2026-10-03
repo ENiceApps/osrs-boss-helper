@@ -139,18 +139,23 @@ export const ORACLE_MATRIX: OracleFixture[] = [
   {
     id: "tbow-cerberus",
     bossSlug: "cerberus",
-    // Twisted bow, Crystal helm, Crystal body, Crystal legs,
+    // Twisted bow, Dragon arrow, Crystal helm, Crystal body, Crystal legs,
     // Necklace of anguish, Ava's assembler, Pegasian boots,
-    // Zaryte vambraces, Archers ring (i)
-    itemIds: [20997, 23971, 23975, 23979, 19547, 21914, 13237, 26235, 11771],
+    // Zaryte vambraces, Archers ring (i). (Arrows added 2026-10-03: without
+    // them wgloop's bow fires nothing — max hit 0 — while ours still scored the
+    // bow's own +20 ranged strength.)
+    itemIds: [20997, 11212, 23971, 23975, 23979, 19547, 21914, 13237, 26235, 11771],
     attackType: "ranged",
     choice: "rapid",
     codePaths: [
       "Twisted bow scaling: accuracy/damage scale with monster magic level (220 at Cerberus)",
       "Tbow cap: 250 (non-Xerician boss) — different scaling point than Vorkath fixtures",
     ],
-    wikiNotes: "Rigour prayer. Cerberus. Twisted bow equipped.",
-    baseline: { maxHit: 38, accuracy: 0.7922, dps: 5.025, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    wikiNotes: "Rigour prayer. Cerberus. Twisted bow + Dragon arrows equipped.",
+    // Was maxHit 38 / dps 5.025 engine-only, with no arrows (wgloop: 0). With
+    // Dragon arrows it matches wgloop exactly (roll 43035 vs 17876, Magic 220:
+    // +35% accuracy, +102% damage).
+    baseline: { maxHit: 62, accuracy: 0.7923, dps: 8.191, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Inquisitor's armour (attack-type-gated set bonus) ────────────────────

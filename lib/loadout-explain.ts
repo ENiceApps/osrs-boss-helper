@@ -7,6 +7,7 @@ import { applyOverrides, findCatalogItem } from "@/lib/loadout-edit";
 import { computeSetDps } from "@/lib/recommend";
 import { applyCombatBoost } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
+import { twistedBowBonusPct, twistedBowMagic } from "@/lib/dps/twisted-bow";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import { BROAD_AMMO_IDS } from "@/data/items/leaf-bladed";
@@ -51,6 +52,29 @@ const SLOT_KEYS: LoadoutSlotKey[] = [
 
 function fmtSigned(n: number): string {
   return n >= 0 ? `+${n}` : String(n);
+}
+
+/**
+ * The Twisted bow's weapon reason: which target stat it scaled off (the higher
+ * of the Magic level and the magic attack bonus), the cap when it bit, and the
+ * resulting accuracy / damage change.
+ */
+export function twistedBowReason(activeBonuses: TargetActiveBonuses): string {
+  const level = activeBonuses.targetMonsterMagicLevel;
+  const bonus = activeBonuses.targetMagicAttackBonus;
+  const t = twistedBowMagic(level, bonus, activeBonuses.targetIsXerician);
+  const stat =
+    t.source === "magicAttackBonus"
+      ? `magic attack bonus (${bonus}, above its Magic level of ${level})`
+      : `Magic level (${level})`;
+  const cap = t.capped
+    ? `, capped at ${t.cap}`
+    : activeBonuses.targetIsXerician
+      ? `, under the Chambers of Xeric cap of ${t.cap}`
+      : "";
+  const acc = twistedBowBonusPct(t.magic, "accuracy") - 100;
+  const dmg = twistedBowBonusPct(t.magic, "damage") - 100;
+  return `scales with the target's ${stat}${cap}: ${fmtSigned(acc)}% accuracy, ${fmtSigned(dmg)}% damage`;
 }
 
 function offensiveFor(item: ItemCatalogEntry, attackType: AttackType): number {
@@ -116,10 +140,7 @@ function buildReasons(
     if (cb?.demonbaneClaws) reasons.push(demonbaneLine(5));
     if (cb?.demonbaneScorchingBow) reasons.push(demonbaneLine(30));
     if (cb?.leafBladedBattleaxe) reasons.push("+17.5% damage vs this leafy target");
-    if (activeBonuses?.twistedBowEquipped)
-      reasons.push(
-        `scales with the target's magic level (${activeBonuses.targetMonsterMagicLevel})`,
-      );
+    if (activeBonuses?.twistedBowEquipped) reasons.push(twistedBowReason(activeBonuses));
     if (activeBonuses?.fangEquipped)
       reasons.push("rolls accuracy twice on stab — much higher hit chance");
     if (set.slots.weapon?.itemId === 30634)

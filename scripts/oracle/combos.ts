@@ -58,13 +58,14 @@ function fixtureToCombo(f: OracleFixture): CanonicalCombo {
   };
 }
 
-/** The oracle-matrix fixtures plus the multiplier-order, NPC-mechanic and Corp combos below. */
+/** The oracle-matrix fixtures plus the multiplier-order, NPC-mechanic, Corp and Twisted bow combos below. */
 export function validationCombos(): CanonicalCombo[] {
   return [
     ...ORACLE_MATRIX.map(fixtureToCombo),
     ...orderingCombos(),
     ...npcMechanicCombos(),
     ...corpCombos(),
+    ...twistedBowCombos(),
   ];
 }
 
@@ -428,6 +429,41 @@ export function corpCombos(): CanonicalCombo[] {
     combo("corp-kodai-fire-surge", corp, [21006, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", {
       baseSpellMaxHit: 24, spellElement: "fire", spellName: "Fire Surge",
     }),
+  ];
+}
+
+const TWISTED_BOW = 20997;
+const DRAGON_ARROW = 11212;
+
+/**
+ * Twisted bow scaling (upstream PlayerVsNPCCalc L566-573 / L744-748,
+ * tbowScaling L2429-2438): the bow scales off min(cap, max(Magic level, magic
+ * attack bonus)), cap 250 (350 vs Xerician), and the bonus percents are
+ * clamped to 140% accuracy / 250% damage. One combo per way the input is
+ * reached: the Magic level at the clamp on a Xerician target (Great Olm's head,
+ * 250 under the 350 cap: 141% → 140%), the Magic level over the cap (Commander
+ * Zilyana 300 → 250, 141% → 140%), the magic attack bonus over the cap
+ * (Araxxor 260 over Magic 190; Nylocas Vasilias 600 over 50) and under it
+ * (Zebak 215 over 100). `exactRoll` pins the clamp: 141% vs 140% moves the
+ * roll by under 1%, inside the accuracy tolerance. Their numbers are locked in
+ * tests/twisted-bow.test.ts.
+ *
+ * Not here: Zulrah (Magic 300) — upstream rerolls every hit over 50 into
+ * 45-50 (cappedRerollTransformer), which the engine doesn't model; and the P2
+ * Wardens, where upstream forces accuracy to 1 and turns the (doubly
+ * Tbow-scaled) attack roll into a damage modifier, also unmodelled — see
+ * scripts/oracle/README.md, Known gaps.
+ */
+export function twistedBowCombos(): CanonicalCombo[] {
+  const gear = [TWISTED_BOW, DRAGON_ARROW, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const tbow = (id: string, bossSlug: string): CanonicalCombo =>
+    orderingCombo(id, bossSlug, gear, "ranged", "rapid");
+  return [
+    tbow("tbow-great-olm", "great-olm"),
+    tbow("tbow-commander-zilyana", "commander-zilyana"),
+    tbow("tbow-araxxor", "araxxor"),
+    tbow("tbow-nylocas-vasilias", "nylocas-vasilias"),
+    tbow("tbow-zebak", "zebak"),
   ];
 }
 

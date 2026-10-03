@@ -15,6 +15,7 @@ import { estimatePrayerSupplies } from "@/data/prayer-drain";
 import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
 import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
+import { twistedBowBonusPct, twistedBowMagic } from "@/lib/dps/twisted-bow";
 import { scaleDemonbanePct } from "@/data/monsters/demonbane-vulnerability";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
@@ -128,10 +129,19 @@ export function buildActiveFlags(
       `${set.slots.neck?.itemName ?? "Elemental amulet"}: +${activeBonuses.elementalAmuletMaxHitBonus} max hit on ${set.spellElement} spells`,
     );
   }
-  if (activeBonuses?.twistedBowEquipped)
+  if (activeBonuses?.twistedBowEquipped) {
+    // The bow scales off the higher of Magic level and magic attack bonus,
+    // capped (250, CoX 350) — say which stat it used and the cap when it bit.
+    const level = activeBonuses.targetMonsterMagicLevel;
+    const bonus = activeBonuses.targetMagicAttackBonus;
+    const t = twistedBowMagic(level, bonus, activeBonuses.targetIsXerician);
+    const stat = t.source === "magicAttackBonus" ? `magic attack ${bonus}` : `Magic ${level}`;
+    const cap = t.capped ? `, capped at ${t.cap}` : activeBonuses.targetIsXerician ? `, CoX cap ${t.cap}` : "";
+    const signed = (pct: number) => (pct >= 100 ? `+${pct - 100}%` : `${pct - 100}%`);
     flags.push(
-      `Tbow scaling (M=${activeBonuses.targetMonsterMagicLevel}${activeBonuses.targetIsXerician ? ", CoX cap" : ""})`,
+      `Tbow ${signed(twistedBowBonusPct(t.magic, "accuracy"))} acc / ${signed(twistedBowBonusPct(t.magic, "damage"))} dmg (${stat}${cap})`,
     );
+  }
   if (activeBonuses?.fangEquipped) flags.push("Fang 2× accuracy roll");
   return flags;
 }

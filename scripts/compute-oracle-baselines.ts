@@ -81,10 +81,10 @@ const FIXTURES: FixtureInput[] = [
   {
     id: "tbow-cerberus",
     bossSlug: "cerberus",
-    // Twisted bow, Crystal helm, Crystal body, Crystal legs,
+    // Twisted bow, Dragon arrow, Crystal helm, Crystal body, Crystal legs,
     // Necklace of anguish, Ava's assembler, Pegasian boots,
     // Zaryte vambraces, Archers ring (i)
-    itemIds: [20997, 23971, 23975, 23979, 19547, 21914, 13237, 26235, 11771],
+    itemIds: [20997, 11212, 23971, 23975, 23979, 19547, 21914, 13237, 26235, 11771],
     attackType: "ranged",
     choice: "rapid",
   },

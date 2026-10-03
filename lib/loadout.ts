@@ -35,8 +35,13 @@ export interface TargetActiveBonuses {
   twistedBowEquipped: boolean;
   /** True iff Osmumten's fang is the weapon AND it's swung on a stab style. */
   fangEquipped: boolean;
-  /** Target's effective magic level for Tbow scaling. */
+  /** Target's Magic level — a Tbow scaling input. */
   targetMonsterMagicLevel: number;
+  /**
+   * Target's magic attack bonus (0 when the catalog omits it). The Tbow scales
+   * off the higher of this and the Magic level (lib/dps/twisted-bow.ts).
+   */
+  targetMagicAttackBonus: number;
   /** Whether target is in Chambers of Xeric (350 cap vs 250). */
   targetIsXerician: boolean;
   /**
@@ -156,11 +161,10 @@ export function activeBonusesForTarget(
     // Fang's double accuracy roll only fires on stab styles (Stab/Lunge/Block);
     // its slash style is a vanilla swing. Target-independent — works on any NPC.
     fangEquipped: set.itemBonusFlags.fang && set.attackType === "stab",
-    // Per wgloop's source: M = max(skills.magic, offensive.magic). Catalog
-    // only exposes skills.magic for now; offensive.magic isn't surfaced.
-    // For most monsters these match; we'll plumb offensive.magic if we hit
-    // a target where the difference matters.
+    // Tbow inputs: upstream scales off min(cap, max(skills.magic,
+    // offensive.magic)); the engine takes the max and applies the cap.
     targetMonsterMagicLevel: target.magicLevel,
+    targetMagicAttackBonus: target.magicAttackBonus ?? 0,
     targetIsXerician: isXerician,
     leafyImmune: isLeafy && !canDamageLeafy(set),
     flyingMeleeImmune: set.style === "melee" && isFlyingImmuneToMelee(target, set.weaponCategory),
