@@ -375,7 +375,7 @@ describe("Keris partisan — vs Kalphite bonuses", () => {
     // ×133/100 on maxHit (wgloop MAX_HIT_KERIS); exact values in multiplier-order.test.ts
   });
 
-  it("1/51 triple proc multiplies mean DPS by ×53/51", () => {
+  it("1/51 triple proc multiplies the rolled mean by ×53/51, not the raised 0", () => {
     const base: DpsScenario = {
       style: "melee",
       attackStyle: "aggressive",
@@ -390,11 +390,17 @@ describe("Keris partisan — vs Kalphite bonuses", () => {
     };
     const withoutProc = calculateDps(base);
     const withProc = calculateDps({ ...base, kalphiteTripleProc: true });
-    expect(withProc.dps / withoutProc.dps).toBeCloseTo(53 / 51, 5);
+    // Landed mean M/2 × 53/51 + 1/(M+1): the accurate-zero raise lands after
+    // the triple, so it isn't tripled.
+    const M = withProc.maxHit;
+    const raised = 1 / (M + 1);
+    expect(withProc.dps / withoutProc.dps).toBeCloseTo(((M / 2) * 53 / 51 + raised) / (M / 2 + raised), 12);
   });
 
-  it("Sanguinesti proc adds accuracy × 8/5 expected damage per attack", () => {
+  it("Sanguinesti proc adds accuracy × (8/5 − 1/(5(M+1))) expected damage per attack", () => {
     // Summer Sweep-Up (2026-07-22): the 1/5 life leech deals 8 bonus damage.
+    // wgloop leeches before its accurate-zero raise, so a leeched 0 becomes 8
+    // and only 4/5 of the landed 0s are left to raise to 1.
     const base: DpsScenario = {
       style: "magic",
       attackStyle: "accurate",
@@ -411,9 +417,10 @@ describe("Keris partisan — vs Kalphite bonuses", () => {
     const withoutProc = calculateDps(base);
     const withProc = calculateDps({ ...base, sanguinestiProc: true });
     const interval = 4 * 0.6;
+    const M = withProc.maxHit;
     expect(withProc.dps - withoutProc.dps).toBeCloseTo(
-      (withProc.accuracy * 8) / 5 / interval,
-      5,
+      (withProc.accuracy * (8 / 5 - 1 / (5 * (M + 1)))) / interval,
+      12,
     );
     // The flat bonus must not touch max hit or accuracy.
     expect(withProc.maxHit).toBe(withoutProc.maxHit);

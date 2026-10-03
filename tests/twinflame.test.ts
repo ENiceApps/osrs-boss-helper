@@ -9,7 +9,7 @@ import { calculateDps } from "@/lib/dps/calculate";
 import { twinflameDamage } from "@/lib/dps/twinflame";
 
 describe("Twinflame staff — spell selection", () => {
-  it("Twinflame restricts the auto-pick to Standard spells; Fire Wave (mean 286/21 ≈ 13.6) beats Fire Surge (24 → 12, no double-cast)", () => {
+  it("Twinflame restricts the auto-pick to Standard spells; Fire Wave (mean 287/21 ≈ 13.7) beats Fire Surge (24 → 12, no double-cast)", () => {
     const spell = bestSpell({ magicLevel: 99, targetAttributes: [], twinflame: true });
     expect(spell?.name).toBe("Fire Wave");
   });
@@ -25,13 +25,14 @@ describe("Twinflame staff — spell selection", () => {
     expect(spell?.name).toBe("Ice Barrage");
   });
 
-  it("ranks by the exact mean, not 7/10 of the max: Fire Wave 20 → max 28, mean 286/21", () => {
-    // Σ_{h=0..20} h = 210; Σ trunc(2h/5) = 76 (blocks of five: 2, 12, 22, 32, then 8).
+  it("ranks by the exact mean, not 7/10 of the max: Fire Wave 20 → max 28, mean 287/21", () => {
+    // Σ_{h=0..20} h = 210; Σ trunc(2h/5) = 76 (blocks of five: 2, 12, 22, 32, then 8);
+    // the landed 0 is raised to 1 before the split: +1.
     const ctx = { magicLevel: 99, targetAttributes: [], twinflame: true };
     const fireWave = SPELLS_BY_NAME.get("Fire Wave")!;
     const fireSurge = SPELLS_BY_NAME.get("Fire Surge")!;
     expect(spellEffectiveMaxHit(fireWave, ctx)).toBe(28); // 20 + trunc(20 × 4/10)
-    expect(spellExpectedHit(fireWave, ctx)).toBeCloseTo(286 / 21, 12); // not 28/2 = 14
+    expect(spellExpectedHit(fireWave, ctx)).toBeCloseTo(287 / 21, 12); // not 28/2 = 14
     expect(spellExpectedHit(fireSurge, ctx)).toBe(12); // Surge gets no second cast
     expect(spellExpectedHit(fireWave, { ...ctx, twinflame: false })).toBe(10);
   });
@@ -39,22 +40,24 @@ describe("Twinflame staff — spell selection", () => {
 
 describe("twinflameDamage — hitsplats [h, trunc(h × 4/10)], h uniform over 0..M", () => {
   // trunc(2h/5) over h = 0..4 is 0,0,0,1,1 and rises by 2 every five rolls.
-  it("M = 10: max 14, mean (55 + 18)/11 = 73/11 (the ×7/5 mean said 7)", () => {
+  // wgloop raises a landed first cast of 0 to 1 BEFORE the split ([1, 0]),
+  // so every first-cast sum gains 1.
+  it("M = 10: max 14, mean (55 + 1 + 18)/11 = 74/11 (the ×7/5 mean said 7)", () => {
     const r = twinflameDamage(10);
     expect(r.maxHit).toBe(14);
-    expect(r.meanLanded).toBeCloseTo(73 / 11, 12);
+    expect(r.meanLanded).toBeCloseTo(74 / 11, 12);
   });
 
-  it("M = 25 (Graardor oracle row): max 35, mean (325 + 120)/26 = 445/26, ~0.4 below 17.5", () => {
+  it("M = 25 (Graardor oracle row): max 35, mean (325 + 1 + 120)/26 = 446/26, ~0.35 below 17.5", () => {
     const r = twinflameDamage(25);
     expect(r.maxHit).toBe(35);
-    expect(r.meanLanded).toBeCloseTo(445 / 26, 12);
+    expect(r.meanLanded).toBeCloseTo(446 / 26, 12);
   });
 
-  it("M = 28 (spectre / abyssal demon oracle rows): max 39, mean (406 + 151)/29 = 557/29", () => {
+  it("M = 28 (spectre / abyssal demon oracle rows): max 39, mean (406 + 1 + 151)/29 = 558/29", () => {
     const r = twinflameDamage(28);
     expect(r.maxHit).toBe(39);
-    expect(r.meanLanded).toBeCloseTo(557 / 29, 12);
+    expect(r.meanLanded).toBeCloseTo(558 / 29, 12);
   });
 
   it("M = 0 deals nothing", () => {
@@ -63,6 +66,7 @@ describe("twinflameDamage — hitsplats [h, trunc(h × 4/10)], h uniform over 0.
 
   it("corp halving hits each hitsplat: M = 33 → 16 + 6 = 22 (not trunc(46/2) = 23), mean (272 + 99)/34", () => {
     // Σ trunc(h/2) = 2 × (0+…+16) = 272; Σ trunc(trunc(2h/5)/2) = 5 × (0+…+5) + 4 × 6 = 99.
+    // The raised 0 halves back to 0: the halving runs after the raise.
     const r = twinflameDamage(33, { halved: true });
     expect(r.maxHit).toBe(22);
     expect(r.meanLanded).toBeCloseTo(371 / 34, 12);
@@ -74,6 +78,15 @@ describe("twinflameDamage — hitsplats [h, trunc(h × 4/10)], h uniform over 0.
     const r = twinflameDamage(28, { damageFactor: [4, 5] });
     expect(r.maxHit).toBe(30);
     expect(r.meanLanded).toBeCloseTo(423 / 29, 12);
+  });
+
+  it("the TD shield's minimum 1 keeps a hitsplat of 1 at 1: M = 28 → mean (315 + 112)/29", () => {
+    // wgloop multiplyTransformer(4, 5, 1). First cast: the raised 0 and the
+    // rolled 1 stay 1 instead of trunc(4/5) = 0 (313 + 2). Second: trunc(2h/5)
+    // = 1 at h = 3, 4 stays 1 (110 + 2); a 0 is never raised there.
+    const r = twinflameDamage(28, { damageFactor: [4, 5], damageMinimum: 1 });
+    expect(r.maxHit).toBe(30);
+    expect(r.meanLanded).toBeCloseTo(427 / 29, 12);
   });
 
   it("Mad Angel Sword Cleave floors BOTH hitsplats at trunc(14/2) = 7: M = 10 → mean (83 + 77)/11, max 10 + 7", () => {
@@ -133,10 +146,11 @@ describe("Twinflame staff — DPS engine", () => {
     expect(twin.dps).toBeGreaterThan(plain.dps);
   });
 
-  it("DPS uses the exact mean: first cast 25 → max 35, accuracy × 445/26 per cast (×7/5 said 17.5)", () => {
+  it("DPS uses the exact mean: first cast 25 → max 35, accuracy × 446/26 per cast (×7/5 said 17.5)", () => {
     const r = calculateDps({ ...magicBase, magicDamagePercent: 25, twinflameDoubleCast: true });
     expect(r.maxHit).toBe(35); // 20 + trunc(20 × 25%) = 25 → 25 + 10
-    expect(r.dps).toBeCloseTo((r.accuracy * 445) / 26 / SECONDS_PER_ATTACK, 12);
+    // The raised 0 is in the per-hitsplat mean, not added a second time.
+    expect(r.dps).toBeCloseTo((r.accuracy * 446) / 26 / SECONDS_PER_ATTACK, 12);
     expect(r.dps).toBeLessThan((r.accuracy * 35) / 2 / SECONDS_PER_ATTACK);
   });
 

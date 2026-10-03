@@ -17,7 +17,9 @@ import {
   effectiveLevel,
   fangHitChance,
   hitChance,
+  landedFloorLift,
   npcDefenceRoll,
+  scaleHitsplat,
 } from "./common";
 import { meleeAttackRoll, meleeMaxHit } from "./melee";
 import { rangedAttackRoll, rangedMaxHit } from "./ranged";
@@ -28,10 +30,15 @@ import {
   salveFactor,
   salveMagicPct,
 } from "./conditional";
-import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
+import {
+  boltAccurateZeroes,
+  expectedBoltDamagePerAttack,
+  type BoltProcSpec,
+} from "./bolts";
 import {
   expectedMultiHitDamage,
   hitsplatMaxima,
+  hitsplatRolls,
   isSplitProfile,
   type HitProfile,
 } from "./multihit";
@@ -168,10 +175,16 @@ export interface DpsScenario {
   /**
    * Osmumten's fang is the weapon (any style): its normal hits roll uniformly
    * over lo..max−lo, lo = trunc(max × 3/20) (wgloop getPlayerMaxMeleeHit). The
-   * trim is mean-neutral on its own, so only the flat-armour mean reads it —
-   * positive armour clips that range differently from 0..max.
+   * trim is mean-neutral on its own, but positive flat armour clips that range
+   * differently from 0..max, and once max ≥ 7 it leaves no 0 for the
+   * accurate-zero raise to lift.
    */
   fangHitTrim?: boolean;
+  /**
+   * Ranged-only: Seeking arrows fired by the bow. wgloop floors every landed
+   * hitsplat at 3, just ahead of its accurate-zero raise (`landedFloorLift`).
+   */
+  seekingArrows?: boolean;
   /**
    * Black mask / slayer helmet (i) bonus is active — imbued head worn, on a
    * slayer task, and not superseded by an active Salve (they don't stack).
@@ -248,6 +261,13 @@ export interface DpsScenario {
    * weapons (demonbane/abyssal) are known.
    */
   targetDamageFactor?: [number, number];
+  /**
+   * wgloop's multiplyTransformer minimum for `targetDamageFactor`: a hitsplat
+   * of at least this much is never scaled below it (the Tormented Demon's
+   * shield: 1). It shows up only through the accurate-zero raise: a raised 1
+   * survives the TD shield, where trunc(1 × 4/5) would zero it.
+   */
+  targetDamageMinimum?: number;
   /**
    * Per-phase attack-roll scale (Royal Titans: ranged ×6 out of melee range).
    * Applied to the final attack roll just before the hit-chance calc.
@@ -678,6 +698,15 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     ) {
       maxHit = Math.trunc((maxHit * 11) / 10);
     }
+  }
+
+  // The max of the damage roll itself (wgloop's getMinAndMax). Everything below
+  // rescales the rolled hitsplat in upstream's distribution, so the
+  // accurate-zero raise sees a roll over 0..rollMax. (Dharok's scale is
+  // upstream's too, but this engine folds it into the base max hit above.)
+  const rollMax = maxHit;
+
+  if (scenario.style === "magic") {
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
     // the very end of the pipeline; applied here to the max hit (additive),
     // using their exact per-hitsplat formula including the vulnerability:
@@ -735,6 +764,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
           halved: scenario.corpDamageHalved,
           minHitFactor: scenario.targetMinHitFactor,
           damageFactor: scenario.targetDamageFactor,
+          damageMinimum: scenario.targetDamageMinimum,
         });
   if (twinflame) maxHit = twinflame.maxHit;
 
@@ -798,19 +828,22 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // (`weapon.name !== 'Dual macuahuitl'`); its macuahuitl-specific path floors
   // only the FIRST hitsplat, at trunc(firstMax / 2) of that hitsplat's own max.
   // A Twinflame double cast already folded the buff into its per-hitsplat mean.
+  let madAngelMin: number | undefined;
   if (scenario.targetMinHitFactor && !twinflame) {
     const [n, d] = scenario.targetMinHitFactor;
-    const minHit = Math.trunc((maxHit * n) / d);
-    dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit, armour)) / (bloodragerSpeed * 0.6);
+    madAngelMin = Math.trunc((maxHit * n) / d);
+    dps = (accuracy * meanLandedHitWithMinimum(maxHit, madAngelMin, armour)) / (bloodragerSpeed * 0.6);
   }
 
-  if (scenario.boltProc && scenario.style === "ranged") {
-    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc, armour);
+  const boltProc = scenario.style === "ranged" ? scenario.boltProc : undefined;
+  const hitProfile = scenario.hitProfile?.length ? scenario.hitProfile : undefined;
+  if (boltProc) {
+    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, boltProc, armour);
     dps = expected / (bloodragerSpeed * 0.6);
-  } else if (scenario.hitProfile && scenario.hitProfile.length > 0) {
+  } else if (hitProfile) {
     // Multi-hit weapons override the single-hit mean with their hit profile.
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
-    const expected = expectedMultiHitDamage(scenario.hitProfile, accuracy, maxHit, armour);
+    const expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour);
     dps = expected / (bloodragerSpeed * 0.6);
   }
 
@@ -840,6 +873,50 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // accuracy × 8/5 per attack.
   if (scenario.sanguinestiProc) {
     dps += (accuracy * 8) / 5 / (bloodragerSpeed * 0.6);
+  }
+
+  // Accurate-zero raise: wgloop lifts every ACCURATE hitsplat of 0 to 1
+  // (seeking arrows floor it at 3 just before). It runs after the bolt effects,
+  // Berserker, Mark of Darkness, the Keris triple, the Sanguinesti leech and
+  // the Maggot King punish scale, and BEFORE the Twinflame split, the Corp
+  // halving, ruby bolts, the Mad Angel buffs and the phase damage factors. So
+  // every landed roll over 0..rollMax gains landedFloorLift (1/(rollMax+1) for
+  // a plain hit, added after the Keris ×53/51 so the lifted 1 isn't tripled),
+  // and `afterRaise` carries the lifted hitsplat through the later transforms:
+  // Corp halves the 1 back to 0, the TD shield keeps it, a Mad Angel floor
+  // absorbs it, and flat armour — upstream's last transform — shifts it with
+  // the rest (worth nothing against +1, an accurate 0 deals 3 against −2). A
+  // Twinflame double cast already raised its first cast before the split
+  // (twinflameDamage). A max of 0 (Bind) returns before upstream's raise.
+  if (rollMax > 0 && !twinflame) {
+    const floor = scenario.seekingArrows ? 3 : 1;
+    const afterRaise = (h: number, minimum = 0): number => {
+      let v = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
+      v = Math.max(v, minimum);
+      if (scenario.targetDamageFactor) {
+        v = scaleHitsplat(v, scenario.targetDamageFactor, scenario.targetDamageMinimum);
+      }
+      return armouredHit(v, armour);
+    };
+    let raised = 0;
+    if (boltProc) {
+      raised = boltAccurateZeroes(accuracy, rollMax, boltProc) * (afterRaise(1) - afterRaise(0));
+    } else if (hitProfile) {
+      for (const splat of hitsplatRolls(hitProfile, accuracy, rollMax)) {
+        raised += splat.landChance * landedFloorLift(0, splat.maxHit, floor, afterRaise);
+      }
+    } else {
+      // The fang's trimmed roll starts at trunc(M × 3/20); the Sanguinesti's
+      // leech turns 1 in 5 landed 0s into 8 before the raise sees them; the
+      // Mad Angel floor is single-hit only, like its mean above.
+      const rollMin = scenario.fangHitTrim ? Math.trunc((rollMax * 3) / 20) : 0;
+      const zeroesLeft = scenario.sanguinestiProc ? 4 / 5 : 1;
+      raised =
+        accuracy *
+        zeroesLeft *
+        landedFloorLift(rollMin, rollMax - rollMin, floor, (h) => afterRaise(h, madAngelMin));
+    }
+    dps += raised / (bloodragerSpeed * 0.6);
   }
 
   // Immune target: every hit — procs included — deals 0. Last, so no mean

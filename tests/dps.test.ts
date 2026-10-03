@@ -11,7 +11,7 @@ import { rangedMaxHit } from "@/lib/dps/ranged";
 import { magicMaxHit } from "@/lib/dps/magic";
 import { applyFactors, conditionalMultipliers, salveFactor } from "@/lib/dps/conditional";
 import { calculateDps } from "@/lib/dps/calculate";
-import { expectedMultiHitDamage } from "@/lib/dps/multihit";
+import { expectedMultiHitDamage, hitsplatRolls } from "@/lib/dps/multihit";
 
 describe("DPS — pure formulas", () => {
   it("effectiveLevel applies prayer multiplier with floor before adding bonuses", () => {
@@ -148,10 +148,30 @@ describe("Multi-hit weapons — expectedMultiHitDamage", () => {
   const single = (p: number, M: number) => p * (M / 2);
 
   it("two independent halves are mean-neutral (Sulphur/Torag/Temotli/Tecpatl)", () => {
+    // trunc(M/2) + (M − trunc(M/2)) = M, odd M included (55 → 27 + 28).
     const profile = [{ maxFraction: 0.5 }, { maxFraction: 0.5 }];
     for (const [p, M] of [[0.3, 40], [0.7, 55], [1, 30]] as const) {
       expect(expectedMultiHitDamage(profile, p, M)).toBeCloseTo(single(p, M), 9);
     }
+  });
+
+  it("each hitsplat rolls to an integer max, as wgloop builds it", () => {
+    // Scythe at M = 51: 51, trunc(51/2) = 25, trunc(51/4) = 12 — not 25.5 / 12.75.
+    const scythe = [{ maxFraction: 1 }, { maxFraction: 0.5 }, { maxFraction: 0.25 }];
+    expect(hitsplatRolls(scythe, 0.6, 51)).toEqual([
+      { landChance: 0.6, maxHit: 51 },
+      { landChance: 0.6, maxHit: 25 },
+      { landChance: 0.6, maxHit: 12 },
+    ]);
+    expect(expectedMultiHitDamage(scythe, 0.6, 51)).toBeCloseTo(0.6 * (51 + 25 + 12) / 2, 12);
+    // Dual macuahuitl at M = 51: 25, then 26 only if the first landed.
+    const macuahuitl = [{ maxFraction: 0.5 }, { maxFraction: 0.5, requiresPrevious: true }];
+    expect(hitsplatRolls(macuahuitl, 0.8, 51)).toEqual([
+      { landChance: 0.8, maxHit: 25 },
+      { landChance: 0.8 * 0.8, maxHit: 26 },
+    ]);
+    // Tonalztics: trunc(3M/4) per throw (M = 45 → 33).
+    expect(hitsplatRolls([{ maxFraction: 0.75 }], 1, 45)[0].maxHit).toBe(33);
   });
 
   it("sequential halves (Dual macuahuitl) yield (M/4)·p·(1+p) — below a single hit", () => {

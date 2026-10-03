@@ -69,11 +69,14 @@ describe("flat armour in the engine (single hit)", () => {
     const r = calculateDps(melee({ targetFlatArmour: -2 }));
     expect(r.maxHit).toBe(43);
     expect(r.flatArmour).toEqual({ armour: -2, rawMaxHit: 41 });
-    expect(r.dps).toBeCloseTo((ACC * 22.5) / SECONDS, 12);
+    // 20.5 + 2, plus the accurate-zero raise, which runs BEFORE the armour: a
+    // landed 0 becomes 1 and then deals 3 instead of 2 — 1/42 more.
+    expect(r.dps).toBeCloseTo((ACC * (22.5 + 1 / 42)) / SECONDS, 12);
   });
 
   it("positive armour subtracts, clipping low rolls at 0", () => {
-    // Rolls 4..41 deal 1..38; 0..3 deal 0: 741 / 42 per landed hit.
+    // Rolls 4..41 deal 1..38; 0..3 deal 0: 741 / 42 per landed hit. The raised
+    // 1 is clipped to 0 too, so the raise adds nothing.
     const r = calculateDps(melee({ targetFlatArmour: 3 }));
     expect(r.maxHit).toBe(38);
     expect(r.dps).toBeCloseTo((ACC * 741) / 42 / SECONDS, 12);
@@ -125,8 +128,9 @@ describe("flat armour in the engine (single hit)", () => {
     // (50 × (20.5 + 2) + (61.5 + 2)) / 51 per landed hit — not ×53/51 of 22.5.
     // wgloop, Keris dagger vs Locust rider (−2), same rule: max 125 = 3 × 41 + 2,
     // DPS 5.548985 = this formula at acc 0.570890 + its accurate-zero term.
+    // The raise lands after the triple and before the armour: + 1/42, untripled.
     const r = calculateDps(melee({ kalphiteTripleProc: true, targetFlatArmour: -2 }));
-    expect(r.dps).toBeCloseTo((ACC * (50 * 22.5 + 63.5)) / 51 / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((ACC * ((50 * 22.5 + 63.5) / 51 + 1 / 42)) / SECONDS, 12);
     expect(r.maxHit).toBe(43);
   });
 
@@ -134,8 +138,10 @@ describe("flat armour in the engine (single hit)", () => {
     // max 41 rolls 6..35 (6 = trunc(41 × 3/20)); +3 never reaches 0: 20.5 − 3.
     const r = calculateDps(melee({ fangHitTrim: true, targetFlatArmour: 3 }));
     expect(r.dps).toBeCloseTo((ACC * 17.5) / SECONDS, 12);
-    // Without armour the trim is mean-neutral.
-    expect(calculateDps(melee({ fangHitTrim: true }))).toEqual(calculateDps(melee()));
+    // Without armour the trim is mean-neutral, but a roll over 6..35 has no 0
+    // for the accurate-zero raise: 20.5 against 0..41's 20.5 + 1/42.
+    expect(calculateDps(melee({ fangHitTrim: true })).dps).toBeCloseTo((ACC * 20.5) / SECONDS, 12);
+    expect(calculateDps(melee()).dps).toBeCloseTo((ACC * (20.5 + 1 / 42)) / SECONDS, 12);
   });
 });
 
@@ -143,21 +149,23 @@ describe("flat armour on multi-hit weapons — every landed hitsplat", () => {
   const scythe3 = hitProfileForWeapon(22325, { targetSize: 3 })!;
 
   it("Scythe (3 hitsplats) vs −2: +2 on each", () => {
-    // 41/2 + 20.5/2 + 10.25/2 + 3 × 2 = 41.875 per landed-all attack.
+    // Integer maxima 41 / 20 / 10: 41/2 + 20/2 + 10/2 + 3 × 2 = 41.5, plus each
+    // hitsplat's raised 0 (3 instead of 2): 1/42 + 1/21 + 1/11.
     const r = calculateDps(melee({ hitProfile: scythe3, targetFlatArmour: -2 }));
-    expect(r.dps).toBeCloseTo((ACC * 41.875) / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((ACC * (41.5 + 1 / 42 + 1 / 21 + 1 / 11)) / SECONDS, 12);
   });
 
   it("Scythe vs +3: each hitsplat clips at its own integer max (41 / 20 / 10)", () => {
-    // f·M/2 + [mean of 0..m after armour − m/2] per hitsplat.
-    const perAttack = 741 / 42 + (0.25 + 153 / 21) + (0.125 + 28 / 11);
+    // The mean of 0..m after armour, per hitsplat; +3 also swallows the raise.
+    const perAttack = 741 / 42 + 153 / 21 + 28 / 11;
     const r = calculateDps(melee({ hitProfile: scythe3, targetFlatArmour: 3 }));
     expect(r.dps).toBeCloseTo((ACC * perAttack) / SECONDS, 12);
   });
 
   it("Dual macuahuitl: the second half only lands after the first", () => {
+    // Halves 20 and 21: 10 + 2 + 1/21 (raised 0), then 10.5 + 2 + 1/22.
     const r = calculateDps(melee({ hitProfile: hitProfileForWeapon(28997), targetFlatArmour: -2 }));
-    expect(r.dps).toBeCloseTo(((ACC + ACC * ACC) * (10.25 + 2)) / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((ACC * (12 + 1 / 21) + ACC * ACC * (12.5 + 1 / 22)) / SECONDS, 12);
   });
 
   it("max hit: a split weapon shifts each half, others their largest hitsplat", () => {
@@ -169,21 +177,14 @@ describe("flat armour on multi-hit weapons — every landed hitsplat", () => {
     expect(calculateDps(melee({ hitProfile: scythe3, targetFlatArmour: -2 })).maxHit).toBe(43);
   });
 
-  it("two-halves weapons get a profile only vs flat armour", () => {
+  it("two-halves weapons: two independent halves, each shifted (and raised)", () => {
     for (const id of [4747, 4958, 29084, 29889, 30957]) {
-      expect(hitProfileForWeapon(id)).toBeUndefined();
-      expect(hitProfileForWeapon(id, { targetFlatArmour: 0 })).toBeUndefined();
-      expect(hitProfileForWeapon(id, { targetFlatArmour: -2 })).toEqual([
-        { maxFraction: 0.5 },
-        { maxFraction: 0.5 },
-      ]);
+      expect(hitProfileForWeapon(id)).toEqual([{ maxFraction: 0.5 }, { maxFraction: 0.5 }]);
     }
-    // Torag's hammers vs −2: two independent halves, +2 each.
-    const r = calculateDps(melee({
-      hitProfile: hitProfileForWeapon(4747, { targetFlatArmour: -2 }),
-      targetFlatArmour: -2,
-    }));
-    expect(r.dps).toBeCloseTo((ACC * (41 / 2 + 4)) / SECONDS, 12);
+    // Torag's hammers vs −2: halves 20 and 21, +2 each, and each raised 0
+    // deals 3 instead of 2: 1/21 + 1/22.
+    const r = calculateDps(melee({ hitProfile: hitProfileForWeapon(4747), targetFlatArmour: -2 }));
+    expect(r.dps).toBeCloseTo((ACC * (41 / 2 + 4 + 1 / 21 + 1 / 22)) / SECONDS, 12);
   });
 });
 
@@ -353,26 +354,25 @@ describe("flying monsters and melee", () => {
  * the proc hit; ours is one hitsplat / the normal hit, so those aren't
  * compared. Split weapons (Torag's, Dual macuahuitl) report the whole attack
  * on both sides (Torag's vs Gargoyle 44 = 22 + 22), and a Keris vs a Kalphite
- * reports its triple hitsplat upstream. DPS: ours is
- * short by wgloop's accurate-zero raise (an accurate 0 deals 1, which the
- * engine doesn't model) — acc/(max+1) per hitsplat, ~0.1–0.5% here. Positive
- * armour of 1+ swallows that 1, so those rows match exactly.
+ * reports its triple hitsplat upstream. DPS matches every row exactly, now
+ * that the engine models wgloop's accurate-zero raise (an accurate 0 deals 1
+ * before the armour shift).
  */
 const WGLOOP: Record<
   string,
-  { maxHit: number; attackRoll: number; defenceRoll: number; dps: number; exactDps?: true }
+  { maxHit: number; attackRoll: number; defenceRoll: number; dps: number }
 > = {
   "armour-whip-earthen-nagua": { maxHit: 45, attackRoll: 23241, defenceRoll: 5586, dps: 8.989882847554306 },
   "armour-scythe-gargoyle": { maxHit: 76, attackRoll: 28476, defenceRoll: 14384, dps: 10.255194892388621 },
   "armour-torags-hammers-gargoyle": { maxHit: 44, attackRoll: 23436, defenceRoll: 5104, dps: 7.156845335451813 },
   "armour-dual-macuahuitl-earthen-nagua": { maxHit: 50, attackRoll: 27972, defenceRoll: 5586, dps: 10.365638378415543 },
   "armour-keris-locust-rider": { maxHit: 125, attackRoll: 17766, defenceRoll: 15246, dps: 5.548985395925693 },
-  "armour-fang-drake": { maxHit: 38, attackRoll: 25956, defenceRoll: 8901, dps: 6.725516560724347, exactDps: true },
+  "armour-fang-drake": { maxHit: 38, attackRoll: 25956, defenceRoll: 8901, dps: 6.725516560724347 },
   "armour-dark-bow-riyl-shade": { maxHit: 60, attackRoll: 35658, defenceRoll: 4416, dps: 6.46306732822409 },
-  "armour-ruby-bolts-veiled-kraken": { maxHit: 30, attackRoll: 35028, defenceRoll: 7936, dps: 2.383493260024705, exactDps: true },
+  "armour-ruby-bolts-veiled-kraken": { maxHit: 30, attackRoll: 35028, defenceRoll: 7936, dps: 2.383493260024705 },
   "armour-diamond-bolts-gargoyle": { maxHit: 43, attackRoll: 35028, defenceRoll: 5104, dps: 6.334204012661008 },
   "armour-opal-bolts-gargoyle": { maxHit: 29, attackRoll: 35028, defenceRoll: 5104, dps: 3.579801580444874 },
-  "armour-dhcb-drake": { maxHit: 48, attackRoll: 46355, defenceRoll: 8256, dps: 7.001646253462126, exactDps: true },
+  "armour-dhcb-drake": { maxHit: 48, attackRoll: 46355, defenceRoll: 8256, dps: 7.001646253462126 },
   "flying-whip-kreearra": { maxHit: 0, attackRoll: 23241, defenceRoll: 65636, dps: 0 },
   "flying-dragon-halberd-kreearra": { maxHit: 43, attackRoll: 24696, defenceRoll: 65636, dps: 0.9640418998707769 },
   "flying-scythe-flight-kilisa": { maxHit: 0, attackRoll: 28476, defenceRoll: 11776, dps: 0 },
@@ -402,10 +402,7 @@ describe("NPC-mechanic combos match wgloop (scripts/oracle/combos.ts)", () => {
 
       // A split weapon's max hit is the whole attack on both sides; other
       // multi-hit weapons report one hitsplat here, the sum upstream.
-      const profile = hitProfileForWeapon(r.loadout.slots.weapon?.itemId, {
-        targetSize: boss.size,
-        targetFlatArmour: boss.defenceBonuses.flatArmour,
-      });
+      const profile = hitProfileForWeapon(r.loadout.slots.weapon?.itemId, { targetSize: boss.size });
       const comparable = (!profile || isSplitProfile(profile)) && !combo.knownMaxHitResidual;
       // Keris vs a Kalphite: wgloop's max is the 1/51 triple hitsplat, tripled
       // before the armour shift (3 × 41 + 2 = 125).
@@ -423,14 +420,7 @@ describe("NPC-mechanic combos match wgloop (scripts/oracle/combos.ts)", () => {
         expect(r.dps.accuracy).toBe(hitChance(want.attackRoll, want.defenceRoll));
       }
 
-      if (want.dps === 0 || want.exactDps) {
-        expect(r.dps.dps).toBeCloseTo(want.dps, 9);
-      } else {
-        // Within the oracle's 0.5% DPS tolerance, and never above wgloop (the
-        // accurate-zero raise only ever adds damage upstream).
-        expect(r.dps.dps).toBeLessThanOrEqual(want.dps);
-        expect((want.dps - r.dps.dps) / want.dps).toBeLessThan(0.005);
-      }
+      expect(r.dps.dps).toBeCloseTo(want.dps, 9);
     });
   }
 });

@@ -221,6 +221,37 @@ function armouredBoltDamagePerAttack(
   }
 }
 
+/**
+ * Expected number of ACCURATE hitsplats of 0 per attack once the proc has
+ * fired — the ones wgloop's accurate-zero raise lifts to 1 (see
+ * landedFloorLift in ./common). `rollMax` is the normal hit's max before the
+ * Corp halving, the max the bolt transforms see upstream. With
+ * P0 = 1/(rollMax+1) and E0 = 1/(effectMax+1):
+ *
+ *   opal / pearl / dragonstone   acc·(1−c)·P0   (a proc adds damage to the 0)
+ *   diamond                      c·E0 + (1−c)·acc·P0   (proc hits are accurate rolls)
+ *   onyx                         acc·(c·E0 + (1−c)·P0)
+ *   ruby                         (1−c)·acc·P0   (fires after the raise, replacing it)
+ */
+export function boltAccurateZeroes(
+  accuracy: number,
+  rollMax: number,
+  spec: BoltProcSpec,
+): number {
+  const p0 = 1 / (rollMax + 1);
+  switch (spec.kind) {
+    case "flatBonus":
+      return accuracy * (spec.bonusDamage > 0 ? 1 - spec.chance : 1) * p0;
+    case "scaledMax": {
+      const e0 = 1 / (Math.trunc((rollMax * spec.effectMaxPercent) / 100) + 1);
+      if (spec.accurateOnly) return accuracy * (spec.chance * e0 + (1 - spec.chance) * p0);
+      return spec.chance * e0 + (1 - spec.chance) * accuracy * p0;
+    }
+    case "replaceFixed":
+      return (1 - spec.chance) * accuracy * p0;
+  }
+}
+
 /** Short human description for tooltips / results flags. */
 export function describeBoltProc(spec: BoltProcSpec): string {
   const pct = `${(spec.chance * 100).toFixed(1)}%`;

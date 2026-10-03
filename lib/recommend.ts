@@ -23,6 +23,7 @@ import { demonbaneVulnerabilityFor } from "@/data/monsters/demonbane-vulnerabili
 import {
   activeBonusesForTarget,
   defenceBonusForAttackType,
+  firesAmmo,
   rangedDefenceBonusFor,
 } from "@/lib/loadout";
 
@@ -214,6 +215,7 @@ export function computeSetDps(
       ? target.damageModifier
       : defaultDamageModifier(target.slug);
   let targetDamageFactor: [number, number] | undefined;
+  let targetDamageMinimum: number | undefined;
   if (modifier && (!modifier.styles || modifier.styles.includes(set.style))) {
     const demonbanePierce =
       modifier.piercedByDemonbane === true &&
@@ -227,7 +229,10 @@ export function computeSetDps(
       modifier.piercedByAbyssal === true &&
       set.style === "melee" &&
       weaponName.toLowerCase().includes("abyssal");
-    targetDamageFactor = demonbanePierce || abyssalPierce ? undefined : modifier.factor;
+    if (!demonbanePierce && !abyssalPierce) {
+      targetDamageFactor = modifier.factor;
+      targetDamageMinimum = modifier.minimum;
+    }
   }
   // Per-phase accuracy scale + can't-miss states (Royal Titans, Doom). These
   // only exist on phased targets — no slug fallback needed because no boss's
@@ -249,11 +254,13 @@ export function computeSetDps(
         rubyProcEnabled,
       })
     : undefined;
-  // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow, Tonalztics;
-  // the two-halves weapons only vs flat armour, which shifts each half).
+  // Seeking arrows fired by the bow: wgloop floors every landed hitsplat at 3.
+  const seekingArrows =
+    set.style === "ranged" && (set.slots.ammo?.itemName ?? "").includes("Seeking") && firesAmmo(set);
+  // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow,
+  // Tonalztics, the two-hit Torag's / Sulphur / Temotli / Tecpatl).
   const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
     targetSize: target.size,
-    targetFlatArmour: target.defenceBonuses.flatArmour,
   });
   // Sanguinesti staff (incl. Holy, charged + uncharged catalog variants): the
   // 1/5 life-leech proc deals 8 bonus damage since the 2026-07-22 Summer
@@ -368,7 +375,9 @@ export function computeSetDps(
     twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,
     fangEquipped: activeBonuses.fangEquipped,
+    // The fang's damage trim applies on every melee style, not just stab.
     fangHitTrim: set.style === "melee" && set.itemBonusFlags.fang === true,
+    seekingArrows,
     targetMonsterMagicLevel: activeBonuses.targetMonsterMagicLevel,
     targetIsXerician: activeBonuses.targetIsXerician,
     armorSetBonus: set.armorSetBonus,
@@ -379,6 +388,7 @@ export function computeSetDps(
     berserkerObsidian,
     corpDamageHalved,
     targetDamageFactor,
+    targetDamageMinimum,
     targetAccuracyFactor,
     targetAlwaysHit,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic

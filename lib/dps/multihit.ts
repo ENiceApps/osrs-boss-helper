@@ -5,25 +5,27 @@
 // A weapon is described by a HitProfile: an ordered list of hitsplats, each a
 // fraction of the weapon's *combined* max hit. The combined max hit is what the
 // normal engine already computes from the weapon's strength bonus — the profile
-// just says how that potential is split across hitsplats.
+// just says how that potential is split across hitsplats. Each hitsplat rolls
+// over 0..its own INTEGER max, built the way wgloop builds it
+// (`hitsplatMaxima`): Scythe trunc(M/2^i), Tonalztics trunc(3M/4), and the
+// halves of a split trunc(M/2) and M − trunc(M/2).
 //
-// Two facts drive the math (and the surprising result that several of these
-// weapons need NO correction):
-//   1. A hitsplat that rolls 0..(f·M) uniformly has expected damage f·M/2 when
-//      it lands. So a hit's mean contribution is reach · accuracy · (f·M)/2.
+// Two facts drive the math:
+//   1. A hitsplat that rolls 0..m uniformly has expected damage m/2 when it
+//      lands. So a hit's mean contribution is reach · accuracy · m/2.
 //   2. "reach" is the probability the hitsplat is even attempted. Independent
 //      hits are always attempted (reach 1). A hit flagged requiresPrevious only
 //      occurs if the preceding hitsplat landed, so its reach gains a factor of
 //      `accuracy` per sequential gate.
 //
 // Consequences:
-//   • Two independent halves [{0.5},{0.5}] → 2 · acc · (0.5M)/2 = acc·M/2,
-//     EXACTLY a single combined hit. Sulphur/Torag/Temotli/Tecpatl are therefore
-//     already valued correctly by the single-hit engine; the split only lowers
-//     variance. They have no HitProfile entry for that reason — except vs a
-//     target with flat armour, which shifts each landed half separately.
-//   • Sequential halves (Dual macuahuitl) [{0.5},{0.5,req}] → (M/4)·acc·(1+acc),
-//     i.e. ×(1+acc)/2 vs a single hit — the engine OVER-values it without this.
+//   • Two independent halves [{0.5},{0.5}] → acc·(trunc(M/2) + M − trunc(M/2))/2
+//     = acc·M/2, EXACTLY a single combined hit (Sulphur/Torag/Temotli/Tecpatl).
+//     They still carry a profile: wgloop raises every landed 0 to 1 PER
+//     HITSPLAT (landedFloorLift in ./common), and flat armour shifts each half.
+//   • Sequential halves (Dual macuahuitl) [{0.5},{0.5,req}] → about
+//     (M/4)·acc·(1+acc), i.e. ×(1+acc)/2 vs a single hit — the engine
+//     OVER-values it without this.
 //   • Scythe (size-gated) and Dark bow (two FULL hits) exceed a single hit.
 
 import { meanArmouredHit } from "./flat-armour";
@@ -66,6 +68,29 @@ export function hitsplatMaxima(profile: HitProfile, maxHit: number): number[] {
   return maxima;
 }
 
+/** One hitsplat of an attack: how likely it lands, and the max it rolls to. */
+export interface HitsplatRoll {
+  landChance: number;
+  maxHit: number;
+}
+
+/**
+ * The hitsplats of one attack, given the single-roll accuracy and the combined
+ * max hit the engine already computed.
+ */
+export function hitsplatRolls(
+  profile: HitProfile,
+  accuracy: number,
+  maxHit: number,
+): HitsplatRoll[] {
+  const maxima = hitsplatMaxima(profile, maxHit);
+  let reach = 1;
+  return profile.map((hit, i) => {
+    if (hit.requiresPrevious) reach *= accuracy;
+    return { landChance: reach * accuracy, maxHit: maxima[i] };
+  });
+}
+
 /**
  * Expected damage per attack for a multi-hit weapon, given the single-roll
  * accuracy and the combined max hit the engine already computed. Returns the
@@ -73,10 +98,10 @@ export function hitsplatMaxima(profile: HitProfile, maxHit: number): number[] {
  * DPS exactly as the single-hit path does.
  *
  * `flatArmour` (lib/dps/flat-armour.ts) shifts EACH landed hitsplat, so a
- * 3-hit Scythe vs a Gargoyle (−2) gains up to +6 per attack, not +2. The shift
- * is added on top of the unchanged f·M/2 mean as the difference it makes to a
- * hitsplat rolling 0..m, m its integer max (`hitsplatMaxima`). That is exactly
- * |armour| for negative armour; positive armour also clips low rolls at 0.
+ * 3-hit Scythe vs a Gargoyle (−2) gains up to +6 per attack, not +2: each
+ * hitsplat's landed mean is meanArmouredHit over 0..its integer max — m/2 with
+ * no armour, exactly |armour| more for negative armour, and positive armour
+ * also clips low rolls at 0.
  */
 export function expectedMultiHitDamage(
   profile: HitProfile,
@@ -84,16 +109,9 @@ export function expectedMultiHitDamage(
   maxHit: number,
   flatArmour = 0,
 ): number {
-  const maxima = flatArmour !== 0 ? hitsplatMaxima(profile, maxHit) : [];
-  let reach = 1;
   let expected = 0;
-  profile.forEach((hit, i) => {
-    if (hit.requiresPrevious) reach *= accuracy;
-    expected += (reach * accuracy * (hit.maxFraction * maxHit)) / 2;
-    if (flatArmour !== 0) {
-      const m = maxima[i];
-      expected += reach * accuracy * (meanArmouredHit(0, m, flatArmour) - m / 2);
-    }
-  });
+  for (const splat of hitsplatRolls(profile, accuracy, maxHit)) {
+    expected += splat.landChance * meanArmouredHit(0, splat.maxHit, flatArmour);
+  }
   return expected;
 }

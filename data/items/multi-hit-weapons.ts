@@ -1,10 +1,8 @@
-// Weapon id → multi-hit HitProfile. Only weapons whose profile actually differs
-// from a single combined hit appear here; see lib/dps/multihit.ts for why the
-// "two independent halves" weapons (Sulphur blades, Torag's hammers, Glacial
-// temotli, Earthbound tecpatl) are absent by default — their split is
-// mean-neutral, so the single-hit engine already prices them correctly. The
-// exception is a target with flat armour, which shifts EACH hitsplat: there
-// they get their two-halves profile (see `targetFlatArmour`).
+// Weapon id → multi-hit HitProfile: every weapon wgloop builds as more than one
+// hitsplat per attack. See lib/dps/multihit.ts — the "two independent halves"
+// weapons (Sulphur blades, Torag's hammers, Glacial temotli, Earthbound
+// tecpatl) have the same mean as one combined hit, but each half is its own
+// roll: each gets wgloop's accurate-zero raise and its own flat-armour shift.
 //
 // Ids verified against data/vendor/wgloop/equipment.json.
 
@@ -25,18 +23,12 @@ const TWO_HIT_WEAPON_IDS = new Set([4747, 4958, 4959, 4960, 4961, 4962, 29084, 2
 export interface HitProfileContext {
   /** NxN target size (catalog `size`). Drives the Scythe's hit count. */
   targetSize?: number;
-  /**
-   * Target's flat armour (catalog `defenceBonuses.flatArmour`). Non-zero turns
-   * on the two-halves profile of the mean-neutral two-hit weapons, since the
-   * armour shift lands on each half.
-   */
-  targetFlatArmour?: number;
 }
 
 /**
- * The hit profile for a weapon, or undefined when the weapon is single-hit (or
- * a mean-neutral multi-hitter that needs no correction). The combined max hit
- * is computed by the engine as usual; the profile only redistributes it.
+ * The hit profile for a weapon, or undefined when the weapon is single-hit.
+ * The combined max hit is computed by the engine as usual; the profile only
+ * redistributes it.
  */
 export function hitProfileForWeapon(
   weaponId: number | undefined,
@@ -45,9 +37,9 @@ export function hitProfileForWeapon(
   if (weaponId === undefined) return undefined;
 
   if (SCYTHE_IDS.has(weaponId)) {
-    // 1st 100%, 2nd 50%, 3rd 25% — each an independent accuracy roll. Hit count
-    // by target size: 1x1 → 1, 2x2 → 2, ≥3x3 → 3. (Ignores the ±1 even/÷4
-    // rounding bonus on the lesser hits — sub-1-damage, immaterial to mean DPS.)
+    // 1st 100%, 2nd 50%, 3rd 25% — each an independent accuracy roll, maxes
+    // trunc(M/2) and trunc(M/4) as in wgloop. Hit count by target size:
+    // 1x1 → 1, 2x2 → 2, ≥3x3 → 3.
     const size = ctx.targetSize ?? 1;
     if (size >= 3) return [{ maxFraction: 1 }, { maxFraction: 0.5 }, { maxFraction: 0.25 }];
     if (size === 2) return [{ maxFraction: 1 }, { maxFraction: 0.5 }];
@@ -78,10 +70,10 @@ export function hitProfileForWeapon(
     return [{ maxFraction: 0.75 }];
   }
 
-  // Two independent halves — the same mean as one combined hit, so they need
-  // no profile, except vs flat armour, which shifts each landed half (Torag's
-  // hammers vs a Gargoyle: +2 per half, up to +4 per attack).
-  if (TWO_HIT_WEAPON_IDS.has(weaponId) && (ctx.targetFlatArmour ?? 0) !== 0) {
+  // Two independent halves, trunc(M/2) and M − trunc(M/2) — the same mean as
+  // one combined hit, but two rolls: each landed half gets its own raised 0
+  // and its own flat-armour shift (Torag's hammers vs a Gargoyle: +2 per half).
+  if (TWO_HIT_WEAPON_IDS.has(weaponId)) {
     return [{ maxFraction: 0.5 }, { maxFraction: 0.5 }];
   }
 

@@ -67,14 +67,22 @@ export function canDamageLeafy(set: LoadoutSet): boolean {
       return LEAF_BLADED_MELEE_WEAPON_IDS.has(set.slots.weapon?.itemId ?? -1);
     case "magic":
       return set.autoSpellName === LEAFY_SPELL_NAME;
-    case "ranged": {
-      const { weapon, ammo } = set.slots;
-      if (!weapon || !ammo || !BROAD_AMMO_IDS.has(ammo.itemId)) return false;
-      const category = set.weaponCategory ?? "";
-      if (category !== "Bow" && category !== "Crossbow") return false;
-      return checkAmmoCompatWithCategory(weapon.itemName, category, ammo.itemName).ok;
-    }
+    case "ranged":
+      return BROAD_AMMO_IDS.has(set.slots.ammo?.itemId ?? -1) && firesAmmo(set);
   }
+}
+
+/**
+ * Whether the set's bow or crossbow actually fires the ammo in its ammo slot —
+ * wgloop's ammoApplicability === INCLUDED. A weapon without ammo (blowpipe,
+ * crystal bow, Bow of Faerdhinen) or of the wrong class fires none of it.
+ */
+export function firesAmmo(set: LoadoutSet): boolean {
+  const { weapon, ammo } = set.slots;
+  if (!weapon || !ammo) return false;
+  const category = set.weaponCategory ?? "";
+  if (category !== "Bow" && category !== "Crossbow") return false;
+  return checkAmmoCompatWithCategory(weapon.itemName, category, ammo.itemName).ok;
 }
 
 /**

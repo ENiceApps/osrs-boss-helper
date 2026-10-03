@@ -23,6 +23,11 @@ import type { CombatStyle } from "@/types/osrs";
 export interface PhaseDamageModifier {
   /** [numerator, denominator] scale on the final max hit. */
   factor: [number, number];
+  /**
+   * wgloop's multiplyTransformer minimum: a hitsplat of at least this much is
+   * never scaled below it (the TD shield keeps a 1 at 1).
+   */
+  minimum?: number;
   /** Only these combat styles are affected (Maggot King's melee punish). */
   styles?: CombatStyle[];
   /** Demonbane weapons/spells ignore the modifier entirely. */
@@ -88,6 +93,7 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
       note: "Shield up (most of the fight): −20% damage unless using a demonbane or abyssal weapon.",
       damageModifier: {
         factor: [4, 5],
+        minimum: 1,
         piercedByDemonbane: true,
         piercedByAbyssal: true,
       },

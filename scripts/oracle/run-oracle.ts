@@ -81,10 +81,7 @@ function ourEngine(combo: CanonicalCombo): OurResult {
   });
   if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
   const weaponId = scored.loadout.slots.weapon?.itemId;
-  const profile = hitProfileForWeapon(weaponId, {
-    targetSize: boss.size,
-    targetFlatArmour: boss.defenceBonuses.flatArmour,
-  });
+  const profile = hitProfileForWeapon(weaponId, { targetSize: boss.size });
   // A split weapon (Dual macuahuitl, Torag's) reports the whole attack's max
   // on both sides, so only the other multi-hitters skip the max-hit check.
   const multiHit = profile !== undefined && !isSplitProfile(profile);

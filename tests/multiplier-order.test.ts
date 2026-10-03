@@ -162,11 +162,14 @@ describe("melee: Keris ×133/100 vs Kalphites (was ×4/3)", () => {
     expect(r.accuracy).toBe(accFor(27227)); // trunc(trunc(17548 × 7/6) × 133/100)
   });
 
-  it("the 1/51 triple proc is ×53/51 on mean DPS, max hit unchanged", () => {
+  it("the 1/51 triple proc is ×53/51 on the rolled mean, max hit unchanged", () => {
     const plain = calculateDps(keris());
     const proc = calculateDps(keris({ kalphiteTripleProc: true }));
     expect(proc.maxHit).toBe(47);
-    expect(proc.dps / plain.dps).toBeCloseTo(53 / 51, 12);
+    // wgloop: 50/51 of 0..47 plus 1/51 of 3 × (0..47), then the accurate-zero
+    // raise. A rolled 0 is 0 either way and is raised to 1 after the triple,
+    // so a landed hit averages 47/2 × 53/51 + 1/48 against 47/2 + 1/48.
+    expect(proc.dps / plain.dps).toBeCloseTo((47 / 2 * 53 / 51 + 1 / 48) / (47 / 2 + 1 / 48), 12);
   });
 });
 

@@ -177,11 +177,14 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
 - **Sanguinesti staff** always shows `MAXHIT` (e.g. 39 vs 47): wgloop reports
   the distribution max, which includes the 1/5 +8 proc; ours is the base max.
   Base max hit, accuracy and DPS match — keep it out of exact combos.
-- **Accurate zeros** — wgloop raises every accurate 0-damage hit to 1, adding
-  `acc / (max + 1)` to the mean hit. Our engine uses the plain `acc × max / 2`,
-  so DPS runs low by `2 / (max × (max + 1))` (~0.1% at a 45 max hit, ~1.8% at
-  10). Max hit and accuracy are unaffected. Positive flat armour of 1+
-  swallows the raised 1, so those rows match exactly.
+- ~~**Accurate zeros** — wgloop raises every accurate 0-damage hit to 1, adding
+  `acc / (max + 1)` to the mean hit; DPS ran low by `2 / (max × (max + 1))`.~~
+  **FIXED** 2026-10-03 (`landedFloorLift` in `lib/dps/common.ts`): raised per
+  hitsplat in upstream's order (after bolts / Berserker / Keris / Sanguinesti,
+  before the Twinflame split, Corp, ruby bolts, Mad Angel, phase factors and
+  flat armour), with seeking arrows' floor of 3, the fang's trimmed roll and
+  integer multi-hit splat maxes. Obsidian + Berserker still runs ~1.3% high:
+  wgloop truncates the ×6/5 per hit.
 - **Bolt-proc and fang max hits** — wgloop's max hit includes the proc hit
   (ruby / diamond / opal) and is the fang's trimmed normal max; ours is the
   normal hit / the fang's true max (the UI derives the fang's normal max).

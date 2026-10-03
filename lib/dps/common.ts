@@ -37,6 +37,11 @@ export function fangHitChance(attackRoll: number, defenceRoll: number): number {
   return (a * (4 * a + 5)) / (6 * (a + 1) * (d + 1));
 }
 
+/**
+ * DPS of a hit that lands with `chance` and rolls uniformly over 0..maxHit:
+ * the plain uniform mean maxHit/2. The accurate-zero raise (and the seeking
+ * arrow floor) are added on top by calculateDps — see `landedFloorLift`.
+ */
 export function dpsFromHitChance(
   chance: number,
   maxHit: number,
@@ -45,6 +50,44 @@ export function dpsFromHitChance(
   const averageDamagePerHit = chance * (maxHit / 2);
   const secondsPerAttack = attackSpeedTicks * 0.6;
   return averageDamagePerHit / secondsPerAttack;
+}
+
+/**
+ * Extra mean damage of ONE landed hitsplat when its roll — uniform over
+ * rollMin..rollMax — is floored to `floor` before the later per-hitsplat
+ * transforms `after` (Corp halving, phase damage factors, …) run:
+ *
+ *   Σ_{r = rollMin .. min(rollMax, floor − 1)} (after(floor) − after(r)) / (rollMax − rollMin + 1)
+ *
+ * wgloop's getAttackerDist (PlayerVsNPCCalc @ 89c3e25, `accurateZeroApplicable`)
+ * raises every ACCURATE hitsplat of 0 to 1 — floor 1, worth 1/(M+1) on a roll
+ * over 0..M: M = 10 gives (55 + 1)/11, not 55/11. Seeking arrows floor at 3
+ * just before it (6/(M+1)). A roll whose minimum already reaches the floor
+ * (Osmumten's fang once trunc(M × 3/20) ≥ 1) gains nothing. Max hits are
+ * untouched: the floor only lifts the bottom of the roll.
+ */
+export function landedFloorLift(
+  rollMin: number,
+  rollMax: number,
+  floor: number,
+  after: (hitsplat: number) => number = (h) => h,
+): number {
+  if (rollMax < rollMin) return 0;
+  let lift = 0;
+  for (let r = rollMin; r < floor && r <= rollMax; r++) lift += after(floor) - after(r);
+  return lift / (rollMax - rollMin + 1);
+}
+
+/**
+ * One hitsplat through a per-phase damage factor — wgloop's
+ * multiplyTransformer(n, d, minimum): trunc(h × n/d), except that with a
+ * minimum a hit of at least `minimum` never drops below it, and a smaller one
+ * is never reduced (the Tormented Demon's shield keeps a 1 at 1).
+ */
+export function scaleHitsplat(h: number, [n, d]: [number, number], minimum = 0): number {
+  const scaled = Math.trunc((h * n) / d);
+  if (minimum === 0) return scaled;
+  return h >= minimum ? Math.max(minimum, scaled) : Math.max(h, scaled);
 }
 
 export function effectiveLevel(

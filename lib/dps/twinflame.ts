@@ -20,9 +20,12 @@
 // corpbane, and none of these targets overlap, so in practice at most one of
 // them applies — but the order is upstream's either way.
 //
-// Like the rest of the engine, an accurate 0 stays 0 (upstream raises it to 1,
-// adding 1/(M+1) to its mean). The Sanguinesti staff's leech is another weapon,
-// so it never meets this split.
+// Upstream's accurate-zero raise (see landedFloorLift in ./common) runs just
+// BEFORE the split: a landed first cast of 0 becomes 1, so it deals [1, 0],
+// worth 1/(M+1) on the mean (M = 10: 74/11). The loop below folds it in. The Sanguinesti
+// staff's leech is another weapon, so it never meets this split.
+
+import { scaleHitsplat } from "./common";
 
 export interface TwinflameTransforms {
   /** Corporeal Beast halves each hitsplat (`DpsScenario.corpDamageHalved`). */
@@ -44,6 +47,8 @@ export interface TwinflameTransforms {
   minHitFactor?: [number, number];
   /** Per-phase NPC damage scale (`DpsScenario.targetDamageFactor`), per hitsplat. */
   damageFactor?: [number, number];
+  /** Its minimum (`DpsScenario.targetDamageMinimum`: the TD shield keeps a 1 at 1). */
+  damageMinimum?: number;
 }
 
 export interface TwinflameDamage {
@@ -68,7 +73,7 @@ export function twinflameDamage(
   transforms: TwinflameTransforms = {},
 ): TwinflameDamage {
   if (firstMax <= 0) return { maxHit: 0, meanLanded: 0 };
-  const { halved, minHitFactor, damageFactor } = transforms;
+  const { halved, minHitFactor, damageFactor, damageMinimum } = transforms;
 
   // Attacker side: the split, then the corp halving (each hitsplat).
   const halve = (s: number): number => (halved ? Math.trunc(s / 2) : s);
@@ -86,11 +91,13 @@ export function twinflameDamage(
 
   // NPC side: the per-phase damage factor (each hitsplat).
   const scale = (s: number): number =>
-    damageFactor ? Math.trunc((s * damageFactor[0]) / damageFactor[1]) : s;
+    damageFactor ? scaleHitsplat(s, damageFactor, damageMinimum) : s;
 
   let total = 0;
   let maxHit = 0;
-  for (let h = 0; h <= firstMax; h++) {
+  for (let roll = 0; roll <= firstMax; roll++) {
+    // The accurate-zero raise, before the split.
+    const h = Math.max(roll, 1);
     const s1 = Math.max(pinFirst ? top1 : halve(h), floor);
     const s2 = Math.max(halve(twinflameSecondHit(h)), floor);
     const pair = scale(s1) + scale(s2);
