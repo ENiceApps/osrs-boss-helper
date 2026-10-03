@@ -149,10 +149,9 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   skeleton −1, Dusk −1; 110 monsters are non-zero). Our engine ignores it.
 - **Flying monsters** (Kree'arra's minions, Aviansies) are immune to melee in
   wgloop; our engine still scores melee against them.
-- **Ranged Accurate damage** — wgloop (and the wiki) add the stance's +3 to the
-  ranged STRENGTH effective level too; our engine adds it to accuracy only, so
-  ranged Accurate max hits run 1 low at some bases (Rune crossbow vs Vorkath:
-  35 vs 36). Rapid, the optimizer's ranged pick, is unaffected.
+- ~~**Ranged Accurate damage** — +3 added to accuracy only, so max hits ran 1
+  low at some bases (Rune crossbow vs Vorkath: 35 vs 36).~~ **FIXED**
+  2026-10-03 — the +3 joins the ranged strength effective level too.
 - **Sanguinesti staff** always shows `MAXHIT` (e.g. 39 vs 47): wgloop reports
   the distribution max, which includes the 1/5 +8 proc; ours is the base max.
   Base max hit, accuracy and DPS match — keep it out of exact combos.
