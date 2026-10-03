@@ -27,6 +27,8 @@ export interface MonsterPhaseEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
+  /** Magic attack bonus (upstream `offensive.magic`). Omitted when 0. */
+  magicAttackBonus?: number;
   defenceBonuses: MonsterDefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
@@ -45,6 +47,12 @@ export interface MonsterCatalogEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
+  /**
+   * Magic attack bonus (upstream `offensive.magic`). The Twisted bow scales
+   * off the higher of this and `magicLevel` (lib/dps/twisted-bow.ts). Omitted
+   * when 0.
+   */
+  magicAttackBonus?: number;
   defenceBonuses: MonsterDefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
@@ -400,6 +408,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 100,
+    "magicAttackBonus": 73,
     "defenceBonuses": {
       "stab": 103,
       "slash": 85,
@@ -430,6 +439,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 400,
     "defenceLevel": 80,
     "magicLevel": 100,
+    "magicAttackBonus": 115,
     "defenceBonuses": {
       "stab": 60,
       "slash": 120,
@@ -483,6 +493,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1100,
     "defenceLevel": 100,
     "magicLevel": 260,
+    "magicAttackBonus": 45,
     "defenceBonuses": {
       "stab": 75,
       "slash": 150,
@@ -541,6 +552,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 520,
     "defenceLevel": 80,
     "magicLevel": 170,
+    "magicAttackBonus": 160,
     "defenceBonuses": {
       "stab": 100,
       "slash": 100,
@@ -570,6 +582,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 520,
         "defenceLevel": 80,
         "magicLevel": 170,
+        "magicAttackBonus": 160,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -598,6 +611,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 400,
         "defenceLevel": 60,
         "magicLevel": 140,
+        "magicAttackBonus": 140,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -630,6 +644,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 330,
     "defenceLevel": 80,
     "magicLevel": 80,
+    "magicAttackBonus": 45,
     "defenceBonuses": {
       "stab": 50,
       "slash": -30,
@@ -1173,6 +1188,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 180,
     "defenceLevel": 70,
     "magicLevel": 170,
+    "magicAttackBonus": 50,
     "defenceBonuses": {
       "stab": 60,
       "slash": 80,
@@ -1196,6 +1212,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 180,
         "defenceLevel": 70,
         "magicLevel": 170,
+        "magicAttackBonus": 50,
         "defenceBonuses": {
           "stab": 60,
           "slash": 80,
@@ -1218,6 +1235,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 180,
         "defenceLevel": 70,
         "magicLevel": 170,
+        "magicAttackBonus": 50,
         "defenceBonuses": {
           "stab": 10,
           "slash": 80,
@@ -1244,6 +1262,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1020,
     "defenceLevel": 135,
     "magicLevel": 190,
+    "magicAttackBonus": 260,
     "defenceBonuses": {
       "stab": 160,
       "slash": 75,
@@ -4211,6 +4230,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 100,
     "magicLevel": 100,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 12,
       "slash": 12,
@@ -4947,6 +4967,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 26,
     "defenceLevel": 22,
     "magicLevel": 1,
+    "magicAttackBonus": -4,
     "defenceBonuses": {
       "stab": 0,
       "slash": 15,
@@ -4973,6 +4994,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 26,
         "defenceLevel": 22,
         "magicLevel": 1,
+        "magicAttackBonus": -4,
         "defenceBonuses": {
           "stab": 0,
           "slash": 15,
@@ -5188,6 +5210,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 100,
     "magicLevel": 220,
+    "magicAttackBonus": 50,
     "defenceBonuses": {
       "stab": 50,
       "slash": 100,
@@ -5218,6 +5241,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 160,
     "magicLevel": 160,
+    "magicAttackBonus": 28,
     "defenceBonuses": {
       "stab": 120,
       "slash": 160,
@@ -5739,6 +5763,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 255,
     "defenceLevel": 300,
     "magicLevel": 300,
+    "magicAttackBonus": 200,
     "defenceBonuses": {
       "stab": 100,
       "slash": 100,
@@ -5817,6 +5842,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1000,
     "defenceLevel": 240,
     "magicLevel": 240,
+    "magicAttackBonus": 90,
     "defenceBonuses": {
       "stab": 20,
       "slash": 20,
@@ -6379,6 +6405,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 240,
     "magicLevel": 240,
+    "magicAttackBonus": 76,
     "defenceBonuses": {
       "stab": 20,
       "slash": 20,
@@ -7002,6 +7029,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 217,
     "defenceLevel": 160,
     "magicLevel": 160,
+    "magicAttackBonus": 18,
     "defenceBonuses": {
       "stab": 30,
       "slash": 30,
@@ -7435,6 +7463,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 380,
     "defenceLevel": 200,
     "magicLevel": 195,
+    "magicAttackBonus": 40,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -7490,6 +7519,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 320,
     "defenceLevel": 100,
     "magicLevel": 80,
+    "magicAttackBonus": 180,
     "defenceBonuses": {
       "stab": 200,
       "slash": 200,
@@ -7623,6 +7653,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 1,
+    "magicAttackBonus": -58,
     "defenceBonuses": {
       "stab": 252,
       "slash": 250,
@@ -7908,6 +7939,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 675,
     "defenceLevel": 90,
     "magicLevel": 275,
+    "magicAttackBonus": 125,
     "defenceBonuses": {
       "stab": 300,
       "slash": 300,
@@ -7933,6 +7965,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 675,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -7957,6 +7990,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 625,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -7981,6 +8015,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 525,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -8005,6 +8040,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 550,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -8029,6 +8065,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 575,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -8053,6 +8090,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 600,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -8077,6 +8115,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 650,
         "defenceLevel": 90,
         "magicLevel": 275,
+        "magicAttackBonus": 125,
         "defenceBonuses": {
           "stab": 300,
           "slash": 300,
@@ -8292,6 +8331,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 485,
     "defenceLevel": 275,
     "magicLevel": 310,
+    "magicAttackBonus": 150,
     "defenceBonuses": {
       "stab": 255,
       "slash": 45,
@@ -8317,6 +8357,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 485,
         "defenceLevel": 275,
         "magicLevel": 310,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 255,
           "slash": 45,
@@ -8341,6 +8382,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1697,
         "defenceLevel": 316,
         "magicLevel": 465,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 255,
           "slash": 65,
@@ -8365,6 +8407,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 330,
         "defenceLevel": 215,
         "magicLevel": 230,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 210,
           "slash": 30,
@@ -9299,6 +9342,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 250,
     "defenceLevel": 45,
     "magicLevel": 75,
+    "magicAttackBonus": 25,
     "defenceBonuses": {
       "stab": 30,
       "slash": -10,
@@ -9327,6 +9371,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 100,
     "magicLevel": 100,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 12,
       "slash": 12,
@@ -9405,6 +9450,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 4500,
     "defenceLevel": 100,
     "magicLevel": 190,
+    "magicAttackBonus": 225,
     "defenceBonuses": {
       "stab": 70,
       "slash": 70,
@@ -9431,6 +9477,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 4500,
         "defenceLevel": 100,
         "magicLevel": 190,
+        "magicAttackBonus": 225,
         "defenceBonuses": {
           "stab": 70,
           "slash": 70,
@@ -9456,6 +9503,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 140,
         "defenceLevel": 100,
         "magicLevel": 190,
+        "magicAttackBonus": 225,
         "defenceBonuses": {
           "stab": 70,
           "slash": 70,
@@ -9481,6 +9529,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 880,
         "defenceLevel": 150,
         "magicLevel": 150,
+        "magicAttackBonus": 230,
         "defenceBonuses": {
           "stab": 40,
           "slash": 40,
@@ -9506,6 +9555,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 880,
         "defenceLevel": 180,
         "magicLevel": 150,
+        "magicAttackBonus": 230,
         "defenceBonuses": {
           "stab": 40,
           "slash": 40,
@@ -10601,6 +10651,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 120,
     "defenceLevel": 40,
     "magicLevel": 90,
+    "magicAttackBonus": 70,
     "defenceBonuses": {
       "stab": 0,
       "slash": 50,
@@ -10658,6 +10709,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1200,
     "defenceLevel": 188,
     "magicLevel": 160,
+    "magicAttackBonus": 160,
     "defenceBonuses": {
       "stab": 80,
       "slash": 140,
@@ -11773,6 +11825,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 575,
     "defenceLevel": 248,
     "magicLevel": 250,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -12290,6 +12343,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 800,
     "defenceLevel": 150,
     "magicLevel": 250,
+    "magicAttackBonus": 60,
     "defenceBonuses": {
       "stab": 200,
       "slash": 200,
@@ -12319,6 +12373,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 800,
         "defenceLevel": 150,
         "magicLevel": 250,
+        "magicAttackBonus": 60,
         "defenceBonuses": {
           "stab": 200,
           "slash": 200,
@@ -12347,6 +12402,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 600,
         "defenceLevel": 175,
         "magicLevel": 175,
+        "magicAttackBonus": 60,
         "defenceBonuses": {
           "stab": 50,
           "slash": 50,
@@ -12375,6 +12431,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 600,
         "defenceLevel": 175,
         "magicLevel": 87,
+        "magicAttackBonus": 60,
         "defenceBonuses": {
           "stab": 200,
           "slash": 200,
@@ -13147,6 +13204,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 26,
         "defenceLevel": 22,
         "magicLevel": 1,
+        "magicAttackBonus": -4,
         "defenceBonuses": {
           "stab": 0,
           "slash": 15,
@@ -13356,6 +13414,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 1,
+    "magicAttackBonus": -50,
     "defenceBonuses": {
       "stab": 259,
       "slash": 257,
@@ -13555,6 +13614,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 300,
     "defenceLevel": 120,
     "magicLevel": 126,
+    "magicAttackBonus": 150,
     "defenceBonuses": {
       "stab": 60,
       "slash": 20,
@@ -13583,6 +13643,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 360,
     "defenceLevel": 120,
     "magicLevel": 126,
+    "magicAttackBonus": 150,
     "defenceBonuses": {
       "stab": 60,
       "slash": 20,
@@ -14841,6 +14902,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 40,
     "defenceLevel": 95,
     "magicLevel": 160,
+    "magicAttackBonus": 45,
     "defenceBonuses": {
       "stab": 25,
       "slash": 25,
@@ -14897,6 +14959,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 15,
     "defenceLevel": 95,
     "magicLevel": 120,
+    "magicAttackBonus": 25,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -15093,6 +15156,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 220,
     "defenceLevel": 260,
     "magicLevel": 300,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -15121,6 +15185,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 350,
     "defenceLevel": 480,
     "magicLevel": 510,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -15202,6 +15267,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1500,
     "defenceLevel": 250,
     "magicLevel": 250,
+    "magicAttackBonus": 30,
     "defenceBonuses": {
       "stab": 200,
       "slash": 200,
@@ -15225,6 +15291,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 250,
         "magicLevel": 250,
+        "magicAttackBonus": 30,
         "defenceBonuses": {
           "stab": 200,
           "slash": 200,
@@ -15247,6 +15314,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1,
         "defenceLevel": 83,
         "magicLevel": 83,
+        "magicAttackBonus": 30,
         "defenceBonuses": {
           "stab": 200,
           "slash": 200,
@@ -15521,6 +15589,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 320,
     "defenceLevel": 100,
     "magicLevel": 180,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 200,
       "slash": 200,
@@ -15546,6 +15615,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 135,
     "defenceLevel": 45,
     "magicLevel": 25,
+    "magicAttackBonus": 5,
     "defenceBonuses": {
       "stab": 30,
       "slash": -10,
@@ -15836,6 +15906,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 1,
+    "magicAttackBonus": -26,
     "defenceBonuses": {
       "stab": 79,
       "slash": 71,
@@ -15919,6 +15990,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 160,
     "defenceLevel": 240,
     "magicLevel": 240,
+    "magicAttackBonus": 60,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -16584,6 +16656,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 209,
     "defenceLevel": 80,
     "magicLevel": 80,
+    "magicAttackBonus": 36,
     "defenceBonuses": {
       "stab": 50,
       "slash": 50,
@@ -17001,6 +17074,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 80,
         "defenceLevel": 110,
         "magicLevel": 110,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -17493,6 +17567,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3000,
     "defenceLevel": 100,
     "magicLevel": 320,
+    "magicAttackBonus": 300,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -17520,6 +17595,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 755,
     "defenceLevel": 175,
     "magicLevel": 150,
+    "magicAttackBonus": 280,
     "defenceBonuses": {
       "stab": 60,
       "slash": 80,
@@ -17548,6 +17624,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 755,
         "defenceLevel": 175,
         "magicLevel": 150,
+        "magicAttackBonus": 280,
         "defenceBonuses": {
           "stab": 60,
           "slash": 80,
@@ -17575,6 +17652,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 565,
         "defenceLevel": 125,
         "magicLevel": 100,
+        "magicAttackBonus": 180,
         "defenceBonuses": {
           "stab": 40,
           "slash": 60,
@@ -17606,6 +17684,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1500,
     "defenceLevel": 200,
     "magicLevel": 200,
+    "magicAttackBonus": 200,
     "defenceBonuses": {
       "stab": 172,
       "slash": 100,
@@ -17632,6 +17711,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 200,
         "magicLevel": 200,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 172,
           "slash": 100,
@@ -17657,6 +17737,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 200,
         "magicLevel": 200,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 172,
           "slash": 100,
@@ -17682,6 +17763,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 100,
         "magicLevel": 200,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 172,
           "slash": 100,
@@ -17736,6 +17818,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3500,
     "defenceLevel": 30,
     "magicLevel": 175,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 25,
       "slash": 25,
@@ -17759,6 +17842,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 3500,
         "defenceLevel": 30,
         "magicLevel": 175,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 25,
           "slash": 25,
@@ -17781,6 +17865,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 30,
         "magicLevel": 175,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 25,
           "slash": 25,
@@ -17967,6 +18052,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 190,
     "defenceLevel": 45,
     "magicLevel": 40,
+    "magicAttackBonus": 15,
     "defenceBonuses": {
       "stab": 30,
       "slash": -10,
@@ -18020,6 +18106,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 480,
     "defenceLevel": 140,
     "magicLevel": 150,
+    "magicAttackBonus": 46,
     "defenceBonuses": {
       "stab": 5,
       "slash": 30,
@@ -18045,6 +18132,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 160,
     "magicLevel": 180,
+    "magicAttackBonus": 110,
     "defenceBonuses": {
       "stab": 60,
       "slash": 80,
@@ -18191,6 +18279,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 240,
     "defenceLevel": 100,
     "magicLevel": 100,
+    "magicAttackBonus": 300,
     "defenceBonuses": {
       "stab": 30,
       "slash": 20,
@@ -18753,6 +18842,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 120,
     "defenceLevel": 50,
     "magicLevel": 50,
+    "magicAttackBonus": 34,
     "defenceBonuses": {
       "stab": 10,
       "slash": 10,
@@ -19193,6 +19283,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 450,
     "defenceLevel": 120,
     "magicLevel": 120,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 20,
       "slash": 40,
@@ -19387,6 +19478,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3400,
     "defenceLevel": 260,
     "magicLevel": 230,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 40,
       "slash": 140,
@@ -19595,6 +19687,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 400,
     "defenceLevel": 25,
     "magicLevel": 25,
+    "magicAttackBonus": 300,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -19623,6 +19716,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 2500,
     "defenceLevel": 50,
     "magicLevel": 50,
+    "magicAttackBonus": 600,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -19649,6 +19743,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2500,
         "defenceLevel": 50,
         "magicLevel": 50,
+        "magicAttackBonus": 600,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -19674,6 +19769,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1440,
         "defenceLevel": 50,
         "magicLevel": 20,
+        "magicAttackBonus": 380,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -20157,6 +20253,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 200,
     "defenceLevel": 130,
     "magicLevel": 250,
+    "magicAttackBonus": 40,
     "defenceBonuses": {
       "stab": 70,
       "slash": 70,
@@ -20285,6 +20382,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 850,
     "defenceLevel": 200,
     "magicLevel": 150,
+    "magicAttackBonus": 280,
     "defenceBonuses": {
       "stab": 185,
       "slash": 134,
@@ -20313,6 +20411,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 850,
         "defenceLevel": 200,
         "magicLevel": 150,
+        "magicAttackBonus": 280,
         "defenceBonuses": {
           "stab": 185,
           "slash": 134,
@@ -20340,6 +20439,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 850,
         "defenceLevel": 200,
         "magicLevel": 179,
+        "magicAttackBonus": 280,
         "defenceBonuses": {
           "stab": 185,
           "slash": 134,
@@ -20367,6 +20467,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 850,
         "defenceLevel": 200,
         "magicLevel": 150,
+        "magicAttackBonus": 280,
         "defenceBonuses": {
           "stab": 185,
           "slash": 134,
@@ -20394,6 +20495,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 75,
         "defenceLevel": 200,
         "magicLevel": 180,
+        "magicAttackBonus": 280,
         "defenceBonuses": {
           "stab": 185,
           "slash": 134,
@@ -20425,6 +20527,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3200,
     "defenceLevel": 150,
     "magicLevel": 150,
+    "magicAttackBonus": 220,
     "defenceBonuses": {
       "stab": 120,
       "slash": 180,
@@ -20823,6 +20926,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 320,
     "defenceLevel": 100,
     "magicLevel": 180,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 200,
       "slash": 200,
@@ -21231,6 +21335,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3500,
     "defenceLevel": 100,
     "magicLevel": 15,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 100,
       "slash": 100,
@@ -21254,6 +21359,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 3500,
         "defenceLevel": 100,
         "magicLevel": 15,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -21276,6 +21382,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 100,
         "magicLevel": 15,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -21899,6 +22006,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 160,
     "defenceLevel": 70,
     "magicLevel": 70,
+    "magicAttackBonus": 36,
     "defenceBonuses": {
       "stab": 10,
       "slash": 10,
@@ -22044,6 +22152,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 80,
     "defenceLevel": 80,
     "magicLevel": 120,
+    "magicAttackBonus": 50,
     "defenceBonuses": {
       "stab": 124,
       "slash": 118,
@@ -22075,6 +22184,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 155,
     "defenceLevel": 87,
     "magicLevel": 150,
+    "magicAttackBonus": 61,
     "defenceBonuses": {
       "stab": 143,
       "slash": 206,
@@ -22106,6 +22216,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 14,
     "defenceLevel": 14,
     "magicLevel": 12,
+    "magicAttackBonus": 37,
     "defenceBonuses": {
       "stab": 25,
       "slash": 28,
@@ -22137,6 +22248,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 80,
     "defenceLevel": 80,
     "magicLevel": 104,
+    "magicAttackBonus": 30,
     "defenceBonuses": {
       "stab": 98,
       "slash": 140,
@@ -22168,6 +22280,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 72,
     "defenceLevel": 41,
     "magicLevel": 55,
+    "magicAttackBonus": 5,
     "defenceBonuses": {
       "stab": 65,
       "slash": 60,
@@ -22199,6 +22312,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 10,
     "defenceLevel": 4,
     "magicLevel": 9,
+    "magicAttackBonus": 5,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -22230,6 +22344,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 143,
     "defenceLevel": 80,
     "magicLevel": 146,
+    "magicAttackBonus": 55,
     "defenceBonuses": {
       "stab": 145,
       "slash": 200,
@@ -22261,6 +22376,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1250,
     "defenceLevel": 90,
     "magicLevel": 130,
+    "magicAttackBonus": 60,
     "defenceBonuses": {
       "stab": 201,
       "slash": 206,
@@ -23077,6 +23193,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 120,
     "defenceLevel": 60,
     "magicLevel": 100,
+    "magicAttackBonus": 30,
     "defenceBonuses": {
       "stab": 0,
       "slash": 20,
@@ -23105,6 +23222,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 120,
         "defenceLevel": 60,
         "magicLevel": 100,
+        "magicAttackBonus": 30,
         "defenceBonuses": {
           "stab": 0,
           "slash": 20,
@@ -23132,6 +23250,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 50,
         "defenceLevel": 90,
         "magicLevel": 70,
+        "magicAttackBonus": 70,
         "defenceBonuses": {
           "stab": 40,
           "slash": 90,
@@ -23524,6 +23643,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1500,
     "defenceLevel": 100,
     "magicLevel": 100,
+    "magicAttackBonus": 150,
     "defenceBonuses": {
       "stab": 20,
       "slash": 20,
@@ -23549,6 +23669,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1500,
         "defenceLevel": 100,
         "magicLevel": 100,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 20,
           "slash": 20,
@@ -23573,6 +23694,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 500,
         "defenceLevel": 60,
         "magicLevel": 50,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 20,
           "slash": 20,
@@ -24201,6 +24323,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 160,
     "defenceLevel": 187,
     "magicLevel": 140,
+    "magicAttackBonus": 40,
     "defenceBonuses": {
       "stab": 155,
       "slash": 155,
@@ -24666,6 +24789,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 54,
     "defenceLevel": 62,
     "magicLevel": 180,
+    "magicAttackBonus": 20,
     "defenceBonuses": {
       "stab": 35,
       "slash": 30,
@@ -24694,6 +24818,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 54,
         "defenceLevel": 62,
         "magicLevel": 180,
+        "magicAttackBonus": 20,
         "defenceBonuses": {
           "stab": 35,
           "slash": 30,
@@ -25963,6 +26088,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 4000,
     "defenceLevel": 200,
     "magicLevel": 250,
+    "magicAttackBonus": -10,
     "defenceBonuses": {
       "stab": 70,
       "slash": 70,
@@ -25986,6 +26112,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 4000,
         "defenceLevel": 200,
         "magicLevel": 250,
+        "magicAttackBonus": -10,
         "defenceBonuses": {
           "stab": 70,
           "slash": 70,
@@ -26008,6 +26135,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2240,
         "defenceLevel": 150,
         "magicLevel": 150,
+        "magicAttackBonus": -10,
         "defenceBonuses": {
           "stab": 30,
           "slash": 30,
@@ -26346,6 +26474,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 125,
     "defenceLevel": 100,
     "magicLevel": 200,
+    "magicAttackBonus": 52,
     "defenceBonuses": {
       "stab": 420,
       "slash": 400,
@@ -26374,6 +26503,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 125,
         "defenceLevel": 100,
         "magicLevel": 200,
+        "magicAttackBonus": 52,
         "defenceBonuses": {
           "stab": 420,
           "slash": 400,
@@ -27022,6 +27152,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 550,
     "defenceLevel": 200,
     "magicLevel": 150,
+    "magicAttackBonus": 90,
     "defenceBonuses": {
       "stab": 110,
       "slash": 90,
@@ -27045,6 +27176,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 550,
         "defenceLevel": 200,
         "magicLevel": 150,
+        "magicAttackBonus": 90,
         "defenceBonuses": {
           "stab": 110,
           "slash": 90,
@@ -27067,6 +27199,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 550,
         "defenceLevel": 200,
         "magicLevel": 179,
+        "magicAttackBonus": 90,
         "defenceBonuses": {
           "stab": 110,
           "slash": 90,
@@ -27089,6 +27222,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 550,
         "defenceLevel": 200,
         "magicLevel": 150,
+        "magicAttackBonus": 90,
         "defenceBonuses": {
           "stab": 110,
           "slash": 90,
@@ -27111,6 +27245,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 75,
         "defenceLevel": 200,
         "magicLevel": 180,
+        "magicAttackBonus": 90,
         "defenceBonuses": {
           "stab": 110,
           "slash": 90,
@@ -27137,6 +27272,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 45,
     "magicLevel": 25,
+    "magicAttackBonus": 5,
     "defenceBonuses": {
       "stab": 30,
       "slash": -10,
@@ -27165,6 +27301,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 200,
     "defenceLevel": 90,
     "magicLevel": 90,
+    "magicAttackBonus": 38,
     "defenceBonuses": {
       "stab": 10,
       "slash": 10,
@@ -27331,6 +27468,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 450,
     "defenceLevel": 160,
     "magicLevel": 160,
+    "magicAttackBonus": 85,
     "defenceBonuses": {
       "stab": 30,
       "slash": 20,
@@ -27756,6 +27894,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 2500,
     "defenceLevel": 125,
     "magicLevel": 50,
+    "magicAttackBonus": 200,
     "defenceBonuses": {
       "stab": 100,
       "slash": 100,
@@ -27784,6 +27923,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2500,
         "defenceLevel": 125,
         "magicLevel": 50,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -27811,6 +27951,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 250,
         "defenceLevel": 125,
         "magicLevel": 50,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -27838,6 +27979,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 300,
         "defenceLevel": 125,
         "magicLevel": 50,
+        "magicAttackBonus": 200,
         "defenceBonuses": {
           "stab": 100,
           "slash": 100,
@@ -27897,6 +28039,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 900,
     "defenceLevel": 250,
     "magicLevel": 160,
+    "magicAttackBonus": 160,
     "defenceBonuses": {
       "stab": 260,
       "slash": 190,
@@ -27920,6 +28063,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 900,
         "defenceLevel": 250,
         "magicLevel": 160,
+        "magicAttackBonus": 160,
         "defenceBonuses": {
           "stab": 260,
           "slash": 190,
@@ -27942,6 +28086,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2700,
         "defenceLevel": 287,
         "magicLevel": 280,
+        "magicAttackBonus": 160,
         "defenceBonuses": {
           "stab": 260,
           "slash": 190,
@@ -27964,6 +28109,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 720,
         "defenceLevel": 200,
         "magicLevel": 130,
+        "magicAttackBonus": 130,
         "defenceBonuses": {
           "stab": 200,
           "slash": 150,
@@ -27990,6 +28136,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3500,
     "defenceLevel": 200,
     "magicLevel": 350,
+    "magicAttackBonus": 300,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -28013,6 +28160,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 3500,
         "defenceLevel": 200,
         "magicLevel": 350,
+        "magicAttackBonus": 300,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28035,6 +28183,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1050,
         "defenceLevel": 200,
         "magicLevel": 350,
+        "magicAttackBonus": 300,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28057,6 +28206,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1750,
         "defenceLevel": 200,
         "magicLevel": 350,
+        "magicAttackBonus": 300,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28079,6 +28229,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2450,
         "defenceLevel": 200,
         "magicLevel": 350,
+        "magicAttackBonus": 300,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28101,6 +28252,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2000,
         "defenceLevel": 80,
         "magicLevel": 140,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28127,6 +28279,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 230,
     "defenceLevel": 120,
     "magicLevel": 60,
+    "magicAttackBonus": 180,
     "defenceBonuses": {
       "stab": 160,
       "slash": 165,
@@ -28152,6 +28305,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 2400,
     "defenceLevel": 150,
     "magicLevel": 150,
+    "magicAttackBonus": 140,
     "defenceBonuses": {
       "stab": 120,
       "slash": 180,
@@ -28205,6 +28359,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 900,
     "defenceLevel": 250,
     "magicLevel": 180,
+    "magicAttackBonus": 190,
     "defenceBonuses": {
       "stab": 180,
       "slash": 300,
@@ -28231,6 +28386,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 900,
         "defenceLevel": 250,
         "magicLevel": 180,
+        "magicAttackBonus": 190,
         "defenceBonuses": {
           "stab": 180,
           "slash": 300,
@@ -28256,6 +28412,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2700,
         "defenceLevel": 300,
         "magicLevel": 225,
+        "magicAttackBonus": 190,
         "defenceBonuses": {
           "stab": 180,
           "slash": 300,
@@ -28281,6 +28438,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 660,
         "defenceLevel": 200,
         "magicLevel": 130,
+        "magicAttackBonus": 180,
         "defenceBonuses": {
           "stab": 150,
           "slash": 250,
@@ -28422,6 +28580,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 1,
+    "magicAttackBonus": -33,
     "defenceBonuses": {
       "stab": 221,
       "slash": 235,
@@ -28452,6 +28611,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 600,
     "defenceLevel": 150,
     "magicLevel": 255,
+    "magicAttackBonus": 300,
     "defenceBonuses": {
       "stab": 75,
       "slash": 175,
@@ -28482,6 +28642,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 210,
     "defenceLevel": 95,
     "magicLevel": 95,
+    "magicAttackBonus": 20,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -28505,6 +28666,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 210,
         "defenceLevel": 95,
         "magicLevel": 95,
+        "magicAttackBonus": 20,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -28883,6 +29045,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 4500,
     "defenceLevel": 100,
     "magicLevel": 190,
+    "magicAttackBonus": 225,
     "defenceBonuses": {
       "stab": 70,
       "slash": 70,
@@ -28909,6 +29072,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 4500,
         "defenceLevel": 100,
         "magicLevel": 190,
+        "magicAttackBonus": 225,
         "defenceBonuses": {
           "stab": 70,
           "slash": 70,
@@ -28934,6 +29098,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 140,
         "defenceLevel": 100,
         "magicLevel": 190,
+        "magicAttackBonus": 225,
         "defenceBonuses": {
           "stab": 70,
           "slash": 70,
@@ -28959,6 +29124,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 880,
         "defenceLevel": 150,
         "magicLevel": 150,
+        "magicAttackBonus": 230,
         "defenceBonuses": {
           "stab": 40,
           "slash": 40,
@@ -28984,6 +29150,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 880,
         "defenceLevel": 180,
         "magicLevel": 150,
+        "magicAttackBonus": 230,
         "defenceBonuses": {
           "stab": 40,
           "slash": 40,
@@ -29494,6 +29661,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1200,
     "defenceLevel": 260,
     "magicLevel": 150,
+    "magicAttackBonus": 550,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -29522,6 +29690,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 250,
     "defenceLevel": 480,
     "magicLevel": 480,
+    "magicAttackBonus": 60,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -29691,6 +29860,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 140,
     "defenceLevel": 60,
     "magicLevel": 115,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 40,
       "slash": 30,
@@ -30536,6 +30706,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 750,
     "defenceLevel": 180,
     "magicLevel": 180,
+    "magicAttackBonus": 16,
     "defenceBonuses": {
       "stab": 34,
       "slash": 34,
@@ -30561,6 +30732,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 750,
         "defenceLevel": 180,
         "magicLevel": 180,
+        "magicAttackBonus": 16,
         "defenceBonuses": {
           "stab": 34,
           "slash": 34,
@@ -30826,6 +30998,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 100,
     "defenceLevel": 100,
     "magicLevel": 1,
+    "magicAttackBonus": -42,
     "defenceBonuses": {
       "stab": 227,
       "slash": 230,
@@ -30856,6 +31029,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 3500,
     "defenceLevel": 200,
     "magicLevel": 400,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 100,
       "slash": 60,
@@ -30879,6 +31053,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 3500,
         "defenceLevel": 200,
         "magicLevel": 400,
+        "magicAttackBonus": 80,
         "defenceBonuses": {
           "stab": 100,
           "slash": 60,
@@ -30901,6 +31076,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1200,
         "defenceLevel": 10,
         "magicLevel": 180,
+        "magicAttackBonus": 32,
         "defenceBonuses": {
           "stab": 10,
           "slash": 10,
@@ -30923,6 +31099,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 1600,
         "defenceLevel": 120,
         "magicLevel": 180,
+        "magicAttackBonus": 32,
         "defenceBonuses": {
           "stab": 40,
           "slash": 20,
@@ -30945,6 +31122,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2400,
         "defenceLevel": 120,
         "magicLevel": 180,
+        "magicAttackBonus": 20,
         "defenceBonuses": {
           "stab": 30,
           "slash": 10,
@@ -30970,6 +31148,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2000,
         "defenceLevel": 20,
         "magicLevel": 400,
+        "magicAttackBonus": 80,
         "defenceBonuses": {
           "stab": 20,
           "slash": 20,
@@ -30992,6 +31171,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 3500,
         "defenceLevel": 150,
         "magicLevel": 300,
+        "magicAttackBonus": 80,
         "defenceBonuses": {
           "stab": 70,
           "slash": 30,
@@ -31188,6 +31368,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 750,
     "defenceLevel": 214,
     "magicLevel": 150,
+    "magicAttackBonus": 150,
     "defenceBonuses": {
       "stab": 26,
       "slash": 108,
@@ -31218,6 +31399,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 750,
         "defenceLevel": 214,
         "magicLevel": 150,
+        "magicAttackBonus": 150,
         "defenceBonuses": {
           "stab": 26,
           "slash": 108,
@@ -31247,6 +31429,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 460,
         "defenceLevel": 164,
         "magicLevel": 148,
+        "magicAttackBonus": 148,
         "defenceBonuses": {
           "stab": 66,
           "slash": 126,
@@ -32027,6 +32210,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 1100,
     "defenceLevel": 180,
     "magicLevel": 250,
+    "magicAttackBonus": 80,
     "defenceBonuses": {
       "stab": 30,
       "slash": 30,
@@ -32115,6 +32299,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 450,
     "defenceLevel": 100,
     "magicLevel": 140,
+    "magicAttackBonus": 20,
     "defenceBonuses": {
       "stab": 180,
       "slash": 180,
@@ -32245,6 +32430,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 2500,
     "defenceLevel": 225,
     "magicLevel": 250,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 100,
       "slash": 80,
@@ -32273,6 +32459,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2500,
         "defenceLevel": 225,
         "magicLevel": 250,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 100,
           "slash": 80,
@@ -32300,6 +32487,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2500,
         "defenceLevel": 225,
         "magicLevel": 250,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 135,
           "slash": 108,
@@ -32327,6 +32515,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2875,
         "defenceLevel": 247,
         "magicLevel": 275,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 666,
           "slash": 666,
@@ -32354,6 +32543,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 2875,
         "defenceLevel": 247,
         "magicLevel": 275,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 666,
           "slash": 666,
@@ -32385,6 +32575,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 90,
     "defenceLevel": 100,
     "magicLevel": 150,
+    "magicAttackBonus": 100,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -32411,6 +32602,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 90,
         "defenceLevel": 100,
         "magicLevel": 150,
+        "magicAttackBonus": 100,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -32594,6 +32786,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 580,
     "defenceLevel": 70,
     "magicLevel": 100,
+    "magicAttackBonus": 215,
     "defenceBonuses": {
       "stab": 160,
       "slash": 160,
@@ -32986,6 +33179,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 54,
     "defenceLevel": 62,
     "magicLevel": 180,
+    "magicAttackBonus": 20,
     "defenceBonuses": {
       "stab": 35,
       "slash": 30,
@@ -33014,6 +33208,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 54,
         "defenceLevel": 62,
         "magicLevel": 180,
+        "magicAttackBonus": 20,
         "defenceBonuses": {
           "stab": 35,
           "slash": 30,
@@ -34138,6 +34333,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 500,
     "defenceLevel": 300,
     "magicLevel": 300,
+    "magicAttackBonus": 50,
     "defenceBonuses": {
       "stab": 0,
       "slash": 0,
@@ -34164,6 +34360,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 500,
         "defenceLevel": 300,
         "magicLevel": 300,
+        "magicAttackBonus": 50,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -34189,6 +34386,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 500,
         "defenceLevel": 300,
         "magicLevel": 300,
+        "magicAttackBonus": 50,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,
@@ -34214,6 +34412,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "hp": 500,
         "defenceLevel": 300,
         "magicLevel": 300,
+        "magicAttackBonus": 50,
         "defenceBonuses": {
           "stab": 0,
           "slash": 0,

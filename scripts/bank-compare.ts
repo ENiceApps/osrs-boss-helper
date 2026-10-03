@@ -138,7 +138,8 @@ function buildWikiPayload(
         atk: 0, def: monster.defenceLevel, hp: monster.hp,
         magic: monster.magicLevel, ranged: 0, str: 0,
       },
-      offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+      // Real magic attack bonus: a Twisted bow scaling input.
+      offensive: { atk: 0, magic: monster.magicAttackBonus ?? 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
       defensive: {
         flat_armour: monster.defenceBonuses.flatArmour ?? 0,
         stab:     monster.defenceBonuses.stab,

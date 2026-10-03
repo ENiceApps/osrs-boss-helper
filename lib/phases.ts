@@ -82,6 +82,9 @@ export function applyPhase(
 ): PhasedMonster {
   if (!option) return monster;
   const out: PhasedMonster = { ...monster, ...(option.stats ?? {}), phaseId: option.id };
+  // A stat phase is a whole stat block. The catalog omits a zero magic attack
+  // bonus, so a phase without one must not inherit the parent's value.
+  if (option.stats && option.stats.magicAttackBonus === undefined) delete out.magicAttackBonus;
   const mech = option.mechanic;
   if (mech) {
     // Mechanic phases pin the damage scale explicitly — null (not undefined)

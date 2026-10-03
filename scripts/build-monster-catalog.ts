@@ -52,6 +52,8 @@ interface PhaseEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
+  /** Upstream `offensive.magic`; emitted only when non-zero (see magicAttackBonusOf). */
+  magicAttackBonus?: number;
   defenceBonuses: DefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
@@ -70,6 +72,8 @@ interface CatalogEntry {
   hp: number;
   defenceLevel: number;
   magicLevel: number;
+  /** Upstream `offensive.magic`; emitted only when non-zero (see magicAttackBonusOf). */
+  magicAttackBonus?: number;
   defenceBonuses: DefenceBonuses;
   attributes: string[];
   weakness: { element: string; severity: number } | null;
@@ -220,6 +224,18 @@ function defenceBonusesOf(m: VendorMonster): DefenceBonuses {
   };
 }
 
+/**
+ * The magic attack bonus (upstream `offensive.magic`) as a spreadable field.
+ * The Twisted bow scales off the higher of this and the Magic level (Araxxor
+ * 190 / 260, Nylocas Vasilias 50 / 600). Emitted only when non-zero to keep
+ * the generated file small; an omitted value reads as 0, and a stat phase
+ * replaces the parent's value even when it omits its own (lib/phases.ts).
+ */
+function magicAttackBonusOf(m: VendorMonster): { magicAttackBonus?: number } {
+  const bonus = m.offensive?.magic ?? 0;
+  return bonus !== 0 ? { magicAttackBonus: bonus } : {};
+}
+
 function toPhase(m: VendorMonster): PhaseEntry {
   return {
     version: m.version ?? "",
@@ -228,6 +244,7 @@ function toPhase(m: VendorMonster): PhaseEntry {
     hp: m.skills.hp,
     defenceLevel: m.skills.def,
     magicLevel: m.skills.magic,
+    ...magicAttackBonusOf(m),
     defenceBonuses: defenceBonusesOf(m),
     attributes: m.attributes ?? [],
     weakness: m.weakness ?? null,
@@ -242,7 +259,7 @@ function toPhase(m: VendorMonster): PhaseEntry {
  *  fields (image, max-hit text, level) don't count. */
 function combatSig(m: VendorMonster): string {
   return JSON.stringify([
-    m.skills.hp, m.skills.def, m.skills.magic, m.defensive,
+    m.skills.hp, m.skills.def, m.skills.magic, m.offensive?.magic ?? 0, m.defensive,
     m.attributes ?? [], m.weakness ?? null, m.size,
   ]);
 }
@@ -289,6 +306,7 @@ for (const [name, candidates] of byName) {
     hp: primary.skills.hp,
     defenceLevel: primary.skills.def,
     magicLevel: primary.skills.magic,
+    ...magicAttackBonusOf(primary),
     defenceBonuses: defenceBonusesOf(primary),
     attributes: primary.attributes ?? [],
     weakness: primary.weakness ?? null,
@@ -395,6 +413,8 @@ lines.push(`  combatLevel: number;`);
 lines.push(`  hp: number;`);
 lines.push(`  defenceLevel: number;`);
 lines.push(`  magicLevel: number;`);
+lines.push(`  /** Magic attack bonus (upstream \`offensive.magic\`). Omitted when 0. */`);
+lines.push(`  magicAttackBonus?: number;`);
 lines.push(`  defenceBonuses: MonsterDefenceBonuses;`);
 lines.push(`  attributes: string[];`);
 lines.push(`  weakness: { element: string; severity: number } | null;`);
@@ -413,6 +433,12 @@ lines.push(`  combatLevel: number;`);
 lines.push(`  hp: number;`);
 lines.push(`  defenceLevel: number;`);
 lines.push(`  magicLevel: number;`);
+lines.push(`  /**`);
+lines.push(`   * Magic attack bonus (upstream \`offensive.magic\`). The Twisted bow scales`);
+lines.push(`   * off the higher of this and \`magicLevel\` (lib/dps/twisted-bow.ts). Omitted`);
+lines.push(`   * when 0.`);
+lines.push(`   */`);
+lines.push(`  magicAttackBonus?: number;`);
 lines.push(`  defenceBonuses: MonsterDefenceBonuses;`);
 lines.push(`  attributes: string[];`);
 lines.push(`  weakness: { element: string; severity: number } | null;`);

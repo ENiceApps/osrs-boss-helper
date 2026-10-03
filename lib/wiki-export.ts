@@ -128,7 +128,9 @@ export function buildWikiPayload(
       ranged: 0,
       str: 0,
     },
-    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    // The magic attack bonus is a Twisted bow scaling input (max with the
+    // Magic level), so it must be the real value, not 0.
+    offensive: { atk: 0, magic: monster.magicAttackBonus ?? 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
     defensive: {
       flat_armour: monster.defenceBonuses.flatArmour ?? 0,
       stab:     monster.defenceBonuses.stab,
