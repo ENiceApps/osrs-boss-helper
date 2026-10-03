@@ -89,10 +89,10 @@ export interface DpsScenario {
    */
   shadowToaQuadruple?: boolean;
   /**
-   * Melee-only: Keris partisan's 1/51 chance to deal triple damage vs
-   * Kalphites/Scabarites. Mean-only — the +33% damage lives in the conditional
-   * factors (and the displayed max hit), while this rare proc lifts only mean
-   * DPS by ×53/51. Resolved upstream alongside the kerisVsKalphite flag.
+   * Melee-only: a Keris's 1/51 chance to deal triple damage vs
+   * Kalphites/Scabarites. Mean-only — the ×133/100 damage lives in the
+   * conditional factors (and the displayed max hit), while this rare proc lifts
+   * only mean DPS by ×53/51. Resolved upstream alongside the kerisVsKalphite flag.
    */
   kalphiteTripleProc?: boolean;
   /**
@@ -744,10 +744,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     dps = expected / (bloodragerSpeed * 0.6);
   }
 
-  // Keris partisan's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
-  // (50·1 + 1·3)/51 = ×53/51. The +33% damage is already baked into maxHit via
-  // the conditional factors; this is the rare-proc expectation on top, applied
-  // to whichever mean (single-hit / bolt / multi-hit) was computed above.
+  // A Keris's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
+  // (50·1 + 1·3)/51 = ×53/51 — wgloop's dist is 50/51 of the standard hits plus
+  // 1/51 of them at ×3 damage, the same mean. The ×133/100 damage is already
+  // baked into maxHit via the conditional factors; this is the rare-proc
+  // expectation on top, applied to whichever mean (single-hit / bolt /
+  // multi-hit) was computed above.
   if (scenario.kalphiteTripleProc) {
     dps = (dps * 53) / 51;
   }

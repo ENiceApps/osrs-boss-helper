@@ -134,14 +134,20 @@ export function conditionalMultipliers(
     damage.push({ numerator: 7, denominator: 5, reason: "Dragon hunter wand vs dragon" });
   }
   if (flags.kerisVsKalphite) {
-    // Keris partisan family vs Kalphites/Scabarites: +33% damage (×4/3). The
-    // 1/51 triple-damage proc is mean-only and handled in calculate.ts, not here.
-    damage.push({ numerator: 4, denominator: 3, reason: "Keris partisan vs Kalphite/Scabarite" });
+    // Any Keris vs Kalphites/Scabarites: ×133/100 damage — ×115/100 for the
+    // partisan of amascut (wgloop MAX_HIT_KERIS). Not ×4/3: at a base that is a
+    // multiple of 3 it rounds one higher (36 → 48, wgloop 47). The 1/51
+    // triple-damage proc is mean-only and handled in calculate.ts, not here.
+    damage.push(
+      flags.kerisAmascutVsKalphite
+        ? { numerator: 115, denominator: 100, reason: "Keris partisan of amascut vs Kalphite/Scabarite" }
+        : { numerator: 133, denominator: 100, reason: "Keris vs Kalphite/Scabarite" },
+    );
   }
   if (flags.kerisBreachVsKalphite) {
-    // Keris partisan of breaching: +33% accuracy vs Kalphites/Scabarites
-    // (persists outside the Tombs of Amascut).
-    accuracy.push({ numerator: 4, denominator: 3, reason: "Keris partisan of breaching vs Kalphite/Scabarite" });
+    // Keris partisan of breaching: ×133/100 accuracy vs Kalphites/Scabarites
+    // (persists outside the Tombs of Amascut; wgloop PLAYER_ACCURACY_KERIS).
+    accuracy.push({ numerator: 133, denominator: 100, reason: "Keris partisan of breaching vs Kalphite/Scabarite" });
   }
   if (flags.golembaneGraniteHammer) {
     // Granite hammer vs golem: ×13/10 accuracy AND damage, multiplicative

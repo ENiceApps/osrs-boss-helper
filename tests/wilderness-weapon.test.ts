@@ -3,6 +3,7 @@ import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
+import { optimizeForBoss } from "@/lib/optimize/bank";
 import type { LoadoutSet } from "@/types/loadout";
 
 // Webweaver bow ranged set. wildernessWeapon flag toggled to isolate the bonus.
@@ -54,5 +55,22 @@ describe("wilderness weapon bonus", () => {
     const onVork = computeSetDps(webweaverSet(true), VORKATH, SKILLS_AT_99).dps;
     const offVork = computeSetDps(webweaverSet(false), VORKATH, SKILLS_AT_99).dps;
     expect(onVork).toBe(offVork);
+  });
+});
+
+describe("Accursed sceptre in the bank optimizer", () => {
+  // Accursed sceptre (charged), Trident of the Seas (charged), Ancestral hat /
+  // top / bottom, Occult necklace, Eternal boots, Seers ring (i).
+  const ACCURSED = 27665;
+  const TRIDENT = 11905;
+  const bank = [ACCURSED, TRIDENT, 21018, 21021, 21024, 12002, 13235, 11770];
+
+  it("beats a Trident of the Seas at a wilderness boss (its built-in 27 × 3/2)", () => {
+    const { rankings } = optimizeForBoss({ bank, target: CALLISTO, skills: SKILLS_AT_99, topN: 2 });
+    expect(rankings[0].loadout.slots.weapon?.itemId).toBe(ACCURSED);
+    expect(rankings[0].activeBonuses.conditionalBonuses.wildernessWeapon).toBe(true);
+    // 27 at 99 Magic → +magic damage % → ×3/2; wgloop: 48 on longrange.
+    expect(rankings[0].loadout.baseSpellMaxHit).toBe(27);
+    expect(rankings[0].dps.maxHit).toBeGreaterThan(40);
   });
 });

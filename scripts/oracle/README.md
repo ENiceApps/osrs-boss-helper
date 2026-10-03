@@ -76,10 +76,16 @@ disagree: on-task slayer helm (i) vs DHL / Granite hammer / Barronite mace /
 Leaf-bladed battleaxe / Arclight / Ursine chainmace / DHCB / Webweaver / DHW /
 Dark Demonbane / Twinflame; Salve variants per style (melee DHL, ranged DHCB,
 magic Kodai); Inquisitor's and Obsidian with Salve; smoke staves; Elite Void
-magic. The `powered-staff-` combos pin the magic stance bonus (Accurate +2 on
-magic's +9, Longrange +0; the engine had +3 on Accurate until 2026-10-03).
-Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
-Targets avoid non-zero flat armour (below).
+magic. The same set pins two weapon families' factors. The Keris rows check
+×133/100 (not ×4/3), the amascut partisan's ×115/100 and its weaker stats
+outside ToA. The Accursed / Thammaron's sceptre rows check the built-in spell
+and the ×3/2 after the mask. The `powered-staff-` combos pin the magic stance
+bonus (Accurate +2 on magic's +9, Longrange +0; the engine had +3 on Accurate
+until 2026-10-03). Their wgloop numbers are locked in
+`tests/multiplier-order.test.ts`. Targets avoid non-zero flat armour (below).
+
+For a Keris vs a Kalphite, wgloop's `getMax()` is the 1/51 triple hitsplat, so
+the comparator (and the locked test) triples our max hit before comparing.
 
 ## Sharding
 
@@ -153,11 +159,15 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
 - **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
   truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
   accuracy match (rows carry `knownDpsResidual`).
-- **Keris partisan** (weapon category "Partisan") has no style mapping in
-  `data/weapon-styles.ts`, so our engine can't score it; its ×133/100 (wgloop)
-  vs our ×4/3 is unverified.
-- **Accursed / Thammaron's sceptre** have no powered-staff max-hit formula in
-  `data/items/powered-staff-spells.ts` (max hit 0).
+- **Accurate zeros** — wgloop raises every accurate 0-damage hit to 1, adding
+  `acc / (max + 1)` to the mean hit. Our engine uses the plain `acc × max / 2`,
+  so DPS runs low by `2 / (max × (max + 1))` (~0.1% at a 45 max hit, ~1.8% at
+  10). Max hit and accuracy are unaffected.
+- ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
+  **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
+  partisan's out-of-ToA stats, and the Keris dagger's passive).
+- ~~**Accursed / Thammaron's sceptre** — no built-in spell formula (max hit
+  0).~~ **FIXED** 2026-10-03 (`data/items/powered-staff-spells.ts`).
 
 ## Caveat — data version skew
 

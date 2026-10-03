@@ -5,14 +5,16 @@
 // weirdgloop/osrs-dps-calc (src/lib/PlayerVsNPCCalc.ts @ 89c3e25, 2026-09-02):
 //   - melee: Salve / black mask FIRST (one slot, never both), then Obsidian
 //     (+ trunc(base/10)), then the weapon banes (demonbane, dragonbane, keris,
-//     golembane, wilderness, leafy), Inquisitor's last.
+//     golembane, wilderness, leafy), Inquisitor's last. Keris is ×133/100
+//     (×115/100 amascut), not ×4/3.
 //   - ranged: Salve (i)/(ei) / imbued mask first (DHCB, wilderness and
 //     Scorching bow damage folded into the mask on task), then Tbow / banes.
 //   - magic: Salve (ei) +20 / (i) +15 and the smoke-staff family +10 are flat
 //     percents — one attack-roll percent, and added to the magic damage bonus
 //     (with Elite Void's +5). Damage: % → black mask → dragonbane → wilderness
 //     → weakness → tome; accuracy: % → dragonbane → mask → demonbane spell →
-//     wilderness → Tome of Water → weakness. The Twinflame's second cast
+//     wilderness → Tome of Water → weakness. The Accursed / Thammaron's
+//     sceptre's built-in spell takes the same path (wilderness after the mask). The Twinflame's second cast
 //     (trunc(h × 4/10)) is taken from the final hit.
 //   - only the imbued Salves work for ranged / magic.
 // Section 1 checks the engine with hand-derived numbers; section 2 locks the
@@ -130,6 +132,42 @@ describe("melee: Salve / black mask before the weapon's target bonus", () => {
   });
 });
 
+/**
+ * Keris vs a Kalphite. Strength bonus 145 puts the base max hit on
+ * floor(0.5 + 110 × 209/640) = 36 — a multiple of 3, where the old ×4/3 and
+ * upstream's ×133/100 disagree.
+ */
+describe("melee: Keris ×133/100 vs Kalphites (was ×4/3)", () => {
+  const keris = (over: Partial<DpsScenario> = {}) =>
+    melee({ strengthBonus: 145, ...over, conditionalBonuses: { kerisVsKalphite: true, ...over.conditionalBonuses } });
+
+  it("damage: 36 → trunc(36 × 133/100) = 47 (×4/3 gave 48)", () => {
+    expect(calculateDps(keris()).maxHit).toBe(47);
+  });
+
+  it("the partisan of amascut is ×115/100: 36 → 41", () => {
+    expect(calculateDps(keris({ conditionalBonuses: { kerisAmascutVsKalphite: true } })).maxHit).toBe(41);
+  });
+
+  it("breaching accuracy: 17548 → trunc(17548 × 133/100) = 23338 (×4/3 gave 23397)", () => {
+    const r = calculateDps(keris({ conditionalBonuses: { kerisBreachVsKalphite: true } }));
+    expect(r.accuracy).toBe(accFor(23338));
+  });
+
+  it("on task the slayer helm comes first: 36 → 42 → 55, roll 17548 → 20472 → 27227", () => {
+    const r = calculateDps(keris({ slayerOnTask: true, conditionalBonuses: { kerisBreachVsKalphite: true } }));
+    expect(r.maxHit).toBe(55); // trunc(trunc(36 × 7/6) × 133/100); ×4/3 gave 56
+    expect(r.accuracy).toBe(accFor(27227)); // trunc(trunc(17548 × 7/6) × 133/100)
+  });
+
+  it("the 1/51 triple proc is ×53/51 on mean DPS, max hit unchanged", () => {
+    const plain = calculateDps(keris());
+    const proc = calculateDps(keris({ kalphiteTripleProc: true }));
+    expect(proc.maxHit).toBe(47);
+    expect(proc.dps / plain.dps).toBeCloseTo(53 / 51, 12);
+  });
+});
+
 describe("ranged: Salve / imbued mask before DHCB", () => {
   it("Salve(ei) then DHCB: 24 → 28 → 35, roll 21828 → 26193 → 34050 (was 36 / 34051)", () => {
     const r = calculateDps(ranged({
@@ -190,6 +228,16 @@ describe("magic: flat Salve / smoke-staff percents and the mask's two slots", ()
       accuracyOnEffectiveLevel: true, damageOnMagicPercent: true,
     };
     expect(calculateDps(magic({ magicDamagePercent: 20, armorSetBonus: eliteVoid })).maxHit).toBe(30);
+  });
+
+  it("on-task Accursed sceptre: mask before the wilderness ×3/2 — 32 → 36 → 54 (×3/2 first: 55)", () => {
+    // Built-in spell 27 at 99 Magic, +20% magic damage → 27 + trunc(27 × 20%) = 32.
+    const r = calculateDps(magic({
+      baseSpellMaxHit: 27, spellElement: undefined, magicDamagePercent: 20,
+      slayerOnTask: true, conditionalBonuses: { wildernessWeapon: true },
+    }));
+    expect(r.maxHit).toBe(54); // trunc(trunc(32 × 23/20) × 3/2)
+    expect(r.accuracy).toBe(accFor(17511)); // trunc(trunc(10152 × 23/20) × 3/2); ×3/2 first: 17512
   });
 
   it("magic damage % is integer math: 25 at +16% is 29 (25 × 1.16 = 28.999… floored to 28 before)", () => {
@@ -291,6 +339,20 @@ const WGLOOP: Record<string, { maxHit: number; attackRoll: number; defenceRoll: 
   "ontask-dhw-rune-dragon": { maxHit: 47, attackRoll: 46754, defenceRoll: 19270 },
   "ontask-dark-demonbane-abyssal-demon": { maxHit: 44, attackRoll: 34791, defenceRoll: 640 },
   "elite-void-magic-fire-surge-general-graardor": { maxHit: 30, attackRoll: 23302, defenceRoll: 32218 },
+  // Keris vs a Kalphite: wgloop's max hit is the 1/51 triple hitsplat (3× ours).
+  "keris-partisan-kalphite-queen": { maxHit: 141, attackRoll: 23814, defenceRoll: 50676 },
+  "keris-partisan-pound-kalphite-queen": { maxHit: 138, attackRoll: 22806, defenceRoll: 50676 },
+  "keris-breaching-kalphite-queen": { maxHit: 141, attackRoll: 31672, defenceRoll: 50676 },
+  "ontask-keris-breaching-kalphite-queen": { maxHit: 159, attackRoll: 36951, defenceRoll: 50676 },
+  "keris-amascut-kalphite-queen": { maxHit: 123, attackRoll: 23814, defenceRoll: 50676 },
+  "keris-amascut-general-graardor": { maxHit: 36, attackRoll: 23814, defenceRoll: 39886 },
+  "keris-amascut-akkha": { maxHit: 40, attackRoll: 30114, defenceRoll: 11036 },
+  "keris-dagger-kalphite-queen": { maxHit: 129, attackRoll: 21546, defenceRoll: 50676 },
+  "accursed-sceptre-callisto": { maxHit: 48, attackRoll: 37026, defenceRoll: 9536 },
+  "thammarons-sceptre-callisto": { maxHit: 43, attackRoll: 35640, defenceRoll: 9536 },
+  "thammarons-sceptre-general-graardor": { maxHit: 29, attackRoll: 23760, defenceRoll: 32218 },
+  "ontask-accursed-sceptre-vetion": { maxHit: 54, attackRoll: 43717, defenceRoll: 97026 },
+  "accursed-sceptre-a-fire-surge-callisto": { maxHit: 49, attackRoll: 44431, defenceRoll: 9536 },
   // Powered-staff stance: Accurate is (123 + 2 + 9) × (bonus + 64); the engine's
   // old +3 gave 135 × 190 = 25650 and 135 × 472 = 63720. Longrange always matched.
   "powered-staff-accurate-trident-swamp-zulrah": { maxHit: 37, attackRoll: 25460, defenceRoll: 5871 },
@@ -319,7 +381,10 @@ describe("multiplier-order combos match wgloop (scripts/oracle/combos.ts)", () =
         onTask: combo.onTask ?? false,
       });
       if (!r.valid) throw new Error(r.reasons.join("; "));
-      expect(r.dps.maxHit).toBe(want.maxHit);
+      // Keris vs a Kalphite: wgloop reports the triple hitsplat as its max.
+      const tripled =
+        r.loadout.style === "melee" && r.activeBonuses.conditionalBonuses.kerisVsKalphite === true;
+      expect(tripled ? r.dps.maxHit * 3 : r.dps.maxHit).toBe(want.maxHit);
       // Exact roll match: same hit-chance formula on the same two rolls.
       expect(r.dps.accuracy).toBe(hitChance(want.attackRoll, want.defenceRoll));
     });

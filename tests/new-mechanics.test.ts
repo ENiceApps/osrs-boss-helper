@@ -3,8 +3,8 @@
  *   - Tumeken's Shadow ×3 (overworld) / ×4 (ToA)
  *   - Harmonised Nightmare staff 4-tick speed
  *   - Virtus armour +3%/piece with Ancient Magicks
- *   - Keris partisan +33% damage + 1/51 triple proc vs Kalphites
- *   - Keris partisan of breaching +33% accuracy vs Kalphites
+ *   - Keris ×133/100 damage + 1/51 triple proc vs Kalphites
+ *   - Keris partisan of breaching ×133/100 accuracy vs Kalphites
  *   - Soulreaper axe +30% Strength level at max stacks
  *   - Dharok's set missing-HP max-hit multiplier
  */
@@ -350,10 +350,10 @@ describe("Virtus armour — +3%/piece Ancient Magicks bonus", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Keris partisan — +33% damage factor and 1/51 triple proc
+// Keris partisan — ×133/100 damage factor and 1/51 triple proc
 // ---------------------------------------------------------------------------
 describe("Keris partisan — vs Kalphite bonuses", () => {
-  it("+33% damage increases maxHit", () => {
+  it("×133/100 damage increases maxHit", () => {
     const base: DpsScenario = {
       style: "melee",
       attackStyle: "aggressive",
@@ -372,7 +372,7 @@ describe("Keris partisan — vs Kalphite bonuses", () => {
       conditionalBonuses: { kerisVsKalphite: true },
     });
     expect(withBonus.maxHit).toBeGreaterThan(noBonus.maxHit);
-    // +33% means numerator 4 denom 3 on maxHit: Math.trunc(x*4/3) > x
+    // ×133/100 on maxHit (wgloop MAX_HIT_KERIS); exact values in multiplier-order.test.ts
   });
 
   it("1/51 triple proc multiplies mean DPS by ×53/51", () => {

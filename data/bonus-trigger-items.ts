@@ -16,8 +16,9 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   BURNING_CLAWS: 29577, // demonbane +5% acc/dmg
   SCORCHING_BOW: 29591, // RANGED demonbane +30% acc/dmg
   PURGING_STAFF: 29594, // doubles demonbane SPELL bonuses while casting them
-  KERIS_PARTISAN: 25979, // any Keris partisan → +33% dmg + 1/51 triple vs Kalphites
-  KERIS_PARTISAN_BREACHING: 25981, // breaching → additionally +33% accuracy
+  KERIS_PARTISAN: 25979, // any Keris → ×133/100 dmg + 1/51 triple vs Kalphites
+  KERIS_PARTISAN_BREACHING: 25981, // breaching → additionally ×133/100 accuracy
+  KERIS_PARTISAN_AMASCUT: 30891, // amascut → ×115/100 dmg instead; weaker outside ToA
   BARRONITE_MACE: 25641, // golembane — ×23/20 damage vs golems
   GRANITE_HAMMER: 21742, // golembane — ×13/10 acc AND dmg vs golems
   TOME_OF_FIRE_CHARGED: 20714,
@@ -60,9 +61,14 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   BURNING_CLAWS: [29577], // Bone claws share the +5% in wgloop but aren't in the vendor data
   SCORCHING_BOW: [29591],
   PURGING_STAFF: [29594],
-  // All Keris partisan variants share the +33% damage + 1/51 triple vs Kalphites.
-  KERIS_PARTISAN: [25979, 30891, 25981, 27287, 27291], // base, amascut, breaching, corruption, sun
-  KERIS_PARTISAN_BREACHING: [25981], // only breaching adds the +33% accuracy
+  // Every Keris shares the kalphite damage bonus + 1/51 triple — the partisans
+  // AND the Contact! dagger (wgloop isWearingKeris matches any "Keris" name).
+  KERIS_PARTISAN: [
+    25979, 30891, 25981, 27287, 27291, // partisan: base, amascut, breaching, corruption, sun
+    10581, 10582, 10583, 10584, // Keris dagger: Unpoisoned, (p), (p+), (p++)
+  ],
+  KERIS_PARTISAN_BREACHING: [25981], // only breaching adds the ×133/100 accuracy
+  KERIS_PARTISAN_AMASCUT: [30891],
   BARRONITE_MACE: [25641, 25643], // Normal + Locked (Leagues) — same stats/passive
   GRANITE_HAMMER: [21742],
 

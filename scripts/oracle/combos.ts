@@ -85,6 +85,15 @@ const SALVE_I = 12017;
 const SALVE_EI = 12018;
 const DRAGON_BOLTS = 21905;
 const RING_OF_RECOIL = 2550;
+const TORMENTED_BRACELET = 19544;
+const AVERNIC_DEFENDER = 22322;
+const KERIS_PARTISAN = 25979;
+const KERIS_PARTISAN_OF_BREACHING = 25981;
+const KERIS_PARTISAN_OF_AMASCUT = 30891;
+const KERIS = 10581; // the Contact! dagger (Unpoisoned)
+const ACCURSED_SCEPTRE = 27665; // Charged
+const ACCURSED_SCEPTRE_A = 27679; // Charged — autocasts spellbook spells
+const THAMMARONS_SCEPTRE = 22555; // Charged
 
 /**
  * Melee shell: Infernal cape, Bandos chestplate + tassets, Ferocious gloves,
@@ -170,6 +179,29 @@ export function orderingCombos(): CanonicalCombo[] {
     orderingCombo("obsidian-salve-ei-vetion", "vetion",
       [6528, 21298, 21301, 21304, SALVE_EI, 21295, 22981, 13239, 11773], "crush", "aggressive"),
 
+    // ── Keris vs Kalphite: ×133/100 damage (×115/100 for amascut), breaching
+    // ×133/100 accuracy — not ×4/3, which rounds differently at a base that is a
+    // multiple of 3. wgloop's max hit is the 1/51 triple hitsplat (3× ours). ──
+    orderingCombo("keris-partisan-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS_PARTISAN, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+    orderingCombo("keris-partisan-pound-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS_PARTISAN, FACEGUARD, FURY), AVERNIC_DEFENDER], "crush", "aggressive"),
+    orderingCombo("keris-breaching-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS_PARTISAN_OF_BREACHING, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+    orderingCombo("ontask-keris-breaching-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS_PARTISAN_OF_BREACHING, SLAYER_HELM_I, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive", onTask),
+    // Outside the Tombs of Amascut the amascut partisan loses 50 stab / 22 str.
+    orderingCombo("keris-amascut-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS_PARTISAN_OF_AMASCUT, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+    orderingCombo("keris-amascut-general-graardor", "general-graardor",
+      [...meleeGear(KERIS_PARTISAN_OF_AMASCUT, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+    // Inside the Tombs of Amascut it keeps its full stats (no kalphite bonus).
+    orderingCombo("keris-amascut-akkha", "akkha",
+      [...meleeGear(KERIS_PARTISAN_OF_AMASCUT, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+    // The Contact! dagger carries the same kalphite passive (wgloop isWearingKeris).
+    orderingCombo("keris-dagger-kalphite-queen", "kalphite-queen",
+      [...meleeGear(KERIS, FACEGUARD, TORTURE), AVERNIC_DEFENDER], "stab", "aggressive"),
+
     // ── Ranged: Salve(i/ei) / imbued mask first, then DHCB / wilderness ──
     orderingCombo("ontask-dhcb-rune-dragon", "rune-dragon",
       [21012, DRAGON_BOLTS, SLAYER_HELM_I, ANGUISH, 21914, 2503, 2497, 26235, 13237, RING_OF_RECOIL],
@@ -219,6 +251,23 @@ export function orderingCombos(): CanonicalCombo[] {
     // Elite Void's +5% joins the magic damage percent (wgloop magic_str += 50).
     orderingCombo("elite-void-magic-fire-surge-general-graardor", "general-graardor",
       [21006, 11663, 13072, 13073, 8842, FURY, 13235, 11770], "magic", "longrange", fireSurge),
+
+    // ── Wilderness sceptres: built-in spell max(1, trunc(lvl/3 - 6)) Accursed,
+    // - 8 Thammaron's; ×3/2 in the Wilderness, after the black mask on task.
+    // The (a) sceptres autocast spellbook spells instead. Longrange keeps the
+    // magic Accurate stance bonus (+2 upstream) out of these rolls. ──
+    orderingCombo("accursed-sceptre-callisto", "callisto",
+      [ACCURSED_SCEPTRE, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
+    orderingCombo("thammarons-sceptre-callisto", "callisto",
+      [THAMMARONS_SCEPTRE, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
+    orderingCombo("thammarons-sceptre-general-graardor", "general-graardor",
+      [THAMMARONS_SCEPTRE, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
+    // Tormented bracelet puts the post-% base on 32, where mask-then-×3/2 (54)
+    // and ×3/2-then-mask (55) disagree.
+    orderingCombo("ontask-accursed-sceptre-vetion", "vetion",
+      [ACCURSED_SCEPTRE, SLAYER_HELM_I, OCCULT, TORMENTED_BRACELET, ...MAGIC_REST], "magic", "longrange", onTask),
+    orderingCombo("accursed-sceptre-a-fire-surge-callisto", "callisto",
+      [ACCURSED_SCEPTRE_A, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
 
     // ── Magic: powered-staff stance bonus ──
     // Accurate is +2 on magic's +9 (upstream), not melee/ranged's +3 — the

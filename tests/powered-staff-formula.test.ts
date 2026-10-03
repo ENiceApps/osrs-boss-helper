@@ -95,3 +95,32 @@ describe("Trident of the Seas — magic loadout", () => {
     expect(autocastableSpellbooks(TRIDENT_OF_THE_SEAS_UNCHARGED)).toEqual([]);
   });
 });
+
+// Wilderness sceptres (wgloop getPlayerMaxMagicHit). Before 2026-10-03 they
+// had no entry, so their max hit was 0 and the optimizer's wilderness-weapon
+// force-include could never win.
+describe("Accursed / Thammaron's sceptre — built-in spell", () => {
+  const THAMMARONS = [22555, 22552]; // Charged, Uncharged
+  const ACCURSED = [27665, 27662]; // Charged, Uncharged
+  const ATTUNED = [27788, 27785, 27679, 27676]; // (a): regular staves, autocast spells
+
+  it("Thammaron's sceptre: max(1, trunc(magic/3 - 8)) — 25 at 99, 12 at its 60 requirement", () => {
+    for (const id of THAMMARONS) {
+      const f = POWERED_STAFF_FORMULA.get(id);
+      expect(f?.(99)).toBe(25);
+      expect(f?.(60)).toBe(12);
+    }
+  });
+
+  it("Accursed sceptre: max(1, trunc(magic/3 - 6)) — 27 at 99, 17 at its 70 requirement", () => {
+    for (const id of ACCURSED) {
+      const f = POWERED_STAFF_FORMULA.get(id);
+      expect(f?.(99)).toBe(27);
+      expect(f?.(70)).toBe(17); // trunc(23.33… - 6)
+    }
+  });
+
+  it("the (a) sceptres cast spellbook spells, so they have no built-in formula", () => {
+    for (const id of ATTUNED) expect(POWERED_STAFF_FORMULA.has(id)).toBe(false);
+  });
+});
