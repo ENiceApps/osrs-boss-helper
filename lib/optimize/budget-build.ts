@@ -14,7 +14,13 @@
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_VARIANTS, ownedTriggerIds } from "@/data/bonus-trigger-items";
+import {
+  BONUS_TRIGGER_VARIANTS,
+  ELEMENTAL_AMULET_KEYS,
+  ownedElementalAmuletIds,
+  ownedTriggerIds,
+  type ElementalAmuletKind,
+} from "@/data/bonus-trigger-items";
 import {
   checkAmmoCompatWithCategory,
   SELF_AMMO_WEAPON_CATEGORIES,
@@ -32,6 +38,7 @@ import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import type { CombatStyle, Skills, SpellElement, WeaponAttackType } from "@/types/osrs";
 import {
+  amuletCanMatter,
   autoPickSpell,
   combatStyleFor,
   enumerateWeaponStyles,
@@ -128,7 +135,8 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
 /**
  * Non-weapon conditional items whose bonus the per-slot scorer can't see:
  * Salve variants (undead) in the neck slot, elemental tomes (magic) in the
- * shield slot. Returns ids present in the affordable set.
+ * shield slot, elemental amulets (magic, +2 max hit on their element) in the
+ * neck slot. Returns ids present in the affordable set.
  */
 function forcedNonWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): number[] {
   const attrs = target.attributes;
@@ -142,8 +150,16 @@ function forcedNonWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry
   out.push(...ownedTriggerIds(affordable, "TOME_OF_FIRE_CHARGED"));
   out.push(...ownedTriggerIds(affordable, "TOME_OF_WATER_CHARGED"));
   out.push(...ownedTriggerIds(affordable, "TOME_OF_EARTH_CHARGED"));
+  out.push(...ownedElementalAmuletIds(affordable));
   return out;
 }
+
+/** Elemental-amulet item id -> which elements it boosts. */
+const AMULET_KIND_BY_ID = new Map<number, ElementalAmuletKind>(
+  ELEMENTAL_AMULET_KEYS.flatMap(([key, kind]) =>
+    BONUS_TRIGGER_VARIANTS[key].map((id): [number, ElementalAmuletKind] => [id, kind]),
+  ),
+);
 
 const TOME_IDS = new Set<number>([
   ...BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED,
@@ -343,19 +359,21 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   }
 
   // Non-weapon force variants (Salve neck on undead, elemental tome shield on
-  // magic). Swap the forced item into its slot when it still fits the budget;
-  // scoreScenario then prices the conditional multiplier honestly.
-  const forcedNW = forcedNonWeaponIds(affordableIds, input.target);
-  if (forcedNW.length > 0) {
-    const snapshot = [...cands];
-    for (const fid of forcedNW) {
+  // magic, elemental amulet neck on magic). Swap the forced item into its slot
+  // when it still fits the budget; scoreScenario then prices the conditional
+  // multiplier honestly.
+  const addForcedVariants = (
+    fids: number[],
+    snapshot: Cand[],
+    skip: (fid: number, c: Cand) => boolean,
+  ): void => {
+    for (const fid of fids) {
       const fitem = ITEM_BY_ID.get(fid);
       if (!fitem) continue;
       const fslot = loadoutSlotFor(fitem);
       const fprice = priceOf(fitem);
-      const isTome = TOME_IDS.has(fid);
       for (const c of snapshot) {
-        if (isTome && c.ws.combatStyle !== "magic") continue;
+        if (skip(fid, c)) continue;
         if (fslot === "shield" && c.ws.weapon.isTwoHanded) continue;
         const curCost = totalCost(c.ids, c.internalAmmoId, input.priceLookup);
         const displacedId = c.ids.find((id) => {
@@ -372,6 +390,22 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
         cands.push({ ids, internalAmmoId: c.internalAmmoId, ws: c.ws });
       }
     }
+  };
+  const forcedNW = forcedNonWeaponIds(affordableIds, input.target);
+  const forcedAmulets = forcedNW.filter((id) => AMULET_KIND_BY_ID.has(id));
+  const forcedOther = forcedNW.filter((id) => !AMULET_KIND_BY_ID.has(id));
+  if (forcedOther.length > 0) {
+    addForcedVariants(forcedOther, [...cands], (fid, c) =>
+      TOME_IDS.has(fid) && c.ws.combatStyle !== "magic",
+    );
+  }
+  // Amulets branch over a snapshot taken AFTER the tome / Salve variants so a
+  // tome + amulet pairing is reachable; gated to magic builds that can cast the
+  // amulet's element (never a powered staff — see amuletCanMatter).
+  if (forcedAmulets.length > 0) {
+    addForcedVariants(forcedAmulets, [...cands], (fid, c) =>
+      !amuletCanMatter(c.ws, AMULET_KIND_BY_ID.get(fid)!, input.skills.magic),
+    );
   }
 
   // Enchanted-bolt branches for crossbow candidates. The greedy ammo pick ranks

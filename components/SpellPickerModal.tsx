@@ -17,6 +17,7 @@ import {
   weaponCanAutocastSpellbook,
   weaponSatisfiesStaffRequirement,
 } from "@/data/items/magic-weapon-autocast";
+import type { ElementalAmuletKind } from "@/data/bonus-trigger-items";
 
 interface Props {
   currentSpellName?: string;
@@ -24,6 +25,10 @@ interface Props {
   targetAttributes: readonly string[];
   /** Equipped weapon — gates which spellbooks/spells can actually be autocast. */
   weaponId?: number;
+  /** Worn elemental amulet and the target's elemental weakness — fold into the
+      effective-max-hit ordering so the best element for this setup sorts first. */
+  elementalAmulet?: ElementalAmuletKind;
+  targetWeakness?: { element: string; severity: number } | null;
   /** Spell chosen, or null to revert to the optimizer's auto-pick. */
   onSelect: (spell: SpellEntry | null) => void;
   onClose: () => void;
@@ -80,14 +85,16 @@ export function SpellPickerModal({
   magicLevel,
   targetAttributes,
   weaponId,
+  elementalAmulet,
+  targetWeakness,
   onSelect,
   onClose,
 }: Props) {
   const [query, setQuery] = useState("");
 
   const ctx = useMemo(
-    () => ({ magicLevel, targetAttributes }),
-    [magicLevel, targetAttributes],
+    () => ({ magicLevel, targetAttributes, elementalAmulet, targetWeakness }),
+    [magicLevel, targetAttributes, elementalAmulet, targetWeakness],
   );
 
   // Group by spellbook, each group sorted by effective max hit (desc).

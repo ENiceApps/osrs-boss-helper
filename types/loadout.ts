@@ -4,6 +4,7 @@
 // premade-set source types + appliesWhen predicates were removed.)
 
 import type { AttackStyleChoice, CombatStyle, SpellElement } from "@/types/osrs";
+import type { ElementalAmuletKind } from "@/data/bonus-trigger-items";
 
 export type AttackType = "stab" | "slash" | "crush" | "ranged" | "magic";
 export type LoadoutTier = "entry" | "mid" | "end";
@@ -71,6 +72,13 @@ export interface ItemBonusFlags {
    * literals; absent = false.
    */
   wildernessWeapon?: boolean;
+  /**
+   * Worn elemental amulet (Amulet of air/water/earth/fire, or the Elemental
+   * amulet = "all") — +2 max hit on spells of the matching element, resolved
+   * against `LoadoutSet.spellElement` by `activeBonusesForTarget`. Optional for
+   * back-compat with existing flag literals; absent = no amulet.
+   */
+  elementalAmulet?: ElementalAmuletKind;
 }
 
 export interface LoadoutSet {

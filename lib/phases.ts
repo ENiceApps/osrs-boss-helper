@@ -32,7 +32,8 @@ export type PhasedMonster = MonsterCatalogEntry & {
   alwaysHits?: boolean;
   /** Attack-roll scale for the listed styles (Royal Titans at range). */
   accuracyModifier?: MechanicPhase["accuracyModifier"];
-  /** Raised minimum hit as a fraction of max hit (Mad Angel reaction buffs). */
+  /** Raised minimum hit as a fraction of max hit (Mad Angel reaction buffs):
+   *  the hit rolls 0..max then floors to trunc(max×n/d) — see MechanicPhase. */
   minHitFactor?: [number, number];
   /** Active phase option id — carried into share links. */
   phaseId?: string;

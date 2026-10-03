@@ -14,7 +14,14 @@
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { BONUS_TRIGGER_VARIANTS, ownedTriggerIds } from "@/data/bonus-trigger-items";
+import {
+  BONUS_TRIGGER_VARIANTS,
+  ELEMENTAL_AMULET_KEYS,
+  elementalAmuletKind,
+  ownedElementalAmuletIds,
+  ownedTriggerIds,
+  type ElementalAmuletKind,
+} from "@/data/bonus-trigger-items";
 import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
@@ -28,8 +35,11 @@ import { isHalberdWeapon } from "@/data/items/halberd-weapons";
 import { staffSuppliesElement } from "@/data/items/elemental-staves";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
-import { autocastableSpellbooks } from "@/data/items/magic-weapon-autocast";
-import { bestSpell, spellMaxHit } from "@/data/spells/catalog";
+import {
+  autocastableSpellbooks,
+  weaponCanAutocastSpellbook,
+} from "@/data/items/magic-weapon-autocast";
+import { bestSpell, canCastElement, spellMaxHit } from "@/data/spells/catalog";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -294,6 +304,25 @@ function greedyBuild(
 }
 
 /**
+ * Can an elemental amulet of this kind ever matter for this weapon/style combo?
+ * It needs a magic build whose weapon autocasts the standard spellbook (powered
+ * staves cast their own element-less attack) and, for a single-element amulet,
+ * a standard spell of that element the player's Magic level can cast. Shared
+ * with the from-scratch budget builder.
+ */
+export function amuletCanMatter(
+  ws: Pick<WeaponStyleCandidate, "weapon" | "combatStyle">,
+  kind: ElementalAmuletKind,
+  magicLevel: number,
+): boolean {
+  if (ws.combatStyle !== "magic") return false;
+  if (!weaponCanAutocastSpellbook(ws.weapon.id, "standard")) return false;
+  return kind === "all"
+    ? (["air", "water", "earth", "fire"] as const).some((el) => canCastElement(el, magicLevel))
+    : canCastElement(kind, magicLevel);
+}
+
+/**
  * Conditional-bonus trigger items in the bank that fire against this target.
  * Used to build "force-include" branches so DHCB doesn't get pruned by raw
  * weapon-bonus dominance on a dragon target, etc.
@@ -339,6 +368,11 @@ function applicableForceIncludes(
   out.push(...ownedTriggerIds(bank, "TOME_OF_FIRE_CHARGED"));
   out.push(...ownedTriggerIds(bank, "TOME_OF_WATER_CHARGED"));
   out.push(...ownedTriggerIds(bank, "TOME_OF_EARTH_CHARGED"));
+  // Elemental amulets (+2 max hit on matching-element spells) — like the tomes,
+  // relevant to every magic build vs any NPC, and an invisible bonus to the
+  // per-slot scorer (the Occult necklace's raw stats always beat their +10 magic
+  // attack). Step 2c-ii gates them to magic builds that can cast the element.
+  out.push(...ownedElementalAmuletIds(bank));
   // Wilderness weapons get a big ×3/2 vs NPCs in the Wilderness that itemScore
   // can't see — force them in for wilderness bosses so they're ranked honestly.
   if (isWildernessBoss(target.slug)) out.push(...ownedTriggerIds(bank, "WILDERNESS_WEAPON"));
@@ -356,7 +390,8 @@ export interface AutoSpellResult {
  * (Trident / Sanguinesti / Shadow) embed their own damage formula keyed by
  * weapon ID; regular staves and wands auto-select the best castable spell
  * across all spellbooks the weapon can autocast, gated by the target's
- * attributes and any equipped tome. Non-magic styles return the fallbacks
+ * attributes and ranked with any equipped tome / elemental amulet and the
+ * target's elemental weakness. Non-magic styles return the fallbacks
  * unchanged. Shared by the bank optimizer and the from-scratch budget builder.
  */
 export function autoPickSpell(
@@ -382,6 +417,11 @@ export function autoPickSpell(
       tomeOfFire: BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.some((id) => itemIds.includes(id)),
       tomeOfWater: BONUS_TRIGGER_VARIANTS.TOME_OF_WATER_CHARGED.some((id) => itemIds.includes(id)),
       tomeOfEarth: BONUS_TRIGGER_VARIANTS.TOME_OF_EARTH_CHARGED.some((id) => itemIds.includes(id)),
+      // With the elemental ladders every Surge ties at 95+ Magic, so the worn
+      // elemental amulet (+2 on its element) and the target's elemental weakness
+      // are what pick the element — see spellEffectiveMaxHit.
+      elementalAmulet: elementalAmuletKind(new Set(itemIds)),
+      targetWeakness: target.weakness,
       twinflame: weapon.id === 30634, // Twinflame staff
       // Never recommend a spell the equipped weapon can't autocast.
       allowedSpellbooks: autocastableSpellbooks(weapon.id),
@@ -482,9 +522,16 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
   // candidates here was a real bug: "Elite Void + Salve(ei)" was never
   // generated, so a Void-owning player got Void + blood fury recommended vs
   // undead targets even though the Salve multiplier dwarfs any neck's stats.
+  const amuletForceKinds = new Map<number, ElementalAmuletKind>(
+    ELEMENTAL_AMULET_KEYS.flatMap(([key, kind]) =>
+      BONUS_TRIGGER_VARIANTS[key].map((id): [number, ElementalAmuletKind] => [id, kind]),
+    ),
+  );
+  // Elemental amulets are handled in Step 2c-ii (they compose with the tome /
+  // Salve branches built here), so they're excluded from this single-force pass.
   const nonWeaponForces = forceIds.filter((id) => {
     const it = ITEM_BY_ID.get(id);
-    return it !== undefined && loadoutSlotFor(it) !== "weapon";
+    return it !== undefined && loadoutSlotFor(it) !== "weapon" && !amuletForceKinds.has(id);
   });
   if (nonWeaponForces.length > 0) {
     const snapshot = [...allCandidates];
@@ -505,6 +552,32 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
           const it = ITEM_BY_ID.get(id);
           if (!it) return true;
           return loadoutSlotFor(it) !== forcedSlot;
+        });
+        filtered.push(forcedId);
+        allCandidates.push({ itemIds: filtered, internalAmmoId: c.internalAmmoId, ws: c.ws });
+      }
+    }
+  }
+
+  // Step 2c-ii: elemental-amulet force overrides. The amulet's +2 max hit on its
+  // element is invisible to the greedy neck pick (Occult necklace's raw stats
+  // always win), so for every MAGIC candidate whose weapon can cast the amulet's
+  // element, branch once with the amulet in the neck slot and let the scorer
+  // compare it to the greedy neck by actual DPS. Built over a snapshot taken
+  // AFTER 2c so it composes with the tome / Salve branches (tome of fire + amulet
+  // of fire is the natural pairing). Never forced onto a powered staff — those
+  // cast their own attack with no element, so the amulet would only cost the
+  // neck slot's real bonuses.
+  const amuletForceIds = forceIds.filter((id) => amuletForceKinds.has(id));
+  if (amuletForceIds.length > 0) {
+    const snapshot = [...allCandidates];
+    for (const forcedId of amuletForceIds) {
+      const kind = amuletForceKinds.get(forcedId)!;
+      for (const c of snapshot) {
+        if (!amuletCanMatter(c.ws, kind, input.skills.magic)) continue;
+        const filtered = c.itemIds.filter((id) => {
+          const it = ITEM_BY_ID.get(id);
+          return !it || loadoutSlotFor(it) !== "neck";
         });
         filtered.push(forcedId);
         allCandidates.push({ itemIds: filtered, internalAmmoId: c.internalAmmoId, ws: c.ws });

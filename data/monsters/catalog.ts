@@ -4685,7 +4685,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Catablepon.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "5"
       },
       {
         "version": "Level 68",
@@ -8722,7 +8722,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": "2"
       },
       {
-        "version": "Standard",
+        "version": "Standard (Level 10)",
         "wikiId": 290,
         "combatLevel": 10,
         "hp": 16,
@@ -17190,7 +17190,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 160,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": -10
     },
     "attributes": [
       "xerician"
@@ -18108,6 +18108,31 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": "0"
       }
     ]
+  },
+  {
+    "slug": "minotaur-fortis-colosseum",
+    "wikiId": 12812,
+    "name": "Minotaur (Fortis Colosseum)",
+    "version": "",
+    "combatLevel": 318,
+    "hp": 225,
+    "defenceLevel": 190,
+    "magicLevel": 250,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 12,
+      "rangedStandard": 12,
+      "rangedLight": 12
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Minotaur (Fortis Colosseum).png",
+    "size": 3,
+    "maxHitText": "74",
+    "isSlayerMonster": false
   },
   {
     "slug": "minotaur-meat-and-greet",
@@ -25403,7 +25428,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedStandard": 2,
       "rangedLight": 2
     },
-    "attributes": [],
+    "attributes": [
+      "undead"
+    ],
     "weakness": {
       "element": "earth",
       "severity": 35
@@ -28178,13 +28205,13 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceLevel": 200,
         "magicLevel": 130,
         "defenceBonuses": {
-          "stab": 180,
-          "slash": 300,
-          "crush": 220,
-          "magic": 10,
-          "rangedHeavy": 300,
-          "rangedStandard": 300,
-          "rangedLight": 300
+          "stab": 150,
+          "slash": 250,
+          "crush": 180,
+          "magic": -10,
+          "rangedHeavy": 250,
+          "rangedStandard": 250,
+          "rangedLight": 250
         },
         "attributes": [],
         "weakness": {
@@ -30416,7 +30443,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Vampyre Snail.png",
     "size": 1,
-    "maxHitText": "87+",
+    "maxHitText": "87+ (standard)",
     "isSlayerMonster": false
   },
   {

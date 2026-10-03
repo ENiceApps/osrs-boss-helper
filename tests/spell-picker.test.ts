@@ -88,19 +88,22 @@ describe("spellEffectiveMaxHit — tome interaction (ranking)", () => {
     expect(spellEffectiveMaxHit(fireSurge, { magicLevel: 99, targetAttributes: [], tomeOfFire: true })).toBe(26); // floor(24×11/10)
   });
 
+  // Every Surge hits for 24 at 95+ Magic (the elemental ladder: each spell takes
+  // the max hit of the highest unlocked spell of its class), so the Water/Earth
+  // Surge bases below are 24, not their old fixed 22 / 23.
   it("Tome of Water boosts a water spell ×6/5", () => {
-    const waterSurge = SPELLS_BY_NAME.get("Water Surge")!; // base 22
-    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfWater: true })).toBe(26); // floor(22×6/5)
+    const waterSurge = SPELLS_BY_NAME.get("Water Surge")!; // 24 at 99 Magic
+    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfWater: true })).toBe(28); // floor(24×6/5)
   });
 
   it("Tome of Earth boosts an earth spell ×11/10", () => {
-    const earthSurge = SPELLS_BY_NAME.get("Earth Surge")!; // base 23
-    expect(spellEffectiveMaxHit(earthSurge, { magicLevel: 99, targetAttributes: [], tomeOfEarth: true })).toBe(25); // floor(23×11/10)
+    const earthSurge = SPELLS_BY_NAME.get("Earth Surge")!; // 24 at 99 Magic
+    expect(spellEffectiveMaxHit(earthSurge, { magicLevel: 99, targetAttributes: [], tomeOfEarth: true })).toBe(26); // floor(24×11/10)
   });
 
   it("a tome does not touch a spell of a different element", () => {
-    const waterSurge = SPELLS_BY_NAME.get("Water Surge")!; // base 22
-    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfFire: true })).toBe(22);
+    const waterSurge = SPELLS_BY_NAME.get("Water Surge")!; // 24 at 99 Magic
+    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfFire: true })).toBe(24);
   });
 });
 

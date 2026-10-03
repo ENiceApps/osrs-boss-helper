@@ -54,9 +54,17 @@ export interface MechanicPhase {
   /**
    * Raised minimum hit as a fraction of the player's max hit (Mad Angel's
    * reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1] i.e.
-   * every hit is the max). Lifts the per-hit mean from max/2 to
-   * (trunc(max×n/d) + max)/2. Pair with alwaysHits — wgloop's
+   * every hit is the max). Pair with alwaysHits — wgloop's
    * firstHitAccurate/firstHitMinimum/firstHitMax states.
+   *
+   * The hit still rolls uniformly over 0..max and is then FLOORED to
+   * min = trunc(max×n/d) (upstream #948, d1ae5b4, 2026-08-22 — "roll from 0-max
+   * and increase low hits"), so the landed-hit mean is
+   * [min(min+1) + max(max+1)] / (2(max+1)) — e.g. max 40 → min 20 → 1030/41
+   * ≈ 25.1 — NOT (min+max)/2 (= 30, the pre-#948 model). [1,1] makes min = max,
+   * i.e. every hit is the max. See `meanLandedHitWithMinimum` in
+   * lib/dps/calculate.ts. Applied on the single-hit path only (bolts and
+   * multi-hit weapons keep their own means).
    */
   minHitFactor?: [number, number];
   /** Attack-roll scale during this phase (Royal Titans: ranged ×6 at range). */

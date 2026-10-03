@@ -26,67 +26,9 @@
 
 import type { VendorMonster } from "../../types/vendor.js";
 
-export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
-  // Maggot King — solo boss from The Blood Moon Rises (30 June 2026), fought in
-  // Vampyrium. Slayer-assignable under the "Bosses" category (Konar/Nieve/Duradel).
-  // Source: https://oldschool.runescape.wiki/w/Maggot_King
-  {
-    id: 15742,
-    name: "Maggot King",
-    version: "",
-    image: "Maggot King.png",
-    level: 741,
-    speed: 6,
-    style: ["Ranged", "Magic", "Stab"],
-    size: 5,
-    max_hit: "46 (Magic / Ranged), ~52 (Melee lunge)",
-    skills: { atk: 200, def: 200, hp: 1500, magic: 200, ranged: 300, str: 250 },
-    offensive: { atk: 400, magic: 200, magic_str: 57, ranged: 200, ranged_str: 10, str: 50 },
-    defensive: {
-      flat_armour: 0,
-      crush: 45,
-      magic: 150,
-      heavy: 43,
-      standard: 158,
-      light: 232,
-      slash: 100,
-      stab: 172,
-    },
-    attributes: [],
-    immunities: { burn: null },
-    is_slayer_monster: true,
-    weakness: { element: "fire", severity: 80 },
-  },
-
-  // Venator — Vampyre-category slayer monster from The Blood Moon Rises
-  // (30 June 2026), unlocked after the quest. Upstream tracks five cosmetic
-  // variants (ids 15765-15769) sharing identical stats; we list the first.
-  // Source: https://oldschool.runescape.wiki/w/Venator_(monster)
-  {
-    id: 15765,
-    name: "Venator",
-    version: "",
-    image: "Venator (1).png",
-    level: 246,
-    speed: 5,
-    style: ["Stab"],
-    size: 2,
-    max_hit: "21",
-    skills: { atk: 200, def: 120, hp: 345, magic: 100, ranged: 75, str: 100 },
-    offensive: { atk: 150, magic: 0, magic_str: 0, ranged: 150, ranged_str: 0, str: 0 },
-    defensive: {
-      flat_armour: 0,
-      crush: 90,
-      magic: 100,
-      heavy: -5,
-      standard: -5,
-      light: -5,
-      slash: 20,
-      stab: -5,
-    },
-    attributes: ["vampyre3"],
-    immunities: { burn: null },
-    is_slayer_monster: true,
-    weakness: null,
-  },
-];
+// Currently EMPTY: the Maggot King and Venator (The Blood Moon Rises, 30 June
+// 2026) are now in the vendored dump, the build was already skipping our copies,
+// and the vendored values are the ones the OSRS Wiki confirms (our hand-authored
+// copies differed), so they were removed. Add new entries below the next time a
+// brand-new boss/slayer creature trails the vendored dump.
+export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [];

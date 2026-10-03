@@ -12,14 +12,23 @@
 //   3. Salve amulet (ei)/(e) vs undead is ×6/5; base Salve / (i) is ×7/6.
 //   4. Demonbane (Arclight/Emberlight) vs demons is +70% accuracy AND damage,
 //      applied ADDITIVELY (weirdgloop's trackAddFactor): value + trunc(value×70/100).
-//      NOTE: weirdgloop further scales this by a per-monster "demonbane
-//      vulnerability" (most demons = 100%, a few resist). We assume full 100%
-//      for now — TODO once that per-monster datum is surfaced in the catalog.
+//      weirdgloop further scales the weapon's bonus PERCENT by a per-monster
+//      "demonbane vulnerability" (BaseCalc.demonbaneVulnerability(): Duke
+//      Sucellus 70, Yama 120, Yama void flares 200, Ice demon 115 — raised from
+//      100 in the 2026-07-22 Summer Sweep-Up — else 100): the percent becomes
+//      trunc(70 × vulnerability / 100) before it is applied (Duke: 49%). The
+//      per-monster table lives in data/monsters/demonbane-vulnerability.ts;
+//      `conditionalMultipliers` takes the resolved vulnerability (default 100,
+//      i.e. every ordinary demon is unchanged).
 //   5. Multipliers stack via Math.trunc after EACH application — not by
 //      multiplying into a single combined factor. This matters because
 //      Math.trunc(38 × 5/4) × 6/5 = 56, whereas Math.trunc(38 × 1.5) = 57.
 
 import type { ConditionalBonusFlags } from "@/types/osrs";
+import {
+  DEFAULT_DEMONBANE_VULNERABILITY,
+  scaleDemonbanePct,
+} from "@/data/monsters/demonbane-vulnerability";
 
 export interface ConditionalFactor {
   numerator: number;
@@ -49,6 +58,13 @@ export function conditionalMultipliers(
    * numerator. Accuracy factors are unaffected either way.
    */
   foldRangedBaneDamage = false,
+  /**
+   * The target's demonbane vulnerability as a percent (see
+   * data/monsters/demonbane-vulnerability.ts). Scales every demonbane tier's
+   * bonus percent — upstream's demonbaneFactor: trunc(pct × vulnerability/100).
+   * Default 100 = an ordinary demon (bonus unchanged).
+   */
+  demonbaneVulnerability: number = DEFAULT_DEMONBANE_VULNERABILITY,
 ): ConditionalMultipliers {
   const accuracy: ConditionalFactor[] = [];
   const damage: ConditionalFactor[] = [];
@@ -56,23 +72,40 @@ export function conditionalMultipliers(
 
   // Demonbane first, mirroring weirdgloop's order (applied before dragonbane).
   // Only one weapon can be worn, so at most one demonbane tier fires at a time.
+  // Each tier's percent is scaled by the target's vulnerability (whole-percent
+  // truncation) — the same value feeds accuracy AND damage, as upstream does.
+  const vulnNote =
+    demonbaneVulnerability === DEFAULT_DEMONBANE_VULNERABILITY
+      ? ""
+      : ` (${demonbaneVulnerability}% demonbane vulnerability)`;
   if (flags.demonbane) {
-    accuracy.push({ numerator: 70, denominator: 100, additive: true, reason: "Demonbane (Arclight/Emberlight) vs demon" });
-    damage.push({ numerator: 70, denominator: 100, additive: true, reason: "Demonbane (Arclight/Emberlight) vs demon" });
+    const pct = scaleDemonbanePct(70, demonbaneVulnerability);
+    const reason = `Demonbane (Arclight/Emberlight) vs demon${vulnNote}`;
+    accuracy.push({ numerator: pct, denominator: 100, additive: true, reason });
+    damage.push({ numerator: pct, denominator: 100, additive: true, reason });
   }
   if (flags.demonbaneSilverlight) {
-    accuracy.push({ numerator: 60, denominator: 100, additive: true, reason: "Demonbane (Silverlight/Darklight) vs demon" });
-    damage.push({ numerator: 60, denominator: 100, additive: true, reason: "Demonbane (Silverlight/Darklight) vs demon" });
+    const pct = scaleDemonbanePct(60, demonbaneVulnerability);
+    const reason = `Demonbane (Silverlight/Darklight) vs demon${vulnNote}`;
+    accuracy.push({ numerator: pct, denominator: 100, additive: true, reason });
+    damage.push({ numerator: pct, denominator: 100, additive: true, reason });
   }
   if (flags.demonbaneClaws) {
-    accuracy.push({ numerator: 5, denominator: 100, additive: true, reason: "Demonbane (Burning claws) vs demon" });
-    damage.push({ numerator: 5, denominator: 100, additive: true, reason: "Demonbane (Burning claws) vs demon" });
+    const pct = scaleDemonbanePct(5, demonbaneVulnerability);
+    const reason = `Demonbane (Burning claws) vs demon${vulnNote}`;
+    accuracy.push({ numerator: pct, denominator: 100, additive: true, reason });
+    damage.push({ numerator: pct, denominator: 100, additive: true, reason });
   }
   if (flags.demonbaneScorchingBow) {
     // Accuracy only — the +30% DAMAGE lives in calculate.ts because on a
     // slayer task it merges additively into the black-mask multiplier
     // ((23+6)/20), which this per-factor list can't express.
-    accuracy.push({ numerator: 30, denominator: 100, additive: true, reason: "Demonbane (Scorching bow) vs demon" });
+    accuracy.push({
+      numerator: scaleDemonbanePct(30, demonbaneVulnerability),
+      denominator: 100,
+      additive: true,
+      reason: `Demonbane (Scorching bow) vs demon${vulnNote}`,
+    });
   }
   if (flags.dragonHunterCrossbow) {
     accuracy.push({ numerator: 13, denominator: 10, reason: "Dragon hunter crossbow vs dragon" });

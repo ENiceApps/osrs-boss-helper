@@ -10,6 +10,10 @@ import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import {
+  demonbaneVulnerabilityFor,
+  scaleDemonbanePct,
+} from "@/data/monsters/demonbane-vulnerability";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { AttackType, LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, Skills } from "@/types/osrs";
@@ -89,9 +93,16 @@ function buildReasons(
   slot: LoadoutSlotKey,
   set: LoadoutSet,
   activeBonuses: TargetActiveBonuses | null,
+  monster: MonsterCatalogEntry,
 ): string[] {
   const reasons: string[] = [];
   const cb = activeBonuses?.conditionalBonuses;
+  // Demonbane scales per monster (Duke Sucellus 70% of the bonus, Yama 120%, void
+  // flares 200%, Ice demon 115%): show the percent the engine actually applies —
+  // trunc(base% x vulnerability / 100) — not the weapon's headline number.
+  const demonbaneVuln = demonbaneVulnerabilityFor(monster);
+  const demonbaneLine = (basePct: number): string =>
+    `+${scaleDemonbanePct(basePct, demonbaneVuln)}% accuracy & damage vs this demon`;
   if (slot === "weapon") {
     reasons.push(
       `${set.attackSpeedTicks}-tick ${set.style} weapon — every other slot is picked around it`,
@@ -99,10 +110,10 @@ function buildReasons(
     if (cb?.dragonHunterCrossbow) reasons.push("+30% accuracy / +25% damage vs this dragon");
     if (cb?.dragonHunterLance) reasons.push("+20% accuracy & damage vs this dragon");
     if (cb?.dragonHunterWand) reasons.push("+75% accuracy / +40% damage vs this dragon");
-    if (cb?.demonbane) reasons.push("+70% accuracy & damage vs this demon");
-    if (cb?.demonbaneSilverlight) reasons.push("+60% accuracy & damage vs this demon");
-    if (cb?.demonbaneClaws) reasons.push("+5% accuracy & damage vs this demon");
-    if (cb?.demonbaneScorchingBow) reasons.push("+30% accuracy & damage vs this demon");
+    if (cb?.demonbane) reasons.push(demonbaneLine(70));
+    if (cb?.demonbaneSilverlight) reasons.push(demonbaneLine(60));
+    if (cb?.demonbaneClaws) reasons.push(demonbaneLine(5));
+    if (cb?.demonbaneScorchingBow) reasons.push(demonbaneLine(30));
     if (activeBonuses?.twistedBowEquipped)
       reasons.push(
         `scales with the target's magic level (${activeBonuses.targetMonsterMagicLevel})`,
@@ -115,6 +126,14 @@ function buildReasons(
   if (slot === "neck") {
     if (cb?.salveAmuletEi) reasons.push("+20% accuracy & damage vs this undead target");
     else if (cb?.salveAmulet) reasons.push("+16.7% accuracy & damage vs this undead target");
+    // Elemental amulet: only when it matches the cast spell's element (the
+    // resolver returns 0 for an Amulet of fire under Water Surge, a powered
+    // staff, or any non-elemental spell).
+    if (activeBonuses?.elementalAmuletMaxHitBonus && set.spellElement && set.spellElement !== "none") {
+      reasons.push(
+        `+${activeBonuses.elementalAmuletMaxHitBonus} max hit on ${set.spellElement} spells`,
+      );
+    }
   }
   if (slot === "shield") {
     if (activeBonuses?.tomeOfFireEquipped)  reasons.push("+10% fire spell damage");
@@ -160,7 +179,7 @@ export function explainSlots(
     const item = findCatalogItem(piece.itemId);
     const explanation: SlotExplanation = {
       bonusLine: item ? buildBonusLine(item, set) : undefined,
-      reasons: buildReasons(slot, set, activeBonuses),
+      reasons: buildReasons(slot, set, activeBonuses, monster),
     };
     if (slot === "ammo" && boltProc) {
       explanation.reasons.push(describeBoltProc(boltProc));

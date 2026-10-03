@@ -7,9 +7,22 @@
 // niche specials (Iban/Magic Dart/god spells) and Arceuus spells are verified
 // against the OSRS wiki. element is "none" for Ancient/Arceuus and the standard
 // specials — only the four elemental ladders interact with tomes / elemental
-// weakness, so "none" correctly opts the rest out of those bonuses.
+// weakness / elemental amulets, so "none" correctly opts the rest out of those
+// bonuses.
+//
+// ELEMENTAL LADDERS: since 2024 every standard elemental spell hits as hard as
+// the highest-unlocked spell of its CLASS (Strike/Bolt/Blast/Wave/Surge) at the
+// player's Magic level — Wind Surge is 21 at 81 Magic, 22 at 85, 23 at 90, 24 at
+// 95+ (https://oldschool.runescape.wiki/w/Wind_Surge). Mirrors upstream
+// osrs-dps-calc `getSpellMaxHit`. So an elemental entry's `baseMaxHit` is only
+// its own nominal tier; ALWAYS read a spell's max hit through `spellMaxHit()`.
 
 import type { SpellElement } from "@/types/osrs";
+import {
+  amuletBoostsElement,
+  ELEMENTAL_AMULET_MAX_HIT_BONUS,
+  type ElementalAmuletKind,
+} from "@/data/bonus-trigger-items";
 
 export type Spellbook = "standard" | "ancient" | "arceuus";
 
@@ -18,39 +31,94 @@ export interface SpellEntry {
   spellbook: Spellbook;
   element: SpellElement;
   minLevel: number;
-  /** Fixed base max hit. Ignored when `scaledMaxHit` is present. */
+  /**
+   * Fixed base max hit. Ignored when `scaledMaxHit` is present — which includes
+   * every standard elemental spell (see the ladders above): for those this is
+   * only the spell's own nominal tier. Read a spell's max hit via `spellMaxHit`.
+   */
   baseMaxHit: number;
+  /** Strike/Bolt/Blast/Wave/Surge — set on the 20 standard elemental spells. */
+  elementalClass?: ElementalSpellClass;
   /** Spell is only castable against targets carrying this attribute. */
   requiresAttribute?: "undead" | "demon";
   /** Baseline accuracy bonus % vs demons (demonbane spells, pre-Mark of Darkness). */
   vsDemonAccuracyPct?: number;
-  /** Max hit that scales with magic level (Magic Dart) — overrides baseMaxHit. */
+  /** Max hit that scales with magic level (Magic Dart, the elemental ladders) — overrides baseMaxHit. */
   scaledMaxHit?: (magicLevel: number) => number;
   /** Human-readable staff requirement, surfaced in the picker. Not enforced in scoring. */
   requiresStaff?: string;
 }
 
+export type ElementalSpellClass = "Strike" | "Bolt" | "Blast" | "Wave" | "Surge";
+type RealElement = Exclude<SpellElement, "none">;
+
+/**
+ * The elemental ladder per spell class: the Magic level at which Fire / Earth /
+ * Water of that class unlock (Wind is the base tier, always available), and each
+ * element's own max hit. A player's elemental spell of a class hits for the
+ * max hit of the highest tier they have unlocked.
+ */
+const ELEMENTAL_LADDERS: Record<
+  ElementalSpellClass,
+  { fireLevel: number; earthLevel: number; waterLevel: number; maxHit: Record<RealElement, number> }
+> = {
+  Strike: { fireLevel: 13, earthLevel: 9, waterLevel: 5, maxHit: { air: 2, water: 4, earth: 6, fire: 8 } },
+  Bolt: { fireLevel: 35, earthLevel: 29, waterLevel: 23, maxHit: { air: 9, water: 10, earth: 11, fire: 12 } },
+  Blast: { fireLevel: 59, earthLevel: 53, waterLevel: 47, maxHit: { air: 13, water: 14, earth: 15, fire: 16 } },
+  Wave: { fireLevel: 75, earthLevel: 70, waterLevel: 65, maxHit: { air: 17, water: 18, earth: 19, fire: 20 } },
+  Surge: { fireLevel: 95, earthLevel: 90, waterLevel: 85, maxHit: { air: 21, water: 22, earth: 23, fire: 24 } },
+};
+
+/** An elemental spell class's max hit at a Magic level (the highest unlocked tier). */
+export function elementalLadderMaxHit(cls: ElementalSpellClass, magicLevel: number): number {
+  const l = ELEMENTAL_LADDERS[cls];
+  if (magicLevel >= l.fireLevel) return l.maxHit.fire;
+  if (magicLevel >= l.earthLevel) return l.maxHit.earth;
+  if (magicLevel >= l.waterLevel) return l.maxHit.water;
+  return l.maxHit.air;
+}
+
+const ELEMENT_SPELL_NAME: Record<RealElement, string> = {
+  fire: "Fire",
+  earth: "Earth",
+  water: "Water",
+  air: "Wind",
+};
+
+/** One of the 20 standard elemental spells; max hit resolves via the class ladder. */
+function elemental(cls: ElementalSpellClass, element: RealElement, minLevel: number): SpellEntry {
+  return {
+    name: `${ELEMENT_SPELL_NAME[element]} ${cls}`,
+    spellbook: "standard",
+    element,
+    minLevel,
+    baseMaxHit: ELEMENTAL_LADDERS[cls].maxHit[element],
+    elementalClass: cls,
+    scaledMaxHit: (magicLevel) => elementalLadderMaxHit(cls, magicLevel),
+  };
+}
+
 const STANDARD: readonly SpellEntry[] = [
-  { name: "Fire Surge", spellbook: "standard", element: "fire", minLevel: 95, baseMaxHit: 24 },
-  { name: "Earth Surge", spellbook: "standard", element: "earth", minLevel: 90, baseMaxHit: 23 },
-  { name: "Water Surge", spellbook: "standard", element: "water", minLevel: 85, baseMaxHit: 22 },
-  { name: "Wind Surge", spellbook: "standard", element: "air", minLevel: 81, baseMaxHit: 21 },
-  { name: "Fire Wave", spellbook: "standard", element: "fire", minLevel: 75, baseMaxHit: 20 },
-  { name: "Earth Wave", spellbook: "standard", element: "earth", minLevel: 70, baseMaxHit: 19 },
-  { name: "Water Wave", spellbook: "standard", element: "water", minLevel: 65, baseMaxHit: 18 },
-  { name: "Wind Wave", spellbook: "standard", element: "air", minLevel: 62, baseMaxHit: 17 },
-  { name: "Fire Blast", spellbook: "standard", element: "fire", minLevel: 59, baseMaxHit: 16 },
-  { name: "Earth Blast", spellbook: "standard", element: "earth", minLevel: 53, baseMaxHit: 15 },
-  { name: "Water Blast", spellbook: "standard", element: "water", minLevel: 47, baseMaxHit: 14 },
-  { name: "Wind Blast", spellbook: "standard", element: "air", minLevel: 41, baseMaxHit: 13 },
-  { name: "Fire Bolt", spellbook: "standard", element: "fire", minLevel: 35, baseMaxHit: 12 },
-  { name: "Earth Bolt", spellbook: "standard", element: "earth", minLevel: 29, baseMaxHit: 11 },
-  { name: "Water Bolt", spellbook: "standard", element: "water", minLevel: 23, baseMaxHit: 10 },
-  { name: "Wind Bolt", spellbook: "standard", element: "air", minLevel: 17, baseMaxHit: 9 },
-  { name: "Fire Strike", spellbook: "standard", element: "fire", minLevel: 13, baseMaxHit: 8 },
-  { name: "Earth Strike", spellbook: "standard", element: "earth", minLevel: 9, baseMaxHit: 6 },
-  { name: "Water Strike", spellbook: "standard", element: "water", minLevel: 5, baseMaxHit: 4 },
-  { name: "Wind Strike", spellbook: "standard", element: "air", minLevel: 1, baseMaxHit: 2 },
+  elemental("Surge", "fire", 95),
+  elemental("Surge", "earth", 90),
+  elemental("Surge", "water", 85),
+  elemental("Surge", "air", 81),
+  elemental("Wave", "fire", 75),
+  elemental("Wave", "earth", 70),
+  elemental("Wave", "water", 65),
+  elemental("Wave", "air", 62),
+  elemental("Blast", "fire", 59),
+  elemental("Blast", "earth", 53),
+  elemental("Blast", "water", 47),
+  elemental("Blast", "air", 41),
+  elemental("Bolt", "fire", 35),
+  elemental("Bolt", "earth", 29),
+  elemental("Bolt", "water", 23),
+  elemental("Bolt", "air", 17),
+  elemental("Strike", "fire", 13),
+  elemental("Strike", "earth", 9),
+  elemental("Strike", "water", 5),
+  elemental("Strike", "air", 1),
   // Standard specials (element "none" — no tome interaction).
   { name: "Saradomin Strike", spellbook: "standard", element: "none", minLevel: 60, baseMaxHit: 20, requiresStaff: "Saradomin staff" },
   { name: "Claws of Guthix", spellbook: "standard", element: "none", minLevel: 60, baseMaxHit: 20, requiresStaff: "Guthix staff" },
@@ -101,7 +169,11 @@ export const SPELLS_BY_NAME: ReadonlyMap<string, SpellEntry> = new Map(
   ALL_SPELLS.map((s) => [s.name, s]),
 );
 
-/** The spell's max hit at a given magic level (resolves Magic Dart scaling). */
+/**
+ * The spell's max hit at a given magic level — resolves the elemental ladders
+ * and Magic Dart scaling. Every consumer must go through this rather than
+ * reading `baseMaxHit` (for elemental spells only the spell's nominal tier).
+ */
 export function spellMaxHit(spell: SpellEntry, magicLevel: number): number {
   return spell.scaledMaxHit ? spell.scaledMaxHit(magicLevel) : spell.baseMaxHit;
 }
@@ -115,6 +187,16 @@ export function spellCastableVs(
   if (spell.minLevel > magicLevel) return false;
   if (spell.requiresAttribute && !targetAttributes.includes(spell.requiresAttribute)) return false;
   return true;
+}
+
+/**
+ * True iff the player can cast some standard elemental spell of this element at
+ * this Magic level (Wind from 1, Water 5, Earth 9, Fire 13) — gates forcing a
+ * single-element amulet into an optimizer candidate.
+ */
+export function canCastElement(element: SpellElement, magicLevel: number): boolean {
+  if (element === "none") return false;
+  return STANDARD.some((sp) => sp.element === element && sp.minLevel <= magicLevel);
 }
 
 /**
@@ -136,6 +218,20 @@ export interface SpellSelectionContext {
   tomeOfFire?: boolean;
   tomeOfWater?: boolean;
   tomeOfEarth?: boolean;
+  /**
+   * Worn / considered elemental amulet — +2 flat max hit on spells of the
+   * matching element (the Elemental amulet covers all four). Applied to the
+   * spell's base hit, before the weakness and tomes, exactly like the engine
+   * (lib/dps/calculate.ts).
+   */
+  elementalAmulet?: ElementalAmuletKind;
+  /**
+   * The target's elemental weakness. A matching-element spell adds
+   * trunc(base * severity / 100) max hit (base includes the amulet's +2), as in
+   * the engine. With the elemental ladders every Surge ties at 95+ Magic, so the
+   * weakness and amulet are what decide the element.
+   */
+  targetWeakness?: { element: string; severity: number } | null;
   /** Twinflame staff equipped — folds the double-cast into the ranking. */
   twinflame?: boolean;
   /**
@@ -147,9 +243,20 @@ export interface SpellSelectionContext {
   allowedSpellbooks?: readonly Spellbook[];
 }
 
-/** Effective max hit used for ranking — folds in tome and Twinflame bonuses. */
+/**
+ * Effective max hit used for ranking — folds in the elemental amulet, the
+ * target's elemental weakness, tome and Twinflame bonuses, in the engine's order
+ * (amulet +2 on the base, weakness on that base, tome, Twinflame second cast).
+ */
 export function spellEffectiveMaxHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
   let hit = spellMaxHit(spell, ctx.magicLevel);
+  if (amuletBoostsElement(ctx.elementalAmulet, spell.element)) {
+    hit += ELEMENTAL_AMULET_MAX_HIT_BONUS;
+  }
+  const weak = ctx.targetWeakness;
+  if (weak && spell.element !== "none" && weak.element === spell.element) {
+    hit += Math.trunc((hit * weak.severity) / 100);
+  }
   if (ctx.tomeOfFire && spell.element === "fire") hit = Math.floor((hit * 11) / 10);
   else if (ctx.tomeOfWater && spell.element === "water") hit = Math.floor((hit * 6) / 5);
   else if (ctx.tomeOfEarth && spell.element === "earth") hit = Math.floor((hit * 11) / 10);

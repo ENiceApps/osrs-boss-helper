@@ -5,10 +5,14 @@
  *     (wgloop PLAYER_ACCURACY_GOLEMBANE / MAX_HIT_GOLEMBANE).
  *   - Mad Angel reaction-buff phases: Sword Cleave (can't miss, min hit 50% of
  *     max) and Perfect Lightning (can't miss, always max hit) lift the engine's
- *     landed-hit mean exactly as the minHitFactor model predicts.
+ *     landed-hit mean exactly as the minHitFactor model predicts. Since
+ *     upstream #948 (d1ae5b4, 2026-08-22) the hit rolls uniformly over 0..max
+ *     and is FLOORED to the minimum — mean [m(m+1) + M(M+1)] / (2(M+1)), not
+ *     the old (m + M)/2 of a roll uniform over [m, M].
  */
 import { describe, expect, it } from "vitest";
 import { conditionalMultipliers, applyFactors } from "@/lib/dps/conditional";
+import { meanLandedHitWithMinimum } from "@/lib/dps/calculate";
 import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
 import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
@@ -120,15 +124,27 @@ describe("Mad Angel reaction-buff phases (minHitFactor)", () => {
     expect(ids).toEqual(["m:standard", "m:sword-cleave", "m:perfect-lightning"]);
   });
 
-  it("Sword Cleave: can't miss, mean = (trunc(max/2) + max)/2", () => {
+  it("Sword Cleave: can't miss, mean = [m(m+1) + M(M+1)] / (2(M+1)) with m = trunc(M/2)", () => {
     const set = meleeSet();
     const std = computeSetDps(set, phased("standard"), SKILLS_AT_99);
     const buffed = computeSetDps(set, phased("sword-cleave"), SKILLS_AT_99);
     expect(buffed.accuracy).toBe(1);
     expect(buffed.maxHit).toBe(std.maxHit);
-    const minHit = Math.trunc(std.maxHit / 2);
+    const M = std.maxHit;
+    const m = Math.trunc(M / 2);
     const secondsPerAttack = 4 * 0.6;
-    expect(buffed.dps).toBeCloseTo((minHit + std.maxHit) / 2 / secondsPerAttack, 10);
+    const mean = (m * (m + 1) + M * (M + 1)) / (2 * (M + 1));
+    expect(buffed.dps).toBeCloseTo(mean / secondsPerAttack, 10);
+    // The pre-#948 model (roll uniform over [m, M]) put the mean at (m+M)/2 —
+    // the corrected mean is strictly lower, by ~19% at a typical max hit.
+    expect(mean).toBeLessThan((m + M) / 2);
+  });
+
+  it("Sword Cleave numeric example: max 40 -> min 20 -> mean 1030/41", () => {
+    // Rolls 0..40, floored at 20: 21 rolls worth 20 (=420) + rolls 21..40
+    // (=610) over 41 outcomes = 1030/41 ~= 25.12 (old model: 30).
+    expect(meanLandedHitWithMinimum(40, 20)).toBeCloseTo(1030 / 41, 12);
+    expect(meanLandedHitWithMinimum(40, 20)).toBeCloseTo(25.122, 3);
   });
 
   it("Perfect Lightning: can't miss and every hit is the max", () => {
@@ -142,5 +158,30 @@ describe("Mad Angel reaction-buff phases (minHitFactor)", () => {
     const cleave = computeSetDps(set, phased("sword-cleave"), SKILLS_AT_99);
     expect(std.dps).toBeLessThan(cleave.dps);
     expect(cleave.dps).toBeLessThan(buffed.dps);
+  });
+});
+
+describe("meanLandedHitWithMinimum (roll 0..max, floored at min)", () => {
+  /** Ground truth by enumerating every roll. */
+  function brute(max: number, min: number): number {
+    let sum = 0;
+    for (let roll = 0; roll <= max; roll++) sum += Math.max(roll, min);
+    return sum / (max + 1);
+  }
+
+  it("matches brute-force enumeration across a range of (max, min)", () => {
+    for (const max of [1, 2, 7, 25, 40, 61, 118]) {
+      for (const min of [0, Math.trunc(max / 4), Math.trunc(max / 2), max]) {
+        expect(meanLandedHitWithMinimum(max, min)).toBeCloseTo(brute(max, min), 10);
+      }
+    }
+  });
+
+  it("degenerate cases: min 0 is the plain uniform mean, min = max is always max", () => {
+    expect(meanLandedHitWithMinimum(40, 0)).toBe(20);
+    expect(meanLandedHitWithMinimum(40, 40)).toBe(40);
+    // A minimum above max can't exceed max; a zero max hit stays zero.
+    expect(meanLandedHitWithMinimum(40, 55)).toBe(40);
+    expect(meanLandedHitWithMinimum(0, 0)).toBe(0);
   });
 });

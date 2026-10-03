@@ -5,7 +5,8 @@
 //
 // Currently modelled:
 //   - Void Knight (Melee / Ranged / Magic), regular and Elite variants
-//   - Inquisitor's armour — crush-style only
+//   - Inquisitor's armour — crush-style only, PER PIECE (partial sets count; no
+//     full-set bonus any more since the 2026-07-22 Summer Sweep-Up)
 //   - Obsidian armour — only with TzHaar weapons (Melee/Ranged/Magic variants)
 //
 // Future candidates (not yet modelled):
@@ -20,6 +21,7 @@
 // References:
 //   https://oldschool.runescape.wiki/w/Void_Knight_equipment
 //   https://oldschool.runescape.wiki/w/Inquisitor%27s_armour
+//   https://oldschool.runescape.wiki/w/Update:Summer_Sweep-Up_Gear_%26_PvM_Changes
 //   https://oldschool.runescape.wiki/w/Obsidian_armour
 
 import type { CombatStyle, WeaponAttackType } from "@/types/osrs";
@@ -62,6 +64,11 @@ export interface ArmorSetBonus {
 interface SetSlotRequirement {
   slot: LoadoutSlotKey;
   itemIds: readonly number[];
+  /**
+   * Per-piece sets only (see `perPieceDenominator`): this piece's contribution
+   * to the bonus numerator when equipped. Unused by all-or-nothing sets.
+   */
+  weight?: number;
 }
 
 interface ArmorSetDefinition {
@@ -69,9 +76,23 @@ interface ArmorSetDefinition {
   name: string;
   /** Set bonus only fires for this combat style. */
   style: CombatStyle;
-  /** Every requirement must be satisfied for the set bonus to fire. */
+  /**
+   * Every requirement must be satisfied for the set bonus to fire — unless
+   * `perPieceDenominator` is set, in which case any non-empty subset counts.
+   */
   pieces: readonly SetSlotRequirement[];
+  /**
+   * The bonus for the COMPLETE set. For per-piece sets this is the full-set
+   * value (the sum of every piece's weight) and is not used by detection.
+   */
   bonus: Omit<ArmorSetBonus, "id" | "name">;
+  /**
+   * Optional: makes the bonus per-piece rather than all-or-nothing. Each
+   * equipped piece adds its `weight`; with total n > 0 the bonus is
+   * ×(denominator + n) / denominator on BOTH accuracy and damage (multiplicative,
+   * truncated at the DPS engine). Inquisitor's armour since 2026-07-22.
+   */
+  perPieceDenominator?: number;
   /**
    * Optional: only fires when the weapon's attack type matches one of these.
    * E.g. Inquisitor's armour boosts crush attacks only.
@@ -210,22 +231,28 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     bonus: {}, // speed effect modeled separately — see calculate.ts `bloodrager`
   },
 
-  // ============ Inquisitor's (crush only) ============
+  // ============ Inquisitor's (crush only, per piece) ============
   {
     id: "inquisitors",
     name: "Inquisitor's armour",
     style: "melee",
-    // Bonus only fires with a crush attack. Full set's headline value is
-    // +2.5% accuracy + 2.5% damage (post-2024 buff curve; per-piece values
-    // are 0.5% / 1% / 2.5% for 1/2/3 pieces). We only model the full-set
-    // case — partials don't have a force-include path in the optimizer.
+    // Reworked in the Summer Sweep-Up Gear & PvM Changes (2026-07-22,
+    // https://oldschool.runescape.wiki/w/Update:Summer_Sweep-Up_Gear_%26_PvM_Changes
+    // and https://oldschool.runescape.wiki/w/Inquisitor%27s_armour): there is NO
+    // full-set bonus any more and the Inquisitor's mace no longer amplifies it.
+    // EACH piece grants its own crush accuracy AND damage bonus — great helm
+    // +0.5%, hauberk +1%, plateskirt +1% — so partial sets count and any crush
+    // weapon works. Weird Gloop's calc: n = helm 1 + hauberk 2 + plateskirt 2
+    // (half-percent units); attack roll and max hit are each ×(200+n)/200
+    // (multiplicative, truncated). Bonus only fires with a crush attack.
     attackTypes: ["crush"],
+    perPieceDenominator: 200,
     pieces: [
-      { slot: "head", itemIds: [24419] }, // Inquisitor's great helm
-      { slot: "body", itemIds: [24420] }, // Inquisitor's hauberk
-      { slot: "legs", itemIds: [24421] }, // Inquisitor's plateskirt
+      { slot: "head", itemIds: [24419], weight: 1 }, // Inquisitor's great helm  +0.5%
+      { slot: "body", itemIds: [24420], weight: 2 }, // Inquisitor's hauberk     +1%
+      { slot: "legs", itemIds: [24421], weight: 2 }, // Inquisitor's plateskirt  +1%
     ],
-    bonus: { accuracyFactor: [41, 40], damageFactor: [41, 40] }, // +2.5% / +2.5%
+    bonus: { accuracyFactor: [205, 200], damageFactor: [205, 200] }, // full set: +2.5% / +2.5%
   },
 
   // ============ Obsidian armour — only fires with a TzHaar weapon ============
@@ -283,8 +310,9 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
  * itemId, which some sets require). Returns undefined if no set qualifies.
  *
  * Order of checks: style → attackType filter → required-weapon filter →
- * pieces all present. ARMOR_SETS order in the file controls which set wins
- * when multiple qualify (elite variants are listed before regulars).
+ * pieces all present (or, for per-piece sets like Inquisitor's, at least one
+ * piece present). ARMOR_SETS order in the file controls which set wins when
+ * multiple qualify (elite variants are listed before regulars).
  */
 export function detectArmorSetBonus(
   itemIds: ReadonlySet<number>,
@@ -297,29 +325,39 @@ export function detectArmorSetBonus(
     if (set.style !== style) continue;
     if (set.attackTypes && (!attackType || !set.attackTypes.includes(attackType))) continue;
     if (set.requiredWeaponIds && (weaponId === undefined || !set.requiredWeaponIds.includes(weaponId))) continue;
+    if (set.perPieceDenominator !== undefined) {
+      // Per-piece set (Inquisitor's): sum the weights of whichever pieces are
+      // worn; any n > 0 fires ×(denominator + n) / denominator on accuracy and
+      // damage — no full-set requirement and no weapon-specific amplifier.
+      const n = set.pieces.reduce(
+        (sum, p) => sum + (p.itemIds.some((id) => itemIds.has(id)) ? (p.weight ?? 0) : 0),
+        0,
+      );
+      if (n === 0) continue;
+      const factor: readonly [number, number] = [set.perPieceDenominator + n, set.perPieceDenominator];
+      return { id: set.id, name: set.name, accuracyFactor: factor, damageFactor: factor };
+    }
     const allPresent = set.pieces.every((p) =>
       p.itemIds.some((id) => itemIds.has(id)),
     );
     if (allPresent) {
-      // Inquisitor's full set is normally +2.5% (×41/40). The Inquisitor's MACE
-      // upgrades the per-piece bonus from 0.5%→2.5%, so a full set + mace is
-      // +7.5% (×43/40) — matching wgloop's `inqPieces *= 5` → ×(200+15)/200.
-      if (set.id === "inquisitors" && weaponId === INQUISITORS_MACE_ID) {
-        return { id: set.id, name: set.name, accuracyFactor: [43, 40], damageFactor: [43, 40] };
-      }
       return { id: set.id, name: set.name, ...set.bonus };
     }
   }
   return undefined;
 }
 
-const INQUISITORS_MACE_ID = 24417;
-
 /**
  * Every armor set in the catalog whose pieces are all in the bank — AND, if
  * the set requires a specific weapon (Obsidian → TzHaar), at least one such
  * weapon is also in the bank. Used by the bank optimizer to enumerate
  * force-include branches.
+ *
+ * A per-piece set (Inquisitor's) is worth wearing in part, so it is expanded
+ * into one definition per non-empty subset of the pieces the bank holds (the
+ * complete set keeps the bare set id; subsets get "<id>:<slot>+<slot>"). That
+ * lets the optimizer try e.g. hauberk + plateskirt with a different helm, which
+ * matters now that the helm is only worth +0.5%.
  *
  * Note: this DOES NOT filter by attackType (Inquisitor's still appears here
  * even if no crush weapon is in the bank, because the bank's crush-capable
@@ -329,10 +367,23 @@ const INQUISITORS_MACE_ID = 24417;
 export function availableArmorSetsInBank(
   bankIds: ReadonlySet<number>,
 ): readonly ArmorSetDefinition[] {
-  return ARMOR_SETS.filter((set) => {
-    if (!set.pieces.every((p) => p.itemIds.some((id) => bankIds.has(id)))) return false;
-    if (set.requiredWeaponIds && !set.requiredWeaponIds.some((id) => bankIds.has(id))) return false;
-    return true;
+  const inBank = (p: SetSlotRequirement) => p.itemIds.some((id) => bankIds.has(id));
+  return ARMOR_SETS.flatMap((set): ArmorSetDefinition[] => {
+    if (set.requiredWeaponIds && !set.requiredWeaponIds.some((id) => bankIds.has(id))) return [];
+    if (set.perPieceDenominator === undefined) {
+      return set.pieces.every(inBank) ? [set] : [];
+    }
+    const owned = set.pieces.filter(inBank);
+    const subsets: ArmorSetDefinition[] = [];
+    for (let mask = 1; mask < 1 << owned.length; mask++) {
+      const pieces = owned.filter((_, i) => mask & (1 << i));
+      subsets.push(
+        pieces.length === set.pieces.length
+          ? set
+          : { ...set, id: `${set.id}:${pieces.map((p) => p.slot).join("+")}`, pieces },
+      );
+    }
+    return subsets;
   });
 }
 

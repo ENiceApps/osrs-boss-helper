@@ -6,12 +6,23 @@ import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
+import {
+  amuletBoostsElement,
+  ELEMENTAL_AMULET_MAX_HIT_BONUS,
+} from "@/data/bonus-trigger-items";
 
 export interface TargetActiveBonuses {
   conditionalBonuses: ConditionalBonusFlags;
   tomeOfFireEquipped: boolean;
   tomeOfWaterEquipped: boolean;
   tomeOfEarthEquipped: boolean;
+  /**
+   * Flat max-hit bonus an elemental amulet adds to the cast spell's base hit:
+   * 2 when the worn Amulet of air/water/earth/fire matches `set.spellElement`
+   * (or the Elemental amulet is worn with any elemental spell), else 0. Powered
+   * staves and non-elemental spells have no element, so are always 0.
+   */
+  elementalAmuletMaxHitBonus: number;
   /** True iff this loadout's weapon is Twisted bow. */
   twistedBowEquipped: boolean;
   /** True iff Osmumten's fang is the weapon AND it's swung on a stab style. */
@@ -70,6 +81,12 @@ export function activeBonusesForTarget(
     tomeOfFireEquipped: set.itemBonusFlags.tomeOfFire && castsFire,
     tomeOfWaterEquipped: set.itemBonusFlags.tomeOfWater && castsWater,
     tomeOfEarthEquipped: set.itemBonusFlags.tomeOfEarth && castsEarth,
+    // Elemental amulet: +2 on spells of the matching element, vs all NPCs.
+    elementalAmuletMaxHitBonus:
+      set.style === "magic" &&
+      amuletBoostsElement(set.itemBonusFlags.elementalAmulet, set.spellElement)
+        ? ELEMENTAL_AMULET_MAX_HIT_BONUS
+        : 0,
     twistedBowEquipped: set.itemBonusFlags.twistedBow,
     // Fang's double accuracy roll only fires on stab styles (Stab/Lunge/Block);
     // its slash style is a vanilla swing. Target-independent — works on any NPC.

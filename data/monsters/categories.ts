@@ -62,6 +62,11 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "phantom-muspah": "mid",
   "the-hueycoatl": "mid",
   "mad-angel": "mid", // Wyrmscraig cathedral golem (2026-07-29), post-Fallen From Grace
+  // Sotfa Forest group boss (released 2026-08-12): needs 10+ players, HP scales
+  // with the group, and the wiki calls it a boss
+  // (https://oldschool.runescape.wiki/w/Vampyre_Snail). Not a Slayer creature, so
+  // it is deliberately NOT in SLAYER_BOSSES below.
+  "vampyre-snail": "mid",
   "tztok-jad": "mid",
   "blood-moon": "mid",
   "blue-moon": "mid",

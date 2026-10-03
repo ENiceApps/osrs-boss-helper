@@ -413,6 +413,11 @@ describe("optimize/bank — powered staff formula (Trident fix)", () => {
 // staff — Standard-only — so it can never autocast an Ancient barrage.
 const STAFF_OF_WATER = 1383; // category: Staff, magic+10, Standard-only autocast
 const ANCIENT_STAFF = 4675;  // autocasts Ancient Magicks + Standard
+// Rex is weak to EARTH (35%), and since the elemental-ladder fix every Surge ties
+// at 95+ Magic, so the weakness-aware auto-pick lands on the earth spell. The
+// same target with its weakness removed is the neutral case: nothing
+// distinguishes the elements, so the pick defaults to Fire.
+const REX_NEUTRAL = { ...REX, weakness: null };
 
 describe("optimize/bank — cross-spellbook auto-spell selection", () => {
   it("Staff of water alone yields non-zero magic DPS on Rex", () => {
@@ -429,24 +434,49 @@ describe("optimize/bank — cross-spellbook auto-spell selection", () => {
     expect(top.dps.dps).toBeGreaterThan(0);
   });
 
-  it("Standard-only staff at magic 99 → Fire Surge (best autocastable standard spell), NOT Ice Barrage", () => {
+  it("Standard-only staff at magic 99, neutral target → Fire Surge (best autocastable standard spell), NOT Ice Barrage", () => {
     const { rankings } = optimizeForBoss({
       bank: [STAFF_OF_WATER],
-      target: REX,
+      target: REX_NEUTRAL,
       skills: SKILLS_AT_99,
     });
     expect(rankings.length).toBeGreaterThan(0);
     expect(rankings[0].loadout.autoSpellName).toBe("Fire Surge");
   });
 
-  it("Standard-only staff at magic 81 → Wind Surge (best autocastable standard spell at that level)", () => {
+  it("Standard-only staff at magic 99 vs an earth-weak target → Earth Surge (not Fire Surge, NOT Ice Barrage)", () => {
+    // Was "Fire Surge" when ranking ignored the target's weakness and Earth Surge
+    // (23) trailed Fire Surge (24); with the ladder every Surge is 24 at 99, and
+    // Earth Surge's +35% weakness bonus (24 + trunc(24 x 35/100) = 32) wins.
+    const { rankings } = optimizeForBoss({
+      bank: [STAFF_OF_WATER],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Earth Surge");
+  });
+
+  it("Standard-only staff at magic 81, neutral target → Wind Surge (best autocastable standard spell at that level)", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [STAFF_OF_WATER],
+      target: REX_NEUTRAL,
+      skills: { ...SKILLS_AT_99, magic: 81 },
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Wind Surge");
+  });
+
+  it("Standard-only staff at magic 81 vs an earth-weak target → Earth Wave", () => {
+    // Wave hits for 20 at 81 Magic (Fire Wave's tier is unlocked at 75): Earth
+    // Wave = 20 + trunc(20 x 35/100) = 27 beats Wind Surge's 21.
     const { rankings } = optimizeForBoss({
       bank: [STAFF_OF_WATER],
       target: REX,
       skills: { ...SKILLS_AT_99, magic: 81 },
     });
     expect(rankings.length).toBeGreaterThan(0);
-    expect(rankings[0].loadout.autoSpellName).toBe("Wind Surge");
+    expect(rankings[0].loadout.autoSpellName).toBe("Earth Wave");
   });
 
   it("elemental tie-break: Fire Surge → Staff of fire wins over equal-DPS staves", () => {
@@ -455,7 +485,7 @@ describe("optimize/bank — cross-spellbook auto-spell selection", () => {
     // the Staff of fire because it supplies the spell's (fire) runes.
     const { rankings } = optimizeForBoss({
       bank: [1381, 1383, 1385, 1387], // Staff of air / water / earth / fire
-      target: REX,
+      target: REX_NEUTRAL,
       skills: SKILLS_AT_99,
     });
     expect(rankings.length).toBeGreaterThan(0);
@@ -463,10 +493,23 @@ describe("optimize/bank — cross-spellbook auto-spell selection", () => {
     expect(rankings[0].loadout.slots.weapon?.itemId).toBe(1387); // Staff of fire
   });
 
-  it("an Ancient-capable staff DOES auto-select Ice Barrage at magic 99", () => {
+  it("elemental tie-break vs an earth-weak target: Earth Surge → Staff of earth", () => {
+    const { rankings } = optimizeForBoss({
+      bank: [1381, 1383, 1385, 1387],
+      target: REX,
+      skills: SKILLS_AT_99,
+    });
+    expect(rankings.length).toBeGreaterThan(0);
+    expect(rankings[0].loadout.autoSpellName).toBe("Earth Surge");
+    expect(rankings[0].loadout.slots.weapon?.itemId).toBe(1385); // Staff of earth
+  });
+
+  it("an Ancient-capable staff DOES auto-select Ice Barrage at magic 99 (neutral target)", () => {
+    // On the earth-weak Rex the weakness-boosted Earth Surge (32) outranks Ice
+    // Barrage (30); on a neutral target the barrage wins.
     const { rankings } = optimizeForBoss({
       bank: [ANCIENT_STAFF],
-      target: REX,
+      target: REX_NEUTRAL,
       skills: SKILLS_AT_99,
     });
     const magic = rankings.find((r) => r.loadout.style === "magic");

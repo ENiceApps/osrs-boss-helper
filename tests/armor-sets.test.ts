@@ -8,6 +8,7 @@ import { SKILLS_AT_99 } from "@/lib/recommend";
 import {
   detectArmorSetBonus,
   availableArmorSetsInBank,
+  piecesToEquipForSet,
   ARMOR_SETS,
 } from "@/data/armor-sets";
 import { scoreScenario } from "@/lib/optimize/scenario";
@@ -149,22 +150,105 @@ const INQ_LEGS = 24421;
 const INQ_MACE = 24417;        // Spiked — supports crush and stab styles
 const ABYSSAL_WHIP = 4151;     // Slash — should NEVER fire Inquisitor's
 
-describe("Inquisitor's armour — crush-only constraint", () => {
-  it("fires at +7.5% (×43/40) with the Inquisitor's mace", () => {
-    // The mace upgrades each piece's bonus, so a full set + mace is +7.5%.
-    const ids = new Set([INQ_HELM, INQ_BODY, INQ_LEGS, INQ_MACE]);
-    const bonus = detectArmorSetBonus(ids, "melee", { attackType: "crush", weaponId: INQ_MACE });
-    expect(bonus?.id).toBe("inquisitors");
-    expect(bonus?.damageFactor).toEqual([43, 40]);
-    expect(bonus?.accuracyFactor).toEqual([43, 40]);
+// Per-piece rework (Summer Sweep-Up Gear & PvM Changes, 2026-07-22): helm +0.5%,
+// hauberk +1%, plateskirt +1% crush accuracy AND damage; no set effect, and the
+// Inquisitor's mace no longer amplifies it. Weird Gloop: ×(200+n)/200 with
+// n = helm 1 + hauberk 2 + plateskirt 2.
+describe("Inquisitor's armour — crush-only, per-piece constraint", () => {
+  const crush = (ids: number[], weaponId: number) =>
+    detectArmorSetBonus(new Set([...ids, weaponId]), "melee", { attackType: "crush", weaponId });
+
+  it("full set + the Inquisitor's mace is ×205/200 — the mace no longer amplifies it", () => {
+    const withMace = crush([INQ_HELM, INQ_BODY, INQ_LEGS], INQ_MACE);
+    expect(withMace?.id).toBe("inquisitors");
+    expect(withMace?.accuracyFactor).toEqual([205, 200]);
+    expect(withMace?.damageFactor).toEqual([205, 200]);
+    // Identical to the full set with any other crush weapon.
+    const BARRELCHEST_ANCHOR = 10887;
+    const withAnchor = crush([INQ_HELM, INQ_BODY, INQ_LEGS], BARRELCHEST_ANCHOR);
+    expect(withAnchor?.accuracyFactor).toEqual([205, 200]);
+    expect(withAnchor?.damageFactor).toEqual([205, 200]);
   });
 
-  it("fires at +2.5% (×41/40) with a non-mace crush weapon", () => {
-    const BARRELCHEST_ANCHOR = 10887; // crush, not the Inquisitor's mace
-    const ids = new Set([INQ_HELM, INQ_BODY, INQ_LEGS, BARRELCHEST_ANCHOR]);
-    const bonus = detectArmorSetBonus(ids, "melee", { attackType: "crush", weaponId: BARRELCHEST_ANCHOR });
+  it("great helm alone is +0.5% (×201/200)", () => {
+    const bonus = crush([INQ_HELM], INQ_MACE);
     expect(bonus?.id).toBe("inquisitors");
-    expect(bonus?.damageFactor).toEqual([41, 40]);
+    expect(bonus?.accuracyFactor).toEqual([201, 200]);
+    expect(bonus?.damageFactor).toEqual([201, 200]);
+  });
+
+  it("helm + hauberk is +1.5% (×203/200)", () => {
+    const bonus = crush([INQ_HELM, INQ_BODY], INQ_MACE);
+    expect(bonus?.accuracyFactor).toEqual([203, 200]);
+    expect(bonus?.damageFactor).toEqual([203, 200]);
+  });
+
+  it("hauberk + plateskirt is +2% (×204/200)", () => {
+    const bonus = crush([INQ_BODY, INQ_LEGS], INQ_MACE);
+    expect(bonus?.accuracyFactor).toEqual([204, 200]);
+    expect(bonus?.damageFactor).toEqual([204, 200]);
+  });
+
+  it("a single hauberk or plateskirt is +1% (×202/200); no pieces = no bonus", () => {
+    expect(crush([INQ_BODY], INQ_MACE)?.damageFactor).toEqual([202, 200]);
+    expect(crush([INQ_LEGS], INQ_MACE)?.damageFactor).toEqual([202, 200]);
+    expect(crush([], INQ_MACE)).toBeUndefined();
+  });
+
+  it("works with any crush weapon, not just the mace", () => {
+    const BARRELCHEST_ANCHOR = 10887; // crush
+    const bonus = crush([INQ_HELM, INQ_LEGS], BARRELCHEST_ANCHOR);
+    expect(bonus?.accuracyFactor).toEqual([203, 200]);
+  });
+
+  it("pieces never fire off a non-crush attack type (slash whip, stab, or unknown)", () => {
+    const ids = new Set([INQ_HELM, INQ_BODY, INQ_LEGS, ABYSSAL_WHIP]);
+    expect(detectArmorSetBonus(ids, "melee", { attackType: "slash", weaponId: ABYSSAL_WHIP })).toBeUndefined();
+    expect(detectArmorSetBonus(ids, "melee", { attackType: "stab", weaponId: ABYSSAL_WHIP })).toBeUndefined();
+    expect(detectArmorSetBonus(ids, "melee", { weaponId: ABYSSAL_WHIP })).toBeUndefined();
+    const helmOnly = new Set([INQ_HELM, ABYSSAL_WHIP]);
+    expect(detectArmorSetBonus(helmOnly, "melee", { attackType: "slash", weaponId: ABYSSAL_WHIP })).toBeUndefined();
+  });
+
+  it("availableArmorSetsInBank offers every non-empty subset of owned Inquisitor pieces", () => {
+    const ids = (sets: ReturnType<typeof availableArmorSetsInBank>) =>
+      sets.filter((s) => s.id.startsWith("inquisitors")).map((s) => s.id).sort();
+    // No pieces → nothing; one piece → just that piece.
+    expect(ids(availableArmorSetsInBank(new Set([INQ_MACE])))).toEqual([]);
+    expect(ids(availableArmorSetsInBank(new Set([INQ_BODY])))).toEqual(["inquisitors:body"]);
+    // Two pieces → each alone plus the pair (3 candidates).
+    expect(ids(availableArmorSetsInBank(new Set([INQ_HELM, INQ_LEGS])))).toEqual([
+      "inquisitors:head",
+      "inquisitors:head+legs",
+      "inquisitors:legs",
+    ]);
+    // All three → 7 subsets, the full one keeping the bare set id.
+    const full = ids(availableArmorSetsInBank(new Set([INQ_HELM, INQ_BODY, INQ_LEGS])));
+    expect(full).toHaveLength(7);
+    expect(full).toContain("inquisitors");
+  });
+
+  it("engine integration: a lone plateskirt + crush weapon fires the partial bonus in scoreScenario", () => {
+    const BARRELCHEST_ANCHOR = 10887; // crush
+    const GRAARDOR = MONSTER_BY_SLUG["general-graardor"];
+    const scored = scoreScenario({
+      itemIds: [INQ_LEGS, BARRELCHEST_ANCHOR],
+      target: GRAARDOR,
+      skills: SKILLS_AT_99,
+    });
+    if (!scored.valid) throw new Error(`invalid: ${scored.reasons.join("; ")}`);
+    expect(scored.loadout.armorSetBonus?.id).toBe("inquisitors");
+    expect(scored.loadout.armorSetBonus?.accuracyFactor).toEqual([202, 200]);
+    expect(scored.loadout.armorSetBonus?.damageFactor).toEqual([202, 200]);
+  });
+
+  it("subset definitions resolve to exactly the owned pieces", () => {
+    const bank = new Set([INQ_HELM, INQ_BODY, INQ_LEGS]);
+    const sub = availableArmorSetsInBank(bank).find((s) => s.id === "inquisitors:body+legs")!;
+    expect(piecesToEquipForSet(sub, bank)).toEqual([
+      { slot: "body", itemId: INQ_BODY },
+      { slot: "legs", itemId: INQ_LEGS },
+    ]);
   });
 
   it("does NOT fire when same mace is set to stab style", () => {

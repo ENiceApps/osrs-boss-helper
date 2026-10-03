@@ -44,4 +44,17 @@ export const REQUIREMENT_OVERRIDES: Record<string, CombatRequirement> = {
   // is absent from item-requirements.json entirely. Verified: "requires level
   // 75 Attack to wield" on the Hallowfell wiki page.
   "Hallowfell": { attack: 75 },
+
+  // Elemental amulets ("Summer Sweep Up Miscellaneous", 2026-09-02) — released
+  // after the vendored requirements scrape, so they are absent from
+  // item-requirements.json entirely. Verified: each wiki page opens "an amulet
+  // requiring level 59 Magic to equip" (same as the amulet of magic they are
+  // crafted from). https://oldschool.runescape.wiki/w/Elemental_amulet (and
+  // Amulet_of_air / _water / _earth / _fire). The Necklace of fangs from the
+  // same update has no equip requirement, so it needs no entry.
+  "Amulet of air": { magic: 59 },
+  "Amulet of water": { magic: 59 },
+  "Amulet of earth": { magic: 59 },
+  "Amulet of fire": { magic: 59 },
+  "Elemental amulet": { magic: 59 },
 };

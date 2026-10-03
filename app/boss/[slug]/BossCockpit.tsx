@@ -12,7 +12,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catalog";
-import { computeSetDps, SKILLS_AT_99 } from "@/lib/recommend";
+import { computeSetDps, SKILLS_AT_99, SOULREAPER_AXE_IDS } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
 import { itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
@@ -25,6 +25,7 @@ import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
 import { activeBonusesForTarget } from "@/lib/loadout";
+import { demonbaneVulnerabilityFor } from "@/data/monsters/demonbane-vulnerability";
 import { explainSlots } from "@/lib/loadout-explain";
 import { rankSlotAlternatives, type SlotAlternative } from "@/lib/slot-alternatives";
 import { compareSlotsVsReference, type SlotVsBank } from "@/lib/loadout-compare";
@@ -597,8 +598,10 @@ export function BossCockpit({ slug }: { slug: string }) {
   }, [slug]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Soulreaper: only meaningful when the axe is actually equipped.
-  const soulreaperEquipped = selectedSet?.slots.weapon?.itemId === 28338;
+  // Soulreaper: only meaningful when the axe is actually equipped — the base
+  // axe (28338) or its (o) variant (33335); the 2026-07-22 Summer Sweep-Up post
+  // covers both. The id list lives with the DPS engine (lib/recommend.ts).
+  const soulreaperEquipped = SOULREAPER_AXE_IDS.has(selectedSet?.slots.weapon?.itemId ?? -1);
   // Ruby bolts (e) / Ruby dragon bolts (e) in the ammo slot.
   const rubyAmmoId = selectedSet?.slots.ammo?.itemId;
   const rubyBoltsEquipped =
@@ -1149,6 +1152,7 @@ export function BossCockpit({ slug }: { slug: string }) {
             set={selectedSet}
             dps={selectedDps}
             activeBonuses={selectedActiveBonuses}
+            demonbaneVulnerability={demonbaneVulnerabilityFor(monster)}
             result={activeTab === "best" ? budgetResult : (styleResults?.[activeTab] ?? null)}
             edited={overridesActive}
             boltProcFlag={boltProcFlag}
@@ -1235,6 +1239,8 @@ export function BossCockpit({ slug }: { slug: string }) {
           magicLevel={skills.magic}
           targetAttributes={monster.attributes}
           weaponId={selectedSet?.slots.weapon?.itemId}
+          elementalAmulet={selectedSet?.itemBonusFlags.elementalAmulet}
+          targetWeakness={monster.weakness}
           onSelect={onSpellSelect}
           onClose={() => setSpellPickerOpen(false)}
         />

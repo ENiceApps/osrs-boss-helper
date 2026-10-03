@@ -5,7 +5,7 @@
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { hasTrigger } from "@/data/bonus-trigger-items";
+import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { spellMaxHit, type SpellEntry } from "@/data/spells/catalog";
@@ -164,6 +164,7 @@ export function applyOverrides(
     twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
     fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
     slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
+    elementalAmulet: elementalAmuletKind(slotItemIds),
   };
 
   // Respect the base's speed override (e.g. Harmonised's 5→4 reduction).

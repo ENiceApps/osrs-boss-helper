@@ -26,6 +26,13 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   TWISTED_BOW: 20997,
   OSMUMTEN_FANG: 26219, // double accuracy roll on stab styles
   WILDERNESS_WEAPON: 22550, // Craw's bow — canonical; ×3/2 acc+dmg vs NPCs in the Wilderness
+  // Summer Sweep-Up Miscellaneous (2026-09-02): +2 max hit on spells of the
+  // matching element (the Elemental amulet covers all four). Neck slot.
+  AMULET_OF_AIR: 34407,
+  AMULET_OF_WATER: 34413,
+  AMULET_OF_EARTH: 34419,
+  AMULET_OF_FIRE: 34425,
+  ELEMENTAL_AMULET: 34428,
 } as const;
 
 export type BonusTriggerKey = keyof typeof BONUS_TRIGGER_ITEM_IDS;
@@ -75,6 +82,12 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
     27788, 27785, // Thammaron's sceptre (a)
     27679, 27676, // Accursed sceptre (a)
   ],
+  // One item id each — no cosmetic/imbue variants exist yet.
+  AMULET_OF_AIR: [34407],
+  AMULET_OF_WATER: [34413],
+  AMULET_OF_EARTH: [34419],
+  AMULET_OF_FIRE: [34425],
+  ELEMENTAL_AMULET: [34428],
 };
 
 /** True iff any variant of the trigger is present (worn-slot flag derivation). */
@@ -92,4 +105,60 @@ export function ownedTriggerIds(
   key: BonusTriggerKey,
 ): number[] {
   return BONUS_TRIGGER_VARIANTS[key].filter((id) => bank.has(id));
+}
+
+/**
+ * The elemental amulets (Summer Sweep-Up 2026-09-02): each of the four
+ * single-element amulets boosts its own element; the Elemental amulet boosts all
+ * four.
+ */
+export type ElementalAmuletKind = "air" | "water" | "earth" | "fire" | "all";
+
+/** Flat max-hit bonus a matching elemental amulet adds to the spell's base hit. */
+export const ELEMENTAL_AMULET_MAX_HIT_BONUS = 2;
+
+/** Trigger key → which elements the amulet covers. */
+export const ELEMENTAL_AMULET_KEYS: ReadonlyArray<readonly [BonusTriggerKey, ElementalAmuletKind]> = [
+  ["AMULET_OF_AIR", "air"],
+  ["AMULET_OF_WATER", "water"],
+  ["AMULET_OF_EARTH", "earth"],
+  ["AMULET_OF_FIRE", "fire"],
+  ["ELEMENTAL_AMULET", "all"],
+];
+
+/**
+ * Which elemental amulet (if any) is among these item ids. A set only has one
+ * neck slot, so at most one matches; the Elemental amulet wins if somehow
+ * several are listed (a pile of ids rather than a worn set).
+ */
+export function elementalAmuletKind(
+  itemIds: ReadonlySet<number>,
+): ElementalAmuletKind | undefined {
+  if (hasTrigger(itemIds, "ELEMENTAL_AMULET")) return "all";
+  for (const [key, kind] of ELEMENTAL_AMULET_KEYS) {
+    if (hasTrigger(itemIds, key)) return kind;
+  }
+  return undefined;
+}
+
+/**
+ * True iff an elemental amulet of this kind boosts a spell of `element`
+ * (upstream `hasMatchingElementalAmulet`: Elemental amulet matches any real
+ * element, a single amulet only its own). "none"/undefined elements — Ancient and
+ * Arceuus spells, the standard specials, powered staves — never match.
+ */
+export function amuletBoostsElement(
+  kind: ElementalAmuletKind | undefined,
+  element: string | undefined,
+): boolean {
+  if (!kind) return false;
+  if (element !== "air" && element !== "water" && element !== "earth" && element !== "fire") {
+    return false;
+  }
+  return kind === "all" || kind === element;
+}
+
+/** Item ids of every elemental amulet in a bank (force-include candidates). */
+export function ownedElementalAmuletIds(bank: ReadonlySet<number>): number[] {
+  return ELEMENTAL_AMULET_KEYS.flatMap(([key]) => ownedTriggerIds(bank, key));
 }

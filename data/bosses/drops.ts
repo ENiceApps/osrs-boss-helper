@@ -85,6 +85,113 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.005859
     }
   ],
+  "abyssal-demon": [
+    {
+      "itemId": 995,
+      "name": "Coins",
+      "expected": 58.859375
+    },
+    {
+      "itemId": 556,
+      "name": "Air rune",
+      "expected": 3.125
+    },
+    {
+      "itemId": 7936,
+      "name": "Pure essence",
+      "expected": 2.34375
+    },
+    {
+      "itemId": 25775,
+      "name": "Abyssal ashes",
+      "expected": 1
+    },
+    {
+      "itemId": 562,
+      "name": "Chaos rune",
+      "expected": 0.546875
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 0.21875
+    },
+    {
+      "itemId": 13508,
+      "name": "Ensouled abyssal head",
+      "expected": 0.04
+    },
+    {
+      "itemId": 1283,
+      "name": "Black sword",
+      "expected": 0.03125
+    },
+    {
+      "itemId": 1365,
+      "name": "Steel battleaxe",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 1361,
+      "name": "Black axe",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 2361,
+      "name": "Adamantite bar",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 379,
+      "name": "Lobster",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 1197,
+      "name": "Mithril kiteshield",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1113,
+      "name": "Rune chainbody",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1147,
+      "name": "Rune med helm",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1454,
+      "name": "Cosmic talisman",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1452,
+      "name": "Chaos talisman",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 133,
+      "name": "Defence potion(3)",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 4151,
+      "name": "Abyssal whip",
+      "expected": 0.001953
+    },
+    {
+      "itemId": 13265,
+      "name": "Abyssal dagger",
+      "expected": 0.000031
+    }
+  ],
   "abyssal-sire": [
     {
       "itemId": 995,
@@ -390,11 +497,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 9559.90099
     },
     {
-      "itemId": 22804,
-      "name": "Dragon knife",
-      "expected": 749.625
-    },
-    {
       "itemId": 562,
       "name": "Chaos rune",
       "expected": 26.732673
@@ -430,21 +532,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 2
     },
     {
-      "itemId": 22988,
-      "name": "Hydra tail",
-      "expected": 0.9995
-    },
-    {
-      "itemId": 22983,
-      "name": "Hydra leather",
-      "expected": 0.9995
-    },
-    {
-      "itemId": 22966,
-      "name": "Hydra's claw",
-      "expected": 0.9995
-    },
-    {
       "itemId": 1391,
       "name": "Battlestaff",
       "expected": 0.990099
@@ -463,6 +550,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 20849,
       "name": "Dragon thrownaxe",
       "expected": 0.375
+    },
+    {
+      "itemId": 22804,
+      "name": "Dragon knife",
+      "expected": 0.374813
     },
     {
       "itemId": 3026,
@@ -533,6 +625,21 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 989,
       "name": "Crystal key",
       "expected": 0.019802
+    },
+    {
+      "itemId": 22988,
+      "name": "Hydra tail",
+      "expected": 0.001949
+    },
+    {
+      "itemId": 22983,
+      "name": "Hydra leather",
+      "expected": 0.001946
+    },
+    {
+      "itemId": 22966,
+      "name": "Hydra's claw",
+      "expected": 0.000999
     },
     {
       "itemId": 23064,
@@ -716,6 +823,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1079,
       "name": "Rune platelegs",
+      "expected": 0.034483
+    },
+    {
+      "itemId": 30088,
+      "name": "Huasca seed",
       "expected": 0.034483
     },
     {
@@ -968,6 +1080,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.005051
     },
     {
+      "itemId": 21646,
+      "name": "Granite longsword",
+      "expected": 0.001667
+    },
+    {
       "itemId": 21643,
       "name": "Granite boots",
       "expected": 0.001667
@@ -1010,6 +1127,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.216949
     },
     {
+      "itemId": 21545,
+      "name": "Pyrophosphite",
+      "expected": 0.152542
+    },
+    {
       "itemId": 21543,
       "name": "Calcite",
       "expected": 0.152542
@@ -1020,6 +1142,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.084746
     },
     {
+      "itemId": 213,
+      "name": "Grimy kwuarm",
+      "expected": 0.063559
+    },
+    {
       "itemId": 21622,
       "name": "Volcanic ash",
       "expected": 0.054237
@@ -1028,6 +1155,21 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 219,
       "name": "Grimy torstol",
       "expected": 0.050847
+    },
+    {
+      "itemId": 217,
+      "name": "Grimy dwarf weed",
+      "expected": 0.050847
+    },
+    {
+      "itemId": 215,
+      "name": "Grimy cadantine",
+      "expected": 0.050847
+    },
+    {
+      "itemId": 2485,
+      "name": "Grimy lantadyme",
+      "expected": 0.038136
     },
     {
       "itemId": 1359,
@@ -1046,57 +1188,27 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 105.424737
+      "expected": 78.894737
     },
     {
       "itemId": 11940,
       "name": "Dark fishing bait",
-      "expected": 59.973913
-    },
-    {
-      "itemId": 313,
-      "name": "Fishing bait",
-      "expected": 19.8
-    },
-    {
-      "itemId": 526,
-      "name": "Bones",
-      "expected": 3
+      "expected": 37.173913
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 2.043478
+      "expected": 1.043478
+    },
+    {
+      "itemId": 526,
+      "name": "Bones",
+      "expected": 1
     },
     {
       "itemId": 565,
       "name": "Blood rune",
-      "expected": 1.538261
-    },
-    {
-      "itemId": 890,
-      "name": "Adamant arrow",
-      "expected": 0.76
-    },
-    {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 0.75
-    },
-    {
-      "itemId": 1436,
-      "name": "Rune essence",
-      "expected": 0.75
-    },
-    {
-      "itemId": 563,
-      "name": "Law rune",
-      "expected": 0.54
-    },
-    {
-      "itemId": 447,
-      "name": "Mithril ore",
-      "expected": 0.458696
+      "expected": 0.728261
     },
     {
       "itemId": 892,
@@ -1104,34 +1216,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.413043
     },
     {
-      "itemId": 581,
-      "name": "Black robe",
-      "expected": 0.06
-    },
-    {
-      "itemId": 365,
-      "name": "Bass",
-      "expected": 0.02
-    },
-    {
-      "itemId": 187,
-      "name": "Weapon poison",
-      "expected": 0.02
+      "itemId": 447,
+      "name": "Mithril ore",
+      "expected": 0.108696
     },
     {
       "itemId": 1073,
       "name": "Adamant platelegs",
       "expected": 0.01087
-    },
-    {
-      "itemId": 869,
-      "name": "Black knife",
-      "expected": 0.01
-    },
-    {
-      "itemId": 7082,
-      "name": "Fried mushrooms",
-      "expected": 0.01
     }
   ],
   "aquanite": [
@@ -1582,9 +1674,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.016807
     },
     {
+      "itemId": 31996,
+      "name": "Dragon metal sheet",
+      "expected": 0.011111
+    },
+    {
       "itemId": 4093,
       "name": "Mystic robe bottom",
       "expected": 0.008403
+    },
+    {
+      "itemId": 31949,
+      "name": "Bottled storm",
+      "expected": 0.002
+    },
+    {
+      "itemId": 32017,
+      "name": "Dragon keel parts",
+      "expected": 0.001852
+    },
+    {
+      "itemId": 32038,
+      "name": "Large dragon keel parts",
+      "expected": 0.001852
     },
     {
       "itemId": 32093,
@@ -2017,6 +2129,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 7158,
+      "name": "Dragon 2h sword",
+      "expected": 0.002793
+    },
+    {
       "itemId": 11920,
       "name": "Dragon pickaxe",
       "expected": 0.002793
@@ -2218,6 +2335,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.472441
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.188976
+    },
+    {
       "itemId": 7060,
       "name": "Tuna potato",
       "expected": 0.125984
@@ -2231,6 +2353,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -2571,6 +2698,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.019231
     },
     {
+      "itemId": 4109,
+      "name": "Mystic hat (light)",
+      "expected": 0.003906
+    },
+    {
       "itemId": 24268,
       "name": "Basilisk jaw",
       "expected": 0.0002
@@ -2656,6 +2788,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1147,
       "name": "Rune med helm",
       "expected": 0.057692
+    },
+    {
+      "itemId": 4109,
+      "name": "Mystic hat (light)",
+      "expected": 0.003906
     },
     {
       "itemId": 24268,
@@ -2786,23 +2923,23 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 2136,
       "name": "Raw bear meat",
       "expected": 1
+    },
+    {
+      "itemId": 13463,
+      "name": "Ensouled bear head",
+      "expected": 0.04
     }
   ],
   "black-demon": [
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 82.508024
-    },
-    {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 3.125
+      "expected": 23.648649
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 2.91174
+      "expected": 2.364865
     },
     {
       "itemId": 25772,
@@ -2810,38 +2947,28 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1
     },
     {
-      "itemId": 565,
-      "name": "Blood rune",
-      "expected": 0.664696
-    },
-    {
       "itemId": 560,
       "name": "Death rune",
       "expected": 0.540541
     },
     {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 0.289063
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 0.445946
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.22614
-    },
-    {
-      "itemId": 2361,
-      "name": "Adamantite bar",
-      "expected": 0.069679
-    },
-    {
-      "itemId": 13502,
-      "name": "Ensouled demon head",
-      "expected": 0.057143
+      "expected": 0.202703
     },
     {
       "itemId": 1289,
       "name": "Rune sword",
+      "expected": 0.054054
+    },
+    {
+      "itemId": 2361,
+      "name": "Adamantite bar",
       "expected": 0.054054
     },
     {
@@ -2850,9 +2977,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.040541
     },
     {
-      "itemId": 1283,
-      "name": "Black sword",
-      "expected": 0.03125
+      "itemId": 13502,
+      "name": "Ensouled demon head",
+      "expected": 0.028571
     },
     {
       "itemId": 1371,
@@ -2865,36 +2992,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.027027
     },
     {
-      "itemId": 1365,
-      "name": "Steel battleaxe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 379,
-      "name": "Lobster",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1147,
-      "name": "Rune med helm",
-      "expected": 0.021326
-    },
-    {
-      "itemId": 1113,
-      "name": "Rune chainbody",
-      "expected": 0.021326
-    },
-    {
-      "itemId": 30810,
-      "name": "Contract of Glyphic Attenuation",
-      "expected": 0.018868
-    },
-    {
-      "itemId": 1361,
-      "name": "Black axe",
-      "expected": 0.015625
-    },
-    {
       "itemId": 1123,
       "name": "Adamant platebody",
       "expected": 0.013514
@@ -2905,66 +3002,46 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.013514
     },
     {
+      "itemId": 1147,
+      "name": "Rune med helm",
+      "expected": 0.013514
+    },
+    {
       "itemId": 1163,
       "name": "Rune full helm",
       "expected": 0.013514
     },
     {
-      "itemId": 1197,
-      "name": "Mithril kiteshield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 133,
-      "name": "Defence potion(3)",
-      "expected": 0.007813
+      "itemId": 1113,
+      "name": "Rune chainbody",
+      "expected": 0.013514
     }
   ],
   "black-dragon": [
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 449.179688
-    },
-    {
-      "itemId": 829,
-      "name": "Adamant javelin",
-      "expected": 4.6875
-    },
-    {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 3.125
-    },
-    {
-      "itemId": 536,
-      "name": "Dragon bones",
-      "expected": 2
-    },
-    {
-      "itemId": 1747,
-      "name": "Black dragonhide",
-      "expected": 2
-    },
-    {
-      "itemId": 19582,
-      "name": "Dragon javelin tips",
-      "expected": 1.640625
+      "expected": 356.757813
     },
     {
       "itemId": 868,
       "name": "Rune knife",
-      "expected": 1.453125
+      "expected": 1.40625
     },
     {
-      "itemId": 816,
-      "name": "Adamant dart(p)",
-      "expected": 0.875
+      "itemId": 19582,
+      "name": "Dragon javelin tips",
+      "expected": 1.171875
     },
     {
-      "itemId": 563,
-      "name": "Law rune",
-      "expected": 0.78125
+      "itemId": 536,
+      "name": "Dragon bones",
+      "expected": 1
+    },
+    {
+      "itemId": 1747,
+      "name": "Black dragonhide",
+      "expected": 1
     },
     {
       "itemId": 560,
@@ -2972,14 +3049,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.625
     },
     {
-      "itemId": 565,
-      "name": "Blood rune",
-      "expected": 0.585938
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 0.390625
     },
     {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 0.585938
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 0.234375
     },
     {
       "itemId": 562,
@@ -2989,17 +3066,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1123,
       "name": "Adamant platebody",
-      "expected": 0.164063
-    },
-    {
-      "itemId": 13511,
-      "name": "Ensouled dragon head",
-      "expected": 0.057143
-    },
-    {
-      "itemId": 2361,
-      "name": "Adamantite bar",
-      "expected": 0.046875
+      "expected": 0.15625
     },
     {
       "itemId": 7946,
@@ -3007,29 +3074,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
-      "itemId": 1315,
-      "name": "Mithril 2h sword",
-      "expected": 0.03125
-    },
-    {
       "itemId": 1317,
       "name": "Adamant 2h sword",
       "expected": 0.03125
     },
     {
-      "itemId": 1355,
-      "name": "Mithril axe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1369,
-      "name": "Mithril battleaxe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1897,
-      "name": "Chocolate cake",
-      "expected": 0.023438
+      "itemId": 13511,
+      "name": "Ensouled dragon head",
+      "expected": 0.028571
     },
     {
       "itemId": 1371,
@@ -3042,14 +3094,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
-      "itemId": 1303,
-      "name": "Rune longsword",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1197,
-      "name": "Mithril kiteshield",
-      "expected": 0.007813
+      "itemId": 2361,
+      "name": "Adamantite bar",
+      "expected": 0.023438
     },
     {
       "itemId": 1147,
@@ -3062,56 +3109,31 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 1303,
+      "name": "Rune longsword",
+      "expected": 0.007813
+    },
+    {
       "itemId": 11286,
       "name": "Draconic visage",
-      "expected": 0.0011
+      "expected": 0.001
     }
   ],
   "black-guard": [
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 10.382813
+      "expected": 8.117188
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
-    },
-    {
-      "itemId": 1265,
-      "name": "Bronze pickaxe",
-      "expected": 0.101563
+      "expected": 1
     },
     {
       "itemId": 436,
       "name": "Copper ore",
-      "expected": 0.101563
-    },
-    {
-      "itemId": 2347,
-      "name": "Hammer",
       "expected": 0.078125
-    },
-    {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 0.078125
-    },
-    {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 0.0625
-    },
-    {
-      "itemId": 561,
-      "name": "Nature rune",
-      "expected": 0.0625
-    },
-    {
-      "itemId": 2349,
-      "name": "Bronze bar",
-      "expected": 0.054688
     },
     {
       "itemId": 1335,
@@ -3119,14 +3141,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
-      "itemId": 1139,
-      "name": "Bronze med helm",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 438,
-      "name": "Tin ore",
-      "expected": 0.03125
+      "itemId": 440,
+      "name": "Iron ore",
+      "expected": 0.046875
     },
     {
       "itemId": 3801,
@@ -3139,24 +3156,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.03125
     },
     {
-      "itemId": 2351,
-      "name": "Iron bar",
-      "expected": 0.023438
-    },
-    {
       "itemId": 1337,
       "name": "Bronze warhammer",
       "expected": 0.023438
-    },
-    {
-      "itemId": 1375,
-      "name": "Bronze battleaxe",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 453,
-      "name": "Coal",
-      "expected": 0.015625
     },
     {
       "itemId": 1341,
@@ -3164,13 +3166,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
-      "itemId": 1363,
-      "name": "Iron battleaxe",
+      "itemId": 1339,
+      "name": "Steel warhammer",
       "expected": 0.007813
     },
     {
-      "itemId": 1339,
-      "name": "Steel warhammer",
+      "itemId": 438,
+      "name": "Tin ore",
       "expected": 0.007813
     },
     {
@@ -3904,6 +3906,118 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1444,
       "name": "Water talisman",
       "expected": 0.023438
+    },
+    {
+      "itemId": 11037,
+      "name": "Brine sabre",
+      "expected": 0.001953
+    }
+  ],
+  "bronze-dragon": [
+    {
+      "itemId": 995,
+      "name": "Coins",
+      "expected": 92.421875
+    },
+    {
+      "itemId": 2349,
+      "name": "Bronze bar",
+      "expected": 5
+    },
+    {
+      "itemId": 829,
+      "name": "Adamant javelin",
+      "expected": 4.6875
+    },
+    {
+      "itemId": 554,
+      "name": "Fire rune",
+      "expected": 3.125
+    },
+    {
+      "itemId": 536,
+      "name": "Dragon bones",
+      "expected": 1
+    },
+    {
+      "itemId": 816,
+      "name": "Adamant dart(p)",
+      "expected": 0.875
+    },
+    {
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 0.390625
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 0.351563
+    },
+    {
+      "itemId": 9142,
+      "name": "Mithril bolts",
+      "expected": 0.328125
+    },
+    {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 0.195313
+    },
+    {
+      "itemId": 868,
+      "name": "Rune knife",
+      "expected": 0.046875
+    },
+    {
+      "itemId": 373,
+      "name": "Swordfish",
+      "expected": 0.039063
+    },
+    {
+      "itemId": 1315,
+      "name": "Mithril 2h sword",
+      "expected": 0.03125
+    },
+    {
+      "itemId": 1355,
+      "name": "Mithril axe",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 1369,
+      "name": "Mithril battleaxe",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 2361,
+      "name": "Adamantite bar",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 1197,
+      "name": "Mithril kiteshield",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1123,
+      "name": "Adamant platebody",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1303,
+      "name": "Rune longsword",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 4585,
+      "name": "Dragon plateskirt",
+      "expected": 0.000488
+    },
+    {
+      "itemId": 4087,
+      "name": "Dragon platelegs",
+      "expected": 0.000488
     }
   ],
   "brutal-black-dragon": [
@@ -3965,6 +4079,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 11237,
       "name": "Dragon arrowtips",
+      "expected": 0.625
+    },
+    {
+      "itemId": 19582,
+      "name": "Dragon javelin tips",
       "expected": 0.625
     },
     {
@@ -4155,6 +4274,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.117188
     },
     {
+      "itemId": 19582,
+      "name": "Dragon javelin tips",
+      "expected": 0.09375
+    },
+    {
       "itemId": 11375,
       "name": "Adamant hasta",
       "expected": 0.078125
@@ -4297,6 +4421,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.65625
     },
     {
+      "itemId": 19582,
+      "name": "Dragon javelin tips",
+      "expected": 0.390625
+    },
+    {
       "itemId": 805,
       "name": "Rune thrownaxe",
       "expected": 0.234375
@@ -4404,11 +4533,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "brutus": [
     {
-      "itemId": 995,
-      "name": "Coins",
-      "expected": 25.308642
-    },
-    {
       "itemId": 556,
       "name": "Air rune",
       "expected": 3.580247
@@ -4488,66 +4612,51 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 41.007813
+      "expected": 19.601563
     },
     {
       "itemId": 557,
       "name": "Earth rune",
-      "expected": 1.265625
-    },
-    {
-      "itemId": 532,
-      "name": "Big bones",
-      "expected": 1
+      "expected": 0.632813
     },
     {
       "itemId": 556,
       "name": "Air rune",
-      "expected": 0.84375
+      "expected": 0.421875
     },
     {
       "itemId": 884,
       "name": "Iron arrow",
-      "expected": 0.46875
+      "expected": 0.234375
     },
     {
       "itemId": 886,
       "name": "Steel arrow",
-      "expected": 0.46875
+      "expected": 0.234375
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 0.328125
+      "expected": 0.164063
     },
     {
       "itemId": 561,
       "name": "Nature rune",
-      "expected": 0.28125
+      "expected": 0.140625
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.1875
+      "expected": 0.09375
     },
     {
       "itemId": 564,
       "name": "Cosmic rune",
-      "expected": 0.09375
+      "expected": 0.046875
     },
     {
       "itemId": 2353,
       "name": "Steel bar",
-      "expected": 0.09375
-    },
-    {
-      "itemId": 1179,
-      "name": "Black sq shield",
-      "expected": 0.078125
-    },
-    {
-      "itemId": 560,
-      "name": "Death rune",
       "expected": 0.046875
     },
     {
@@ -4556,19 +4665,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.041667
     },
     {
+      "itemId": 1179,
+      "name": "Black sq shield",
+      "expected": 0.039063
+    },
+    {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 0.023438
+    },
+    {
       "itemId": 1389,
       "name": "Magic staff",
-      "expected": 0.03125
+      "expected": 0.015625
     },
     {
       "itemId": 1141,
       "name": "Steel med helm",
-      "expected": 0.03125
+      "expected": 0.015625
     },
     {
       "itemId": 1285,
       "name": "Mithril sword",
-      "expected": 0.03125
+      "expected": 0.015625
     },
     {
       "itemId": 1243,
@@ -4578,21 +4697,21 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1193,
       "name": "Steel kiteshield",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 453,
-      "name": "Coal",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1969,
-      "name": "Spinach roll",
-      "expected": 0.015625
+      "expected": 0.007813
     },
     {
       "itemId": 565,
       "name": "Blood rune",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 453,
+      "name": "Coal",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1969,
+      "name": "Spinach roll",
       "expected": 0.007813
     }
   ],
@@ -4805,6 +4924,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.063492
     },
     {
+      "itemId": 27667,
+      "name": "Claws of Callisto",
+      "expected": 0.005102
+    },
+    {
       "itemId": 7158,
       "name": "Dragon 2h sword",
       "expected": 0.003906
@@ -4992,6 +5116,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 7158,
+      "name": "Dragon 2h sword",
+      "expected": 0.002793
+    },
+    {
       "itemId": 11920,
       "name": "Dragon pickaxe",
       "expected": 0.002793
@@ -5016,7 +5145,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 5.39604
+      "expected": 11.514851
     },
     {
       "itemId": 554,
@@ -5027,6 +5156,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 526,
       "name": "Bones",
       "expected": 1
+    },
+    {
+      "itemId": 7936,
+      "name": "Pure essence",
+      "expected": 0.742574
     },
     {
       "itemId": 555,
@@ -5044,9 +5178,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.09901
     },
     {
+      "itemId": 596,
+      "name": "Unlit torch",
+      "expected": 0.089109
+    },
+    {
       "itemId": 563,
       "name": "Law rune",
       "expected": 0.079208
+    },
+    {
+      "itemId": 562,
+      "name": "Chaos rune",
+      "expected": 0.069307
     },
     {
       "itemId": 221,
@@ -5054,9 +5198,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.069307
     },
     {
+      "itemId": 564,
+      "name": "Cosmic rune",
+      "expected": 0.059406
+    },
+    {
       "itemId": 333,
       "name": "Trout",
       "expected": 0.019802
+    },
+    {
+      "itemId": 1145,
+      "name": "Adamant med helm",
+      "expected": 0.009901
     }
   ],
   "cave-abomination": [
@@ -6589,7 +6743,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 20736,
       "name": "Dust battlestaff",
-      "expected": 0.00025
+      "expected": 0.00075
     },
     {
       "itemId": 3140,
@@ -6753,6 +6907,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1295,
       "name": "Steel longsword",
       "expected": 0.007813
+    },
+    {
+      "itemId": 4117,
+      "name": "Mystic boots (light)",
+      "expected": 0.001953
     }
   ],
   "colossal-hydra": [
@@ -6794,7 +6953,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 22786,
       "name": "Hydra bones",
-      "expected": 1.5
+      "expected": 1
     },
     {
       "itemId": 536,
@@ -6810,6 +6969,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 3030,
       "name": "Super restore(1)",
       "expected": 0.210938
+    },
+    {
+      "itemId": 20849,
+      "name": "Dragon thrownaxe",
+      "expected": 0.15
     },
     {
       "itemId": 22804,
@@ -6899,6 +7063,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.314961
     },
     {
+      "itemId": 2434,
+      "name": "Prayer potion(4)",
+      "expected": 0.188976
+    },
+    {
       "itemId": 163,
       "name": "Super defence(3)",
       "expected": 0.188976
@@ -6939,6 +7108,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.062992
     },
     {
+      "itemId": 11838,
+      "name": "Saradomin sword",
+      "expected": 0.007874
+    },
+    {
+      "itemId": 5316,
+      "name": "Magic seed",
+      "expected": 0.007874
+    },
+    {
       "itemId": 13256,
       "name": "Saradomin's light",
       "expected": 0.003937
@@ -6952,6 +7131,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 11814,
       "name": "Saradomin hilt",
       "expected": 0.001969
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.001312
     },
     {
       "itemId": 11820,
@@ -7114,6 +7298,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1401,
       "name": "Mystic fire staff",
       "expected": 0.023438
+    },
+    {
+      "itemId": 12829,
+      "name": "Spirit shield",
+      "expected": 0.015625
     },
     {
       "itemId": 12833,
@@ -7353,13 +7542,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.003906
     }
   ],
-  "crocodile": [
-    {
-      "itemId": 526,
-      "name": "Bones",
-      "expected": 1
-    }
-  ],
   "cruor": [
     {
       "itemId": 26225,
@@ -7450,17 +7632,17 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 69.245
-    },
-    {
-      "itemId": 869,
-      "name": "Black knife",
-      "expected": 2.24
+      "expected": 42.52
     },
     {
       "itemId": 532,
       "name": "Big bones",
-      "expected": 2
+      "expected": 1
+    },
+    {
+      "itemId": 869,
+      "name": "Black knife",
+      "expected": 0.88
     },
     {
       "itemId": 809,
@@ -7470,22 +7652,12 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1105,
       "name": "Steel chainbody",
-      "expected": 0.09
+      "expected": 0.07
     },
     {
       "itemId": 379,
       "name": "Lobster",
       "expected": 0.07
-    },
-    {
-      "itemId": 1217,
-      "name": "Black dagger",
-      "expected": 0.06
-    },
-    {
-      "itemId": 1317,
-      "name": "Adamant 2h sword",
-      "expected": 0.05
     },
     {
       "itemId": 1211,
@@ -7518,6 +7690,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.05
     },
     {
+      "itemId": 1217,
+      "name": "Black dagger",
+      "expected": 0.05
+    },
+    {
+      "itemId": 1317,
+      "name": "Adamant 2h sword",
+      "expected": 0.04
+    },
+    {
       "itemId": 1071,
       "name": "Mithril platelegs",
       "expected": 0.04
@@ -7526,81 +7708,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1147,
       "name": "Rune med helm",
       "expected": 0.03
-    },
-    {
-      "itemId": 1309,
-      "name": "Iron 2h sword",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1101,
-      "name": "Iron chainbody",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1207,
-      "name": "Steel dagger",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1424,
-      "name": "Steel mace",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1281,
-      "name": "Steel sword",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1365,
-      "name": "Steel battleaxe",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1311,
-      "name": "Steel 2h sword",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1295,
-      "name": "Steel longsword",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1141,
-      "name": "Steel med helm",
-      "expected": 0.02
-    },
-    {
-      "itemId": 1313,
-      "name": "Black 2h sword",
-      "expected": 0.01
-    },
-    {
-      "itemId": 1209,
-      "name": "Mithril dagger",
-      "expected": 0.01
-    },
-    {
-      "itemId": 1299,
-      "name": "Mithril longsword",
-      "expected": 0.01
-    },
-    {
-      "itemId": 1430,
-      "name": "Adamant mace",
-      "expected": 0.01
-    },
-    {
-      "itemId": 1283,
-      "name": "Black sword",
-      "expected": 0.01
-    },
-    {
-      "itemId": 1297,
-      "name": "Black longsword",
-      "expected": 0.01
     },
     {
       "itemId": 1183,
@@ -8291,8 +8398,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 6739,
+      "name": "Dragon axe",
+      "expected": 0.007813
+    },
+    {
       "itemId": 3755,
       "name": "Farseer helm",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 6139,
+      "name": "Skeletal top",
       "expected": 0.007813
     },
     {
@@ -8403,6 +8520,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
+      "itemId": 6739,
+      "name": "Dragon axe",
+      "expected": 0.007813
+    },
+    {
       "itemId": 1359,
       "name": "Rune axe",
       "expected": 0.007813
@@ -8415,6 +8537,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 2570,
       "name": "Ring of life",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 6129,
+      "name": "Rock-shell plate",
       "expected": 0.007813
     },
     {
@@ -8637,8 +8764,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 6739,
+      "name": "Dragon axe",
+      "expected": 0.007813
+    },
+    {
       "itemId": 3749,
       "name": "Archer helm",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 6133,
+      "name": "Spined body",
       "expected": 0.007813
     },
     {
@@ -9597,6 +9734,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.021505
     },
     {
+      "itemId": 20849,
+      "name": "Dragon thrownaxe",
+      "expected": 0.015
+    },
+    {
       "itemId": 22804,
       "name": "Dragon knife",
       "expected": 0.015
@@ -9790,144 +9932,144 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "duke-sucellus": [
     {
-      "itemId": 566,
-      "name": "Soul rune",
-      "expected": 133220
-    },
-    {
       "itemId": 453,
       "name": "Coal",
-      "expected": 17306
+      "expected": 21.64
+    },
+    {
+      "itemId": 566,
+      "name": "Soul rune",
+      "expected": 16.66
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 9013.5
+      "expected": 11.25
     },
     {
       "itemId": 4695,
       "name": "Mist rune",
-      "expected": 8012
+      "expected": 10
     },
     {
       "itemId": 449,
       "name": "Adamantite ore",
-      "expected": 6008.96
-    },
-    {
-      "itemId": 11237,
-      "name": "Dragon arrowtips",
-      "expected": 3325
-    },
-    {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 2003
-    },
-    {
-      "itemId": 395,
-      "name": "Raw sea turtle",
-      "expected": 2003
-    },
-    {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 2003
+      "expected": 7.48
     },
     {
       "itemId": 19580,
       "name": "Rune javelin tips",
-      "expected": 487.2
+      "expected": 6
     },
     {
       "itemId": 19582,
       "name": "Dragon javelin tips",
-      "expected": 487.2
+      "expected": 6
+    },
+    {
+      "itemId": 11237,
+      "name": "Dragon arrowtips",
+      "expected": 4.16
     },
     {
       "itemId": 1619,
       "name": "Uncut ruby",
-      "expected": 208.1
+      "expected": 2.575
     },
     {
       "itemId": 1617,
       "name": "Uncut diamond",
-      "expected": 208.1
+      "expected": 2.575
+    },
+    {
+      "itemId": 7936,
+      "name": "Pure essence",
+      "expected": 2.5
+    },
+    {
+      "itemId": 395,
+      "name": "Raw sea turtle",
+      "expected": 2.5
+    },
+    {
+      "itemId": 556,
+      "name": "Air rune",
+      "expected": 2.5
     },
     {
       "itemId": 440,
       "name": "Iron ore",
-      "expected": 63.95
+      "expected": 0.79
     },
     {
       "itemId": 2349,
       "name": "Bronze bar",
-      "expected": 63.95
+      "expected": 0.79
     },
     {
       "itemId": 451,
       "name": "Runite ore",
-      "expected": 60.9
-    },
-    {
-      "itemId": 447,
-      "name": "Mithril ore",
-      "expected": 33.5
-    },
-    {
-      "itemId": 1607,
-      "name": "Sapphire",
-      "expected": 28.42
-    },
-    {
-      "itemId": 1605,
-      "name": "Emerald",
-      "expected": 28.42
-    },
-    {
-      "itemId": 1603,
-      "name": "Ruby",
-      "expected": 28.42
-    },
-    {
-      "itemId": 1103,
-      "name": "Bronze chainbody",
-      "expected": 11.17
-    },
-    {
-      "itemId": 1111,
-      "name": "Adamant chainbody",
-      "expected": 6.1
+      "expected": 0.75
     },
     {
       "itemId": 2301,
       "name": "Pineapple pizza",
-      "expected": 0.7
+      "expected": 0.648148
     },
     {
-      "itemId": 1109,
-      "name": "Mithril chainbody",
-      "expected": 0.57
+      "itemId": 447,
+      "name": "Mithril ore",
+      "expected": 0.415
     },
     {
-      "itemId": 4087,
-      "name": "Dragon platelegs",
-      "expected": 0.57
+      "itemId": 1607,
+      "name": "Sapphire",
+      "expected": 0.35
+    },
+    {
+      "itemId": 1605,
+      "name": "Emerald",
+      "expected": 0.35
+    },
+    {
+      "itemId": 1603,
+      "name": "Ruby",
+      "expected": 0.35
     },
     {
       "itemId": 139,
       "name": "Prayer potion(3)",
-      "expected": 0.2
+      "expected": 0.185185
     },
     {
       "itemId": 12699,
       "name": "Super combat potion(2)",
-      "expected": 0.2
+      "expected": 0.185185
+    },
+    {
+      "itemId": 1103,
+      "name": "Bronze chainbody",
+      "expected": 0.14
+    },
+    {
+      "itemId": 1111,
+      "name": "Adamant chainbody",
+      "expected": 0.08
+    },
+    {
+      "itemId": 1109,
+      "name": "Mithril chainbody",
+      "expected": 0.06
+    },
+    {
+      "itemId": 4087,
+      "name": "Dragon platelegs",
+      "expected": 0.06
     },
     {
       "itemId": 28334,
       "name": "Awakener's orb",
-      "expected": 0.020833
+      "expected": 0.020619
     },
     {
       "itemId": 28276,
@@ -9966,52 +10108,47 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 1322.916667
+      "expected": 656.25
     },
     {
       "itemId": 554,
       "name": "Fire rune",
-      "expected": 48.034474
+      "expected": 23.828125
     },
     {
       "itemId": 557,
       "name": "Earth rune",
-      "expected": 47.247024
+      "expected": 23.4375
     },
     {
       "itemId": 4696,
       "name": "Dust rune",
-      "expected": 31.498016
+      "expected": 15.625
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 7.999132
+      "expected": 3.554688
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 566,
       "name": "Soul rune",
-      "expected": 1.891121
+      "expected": 0.859375
     },
     {
       "itemId": 892,
       "name": "Rune arrow",
-      "expected": 0.94494
+      "expected": 0.46875
     },
     {
       "itemId": 2359,
       "name": "Mithril bar",
-      "expected": 0.47247
-    },
-    {
-      "itemId": 2361,
-      "name": "Adamantite bar",
-      "expected": 0.062996
+      "expected": 0.234375
     },
     {
       "itemId": 1885,
@@ -10019,54 +10156,64 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.0625
     },
     {
+      "itemId": 2361,
+      "name": "Adamantite bar",
+      "expected": 0.03125
+    },
+    {
       "itemId": 1357,
       "name": "Adamant axe",
-      "expected": 0.047247
+      "expected": 0.023438
     },
     {
       "itemId": 1213,
       "name": "Rune dagger",
-      "expected": 0.031498
+      "expected": 0.015625
     },
     {
       "itemId": 2489,
       "name": "Red d'hide vambraces",
-      "expected": 0.031498
+      "expected": 0.015625
     },
     {
       "itemId": 1397,
       "name": "Air battlestaff",
-      "expected": 0.031498
+      "expected": 0.015625
     },
     {
       "itemId": 1399,
       "name": "Earth battlestaff",
-      "expected": 0.031498
+      "expected": 0.015625
     },
     {
       "itemId": 2491,
       "name": "Black d'hide vambraces",
-      "expected": 0.015749
+      "expected": 0.007813
     },
     {
       "itemId": 1405,
       "name": "Mystic air staff",
-      "expected": 0.015749
+      "expected": 0.007813
     },
     {
       "itemId": 1407,
       "name": "Mystic earth staff",
-      "expected": 0.015749
+      "expected": 0.007813
     },
     {
       "itemId": 1215,
       "name": "Dragon dagger",
-      "expected": 0.015749
+      "expected": 0.007813
     },
     {
       "itemId": 20736,
       "name": "Dust battlestaff",
-      "expected": 0.0005
+      "expected": 0.00025
+    },
+    {
+      "itemId": 3140,
+      "name": "Dragon chainbody",
+      "expected": 0.000031
     }
   ],
   "dwarf": [
@@ -10079,6 +10226,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 526,
       "name": "Bones",
       "expected": 1
+    },
+    {
+      "itemId": 877,
+      "name": "Bronze bolts",
+      "expected": 0.382813
     },
     {
       "itemId": 1265,
@@ -11175,12 +11327,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 6.63
-    },
-    {
-      "itemId": 559,
-      "name": "Body rune",
-      "expected": 2.175
+      "expected": 3.115
     },
     {
       "itemId": 554,
@@ -11188,9 +11335,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1.68
     },
     {
+      "itemId": 559,
+      "name": "Body rune",
+      "expected": 0.75
+    },
+    {
       "itemId": 440,
       "name": "Iron ore",
-      "expected": 0.7
+      "expected": 0.65
     },
     {
       "itemId": 4696,
@@ -11205,7 +11357,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 592,
       "name": "Ashes",
-      "expected": 0.08
+      "expected": 0.04
     },
     {
       "itemId": 2355,
@@ -11220,9 +11372,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 593.013361
     },
     {
+      "itemId": 808,
+      "name": "Steel dart",
+      "expected": 6.047244
+    },
+    {
       "itemId": 314,
       "name": "Feather",
       "expected": 6
+    },
+    {
+      "itemId": 886,
+      "name": "Steel arrow",
+      "expected": 5.291339
     },
     {
       "itemId": 526,
@@ -11240,6 +11402,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.188976
     },
     {
+      "itemId": 391,
+      "name": "Manta ray",
+      "expected": 0.125984
+    },
+    {
       "itemId": 6693,
       "name": "Crushed nest",
       "expected": 0.125984
@@ -11248,6 +11415,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 213,
       "name": "Grimy kwuarm",
       "expected": 0.062992
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -11282,9 +11454,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 593.013361
     },
     {
+      "itemId": 808,
+      "name": "Steel dart",
+      "expected": 6.047244
+    },
+    {
       "itemId": 314,
       "name": "Feather",
       "expected": 6
+    },
+    {
+      "itemId": 886,
+      "name": "Steel arrow",
+      "expected": 5.291339
     },
     {
       "itemId": 526,
@@ -11302,6 +11484,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.188976
     },
     {
+      "itemId": 391,
+      "name": "Manta ray",
+      "expected": 0.125984
+    },
+    {
       "itemId": 6693,
       "name": "Crushed nest",
       "expected": 0.125984
@@ -11310,6 +11497,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 213,
       "name": "Grimy kwuarm",
       "expected": 0.062992
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -12693,37 +12885,12 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 4.296875
+      "expected": 2.320313
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
-    },
-    {
-      "itemId": 559,
-      "name": "Body rune",
-      "expected": 0.320313
-    },
-    {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 0.28125
-    },
-    {
-      "itemId": 557,
-      "name": "Earth rune",
-      "expected": 0.1875
-    },
-    {
-      "itemId": 877,
-      "name": "Bronze bolts",
-      "expected": 0.1875
-    },
-    {
-      "itemId": 2347,
-      "name": "Hammer",
-      "expected": 0.1875
+      "expected": 1
     },
     {
       "itemId": 882,
@@ -12731,9 +12898,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.164063
     },
     {
+      "itemId": 557,
+      "name": "Earth rune",
+      "expected": 0.09375
+    },
+    {
+      "itemId": 825,
+      "name": "Bronze javelin",
+      "expected": 0.078125
+    },
+    {
       "itemId": 288,
       "name": "Goblin mail",
-      "expected": 0.117188
+      "expected": 0.078125
+    },
+    {
+      "itemId": 1237,
+      "name": "Bronze spear",
+      "expected": 0.070313
+    },
+    {
+      "itemId": 2347,
+      "name": "Hammer",
+      "expected": 0.070313
     },
     {
       "itemId": 558,
@@ -12741,14 +12928,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
-      "itemId": 1173,
-      "name": "Bronze sq shield",
-      "expected": 0.023438
+      "itemId": 559,
+      "name": "Body rune",
+      "expected": 0.046875
     },
     {
-      "itemId": 1949,
-      "name": "Chef's hat",
-      "expected": 0.023438
+      "itemId": 13448,
+      "name": "Ensouled goblin head",
+      "expected": 0.033333
     },
     {
       "itemId": 1351,
@@ -12756,19 +12943,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
-      "itemId": 1917,
-      "name": "Beer",
+      "itemId": 10999,
+      "name": "Goblin book",
       "expected": 0.015625
-    },
-    {
-      "itemId": 1009,
-      "name": "Brass necklace",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1438,
-      "name": "Air talisman",
-      "expected": 0.007813
     },
     {
       "itemId": 1321,
@@ -12823,6 +13000,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.09375
     },
     {
+      "itemId": 825,
+      "name": "Bronze javelin",
+      "expected": 0.078125
+    },
+    {
+      "itemId": 1237,
+      "name": "Bronze spear",
+      "expected": 0.070313
+    },
+    {
       "itemId": 2347,
       "name": "Hammer",
       "expected": 0.070313
@@ -12838,9 +13025,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
+      "itemId": 13448,
+      "name": "Ensouled goblin head",
+      "expected": 0.033333
+    },
+    {
       "itemId": 1351,
       "name": "Bronze axe",
       "expected": 0.023438
+    },
+    {
+      "itemId": 10999,
+      "name": "Goblin book",
+      "expected": 0.015625
     },
     {
       "itemId": 1321,
@@ -12992,9 +13189,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.09375
     },
     {
+      "itemId": 825,
+      "name": "Bronze javelin",
+      "expected": 0.078125
+    },
+    {
       "itemId": 288,
       "name": "Goblin mail",
       "expected": 0.078125
+    },
+    {
+      "itemId": 1237,
+      "name": "Bronze spear",
+      "expected": 0.070313
     },
     {
       "itemId": 2347,
@@ -13012,9 +13219,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
+      "itemId": 13448,
+      "name": "Ensouled goblin head",
+      "expected": 0.033333
+    },
+    {
       "itemId": 1351,
       "name": "Bronze axe",
       "expected": 0.023438
+    },
+    {
+      "itemId": 10999,
+      "name": "Goblin book",
+      "expected": 0.015625
     },
     {
       "itemId": 1321,
@@ -13233,6 +13450,26 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1305,
       "name": "Dragon longsword",
       "expected": 0.01
+    },
+    {
+      "itemId": 31996,
+      "name": "Dragon metal sheet",
+      "expected": 0.008333
+    },
+    {
+      "itemId": 31961,
+      "name": "Broken dragon hook",
+      "expected": 0.002
+    },
+    {
+      "itemId": 32017,
+      "name": "Dragon keel parts",
+      "expected": 0.001389
+    },
+    {
+      "itemId": 32038,
+      "name": "Large dragon keel parts",
+      "expected": 0.001389
     }
   ],
   "greater-abyssal-demon": [
@@ -13332,6 +13569,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
+      "itemId": 4151,
+      "name": "Abyssal whip",
+      "expected": 0.005859
+    },
+    {
       "itemId": 13265,
       "name": "Abyssal dagger",
       "expected": 0.000094
@@ -13341,12 +13583,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 98.211319
-    },
-    {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 5.229611
+      "expected": 72.601563
     },
     {
       "itemId": 554,
@@ -13354,59 +13591,24 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 4.976563
     },
     {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 1.458651
-    },
-    {
       "itemId": 25769,
       "name": "Vile ashes",
-      "expected": 1
+      "expected": 1.5
     },
     {
-      "itemId": 2357,
-      "name": "Gold bar",
-      "expected": 0.747332
+      "itemId": 562,
+      "name": "Chaos rune",
+      "expected": 0.351563
     },
     {
-      "itemId": 565,
-      "name": "Blood rune",
-      "expected": 0.487805
-    },
-    {
-      "itemId": 444,
-      "name": "Gold ore",
-      "expected": 0.243902
-    },
-    {
-      "itemId": 1317,
-      "name": "Adamant 2h sword",
-      "expected": 0.097561
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 0.117188
     },
     {
       "itemId": 1734,
       "name": "Thread",
       "expected": 0.078125
-    },
-    {
-      "itemId": 1357,
-      "name": "Adamant axe",
-      "expected": 0.073171
-    },
-    {
-      "itemId": 1371,
-      "name": "Adamant battleaxe",
-      "expected": 0.04878
-    },
-    {
-      "itemId": 1073,
-      "name": "Adamant platelegs",
-      "expected": 0.032203
-    },
-    {
-      "itemId": 1163,
-      "name": "Rune full helm",
-      "expected": 0.032203
     },
     {
       "itemId": 1311,
@@ -13417,11 +13619,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 13502,
       "name": "Ensouled demon head",
       "expected": 0.025
-    },
-    {
-      "itemId": 1199,
-      "name": "Adamant kiteshield",
-      "expected": 0.02439
     },
     {
       "itemId": 1353,
@@ -13439,13 +13636,23 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
-      "itemId": 30810,
-      "name": "Contract of Glyphic Attenuation",
-      "expected": 0.012346
+      "itemId": 2357,
+      "name": "Gold bar",
+      "expected": 0.015625
     },
     {
       "itemId": 1197,
       "name": "Mithril kiteshield",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1073,
+      "name": "Adamant platelegs",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1163,
+      "name": "Rune full helm",
       "expected": 0.007813
     }
   ],
@@ -13569,37 +13776,22 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 270.851563
-    },
-    {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 4.6875
+      "expected": 215.609375
     },
     {
       "itemId": 536,
       "name": "Dragon bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 1753,
       "name": "Green dragonhide",
-      "expected": 2
-    },
-    {
-      "itemId": 561,
-      "name": "Nature rune",
-      "expected": 0.664063
-    },
-    {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 0.289063
+      "expected": 1
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.222656
+      "expected": 0.152344
     },
     {
       "itemId": 560,
@@ -13607,9 +13799,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.117188
     },
     {
-      "itemId": 13511,
-      "name": "Ensouled dragon head",
-      "expected": 0.057143
+      "itemId": 561,
+      "name": "Nature rune",
+      "expected": 0.078125
     },
     {
       "itemId": 7946,
@@ -13632,54 +13824,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.039063
     },
     {
-      "itemId": 1069,
-      "name": "Steel platelegs",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 1365,
-      "name": "Steel battleaxe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1355,
-      "name": "Mithril axe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 365,
-      "name": "Bass",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 449,
-      "name": "Adamantite ore",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1243,
-      "name": "Mithril spear",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1161,
-      "name": "Adamant full helm",
-      "expected": 0.015625
+      "itemId": 13511,
+      "name": "Ensouled dragon head",
+      "expected": 0.028571
     },
     {
       "itemId": 1071,
       "name": "Mithril platelegs",
       "expected": 0.015625
-    },
-    {
-      "itemId": 1197,
-      "name": "Mithril kiteshield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1213,
-      "name": "Rune dagger",
-      "expected": 0.007813
     },
     {
       "itemId": 1369,
@@ -13694,6 +13846,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1287,
       "name": "Adamant sword",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1161,
+      "name": "Adamant full helm",
       "expected": 0.007813
     },
     {
@@ -13774,6 +13931,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 2136,
       "name": "Raw bear meat",
       "expected": 1
+    },
+    {
+      "itemId": 13463,
+      "name": "Ensouled bear head",
+      "expected": 0.04
     }
   ],
   "grizzly-bear-cub": [
@@ -14097,6 +14259,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.241935
     },
     {
+      "itemId": 20849,
+      "name": "Dragon thrownaxe",
+      "expected": 0.225
+    },
+    {
+      "itemId": 22804,
+      "name": "Dragon knife",
+      "expected": 0.225
+    },
+    {
       "itemId": 373,
       "name": "Swordfish",
       "expected": 0.193548
@@ -14110,11 +14282,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1163,
       "name": "Rune full helm",
       "expected": 0.096774
-    },
-    {
-      "itemId": 22804,
-      "name": "Dragon knife",
-      "expected": 0.075
     },
     {
       "itemId": 2501,
@@ -14139,12 +14306,12 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 22960,
       "name": "Drake's tooth",
-      "expected": 0.001953
+      "expected": 0.005859
     },
     {
       "itemId": 22957,
       "name": "Drake's claw",
-      "expected": 0.001953
+      "expected": 0.005859
     }
   ],
   "gunthor-the-brave": [
@@ -14298,24 +14465,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "hellhound": [
     {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 3.4
-    },
-    {
       "itemId": 25769,
       "name": "Vile ashes",
-      "expected": 3
+      "expected": 1
     },
     {
       "itemId": 26997,
       "name": "Ensouled hellhound head",
-      "expected": 0.075
+      "expected": 0.025
     },
     {
       "itemId": 13233,
       "name": "Smouldering stone",
-      "expected": 0.000092
+      "expected": 0.000061
     }
   ],
   "hespori": [
@@ -14440,6 +14602,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.0375
     },
     {
+      "itemId": 22994,
+      "name": "Bottomless compost bucket",
+      "expected": 0.028571
+    },
+    {
       "itemId": 5300,
       "name": "Snapdragon seed",
       "expected": 0.025
@@ -14532,6 +14699,21 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
+      "itemId": 13475,
+      "name": "Ensouled giant head",
+      "expected": 0.04
+    },
+    {
+      "itemId": 1137,
+      "name": "Iron med helm",
+      "expected": 0.039063
+    },
+    {
+      "itemId": 1153,
+      "name": "Iron full helm",
+      "expected": 0.039063
+    },
+    {
       "itemId": 1203,
       "name": "Iron dagger",
       "expected": 0.03125
@@ -14545,6 +14727,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1191,
       "name": "Iron kiteshield",
       "expected": 0.023438
+    },
+    {
+      "itemId": 1325,
+      "name": "Steel scimitar",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 1295,
+      "name": "Steel longsword",
+      "expected": 0.015625
     },
     {
       "itemId": 562,
@@ -14566,77 +14758,77 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 17.5
-    },
-    {
-      "itemId": 6306,
-      "name": "Trading sticks",
-      "expected": 8.773438
+      "expected": 8.75
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 225,
       "name": "Limpwurt root",
-      "expected": 0.335938
+      "expected": 0.164063
     },
     {
       "itemId": 554,
       "name": "Fire rune",
-      "expected": 0.21875
+      "expected": 0.109375
     },
     {
       "itemId": 559,
       "name": "Body rune",
-      "expected": 0.1875
+      "expected": 0.09375
     },
     {
       "itemId": 561,
       "name": "Nature rune",
-      "expected": 0.125
+      "expected": 0.0625
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.09375
+      "expected": 0.046875
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 0.09375
+      "expected": 0.046875
+    },
+    {
+      "itemId": 826,
+      "name": "Iron javelin",
+      "expected": 0.039063
     },
     {
       "itemId": 288,
       "name": "Goblin mail",
-      "expected": 0.078125
+      "expected": 0.039063
     },
     {
       "itemId": 555,
       "name": "Water rune",
-      "expected": 0.0625
+      "expected": 0.03125
     },
     {
       "itemId": 1279,
       "name": "Iron sword",
-      "expected": 0.046875
+      "expected": 0.023438
     },
     {
       "itemId": 1207,
       "name": "Steel dagger",
-      "expected": 0.046875
+      "expected": 0.023438
     },
     {
       "itemId": 564,
       "name": "Cosmic rune",
-      "expected": 0.03125
+      "expected": 0.015625
     },
     {
       "itemId": 1295,
       "name": "Steel longsword",
-      "expected": 0.015625
+      "expected": 0.007813
     }
   ],
   "hydra": [
@@ -14678,7 +14870,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 22786,
       "name": "Hydra bones",
-      "expected": 1.5
+      "expected": 1
     },
     {
       "itemId": 536,
@@ -14714,6 +14906,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 12701,
       "name": "Super combat potion(1)",
       "expected": 0.03125
+    },
+    {
+      "itemId": 20849,
+      "name": "Dragon thrownaxe",
+      "expected": 0.03
     },
     {
       "itemId": 22804,
@@ -14755,37 +14952,27 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 66.927419
+      "expected": 9.677419
     },
     {
       "itemId": 532,
       "name": "Big bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 890,
       "name": "Adamant arrow",
-      "expected": 1.15373
-    },
-    {
-      "itemId": 559,
-      "name": "Body rune",
-      "expected": 0.867188
+      "expected": 0.919355
     },
     {
       "itemId": 561,
       "name": "Nature rune",
-      "expected": 0.574597
-    },
-    {
-      "itemId": 558,
-      "name": "Mind rune",
-      "expected": 0.5625
+      "expected": 0.387097
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 0.31376
+      "expected": 0.290323
     },
     {
       "itemId": 562,
@@ -14800,22 +14987,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.143649
-    },
-    {
-      "itemId": 564,
-      "name": "Cosmic rune",
-      "expected": 0.095766
-    },
-    {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 0.09375
-    },
-    {
-      "itemId": 1993,
-      "name": "Jug of wine",
-      "expected": 0.071825
+      "expected": 0.096774
     },
     {
       "itemId": 1355,
@@ -14828,34 +15000,24 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.064516
     },
     {
+      "itemId": 564,
+      "name": "Cosmic rune",
+      "expected": 0.064516
+    },
+    {
+      "itemId": 1993,
+      "name": "Jug of wine",
+      "expected": 0.048387
+    },
+    {
       "itemId": 447,
       "name": "Mithril ore",
-      "expected": 0.0562
+      "expected": 0.048387
     },
     {
       "itemId": 13475,
       "name": "Ensouled giant head",
       "expected": 0.047619
-    },
-    {
-      "itemId": 1309,
-      "name": "Iron 2h sword",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1195,
-      "name": "Black kiteshield",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1353,
-      "name": "Steel axe",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 1281,
-      "name": "Steel sword",
-      "expected": 0.03125
     },
     {
       "itemId": 1071,
@@ -14886,26 +15048,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1213,
       "name": "Rune dagger",
       "expected": 0.016129
-    },
-    {
-      "itemId": 1067,
-      "name": "Iron platelegs",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1428,
-      "name": "Mithril mace",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1181,
-      "name": "Mithril sq shield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1963,
-      "name": "Banana",
-      "expected": 0.007813
     }
   ],
   "ice-troll": [
@@ -15380,6 +15522,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 0.015625
+    },
+    {
       "itemId": 1428,
       "name": "Mithril mace",
       "expected": 0.007813
@@ -15478,6 +15625,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.0625
     },
     {
+      "itemId": 34422,
+      "name": "Fire ruby",
+      "expected": 0.015625
+    },
+    {
       "itemId": 1387,
       "name": "Staff of fire",
       "expected": 0.007813
@@ -15485,6 +15637,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 4107,
       "name": "Mystic boots (dark)",
+      "expected": 0.001953
+    },
+    {
+      "itemId": 4099,
+      "name": "Mystic hat (dark)",
       "expected": 0.001953
     },
     {
@@ -15666,6 +15823,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 25769,
       "name": "Vile ashes",
+      "expected": 1
+    },
+    {
+      "itemId": 13496,
+      "name": "Ensouled bloodveld head",
       "expected": 1
     },
     {
@@ -15928,6 +16090,118 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     }
   ],
+  "iron-dragon": [
+    {
+      "itemId": 995,
+      "name": "Coins",
+      "expected": 92.890625
+    },
+    {
+      "itemId": 2351,
+      "name": "Iron bar",
+      "expected": 5
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 2.226563
+    },
+    {
+      "itemId": 536,
+      "name": "Dragon bones",
+      "expected": 1
+    },
+    {
+      "itemId": 830,
+      "name": "Rune javelin",
+      "expected": 0.625
+    },
+    {
+      "itemId": 817,
+      "name": "Rune dart(p)",
+      "expected": 0.492188
+    },
+    {
+      "itemId": 9143,
+      "name": "Adamant bolts",
+      "expected": 0.328125
+    },
+    {
+      "itemId": 868,
+      "name": "Rune knife",
+      "expected": 0.117188
+    },
+    {
+      "itemId": 566,
+      "name": "Soul rune",
+      "expected": 0.117188
+    },
+    {
+      "itemId": 161,
+      "name": "Super strength(1)",
+      "expected": 0.0625
+    },
+    {
+      "itemId": 2361,
+      "name": "Adamantite bar",
+      "expected": 0.046875
+    },
+    {
+      "itemId": 9431,
+      "name": "Runite limbs",
+      "expected": 0.039063
+    },
+    {
+      "itemId": 1317,
+      "name": "Adamant 2h sword",
+      "expected": 0.03125
+    },
+    {
+      "itemId": 1357,
+      "name": "Adamant axe",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 1371,
+      "name": "Adamant battleaxe",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 2011,
+      "name": "Curry",
+      "expected": 0.023438
+    },
+    {
+      "itemId": 1183,
+      "name": "Adamant sq shield",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1147,
+      "name": "Rune med helm",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1373,
+      "name": "Rune battleaxe",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 4585,
+      "name": "Dragon plateskirt",
+      "expected": 0.000977
+    },
+    {
+      "itemId": 4087,
+      "name": "Dragon platelegs",
+      "expected": 0.000977
+    },
+    {
+      "itemId": 11286,
+      "name": "Draconic visage",
+      "expected": 0.0001
+    }
+  ],
   "jackal": [
     {
       "itemId": 526,
@@ -15939,27 +16213,17 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 394.492188
+      "expected": 66.367188
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 4.101563
+      "expected": 0.585938
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 0.820313
-    },
-    {
-      "itemId": 1734,
-      "name": "Thread",
-      "expected": 0.234375
-    },
-    {
-      "itemId": 1371,
-      "name": "Adamant battleaxe",
-      "expected": 0.171875
+      "expected": 0.117188
     },
     {
       "itemId": 1365,
@@ -15967,8 +16231,8 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.085938
     },
     {
-      "itemId": 1313,
-      "name": "Black 2h sword",
+      "itemId": 1734,
+      "name": "Thread",
       "expected": 0.078125
     },
     {
@@ -15977,44 +16241,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.054688
     },
     {
-      "itemId": 2357,
-      "name": "Gold bar",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 1357,
-      "name": "Adamant axe",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 4127,
-      "name": "Mithril boots",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1317,
-      "name": "Adamant 2h sword",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 1201,
-      "name": "Rune kiteshield",
-      "expected": 0.03125
-    },
-    {
       "itemId": 1353,
       "name": "Steel axe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1163,
-      "name": "Rune full helm",
       "expected": 0.023438
     },
     {
       "itemId": 1197,
       "name": "Mithril kiteshield",
       "expected": 0.015625
+    },
+    {
+      "itemId": 2357,
+      "name": "Gold bar",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 4127,
+      "name": "Mithril boots",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1163,
+      "name": "Rune full helm",
+      "expected": 0.007813
     }
   ],
   "jubbly-bird": [
@@ -16254,9 +16503,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015748
     },
     {
+      "itemId": 11787,
+      "name": "Steam battlestaff",
+      "expected": 0.007874
+    },
+    {
+      "itemId": 11824,
+      "name": "Zamorakian spear",
+      "expected": 0.007874
+    },
+    {
+      "itemId": 11791,
+      "name": "Staff of the Dead",
+      "expected": 0.001969
+    },
+    {
       "itemId": 11816,
       "name": "Zamorak hilt",
       "expected": 0.001969
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.001312
     },
     {
       "itemId": 11820,
@@ -16558,6 +16827,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015873
     },
     {
+      "itemId": 3140,
+      "name": "Dragon chainbody",
+      "expected": 0.007813
+    },
+    {
       "itemId": 7158,
       "name": "Dragon 2h sword",
       "expected": 0.003906
@@ -16763,6 +17037,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.35
     },
     {
+      "itemId": 3008,
+      "name": "Energy potion(4)",
+      "expected": 0.3125
+    },
+    {
       "itemId": 562,
       "name": "Chaos rune",
       "expected": 0.257143
@@ -16786,6 +17065,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1781,
       "name": "Soda ash",
       "expected": 0.028571
+    },
+    {
+      "itemId": 34404,
+      "name": "Air diamond",
+      "expected": 0.015625
     },
     {
       "itemId": 1387,
@@ -17007,14 +17291,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.048387
     },
     {
-      "itemId": 20727,
-      "name": "Leaf-bladed battleaxe",
-      "expected": 0.002924
+      "itemId": 11902,
+      "name": "Leaf-bladed sword",
+      "expected": 0.007813
     },
     {
       "itemId": 4111,
       "name": "Mystic robe top (light)",
-      "expected": 0.001953
+      "expected": 0.005859
+    },
+    {
+      "itemId": 20727,
+      "name": "Leaf-bladed battleaxe",
+      "expected": 0.002924
     }
   ],
   "king-sand-crab": [
@@ -17112,6 +17401,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 6159,
       "name": "Rock-shell shard",
       "expected": 0.015625
+    }
+  ],
+  "king-scorpion": [
+    {
+      "itemId": 13460,
+      "name": "Ensouled scorpion head",
+      "expected": 0.04
     }
   ],
   "kraka": [
@@ -17358,6 +17654,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 1645,
+      "name": "Dragonstone ring",
+      "expected": 0.007813
+    },
+    {
       "itemId": 12004,
       "name": "Kraken tentacle",
       "expected": 0.0025
@@ -17550,6 +17851,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1359,
       "name": "Rune axe",
       "expected": 0.024194
+    },
+    {
+      "itemId": 11902,
+      "name": "Leaf-bladed sword",
+      "expected": 0.002604
     },
     {
       "itemId": 4111,
@@ -17761,36 +18067,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.351563
     },
     {
-      "itemId": 9192,
-      "name": "Diamond bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9190,
-      "name": "Emerald bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9191,
-      "name": "Ruby bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9193,
-      "name": "Dragonstone bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9194,
-      "name": "Onyx bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9189,
-      "name": "Sapphire bolt tips",
-      "expected": 0.292969
-    },
-    {
       "itemId": 453,
       "name": "Coal",
       "expected": 0.15625
@@ -17811,9 +18087,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.089844
     },
     {
+      "itemId": 9192,
+      "name": "Diamond bolt tips",
+      "expected": 0.079618
+    },
+    {
       "itemId": 592,
       "name": "Ashes",
       "expected": 0.078125
+    },
+    {
+      "itemId": 9190,
+      "name": "Emerald bolt tips",
+      "expected": 0.063667
+    },
+    {
+      "itemId": 9191,
+      "name": "Ruby bolt tips",
+      "expected": 0.063667
+    },
+    {
+      "itemId": 9193,
+      "name": "Dragonstone bolt tips",
+      "expected": 0.047771
     },
     {
       "itemId": 3053,
@@ -17866,6 +18162,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.03125
     },
     {
+      "itemId": 9194,
+      "name": "Onyx bolt tips",
+      "expected": 0.022288
+    },
+    {
+      "itemId": 9189,
+      "name": "Sapphire bolt tips",
+      "expected": 0.015924
+    },
+    {
       "itemId": 1303,
       "name": "Rune longsword",
       "expected": 0.015625
@@ -17895,22 +18201,17 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 81.634615
-    },
-    {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 3.984375
+      "expected": 15.384615
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 3.032853
+      "expected": 2.564103
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 1.608774
+      "expected": 1.538462
     },
     {
       "itemId": 25769,
@@ -17918,13 +18219,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1
     },
     {
-      "itemId": 444,
-      "name": "Gold ore",
-      "expected": 0.272035
-    },
-    {
       "itemId": 565,
       "name": "Blood rune",
+      "expected": 0.25641
+    },
+    {
+      "itemId": 444,
+      "name": "Gold ore",
       "expected": 0.25641
     },
     {
@@ -17940,22 +18241,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1993,
       "name": "Jug of wine",
-      "expected": 0.100361
-    },
-    {
-      "itemId": 1147,
-      "name": "Rune med helm",
-      "expected": 0.033454
-    },
-    {
-      "itemId": 1157,
-      "name": "Steel full helm",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 1353,
-      "name": "Steel axe",
-      "expected": 0.03125
+      "expected": 0.076923
     },
     {
       "itemId": 1211,
@@ -17973,29 +18259,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.025641
     },
     {
-      "itemId": 1325,
-      "name": "Steel scimitar",
-      "expected": 0.023438
+      "itemId": 1147,
+      "name": "Rune med helm",
+      "expected": 0.025641
     },
     {
       "itemId": 13502,
       "name": "Ensouled demon head",
       "expected": 0.02
-    },
-    {
-      "itemId": 30810,
-      "name": "Contract of Glyphic Attenuation",
-      "expected": 0.00813
-    },
-    {
-      "itemId": 1181,
-      "name": "Mithril sq shield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1109,
-      "name": "Mithril chainbody",
-      "expected": 0.007813
     }
   ],
   "lesser-demon-melzars-maze": [
@@ -18568,13 +18839,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.01626
     },
     {
+      "itemId": 21646,
+      "name": "Granite longsword",
+      "expected": 0.001953
+    },
+    {
       "itemId": 21643,
       "name": "Granite boots",
       "expected": 0.000391
     },
     {
       "itemId": 21637,
-      "name": "wyvern visage",
+      "name": "Wyvern visage",
       "expected": 0.000083
     }
   ],
@@ -18755,6 +19031,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 33657,
       "name": "Orikalkum gravel",
       "expected": 0.113208
+    },
+    {
+      "itemId": 33631,
+      "name": "Crimson kisten",
+      "expected": 0.001923
     }
   ],
   "magic-axe": [
@@ -18846,36 +19127,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.375
     },
     {
-      "itemId": 9192,
-      "name": "Diamond bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9190,
-      "name": "Emerald bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9191,
-      "name": "Ruby bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9193,
-      "name": "Dragonstone bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9194,
-      "name": "Onyx bolt tips",
-      "expected": 0.292969
-    },
-    {
-      "itemId": 9189,
-      "name": "Sapphire bolt tips",
-      "expected": 0.292969
-    },
-    {
       "itemId": 449,
       "name": "Adamantite ore",
       "expected": 0.28125
@@ -18886,9 +19137,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.269531
     },
     {
+      "itemId": 9192,
+      "name": "Diamond bolt tips",
+      "expected": 0.238854
+    },
+    {
       "itemId": 592,
       "name": "Ashes",
       "expected": 0.234375
+    },
+    {
+      "itemId": 9190,
+      "name": "Emerald bolt tips",
+      "expected": 0.191002
+    },
+    {
+      "itemId": 9191,
+      "name": "Ruby bolt tips",
+      "expected": 0.191002
+    },
+    {
+      "itemId": 9193,
+      "name": "Dragonstone bolt tips",
+      "expected": 0.143312
     },
     {
       "itemId": 3053,
@@ -18941,9 +19212,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.09375
     },
     {
+      "itemId": 9194,
+      "name": "Onyx bolt tips",
+      "expected": 0.066865
+    },
+    {
       "itemId": 31996,
       "name": "Dragon metal sheet",
       "expected": 0.066667
+    },
+    {
+      "itemId": 9189,
+      "name": "Sapphire bolt tips",
+      "expected": 0.047771
     },
     {
       "itemId": 1303,
@@ -19021,6 +19302,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 565,
       "name": "Blood rune",
       "expected": 0.1875
+    },
+    {
+      "itemId": 34422,
+      "name": "Fire ruby",
+      "expected": 0.046875
     },
     {
       "itemId": 1387,
@@ -19435,7 +19721,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 3.30198
+      "expected": 4.688119
     },
     {
       "itemId": 526,
@@ -19446,6 +19732,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 884,
       "name": "Iron arrow",
       "expected": 0.940594
+    },
+    {
+      "itemId": 7936,
+      "name": "Pure essence",
+      "expected": 0.742574
+    },
+    {
+      "itemId": 1237,
+      "name": "Bronze spear",
+      "expected": 0.09901
     },
     {
       "itemId": 1155,
@@ -19476,6 +19772,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 2142,
       "name": "Cooked meat",
       "expected": 0.029703
+    },
+    {
+      "itemId": 13457,
+      "name": "Ensouled minotaur head",
+      "expected": 0.02
     },
     {
       "itemId": 558,
@@ -19781,6 +20082,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.070313
     },
     {
+      "itemId": 34416,
+      "name": "Earth emerald",
+      "expected": 0.015625
+    },
+    {
       "itemId": 7416,
       "name": "Mole claw",
       "expected": 0.007813
@@ -19791,6 +20097,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 3183,
       "name": "Monkey bones",
       "expected": 1
+    },
+    {
+      "itemId": 13451,
+      "name": "Ensouled monkey head",
+      "expected": 0.028571
     }
   ],
   "monkey-archer": [
@@ -19934,6 +20245,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1299,
       "name": "Mithril longsword",
       "expected": 0.007813
+    },
+    {
+      "itemId": 4117,
+      "name": "Mystic boots (light)",
+      "expected": 0.001953
     }
   ],
   "moss-giant": [
@@ -19993,6 +20309,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
+      "itemId": 13475,
+      "name": "Ensouled giant head",
+      "expected": 0.041667
+    },
+    {
       "itemId": 1179,
       "name": "Black sq shield",
       "expected": 0.039063
@@ -20018,8 +20339,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
+      "itemId": 1243,
+      "name": "Mithril spear",
+      "expected": 0.015625
+    },
+    {
       "itemId": 1193,
       "name": "Steel kiteshield",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
       "expected": 0.007813
     },
     {
@@ -20245,7 +20576,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 561,
@@ -20717,27 +21048,12 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 2173.752155
-    },
-    {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 21.09375
+      "expected": 1751.877155
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 19.373922
-    },
-    {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 8.796336
-    },
-    {
-      "itemId": 565,
-      "name": "Blood rune",
-      "expected": 6.497845
+      "expected": 7.655172
     },
     {
       "itemId": 563,
@@ -20745,69 +21061,29 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 3.87931
     },
     {
-      "itemId": 566,
-      "name": "Soul rune",
-      "expected": 2.929688
-    },
-    {
       "itemId": 1761,
       "name": "Soft clay",
       "expected": 2.586207
     },
     {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 2.327586
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 1.810345
+    },
+    {
       "itemId": 25772,
       "name": "Malicious ashes",
-      "expected": 2
-    },
-    {
-      "itemId": 2357,
-      "name": "Gold bar",
-      "expected": 0.820313
-    },
-    {
-      "itemId": 361,
-      "name": "Tuna",
-      "expected": 0.358836
-    },
-    {
-      "itemId": 379,
-      "name": "Lobster",
-      "expected": 0.234375
-    },
-    {
-      "itemId": 1199,
-      "name": "Adamant kiteshield",
-      "expected": 0.215787
-    },
-    {
-      "itemId": 1359,
-      "name": "Rune axe",
-      "expected": 0.164063
-    },
-    {
-      "itemId": 1185,
-      "name": "Rune sq shield",
-      "expected": 0.164063
+      "expected": 1
     },
     {
       "itemId": 5100,
       "name": "Limpwurt seed",
       "expected": 0.155172
-    },
-    {
-      "itemId": 1163,
-      "name": "Rune full helm",
-      "expected": 0.147899
-    },
-    {
-      "itemId": 245,
-      "name": "Wine of Zamorak",
-      "expected": 0.140625
-    },
-    {
-      "itemId": 1371,
-      "name": "Adamant battleaxe",
-      "expected": 0.117188
     },
     {
       "itemId": 1073,
@@ -20820,31 +21096,31 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.103448
     },
     {
-      "itemId": 1147,
-      "name": "Rune med helm",
-      "expected": 0.09375
+      "itemId": 1163,
+      "name": "Rune full helm",
+      "expected": 0.077586
+    },
+    {
+      "itemId": 361,
+      "name": "Tuna",
+      "expected": 0.077586
+    },
+    {
+      "itemId": 1199,
+      "name": "Adamant kiteshield",
+      "expected": 0.051724
     },
     {
       "itemId": 4131,
       "name": "Rune boots",
-      "expected": 0.0493
-    },
-    {
-      "itemId": 1405,
-      "name": "Mystic air staff",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 1113,
-      "name": "Rune chainbody",
-      "expected": 0.023438
+      "expected": 0.025862
     }
   ],
   "nex": [
     {
       "itemId": 26231,
       "name": "Nihil shard",
-      "expected": 3.444976
+      "expected": 8.475464
     },
     {
       "itemId": 532,
@@ -21106,85 +21382,65 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
+      "itemId": 12002,
+      "name": "Occult necklace",
+      "expected": 0.005859
+    },
+    {
       "itemId": 3140,
       "name": "Dragon chainbody",
-      "expected": 0.000031
+      "expected": 0.000092
     }
   ],
   "obor": [
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 21.866667
-    },
-    {
-      "itemId": 532,
-      "name": "Big bones",
-      "expected": 1
+      "expected": 10.340741
     },
     {
       "itemId": 554,
       "name": "Fire rune",
-      "expected": 0.666667
+      "expected": 0.333333
     },
     {
       "itemId": 555,
       "name": "Water rune",
-      "expected": 0.311111
+      "expected": 0.155556
     },
     {
       "itemId": 886,
       "name": "Steel arrow",
-      "expected": 0.296296
+      "expected": 0.148148
     },
     {
       "itemId": 884,
       "name": "Iron arrow",
-      "expected": 0.266667
+      "expected": 0.133333
     },
     {
       "itemId": 561,
       "name": "Nature rune",
-      "expected": 0.177778
+      "expected": 0.088889
     },
     {
       "itemId": 225,
       "name": "Limpwurt root",
-      "expected": 0.162963
+      "expected": 0.081481
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.088889
+      "expected": 0.044444
     },
     {
       "itemId": 558,
       "name": "Mind rune",
-      "expected": 0.088889
+      "expected": 0.044444
     },
     {
       "itemId": 1917,
       "name": "Beer",
-      "expected": 0.088889
-    },
-    {
-      "itemId": 1153,
-      "name": "Iron full helm",
-      "expected": 0.074074
-    },
-    {
-      "itemId": 1203,
-      "name": "Iron dagger",
-      "expected": 0.059259
-    },
-    {
-      "itemId": 564,
-      "name": "Cosmic rune",
-      "expected": 0.059259
-    },
-    {
-      "itemId": 1191,
-      "name": "Iron kiteshield",
       "expected": 0.044444
     },
     {
@@ -21193,24 +21449,44 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.04
     },
     {
+      "itemId": 1153,
+      "name": "Iron full helm",
+      "expected": 0.037037
+    },
+    {
+      "itemId": 1203,
+      "name": "Iron dagger",
+      "expected": 0.02963
+    },
+    {
+      "itemId": 564,
+      "name": "Cosmic rune",
+      "expected": 0.02963
+    },
+    {
+      "itemId": 1191,
+      "name": "Iron kiteshield",
+      "expected": 0.022222
+    },
+    {
       "itemId": 1295,
       "name": "Steel longsword",
-      "expected": 0.02963
+      "expected": 0.014815
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 0.02963
+      "expected": 0.014815
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 0.02963
+      "expected": 0.014815
     },
     {
       "itemId": 1446,
       "name": "Body talisman",
-      "expected": 0.02963
+      "expected": 0.014815
     }
   ],
   "ogre": [
@@ -21349,6 +21625,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.034483
     },
     {
+      "itemId": 13478,
+      "name": "Ensouled ogre head",
+      "expected": 0.033333
+    },
+    {
       "itemId": 1147,
       "name": "Rune med helm",
       "expected": 0.025
@@ -21481,6 +21762,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.034483
     },
     {
+      "itemId": 13478,
+      "name": "Ensouled ogre head",
+      "expected": 0.033333
+    },
+    {
       "itemId": 1147,
       "name": "Rune med helm",
       "expected": 0.025
@@ -21545,14 +21831,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.456522
     },
     {
-      "itemId": 31406,
-      "name": "Dragon nails",
-      "expected": 0.453333
-    },
-    {
       "itemId": 395,
       "name": "Raw sea turtle",
       "expected": 0.108696
+    },
+    {
+      "itemId": 31406,
+      "name": "Dragon nails",
+      "expected": 0.1
     },
     {
       "itemId": 31976,
@@ -21590,6 +21876,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.021739
     },
     {
+      "itemId": 31946,
+      "name": "Echo pearl",
+      "expected": 0.014286
+    },
+    {
       "itemId": 31541,
       "name": "Flax seed",
       "expected": 0.01087
@@ -21600,6 +21891,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.008152
     },
     {
+      "itemId": 31996,
+      "name": "Dragon metal sheet",
+      "expected": 0.0075
+    },
+    {
       "itemId": 31543,
       "name": "Hemp seed",
       "expected": 0.006522
@@ -21608,6 +21904,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 31545,
       "name": "Cotton seed",
       "expected": 0.004348
+    },
+    {
+      "itemId": 32017,
+      "name": "Dragon keel parts",
+      "expected": 0.0025
+    },
+    {
+      "itemId": 32038,
+      "name": "Large dragon keel parts",
+      "expected": 0.0025
     },
     {
       "itemId": 31549,
@@ -22184,6 +22490,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 2
     },
     {
+      "itemId": 9140,
+      "name": "Iron bolts",
+      "expected": 0.546875
+    },
+    {
       "itemId": 882,
       "name": "Bronze arrow",
       "expected": 0.398438
@@ -22201,6 +22512,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 562,
       "name": "Chaos rune",
+      "expected": 0.09375
+    },
+    {
+      "itemId": 1025,
+      "name": "Right eye patch",
       "expected": 0.09375
     },
     {
@@ -23342,6 +23658,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.01
     },
     {
+      "itemId": 1149,
+      "name": "Dragon med helm",
+      "expected": 0.005208
+    },
+    {
       "itemId": 23528,
       "name": "Sarachnis cudgel",
       "expected": 0.002604
@@ -23651,6 +23972,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     }
   ],
   "scorpias-offspring-monster": [
+    {
+      "itemId": 13460,
+      "name": "Ensouled scorpion head",
+      "expected": 0.04
+    }
+  ],
+  "scorpion": [
     {
       "itemId": 13460,
       "name": "Ensouled scorpion head",
@@ -23990,6 +24318,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
+      "itemId": 34410,
+      "name": "Water sapphire",
+      "expected": 0.015625
+    },
+    {
       "itemId": 413,
       "name": "Oyster pearls",
       "expected": 0.007813
@@ -24064,6 +24397,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 411,
       "name": "Oyster pearl",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 34410,
+      "name": "Water sapphire",
       "expected": 0.015625
     },
     {
@@ -24143,6 +24481,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.166667
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.125984
+    },
+    {
       "itemId": 9741,
       "name": "Combat potion(3)",
       "expected": 0.015748
@@ -24151,6 +24494,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -24225,6 +24573,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.166667
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.125984
+    },
+    {
       "itemId": 9741,
       "name": "Combat potion(3)",
       "expected": 0.015748
@@ -24233,6 +24586,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -24307,6 +24665,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.166667
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.125984
+    },
+    {
       "itemId": 9741,
       "name": "Combat potion(3)",
       "expected": 0.015748
@@ -24315,6 +24678,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -24340,6 +24708,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 11836,
       "name": "Bandos boots",
       "expected": 0.000062
+    }
+  ],
+  "shade": [
+    {
+      "itemId": 546,
+      "name": "Shade robe top",
+      "expected": 0.25
+    },
+    {
+      "itemId": 548,
+      "name": "Shade robe",
+      "expected": 0.25
     }
   ],
   "shade-temple-trekking": [
@@ -24523,6 +24903,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1215,
       "name": "Dragon dagger",
       "expected": 0.039474
+    },
+    {
+      "itemId": 21009,
+      "name": "Dragon sword",
+      "expected": 0.0005
     },
     {
       "itemId": 21028,
@@ -24838,6 +25223,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
+      "itemId": 6809,
+      "name": "Granite legs",
+      "expected": 0.001953
+    },
+    {
       "itemId": 4087,
       "name": "Dragon platelegs",
       "expected": 0.001953
@@ -24846,33 +25236,28 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 4585,
       "name": "Dragon plateskirt",
       "expected": 0.001953
+    },
+    {
+      "itemId": 11286,
+      "name": "Draconic visage",
+      "expected": 0.0001
     }
   ],
   "skeleton": [
     {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 28.710938
-    },
-    {
       "itemId": 995,
       "name": "Coins",
-      "expected": 13.515625
+      "expected": 8.921875
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 3
+      "expected": 1
     },
     {
-      "itemId": 882,
-      "name": "Bronze arrow",
-      "expected": 0.265625
-    },
-    {
-      "itemId": 884,
-      "name": "Iron arrow",
-      "expected": 0.21875
+      "itemId": 556,
+      "name": "Air rune",
+      "expected": 0.316406
     },
     {
       "itemId": 555,
@@ -24880,19 +25265,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.210938
     },
     {
+      "itemId": 884,
+      "name": "Iron arrow",
+      "expected": 0.1875
+    },
+    {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 0.164063
-    },
-    {
-      "itemId": 557,
-      "name": "Earth rune",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 1203,
-      "name": "Iron dagger",
-      "expected": 0.046875
+      "expected": 0.117188
     },
     {
       "itemId": 1137,
@@ -24905,11 +25285,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.039063
     },
     {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 0.03125
-    },
-    {
       "itemId": 1279,
       "name": "Iron sword",
       "expected": 0.03125
@@ -24920,16 +25295,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.03125
     },
     {
-      "itemId": 561,
-      "name": "Nature rune",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1442,
-      "name": "Fire talisman",
-      "expected": 0.015625
-    },
-    {
       "itemId": 1349,
       "name": "Iron axe",
       "expected": 0.015625
@@ -24938,21 +25303,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 564,
       "name": "Cosmic rune",
       "expected": 0.015625
-    },
-    {
-      "itemId": 886,
-      "name": "Steel arrow",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1947,
-      "name": "Grain",
-      "expected": 0.007813
     },
     {
       "itemId": 1323,
@@ -25475,22 +25825,12 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 43.3125
+      "expected": 16.820313
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 3
-    },
-    {
-      "itemId": 4819,
-      "name": "Bronze nails",
-      "expected": 0.664063
-    },
-    {
-      "itemId": 52,
-      "name": "Arrow shaft",
-      "expected": 0.46875
+      "expected": 1
     },
     {
       "itemId": 1539,
@@ -25498,49 +25838,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.46875
     },
     {
-      "itemId": 886,
-      "name": "Steel arrow",
-      "expected": 0.382813
-    },
-    {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 0.351563
-    },
-    {
       "itemId": 2370,
       "name": "Steel studs",
       "expected": 0.234375
     },
     {
-      "itemId": 884,
-      "name": "Iron arrow",
-      "expected": 0.21875
-    },
-    {
-      "itemId": 9140,
-      "name": "Iron bolts",
-      "expected": 0.164063
-    },
-    {
-      "itemId": 888,
-      "name": "Mithril arrow",
-      "expected": 0.164063
-    },
-    {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 0.15625
-    },
-    {
-      "itemId": 2,
-      "name": "Steel cannonball",
-      "expected": 0.140625
-    },
-    {
-      "itemId": 807,
-      "name": "Iron dart",
-      "expected": 0.117188
+      "itemId": 886,
+      "name": "Steel arrow",
+      "expected": 0.171875
     },
     {
       "itemId": 9145,
@@ -25548,29 +25853,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.117188
     },
     {
-      "itemId": 890,
-      "name": "Adamant arrow",
-      "expected": 0.109375
-    },
-    {
-      "itemId": 1351,
-      "name": "Bronze axe",
-      "expected": 0.078125
-    },
-    {
-      "itemId": 1157,
-      "name": "Steel full helm",
-      "expected": 0.070313
-    },
-    {
       "itemId": 565,
       "name": "Blood rune",
       "expected": 0.070313
-    },
-    {
-      "itemId": 1137,
-      "name": "Iron med helm",
-      "expected": 0.0625
     },
     {
       "itemId": 1191,
@@ -25578,19 +25863,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.0625
     },
     {
-      "itemId": 1335,
-      "name": "Iron warhammer",
-      "expected": 0.054688
-    },
-    {
-      "itemId": 9075,
-      "name": "Astral rune",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 813,
-      "name": "Iron dart (p)",
-      "expected": 0.046875
+      "itemId": 890,
+      "name": "Adamant arrow",
+      "expected": 0.0625
     },
     {
       "itemId": 9295,
@@ -25603,66 +25878,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.046875
     },
     {
-      "itemId": 870,
-      "name": "Bronze knife(p)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1424,
-      "name": "Steel mace",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 4544,
-      "name": "Bullseye lantern (unf)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 9741,
-      "name": "Combat potion(3)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 155,
-      "name": "Fishing potion(1)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 227,
-      "name": "Vial of water",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1422,
-      "name": "Bronze mace",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1239,
-      "name": "Iron spear",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 3036,
-      "name": "Agility potion(2)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 175,
-      "name": "Antipoison(3)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 121,
-      "name": "Attack potion(3)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1595,
-      "name": "Amulet mould",
-      "expected": 0.039063
-    },
-    {
       "itemId": 1155,
       "name": "Bronze full helm",
       "expected": 0.039063
@@ -25670,6 +25885,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1087,
       "name": "Bronze plateskirt",
+      "expected": 0.039063
+    },
+    {
+      "itemId": 1335,
+      "name": "Iron warhammer",
       "expected": 0.039063
     },
     {
@@ -25693,76 +25913,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.039063
     },
     {
-      "itemId": 1428,
-      "name": "Mithril mace",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 2355,
-      "name": "Silver bar",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 444,
-      "name": "Gold ore",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 845,
-      "name": "Oak longbow",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1311,
-      "name": "Steel 2h sword",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1193,
-      "name": "Steel kiteshield",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1716,
-      "name": "Unblessed symbol",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 567,
-      "name": "Unpowered orb",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1129,
-      "name": "Leather body",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1349,
-      "name": "Iron axe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1203,
-      "name": "Iron dagger",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 563,
-      "name": "Law rune",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 66,
-      "name": "Yew longbow (u)",
-      "expected": 0.023438
-    },
-    {
       "itemId": 841,
       "name": "Shortbow",
       "expected": 0.023438
@@ -25776,61 +25926,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 946,
       "name": "Knife",
       "expected": 0.023438
-    },
-    {
-      "itemId": 1321,
-      "name": "Bronze scimitar",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 2357,
-      "name": "Gold bar",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 596,
-      "name": "Unlit torch",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1714,
-      "name": "Unstrung symbol",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1063,
-      "name": "Leather vambraces",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1117,
-      "name": "Bronze platebody",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1420,
-      "name": "Iron mace",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1339,
-      "name": "Steel warhammer",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1119,
-      "name": "Steel platebody",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1329,
-      "name": "Mithril scimitar",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1297,
-      "name": "Black longsword",
-      "expected": 0.015625
     },
     {
       "itemId": 1323,
@@ -25848,6 +25943,16 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
+      "itemId": 1428,
+      "name": "Mithril mace",
+      "expected": 0.015625
+    },
+    {
+      "itemId": 444,
+      "name": "Gold ore",
+      "expected": 0.015625
+    },
+    {
       "itemId": 2361,
       "name": "Adamantite bar",
       "expected": 0.015625
@@ -25858,38 +25963,23 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.015625
     },
     {
-      "itemId": 1341,
-      "name": "Black warhammer",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1195,
-      "name": "Black kiteshield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1109,
-      "name": "Mithril chainbody",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1071,
-      "name": "Mithril platelegs",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1199,
-      "name": "Adamant kiteshield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 187,
-      "name": "Weapon poison",
-      "expected": 0.007813
-    },
-    {
       "itemId": 1389,
       "name": "Magic staff",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1297,
+      "name": "Black longsword",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1157,
+      "name": "Steel full helm",
+      "expected": 0.007813
+    },
+    {
+      "itemId": 1193,
+      "name": "Steel kiteshield",
       "expected": 0.007813
     },
     {
@@ -27195,6 +27285,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.007813
     },
     {
+      "itemId": 12002,
+      "name": "Occult necklace",
+      "expected": 0.001953
+    },
+    {
       "itemId": 3140,
       "name": "Dragon chainbody",
       "expected": 0.000031
@@ -27458,6 +27553,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
+      "itemId": 34401,
+      "name": "Necklace of Fangs",
+      "expected": 0.023438
+    },
+    {
       "itemId": 11902,
       "name": "Leaf-bladed sword",
       "expected": 0.006
@@ -27633,6 +27733,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 5289,
       "name": "Palm tree seed",
       "expected": 0.007813
+    },
+    {
+      "itemId": 7158,
+      "name": "Dragon 2h sword",
+      "expected": 0.002793
     },
     {
       "itemId": 11920,
@@ -27849,29 +27954,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "spiritual-ranger": [
     {
-      "itemId": 995,
-      "name": "Coins",
-      "expected": 96.976563
-    },
-    {
       "itemId": 882,
       "name": "Bronze arrow",
       "expected": 1.625
     },
     {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 1.4375
-    },
-    {
       "itemId": 884,
       "name": "Iron arrow",
       "expected": 1.40625
-    },
-    {
-      "itemId": 892,
-      "name": "Rune arrow",
-      "expected": 1.046875
     },
     {
       "itemId": 1777,
@@ -27894,11 +27984,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.84375
     },
     {
-      "itemId": 9143,
-      "name": "Adamant bolts",
-      "expected": 0.820313
-    },
-    {
       "itemId": 40,
       "name": "Iron arrowtips",
       "expected": 0.429688
@@ -27914,26 +27999,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.375
     },
     {
-      "itemId": 453,
-      "name": "Coal",
-      "expected": 0.34375
-    },
-    {
-      "itemId": 2361,
-      "name": "Adamantite bar",
-      "expected": 0.15625
-    },
-    {
-      "itemId": 1299,
-      "name": "Mithril longsword",
-      "expected": 0.117188
-    },
-    {
-      "itemId": 243,
-      "name": "Blue dragon scale",
-      "expected": 0.109375
-    },
-    {
       "itemId": 890,
       "name": "Adamant arrow",
       "expected": 0.09375
@@ -27944,9 +28009,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.085938
     },
     {
-      "itemId": 171,
-      "name": "Ranging potion(2)",
-      "expected": 0.085938
+      "itemId": 892,
+      "name": "Rune arrow",
+      "expected": 0.078125
     },
     {
       "itemId": 5626,
@@ -27954,24 +28019,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.070313
     },
     {
-      "itemId": 141,
-      "name": "Prayer potion(2)",
-      "expected": 0.070313
-    },
-    {
-      "itemId": 1135,
-      "name": "Green d'hide body",
-      "expected": 0.054688
-    },
-    {
       "itemId": 843,
       "name": "Oak shortbow",
       "expected": 0.039063
-    },
-    {
-      "itemId": 26231,
-      "name": "Nihil shard",
-      "expected": 0.035156
     },
     {
       "itemId": 851,
@@ -27979,29 +28029,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.03125
     },
     {
-      "itemId": 561,
-      "name": "Nature rune",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 1617,
-      "name": "Uncut diamond",
-      "expected": 0.03125
-    },
-    {
       "itemId": 9179,
       "name": "Steel crossbow",
       "expected": 0.023438
-    },
-    {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 167,
-      "name": "Super defence(1)",
-      "expected": 0.015625
     },
     {
       "itemId": 861,
@@ -28012,69 +28042,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 5616,
       "name": "Bronze arrow(p+)",
       "expected": 0.007813
-    },
-    {
-      "itemId": 385,
-      "name": "Shark",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 26225,
-      "name": "Ancient ceremonial mask",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26221,
-      "name": "Ancient ceremonial top",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26223,
-      "name": "Ancient ceremonial legs",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26227,
-      "name": "Ancient ceremonial gloves",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26229,
-      "name": "Ancient ceremonial boots",
-      "expected": 0.001563
     }
   ],
   "spiritual-warrior": [
-    {
-      "itemId": 995,
-      "name": "Coins",
-      "expected": 93.425781
-    },
-    {
-      "itemId": 556,
-      "name": "Air rune",
-      "expected": 2.34375
-    },
-    {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 1.4375
-    },
-    {
-      "itemId": 4698,
-      "name": "Mud rune",
-      "expected": 0.820313
-    },
-    {
-      "itemId": 453,
-      "name": "Coal",
-      "expected": 0.34375
-    },
-    {
-      "itemId": 2361,
-      "name": "Adamantite bar",
-      "expected": 0.15625
-    },
     {
       "itemId": 1105,
       "name": "Steel chainbody",
@@ -28086,19 +28056,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.11811
     },
     {
-      "itemId": 1299,
-      "name": "Mithril longsword",
-      "expected": 0.117188
-    },
-    {
       "itemId": 1071,
       "name": "Mithril platelegs",
       "expected": 0.086614
-    },
-    {
-      "itemId": 149,
-      "name": "Super attack(1)",
-      "expected": 0.085938
     },
     {
       "itemId": 1257,
@@ -28109,11 +28069,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1059,
       "name": "Leather gloves",
       "expected": 0.070866
-    },
-    {
-      "itemId": 141,
-      "name": "Prayer potion(2)",
-      "expected": 0.070313
     },
     {
       "itemId": 1323,
@@ -28141,21 +28096,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.055118
     },
     {
-      "itemId": 558,
-      "name": "Mind rune",
-      "expected": 0.054688
-    },
-    {
-      "itemId": 1111,
-      "name": "Adamant chainbody",
-      "expected": 0.054688
-    },
-    {
-      "itemId": 3138,
-      "name": "Potato cactus",
-      "expected": 0.054688
-    },
-    {
       "itemId": 1341,
       "name": "Black warhammer",
       "expected": 0.03937
@@ -28164,16 +28104,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1081,
       "name": "Iron plateskirt",
       "expected": 0.031496
-    },
-    {
-      "itemId": 561,
-      "name": "Nature rune",
-      "expected": 0.03125
-    },
-    {
-      "itemId": 26231,
-      "name": "Nihil shard",
-      "expected": 0.027344
     },
     {
       "itemId": 1279,
@@ -28186,11 +28116,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023622
     },
     {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 0.023438
-    },
-    {
       "itemId": 1217,
       "name": "Black dagger",
       "expected": 0.015748
@@ -28199,16 +28124,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1371,
       "name": "Adamant battleaxe",
       "expected": 0.015748
-    },
-    {
-      "itemId": 167,
-      "name": "Super defence(1)",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 161,
-      "name": "Super strength(1)",
-      "expected": 0.015625
     },
     {
       "itemId": 1317,
@@ -28229,36 +28144,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1201,
       "name": "Rune kiteshield",
       "expected": 0.007874
-    },
-    {
-      "itemId": 379,
-      "name": "Lobster",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 26225,
-      "name": "Ancient ceremonial mask",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26221,
-      "name": "Ancient ceremonial top",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26223,
-      "name": "Ancient ceremonial legs",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26227,
-      "name": "Ancient ceremonial gloves",
-      "expected": 0.001563
-    },
-    {
-      "itemId": 26229,
-      "name": "Ancient ceremonial boots",
-      "expected": 0.001563
     }
   ],
   "spitting-wyvern": [
@@ -28413,13 +28298,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.01626
     },
     {
+      "itemId": 21646,
+      "name": "Granite longsword",
+      "expected": 0.001953
+    },
+    {
       "itemId": 21643,
       "name": "Granite boots",
       "expected": 0.000391
     },
     {
       "itemId": 21637,
-      "name": "wyvern visage",
+      "name": "Wyvern visage",
       "expected": 0.000083
     }
   ],
@@ -28763,6 +28653,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1.582031
     },
     {
+      "itemId": 562,
+      "name": "Chaos rune",
+      "expected": 1.5625
+    },
+    {
       "itemId": 453,
       "name": "Coal",
       "expected": 0.925781
@@ -29086,13 +28981,18 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.01626
     },
     {
+      "itemId": 21646,
+      "name": "Granite longsword",
+      "expected": 0.001953
+    },
+    {
       "itemId": 21643,
       "name": "Granite boots",
       "expected": 0.000391
     },
     {
       "itemId": 21637,
-      "name": "wyvern visage",
+      "name": "Wyvern visage",
       "expected": 0.000083
     }
   ],
@@ -29450,149 +29350,149 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "the-leviathan": [
     {
-      "itemId": 30771,
-      "name": "Aether catalyst",
-      "expected": 150022.5
-    },
-    {
       "itemId": 4697,
       "name": "Smoke rune",
-      "expected": 24036
+      "expected": 30
     },
     {
       "itemId": 453,
       "name": "Coal",
-      "expected": 15623.36
+      "expected": 19.48
+    },
+    {
+      "itemId": 30771,
+      "name": "Aether catalyst",
+      "expected": 18.75
     },
     {
       "itemId": 566,
       "name": "Soul rune",
-      "expected": 12018
+      "expected": 15
     },
     {
       "itemId": 444,
       "name": "Gold ore",
-      "expected": 5368.08
-    },
-    {
-      "itemId": 21930,
-      "name": "Dragon bolts (unf)",
-      "expected": 3004.5
-    },
-    {
-      "itemId": 389,
-      "name": "Raw manta ray",
-      "expected": 1802.7
-    },
-    {
-      "itemId": 559,
-      "name": "Body rune",
-      "expected": 1802.7
-    },
-    {
-      "itemId": 557,
-      "name": "Earth rune",
-      "expected": 1802.7
-    },
-    {
-      "itemId": 9194,
-      "name": "Onyx bolt tips",
-      "expected": 901.35
+      "expected": 6.72
     },
     {
       "itemId": 19582,
       "name": "Dragon javelin tips",
-      "expected": 438.48
+      "expected": 5.4
     },
     {
       "itemId": 892,
       "name": "Rune arrow",
-      "expected": 438.48
+      "expected": 5.4
+    },
+    {
+      "itemId": 21930,
+      "name": "Dragon bolts (unf)",
+      "expected": 3.75
     },
     {
       "itemId": 1619,
       "name": "Uncut ruby",
-      "expected": 187.8
+      "expected": 2.325
     },
     {
       "itemId": 1617,
       "name": "Uncut diamond",
-      "expected": 187.8
+      "expected": 2.325
+    },
+    {
+      "itemId": 389,
+      "name": "Raw manta ray",
+      "expected": 2.25
+    },
+    {
+      "itemId": 559,
+      "name": "Body rune",
+      "expected": 2.25
+    },
+    {
+      "itemId": 557,
+      "name": "Earth rune",
+      "expected": 2.25
+    },
+    {
+      "itemId": 9194,
+      "name": "Onyx bolt tips",
+      "expected": 1.125
     },
     {
       "itemId": 882,
       "name": "Bronze arrow",
-      "expected": 63.94
+      "expected": 0.785
     },
     {
       "itemId": 888,
       "name": "Mithril arrow",
-      "expected": 63.94
+      "expected": 0.785
     },
     {
       "itemId": 890,
       "name": "Adamant arrow",
-      "expected": 63.94
+      "expected": 0.785
     },
     {
       "itemId": 440,
       "name": "Iron ore",
-      "expected": 57.85
+      "expected": 0.71
     },
     {
       "itemId": 442,
       "name": "Silver ore",
-      "expected": 57.85
+      "expected": 0.71
     },
     {
       "itemId": 449,
       "name": "Adamantite ore",
-      "expected": 57.85
+      "expected": 0.71
     },
     {
       "itemId": 451,
       "name": "Runite ore",
-      "expected": 54.8
-    },
-    {
-      "itemId": 1607,
-      "name": "Sapphire",
-      "expected": 25.38
-    },
-    {
-      "itemId": 1605,
-      "name": "Emerald",
-      "expected": 25.38
-    },
-    {
-      "itemId": 1603,
-      "name": "Ruby",
-      "expected": 25.38
-    },
-    {
-      "itemId": 13441,
-      "name": "Anglerfish",
-      "expected": 3.68
+      "expected": 0.67
     },
     {
       "itemId": 397,
       "name": "Sea turtle",
-      "expected": 0.7
+      "expected": 0.648148
+    },
+    {
+      "itemId": 13441,
+      "name": "Anglerfish",
+      "expected": 0.4
+    },
+    {
+      "itemId": 1607,
+      "name": "Sapphire",
+      "expected": 0.315
+    },
+    {
+      "itemId": 1605,
+      "name": "Emerald",
+      "expected": 0.315
+    },
+    {
+      "itemId": 1603,
+      "name": "Ruby",
+      "expected": 0.315
     },
     {
       "itemId": 139,
       "name": "Prayer potion(3)",
-      "expected": 0.2
+      "expected": 0.185185
     },
     {
       "itemId": 171,
       "name": "Ranging potion(2)",
-      "expected": 0.2
+      "expected": 0.185185
     },
     {
       "itemId": 28334,
       "name": "Awakener's orb",
-      "expected": 0.018868
+      "expected": 0.018657
     },
     {
       "itemId": 28276,
@@ -29806,124 +29706,54 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "the-whisperer": [
     {
-      "itemId": 566,
-      "name": "Soul rune",
-      "expected": 186628
-    },
-    {
-      "itemId": 7944,
-      "name": "Raw monkfish",
-      "expected": 70010.5
-    },
-    {
       "itemId": 4694,
       "name": "Steam rune",
-      "expected": 37336
+      "expected": 46.64
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 37336
+      "expected": 46.64
     },
     {
       "itemId": 453,
       "name": "Coal",
-      "expected": 24276.4
+      "expected": 30.32
+    },
+    {
+      "itemId": 566,
+      "name": "Soul rune",
+      "expected": 23.33
     },
     {
       "itemId": 449,
       "name": "Adamantite ore",
-      "expected": 8412.56
+      "expected": 10.48
+    },
+    {
+      "itemId": 7944,
+      "name": "Raw monkfish",
+      "expected": 8.75
     },
     {
       "itemId": 19582,
       "name": "Dragon javelin tips",
-      "expected": 6730.08
+      "expected": 8.4
     },
     {
       "itemId": 9381,
       "name": "Runite bolts (unf)",
-      "expected": 6730.08
-    },
-    {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 2804.2
-    },
-    {
-      "itemId": 1391,
-      "name": "Battlestaff",
-      "expected": 1402.1
-    },
-    {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 1402.1
-    },
-    {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 881.33
-    },
-    {
-      "itemId": 444,
-      "name": "Gold ore",
-      "expected": 881.33
-    },
-    {
-      "itemId": 447,
-      "name": "Mithril ore",
-      "expected": 881.33
+      "expected": 8.4
     },
     {
       "itemId": 1619,
       "name": "Uncut ruby",
-      "expected": 294.35
+      "expected": 3.625
     },
     {
       "itemId": 1617,
       "name": "Uncut diamond",
-      "expected": 294.35
-    },
-    {
-      "itemId": 451,
-      "name": "Runite ore",
-      "expected": 85.26
-    },
-    {
-      "itemId": 1607,
-      "name": "Sapphire",
-      "expected": 39.59
-    },
-    {
-      "itemId": 1605,
-      "name": "Emerald",
-      "expected": 39.59
-    },
-    {
-      "itemId": 1603,
-      "name": "Ruby",
-      "expected": 39.59
-    },
-    {
-      "itemId": 1291,
-      "name": "Bronze longsword",
-      "expected": 16.24
-    },
-    {
-      "itemId": 1301,
-      "name": "Adamant longsword",
-      "expected": 9.14
-    },
-    {
-      "itemId": 1299,
-      "name": "Mithril longsword",
-      "expected": 7.1
-    },
-    {
-      "itemId": 4585,
-      "name": "Dragon plateskirt",
-      "expected": 7.1
+      "expected": 3.625
     },
     {
       "itemId": 7936,
@@ -29931,24 +29761,94 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 3.5
     },
     {
+      "itemId": 555,
+      "name": "Water rune",
+      "expected": 3.5
+    },
+    {
+      "itemId": 1391,
+      "name": "Battlestaff",
+      "expected": 1.75
+    },
+    {
+      "itemId": 562,
+      "name": "Chaos rune",
+      "expected": 1.75
+    },
+    {
+      "itemId": 440,
+      "name": "Iron ore",
+      "expected": 1.105
+    },
+    {
+      "itemId": 444,
+      "name": "Gold ore",
+      "expected": 1.105
+    },
+    {
+      "itemId": 447,
+      "name": "Mithril ore",
+      "expected": 1.105
+    },
+    {
+      "itemId": 451,
+      "name": "Runite ore",
+      "expected": 1.05
+    },
+    {
       "itemId": 391,
       "name": "Manta ray",
-      "expected": 0.7
+      "expected": 0.636364
+    },
+    {
+      "itemId": 1607,
+      "name": "Sapphire",
+      "expected": 0.49
+    },
+    {
+      "itemId": 1605,
+      "name": "Emerald",
+      "expected": 0.49
+    },
+    {
+      "itemId": 1603,
+      "name": "Ruby",
+      "expected": 0.49
+    },
+    {
+      "itemId": 1291,
+      "name": "Bronze longsword",
+      "expected": 0.2
     },
     {
       "itemId": 26344,
       "name": "Ancient brew(2)",
-      "expected": 0.2
+      "expected": 0.181818
     },
     {
       "itemId": 139,
       "name": "Prayer potion(3)",
-      "expected": 0.2
+      "expected": 0.181818
+    },
+    {
+      "itemId": 1301,
+      "name": "Adamant longsword",
+      "expected": 0.115
+    },
+    {
+      "itemId": 1299,
+      "name": "Mithril longsword",
+      "expected": 0.085
+    },
+    {
+      "itemId": 4585,
+      "name": "Dragon plateskirt",
+      "expected": 0.085
     },
     {
       "itemId": 28334,
       "name": "Awakener's orb",
-      "expected": 0.029412
+      "expected": 0.028986
     },
     {
       "itemId": 28276,
@@ -30166,6 +30066,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 989,
       "name": "Crystal key",
       "expected": 0.009346
+    },
+    {
+      "itemId": 12002,
+      "name": "Occult necklace",
+      "expected": 0.002857
     },
     {
       "itemId": 11998,
@@ -30714,6 +30619,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.472441
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.188976
+    },
+    {
       "itemId": 7060,
       "name": "Tuna potato",
       "expected": 0.125984
@@ -30727,6 +30637,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -30748,7 +30663,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 25.78125
+      "expected": 25.581395
     },
     {
       "itemId": 526,
@@ -30758,42 +30673,47 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 561,
       "name": "Nature rune",
-      "expected": 0.875
+      "expected": 0.868217
     },
     {
       "itemId": 563,
       "name": "Law rune",
-      "expected": 0.140625
+      "expected": 0.139535
     },
     {
       "itemId": 1069,
       "name": "Steel platelegs",
-      "expected": 0.054688
+      "expected": 0.054264
     },
     {
       "itemId": 225,
       "name": "Limpwurt root",
-      "expected": 0.054688
+      "expected": 0.054264
     },
     {
       "itemId": 1355,
       "name": "Mithril axe",
-      "expected": 0.023438
+      "expected": 0.023256
     },
     {
       "itemId": 1197,
       "name": "Mithril kiteshield",
-      "expected": 0.007813
+      "expected": 0.007752
     },
     {
       "itemId": 1161,
       "name": "Adamant full helm",
-      "expected": 0.007813
+      "expected": 0.007752
     },
     {
       "itemId": 1213,
       "name": "Rune dagger",
-      "expected": 0.007813
+      "expected": 0.007752
+    },
+    {
+      "itemId": 34401,
+      "name": "Necklace of Fangs",
+      "expected": 0.007752
     },
     {
       "itemId": 11902,
@@ -31057,6 +30977,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 6568,
       "name": "Obsidian cape",
       "expected": 0.001953
+    },
+    {
+      "itemId": 21298,
+      "name": "Obsidian helmet",
+      "expected": 0.0005
     },
     {
       "itemId": 21301,
@@ -31336,6 +31261,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 23499,
       "name": "Grubby key",
       "expected": 0.013333
+    },
+    {
+      "itemId": 23522,
+      "name": "Mask of Ranul",
+      "expected": 0.001
     }
   ],
   "undead-lumberjack": [
@@ -31455,6 +31385,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.025
     },
     {
+      "itemId": 31996,
+      "name": "Dragon metal sheet",
+      "expected": 0.009375
+    },
+    {
       "itemId": 4091,
       "name": "Mystic robe top",
       "expected": 0.008333
@@ -31463,6 +31398,21 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 31547,
       "name": "Camphor seed",
       "expected": 0.00625
+    },
+    {
+      "itemId": 32017,
+      "name": "Dragon keel parts",
+      "expected": 0.003125
+    },
+    {
+      "itemId": 32038,
+      "name": "Large dragon keel parts",
+      "expected": 0.003125
+    },
+    {
+      "itemId": 31949,
+      "name": "Bottled storm",
+      "expected": 0.002857
     },
     {
       "itemId": 31549,
@@ -31484,147 +31434,147 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 4699,
       "name": "Lava rune",
-      "expected": 16024
+      "expected": 20
     },
     {
       "itemId": 565,
       "name": "Blood rune",
-      "expected": 16024
+      "expected": 20
     },
     {
       "itemId": 453,
       "name": "Coal",
-      "expected": 10415.6
+      "expected": 13
     },
     {
       "itemId": 566,
       "name": "Soul rune",
-      "expected": 8012
-    },
-    {
-      "itemId": 11232,
-      "name": "Dragon dart tip",
-      "expected": 2003
-    },
-    {
-      "itemId": 383,
-      "name": "Raw shark",
-      "expected": 2003
-    },
-    {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 1201.8
-    },
-    {
-      "itemId": 558,
-      "name": "Mind rune",
-      "expected": 1201.8
-    },
-    {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 1201.8
+      "expected": 10
     },
     {
       "itemId": 449,
       "name": "Adamantite ore",
-      "expected": 365.36
+      "expected": 4.48
     },
     {
       "itemId": 19580,
       "name": "Rune javelin tips",
-      "expected": 292.32
+      "expected": 3.6
     },
     {
       "itemId": 19582,
       "name": "Dragon javelin tips",
-      "expected": 292.32
+      "expected": 3.6
+    },
+    {
+      "itemId": 11232,
+      "name": "Dragon dart tip",
+      "expected": 2.5
+    },
+    {
+      "itemId": 383,
+      "name": "Raw shark",
+      "expected": 2.5
     },
     {
       "itemId": 1619,
       "name": "Uncut ruby",
-      "expected": 126.85
+      "expected": 1.55
     },
     {
       "itemId": 1617,
       "name": "Uncut diamond",
-      "expected": 126.85
+      "expected": 1.55
+    },
+    {
+      "itemId": 7936,
+      "name": "Pure essence",
+      "expected": 1.5
+    },
+    {
+      "itemId": 558,
+      "name": "Mind rune",
+      "expected": 1.5
+    },
+    {
+      "itemId": 554,
+      "name": "Fire rune",
+      "expected": 1.5
     },
     {
       "itemId": 9245,
       "name": "Onyx bolts (e)",
-      "expected": 60.9
-    },
-    {
-      "itemId": 825,
-      "name": "Bronze javelin",
-      "expected": 42.63
-    },
-    {
-      "itemId": 828,
-      "name": "Mithril javelin",
-      "expected": 42.63
-    },
-    {
-      "itemId": 829,
-      "name": "Adamant javelin",
-      "expected": 42.63
-    },
-    {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 38.57
-    },
-    {
-      "itemId": 442,
-      "name": "Silver ore",
-      "expected": 38.57
-    },
-    {
-      "itemId": 447,
-      "name": "Mithril ore",
-      "expected": 38.57
-    },
-    {
-      "itemId": 451,
-      "name": "Runite ore",
-      "expected": 36.54
-    },
-    {
-      "itemId": 1607,
-      "name": "Sapphire",
-      "expected": 17.25
-    },
-    {
-      "itemId": 1605,
-      "name": "Emerald",
-      "expected": 17.25
-    },
-    {
-      "itemId": 1603,
-      "name": "Ruby",
-      "expected": 17.25
+      "expected": 0.75
     },
     {
       "itemId": 7060,
       "name": "Tuna potato",
-      "expected": 0.7
+      "expected": 0.660377
+    },
+    {
+      "itemId": 825,
+      "name": "Bronze javelin",
+      "expected": 0.525
+    },
+    {
+      "itemId": 828,
+      "name": "Mithril javelin",
+      "expected": 0.525
+    },
+    {
+      "itemId": 829,
+      "name": "Adamant javelin",
+      "expected": 0.525
+    },
+    {
+      "itemId": 440,
+      "name": "Iron ore",
+      "expected": 0.475
+    },
+    {
+      "itemId": 442,
+      "name": "Silver ore",
+      "expected": 0.475
+    },
+    {
+      "itemId": 447,
+      "name": "Mithril ore",
+      "expected": 0.475
+    },
+    {
+      "itemId": 451,
+      "name": "Runite ore",
+      "expected": 0.45
+    },
+    {
+      "itemId": 1607,
+      "name": "Sapphire",
+      "expected": 0.21
+    },
+    {
+      "itemId": 1605,
+      "name": "Emerald",
+      "expected": 0.21
+    },
+    {
+      "itemId": 1603,
+      "name": "Ruby",
+      "expected": 0.21
     },
     {
       "itemId": 139,
       "name": "Prayer potion(3)",
-      "expected": 0.2
+      "expected": 0.188679
     },
     {
       "itemId": 12699,
       "name": "Super combat potion(2)",
-      "expected": 0.2
+      "expected": 0.188679
     },
     {
       "itemId": 28334,
       "name": "Awakener's orb",
-      "expected": 0.0125
+      "expected": 0.012407
     },
     {
       "itemId": 28276,
@@ -31669,11 +31619,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1.838235
     },
     {
-      "itemId": 31547,
-      "name": "Camphor seed",
-      "expected": 0.75
-    },
-    {
       "itemId": 565,
       "name": "Blood rune",
       "expected": 0.643382
@@ -31682,11 +31627,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 31916,
       "name": "Dragon cannonball",
       "expected": 0.330882
-    },
-    {
-      "itemId": 31549,
-      "name": "Ironwood seed",
-      "expected": 0.2
     },
     {
       "itemId": 9342,
@@ -31722,11 +31662,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1079,
       "name": "Rune platelegs",
       "expected": 0.073529
-    },
-    {
-      "itemId": 31551,
-      "name": "Rosewood seed",
-      "expected": 0.05
     },
     {
       "itemId": 413,
@@ -31779,14 +31714,49 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.011029
     },
     {
+      "itemId": 31996,
+      "name": "Dragon metal sheet",
+      "expected": 0.008333
+    },
+    {
+      "itemId": 31547,
+      "name": "Camphor seed",
+      "expected": 0.005516
+    },
+    {
       "itemId": 31982,
       "name": "Rosewood repair kit",
       "expected": 0.003676
     },
     {
+      "itemId": 32017,
+      "name": "Dragon keel parts",
+      "expected": 0.002778
+    },
+    {
+      "itemId": 32038,
+      "name": "Large dragon keel parts",
+      "expected": 0.002778
+    },
+    {
+      "itemId": 32115,
+      "name": "Dragon cannon barrel",
+      "expected": 0.002
+    },
+    {
+      "itemId": 31549,
+      "name": "Ironwood seed",
+      "expected": 0.001471
+    },
+    {
       "itemId": 32093,
       "name": "Inky paint",
       "expected": 0.000526
+    },
+    {
+      "itemId": 31551,
+      "name": "Rosewood seed",
+      "expected": 0.000368
     }
   ],
   "venator": [
@@ -32068,6 +32038,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.063492
     },
     {
+      "itemId": 27670,
+      "name": "Fangs of Venenatis",
+      "expected": 0.005102
+    },
+    {
       "itemId": 7158,
       "name": "Dragon 2h sword",
       "expected": 0.003906
@@ -32285,6 +32260,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.063492
     },
     {
+      "itemId": 27673,
+      "name": "Skull of Vet'ion",
+      "expected": 0.005102
+    },
+    {
       "itemId": 7158,
       "name": "Dragon 2h sword",
       "expected": 0.003906
@@ -32426,7 +32406,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1163,
       "name": "Rune full helm",
-      "expected": 0.007813
+      "expected": 0.023438
     }
   ],
   "vitreous-warped-jelly": [
@@ -33632,9 +33612,19 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 593.013361
     },
     {
+      "itemId": 808,
+      "name": "Steel dart",
+      "expected": 6.047244
+    },
+    {
       "itemId": 314,
       "name": "Feather",
       "expected": 6
+    },
+    {
+      "itemId": 886,
+      "name": "Steel arrow",
+      "expected": 5.291339
     },
     {
       "itemId": 526,
@@ -33652,6 +33642,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.188976
     },
     {
+      "itemId": 391,
+      "name": "Manta ray",
+      "expected": 0.125984
+    },
+    {
       "itemId": 6693,
       "name": "Crushed nest",
       "expected": 0.125984
@@ -33660,6 +33655,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 213,
       "name": "Grimy kwuarm",
       "expected": 0.062992
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -33685,6 +33685,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 11830,
       "name": "Armadyl chainskirt",
       "expected": 0.000062
+    }
+  ],
+  "wolf": [
+    {
+      "itemId": 2859,
+      "name": "Wolf bones",
+      "expected": 1
     }
   ],
   "wyrm": [
@@ -33794,6 +33801,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.01125
     },
     {
+      "itemId": 21009,
+      "name": "Dragon sword",
+      "expected": 0.0001
+    },
+    {
       "itemId": 21028,
       "name": "Dragon harpoon",
       "expected": 0.0001
@@ -33808,99 +33820,154 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "yama": [
     {
+      "itemId": 554,
+      "name": "Fire rune",
+      "expected": 420.565661
+    },
+    {
       "itemId": 30771,
       "name": "Aether catalyst",
-      "expected": 2000
+      "expected": 62.559142
+    },
+    {
+      "itemId": 566,
+      "name": "Soul rune",
+      "expected": 31.542425
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 12.61697
+    },
+    {
+      "itemId": 21880,
+      "name": "Wrath rune",
+      "expected": 8.411313
+    },
+    {
+      "itemId": 4697,
+      "name": "Smoke rune",
+      "expected": 7.359899
     },
     {
       "itemId": 30773,
       "name": "Diabolic worms",
-      "expected": 250
+      "expected": 6.623909
+    },
+    {
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 4.731364
+    },
+    {
+      "itemId": 1391,
+      "name": "Battlestaff",
+      "expected": 1.682263
+    },
+    {
+      "itemId": 9194,
+      "name": "Onyx bolt tips",
+      "expected": 1.577121
+    },
+    {
+      "itemId": 1605,
+      "name": "Emerald",
+      "expected": 1.261697
+    },
+    {
+      "itemId": 1603,
+      "name": "Ruby",
+      "expected": 1.261697
+    },
+    {
+      "itemId": 1601,
+      "name": "Diamond",
+      "expected": 1.261697
     },
     {
       "itemId": 30765,
       "name": "Oathplate shards",
-      "expected": 45
+      "expected": 0.702988
     },
     {
-      "itemId": 30759,
-      "name": "Soulflame horn",
-      "expected": 1
-    },
-    {
-      "itemId": 30822,
-      "name": "Contract of Forfeit Breath",
-      "expected": 1
-    },
-    {
-      "itemId": 30810,
-      "name": "Contract of Glyphic Attenuation",
-      "expected": 1
-    },
-    {
-      "itemId": 30813,
-      "name": "Contract of Sensory Clouding",
-      "expected": 1
-    },
-    {
-      "itemId": 30819,
-      "name": "Contract of Divine Severance",
-      "expected": 1
-    },
-    {
-      "itemId": 30816,
-      "name": "Contract of Bloodied Blows",
-      "expected": 1
-    },
-    {
-      "itemId": 30840,
-      "name": "Contract of Familiar Acquisition",
-      "expected": 1
+      "itemId": 1113,
+      "name": "Rune chainbody",
+      "expected": 0.420566
     },
     {
       "itemId": 2301,
       "name": "Pineapple pizza",
-      "expected": 0.276316
+      "expected": 0.275996
     },
     {
       "itemId": 7208,
       "name": "Wild pie",
-      "expected": 0.276316
+      "expected": 0.275996
+    },
+    {
+      "itemId": 1127,
+      "name": "Rune platebody",
+      "expected": 0.252339
+    },
+    {
+      "itemId": 30775,
+      "name": "Chasm teleport scroll",
+      "expected": 0.252339
     },
     {
       "itemId": 139,
       "name": "Prayer potion(3)",
-      "expected": 0.157895
+      "expected": 0.157712
     },
     {
       "itemId": 11493,
       "name": "Super restore mix(2)",
-      "expected": 0.157895
+      "expected": 0.157712
     },
     {
       "itemId": 12701,
       "name": "Super combat potion(1)",
-      "expected": 0.078947
+      "expected": 0.078856
     },
     {
       "itemId": 11521,
       "name": "Zamorak mix(2)",
-      "expected": 0.078947
+      "expected": 0.078856
     },
     {
       "itemId": 30795,
       "name": "Barrel of demonic tallow (full)",
-      "expected": 0.052632
+      "expected": 0.052571
     },
     {
       "itemId": 4585,
       "name": "Dragon plateskirt",
-      "expected": 0.021053
+      "expected": 0.021028
     },
     {
       "itemId": 4087,
       "name": "Dragon platelegs",
-      "expected": 0.021053
+      "expected": 0.021028
+    },
+    {
+      "itemId": 30759,
+      "name": "Soulflame horn",
+      "expected": 0.003333
+    },
+    {
+      "itemId": 30750,
+      "name": "Oathplate helm",
+      "expected": 0.001667
+    },
+    {
+      "itemId": 30753,
+      "name": "Oathplate chest",
+      "expected": 0.001667
+    },
+    {
+      "itemId": 30756,
+      "name": "Oathplate legs",
+      "expected": 0.001667
     }
   ],
   "zakln-gritch": [
@@ -33940,6 +34007,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.472441
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.188976
+    },
+    {
       "itemId": 7060,
       "name": "Tuna potato",
       "expected": 0.125984
@@ -33953,6 +34025,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 157,
       "name": "Super strength(3)",
       "expected": 0.015748
+    },
+    {
+      "itemId": 11818,
+      "name": "Godsword shard 1",
+      "expected": 0.000656
     },
     {
       "itemId": 11820,
@@ -33997,6 +34074,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 23.083333
     },
     {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 17.319444
+    },
+    {
       "itemId": 564,
       "name": "Cosmic rune",
       "expected": 16.958333
@@ -34010,11 +34092,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 447,
       "name": "Mithril ore",
       "expected": 14.583333
-    },
-    {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 14.347222
     },
     {
       "itemId": 563,
@@ -34108,42 +34185,22 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 13.359375
-    },
-    {
-      "itemId": 526,
-      "name": "Bones",
-      "expected": 3
+      "expected": 9.359375
     },
     {
       "itemId": 313,
       "name": "Fishing bait",
-      "expected": 2.867188
+      "expected": 1.421875
     },
     {
-      "itemId": 884,
-      "name": "Iron arrow",
-      "expected": 0.523438
+      "itemId": 526,
+      "name": "Bones",
+      "expected": 1
     },
     {
       "itemId": 556,
       "name": "Air rune",
-      "expected": 0.476563
-    },
-    {
-      "itemId": 559,
-      "name": "Body rune",
-      "expected": 0.28125
-    },
-    {
-      "itemId": 558,
-      "name": "Mind rune",
-      "expected": 0.195313
-    },
-    {
-      "itemId": 886,
-      "name": "Steel arrow",
-      "expected": 0.078125
+      "expected": 0.070313
     },
     {
       "itemId": 554,
@@ -34151,14 +34208,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.054688
     },
     {
-      "itemId": 561,
-      "name": "Nature rune",
+      "itemId": 559,
+      "name": "Body rune",
       "expected": 0.046875
-    },
-    {
-      "itemId": 1139,
-      "name": "Bronze med helm",
-      "expected": 0.03125
     },
     {
       "itemId": 562,
@@ -34176,11 +34228,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.023438
     },
     {
-      "itemId": 436,
-      "name": "Copper ore",
-      "expected": 0.015625
-    },
-    {
       "itemId": 1203,
       "name": "Iron dagger",
       "expected": 0.015625
@@ -34194,16 +34241,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 590,
       "name": "Tinderbox",
       "expected": 0.015625
-    },
-    {
-      "itemId": 1291,
-      "name": "Bronze longsword",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1349,
-      "name": "Iron axe",
-      "expected": 0.007813
     },
     {
       "itemId": 1189,
@@ -34520,7 +34557,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 4.85
+      "expected": 4.45
     },
     {
       "itemId": 886,
@@ -34552,32 +34589,17 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 67.414063
+      "expected": 29.15625
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 3
-    },
-    {
-      "itemId": 7936,
-      "name": "Pure essence",
-      "expected": 0.546875
-    },
-    {
-      "itemId": 886,
-      "name": "Steel arrow",
-      "expected": 0.421875
+      "expected": 1
     },
     {
       "itemId": 4821,
       "name": "Black nails",
       "expected": 0.3125
-    },
-    {
-      "itemId": 554,
-      "name": "Fire rune",
-      "expected": 0.28125
     },
     {
       "itemId": 561,
@@ -34590,24 +34612,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.164063
     },
     {
-      "itemId": 555,
-      "name": "Water rune",
-      "expected": 0.15625
-    },
-    {
       "itemId": 558,
       "name": "Mind rune",
       "expected": 0.15625
-    },
-    {
-      "itemId": 563,
-      "name": "Law rune",
-      "expected": 0.140625
-    },
-    {
-      "itemId": 557,
-      "name": "Earth rune",
-      "expected": 0.125
     },
     {
       "itemId": 4699,
@@ -34615,39 +34622,14 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.125
     },
     {
-      "itemId": 4698,
-      "name": "Mud rune",
-      "expected": 0.117188
-    },
-    {
-      "itemId": 4824,
-      "name": "Rune nails",
-      "expected": 0.117188
-    },
-    {
-      "itemId": 562,
-      "name": "Chaos rune",
-      "expected": 0.09375
-    },
-    {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 0.09375
-    },
-    {
       "itemId": 825,
       "name": "Bronze javelin",
       "expected": 0.09375
     },
     {
-      "itemId": 1339,
-      "name": "Steel warhammer",
-      "expected": 0.078125
-    },
-    {
-      "itemId": 946,
-      "name": "Knife",
-      "expected": 0.078125
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 0.09375
     },
     {
       "itemId": 1743,
@@ -34655,29 +34637,9 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.078125
     },
     {
-      "itemId": 2,
-      "name": "Steel cannonball",
-      "expected": 0.070313
-    },
-    {
-      "itemId": 808,
-      "name": "Steel dart",
-      "expected": 0.070313
-    },
-    {
       "itemId": 5620,
       "name": "Adamant arrow(p+)",
       "expected": 0.070313
-    },
-    {
-      "itemId": 1069,
-      "name": "Steel platelegs",
-      "expected": 0.0625
-    },
-    {
-      "itemId": 1375,
-      "name": "Bronze battleaxe",
-      "expected": 0.0625
     },
     {
       "itemId": 2126,
@@ -34690,63 +34652,13 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.054688
     },
     {
-      "itemId": 440,
-      "name": "Iron ore",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 444,
-      "name": "Gold ore",
-      "expected": 0.046875
-    },
-    {
-      "itemId": 3420,
-      "name": "Limestone brick",
-      "expected": 0.046875
-    },
-    {
       "itemId": 4695,
       "name": "Mist rune",
       "expected": 0.046875
     },
     {
-      "itemId": 865,
-      "name": "Steel knife",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1921,
-      "name": "Bowl of water",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 155,
-      "name": "Fishing potion(1)",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1933,
-      "name": "Pot of flour",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 4440,
-      "name": "Pot lid",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1539,
-      "name": "Steel nails",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 1978,
-      "name": "Cup of tea",
-      "expected": 0.039063
-    },
-    {
-      "itemId": 169,
-      "name": "Ranging potion(3)",
+      "itemId": 1339,
+      "name": "Steel warhammer",
       "expected": 0.039063
     },
     {
@@ -34760,43 +34672,8 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.03125
     },
     {
-      "itemId": 1307,
-      "name": "Bronze 2h sword",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1381,
-      "name": "Staff of air",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 5350,
-      "name": "Empty plant pot",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 849,
-      "name": "Willow shortbow",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 800,
-      "name": "Bronze thrownaxe",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 569,
-      "name": "Fire orb",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1654,
-      "name": "Gold necklace",
-      "expected": 0.023438
-    },
-    {
-      "itemId": 1599,
-      "name": "Holy mould",
+      "itemId": 1375,
+      "name": "Bronze battleaxe",
       "expected": 0.023438
     },
     {
@@ -34808,56 +34685,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 1273,
       "name": "Mithril pickaxe",
       "expected": 0.023438
-    },
-    {
-      "itemId": 1335,
-      "name": "Iron warhammer",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1424,
-      "name": "Steel mace",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 8778,
-      "name": "Oak plank",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1061,
-      "name": "Leather boots",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1295,
-      "name": "Steel longsword",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1209,
-      "name": "Mithril dagger",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1331,
-      "name": "Adamant scimitar",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 590,
-      "name": "Tinderbox",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 1513,
-      "name": "Magic logs",
-      "expected": 0.015625
-    },
-    {
-      "itemId": 2359,
-      "name": "Mithril bar",
-      "expected": 0.015625
     },
     {
       "itemId": 1059,
@@ -34878,51 +34705,6 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "itemId": 239,
       "name": "White berries",
       "expected": 0.015625
-    },
-    {
-      "itemId": 1177,
-      "name": "Steel sq shield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1285,
-      "name": "Mithril sword",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 575,
-      "name": "Earth orb",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 5722,
-      "name": "Steel spear(p++)",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1159,
-      "name": "Mithril full helm",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1197,
-      "name": "Mithril kiteshield",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1091,
-      "name": "Adamant plateskirt",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1347,
-      "name": "Rune warhammer",
-      "expected": 0.007813
-    },
-    {
-      "itemId": 1550,
-      "name": "Garlic",
-      "expected": 0.007813
     },
     {
       "itemId": 1103,
@@ -34981,6 +34763,11 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 313,
       "name": "Fishing bait",
+      "expected": 1.929688
+    },
+    {
+      "itemId": 11940,
+      "name": "Dark fishing bait",
       "expected": 1.929688
     },
     {
@@ -35393,7 +35180,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 12934,
       "name": "Zulrah's scales",
-      "expected": 319.746988
+      "expected": 219.580321
     },
     {
       "itemId": 7936,
@@ -35403,7 +35190,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 1779,
       "name": "Flax",
-      "expected": 40.160643
+      "expected": 80.321285
     },
     {
       "itemId": 1939,

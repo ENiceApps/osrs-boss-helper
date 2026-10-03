@@ -696,29 +696,44 @@ const ABYSSAL_SIRE: MechanicRequirement[] = [
 
 // ---------------- Phantom Muspah ----------------
 const PHANTOM_MUSPAH: MechanicRequirement[] = [
+  // Rewritten 2026-10-02 against the OSRS Wiki: Phantom Muspah + Phantom Muspah/
+  // Strategies (https://oldschool.runescape.wiki/w/Phantom_Muspah), the 2026-07-22
+  // Summer Sweep-Up Gear & PvM Changes (form-swap + Homing Spikes pacing,
+  // https://oldschool.runescape.wiki/w/Update:Summer_Sweep-Up_Gear_%26_PvM_Changes)
+  // and the 2026-08-05 Wyrmscraig & Sailing Changes (zero-damage hits no longer
+  // count toward form switches,
+  // https://oldschool.runescape.wiki/w/Update:Wyrmscraig_%26_Sailing_Changes).
   {
     id: "muspah-phase-rotation",
-    label: "4-phase rotation: Ranged → Magic → Shielded → Melee",
+    label: "Forms swap Ranged ↔ Melee — and swaps are slower now",
     description:
-      "Muspah cycles through styles. P1 ranged (pray Range), P2 magic (pray Magic), P3 he shields and you must DPS until he transitions, P4 melee (pray Melee).",
+      "Muspah alternates a ranged form (pray Missiles; weak to ranged) and a melee form (weak to magic; hits harder the longer it stays still), swapping after ~100 damage in ranged form (the lightning-cloud special doesn't count) or ~80 in melee form. Since 22 Jul 2026, once it has swapped for the first time it also needs at least 4 separate damaging hits from you before it can swap again — and since 5 Aug 2026 hits that deal zero damage no longer count toward a form switch. Thrall damage doesn't count either (except the final stand at ≤127 HP). At <127 HP it teleports to the centre, shock-waves the arena (hide behind a spike) and raises a 75-HP prayer shield.",
     remediation:
-      "Memorise the rotation. P3 shielded phase is when you swap to your highest-DPS style ignoring his defences.",
+      "Count landed hits as well as damage: a big hit can clear the 100/80 threshold but you still need 4 damaging hits before the swap. Slow hard-hitters keep a form longer than fast weapons do.",
   },
   {
     id: "muspah-prayer-bombs",
-    label: "Dodge the prayer-drain bombs (P1 and P2)",
+    label: "Dodge the swap spikes; flick Magic on the charge-up",
     description:
-      "Muspah spawns a glowing tile that explodes after a few ticks for ~30 damage AND drains 100% prayer. Walk off it before it goes off.",
+      "Every form swap slams the ground and spawns spikes around the arena — always one under you; standing on it knocks you aside and heals Muspah for ~75% of the damage dealt. In ranged form it occasionally charges a purple magic orb (up to 72, plus corruption that drains 18 prayer over 18s): swap to Protect from Magic the instant you see it, otherwise stay on Protect from Missiles.",
     remediation:
-      "Always have at least 2 free tiles adjacent. Step diagonally when you see the warning.",
+      "Step off your own tile the moment it slams. Ward of Arceuus blocks or clears corruption.",
+  },
+  {
+    id: "muspah-homing-spikes",
+    label: "Homing Spikes: 34 ticks (was 50), cut short by the shield",
+    description:
+      "Specials fire at 75% and 50% HP (637 and 425): a ranged spawn opens with Lightning Clouds, a melee spawn opens with Homing Spikes, and the other follows at 50%. Since 22 Jul 2026 the Homing Spikes attack lasts 34 ticks (20.4s), down from 50 ticks (30s), and it ends immediately if Muspah phases into its shielded form. The spikes crawl one tile per 2 ticks without moving diagonally, then harden when the timer ends — stand behind a grouped, hardened spike to block them.",
+    remediation:
+      "Keep moving while they home, then use a grouped, hardened spike as cover — they harden sooner now that the attack is shorter.",
   },
   {
     id: "muspah-dual-style",
     label: "Bring 2 attack styles",
     description:
-      "P3 shielded phase rewards magic OR ranged depending on shield colour. Solo BIS is Tbow + Sang/Shadow + Scythe for melee phase.",
+      "Ranged form is weak to ranged and melee form is weak to magic (freeze or kite it to dodge its hits), so ideally you bring both. Camping a single form works but kills slower (ranged camp is slightly better). The shielded phase is immune to damage until the shield is drained: Smite, enchanted sapphire bolts or a corruption spell speed that up.",
     remediation:
-      "Common loadout: Tbow + Scythe. Sang or Shadow optional for P3 magic.",
+      "Common setup: Twisted bow (or Zaryte crossbow with sapphire bolts (e) for the shield) plus a magic swap such as Tumeken's shadow.",
   },
   {
     id: "food",
@@ -967,6 +982,17 @@ const DEMONIC_GORILLA: MechanicRequirement[] = [
     description:
       "Each style change ideally swaps weapon + protection prayer. Min setup: 1 ranged weapon, 1 mage weapon, 1 melee weapon, plus the matching helmets if you want max DPS.",
     remediation: "Minimum: Toxic blowpipe (ranged), Sang staff (magic), Whip (melee).",
+  },
+  // Source: https://oldschool.runescape.wiki/w/Demonic_gorilla and the 2026-07-22
+  // Summer Sweep-Up Gear & PvM Changes
+  // (https://oldschool.runescape.wiki/w/Update:Summer_Sweep-Up_Gear_%26_PvM_Changes).
+  {
+    id: "gorilla-prayer-swap",
+    label: "Overhead swaps only after 4 hits AND 70 damage",
+    description:
+      "A gorilla switches its protection prayer against the style you last hit it with only once it has taken damage on at least 4 separate occasions AND at least 70 total damage in the styles it isn't already praying against (total across styles, not per style). Since 22 Jul 2026 the 4-hit rule sits on top of the 70-damage threshold (which was 50 until 23 Apr 2025), so a couple of big hits no longer flip it. It also changes its own attack style after missing three hits in a row in that style.",
+    remediation:
+      "Open with your stronger style and keep hitting until the overhead flips, then swap to your second style. Thralls of the style you didn't bring can flip the prayer for you.",
   },
   {
     id: "gorilla-prayer-restore",
@@ -1452,6 +1478,9 @@ const SOL_HEREDIT: MechanicRequirement[] = [
 ];
 
 // ---------------- Mad Angel (Wyrmscraig) ----------------
+// Checked 2026-10-02 against https://oldschool.runescape.wiki/w/Mad_Angel and
+// /Mad_Angel/Strategies (incl. the 2026-08-19 Summer Sweep Up - Hunter & Skilling
+// change: Exploding Light can now target the player's own tile).
 const MAD_ANGEL: MechanicRequirement[] = [
   {
     id: "mad-angel-unlock",
@@ -1471,9 +1500,9 @@ const MAD_ANGEL: MechanicRequirement[] = [
     id: "mad-angel-specials",
     label: "Counter the three rotating specials — each rewards your DPS",
     description:
-      "Every 3 autos it rotates a special, and countering it buffs YOUR next attack: Sweep — side-step away from the telegraphed cleave side; your next attack can't miss and its minimum hit is 50% of max. Blast — stand on the shadowed tile to bounce the light ball back (18–22 to the boss) instead of eating a 30+ arena hit. Smite — flick Protect from Magic on the exact strike tick (~4 ticks after the charge starts) to negate it fully AND guarantee your next attack's max hit; just having the prayer up still cuts ~75%.",
+      "Every 3 autos it rotates a special, and countering it buffs YOUR next attack: Sweep — dodge to the side opposite the drawn sword (the cleave repeats 4 times, 6 in the enrage); your next attack can't miss and its minimum hit is 50% of max. Blast (Exploding Light) — stand on the shadowed tile to bounce the light ball back (18–22 to the boss, bounced three times a cast) instead of eating a 30+ arena hit; since 19 Aug 2026 that shadow can land on the tile you're already standing on, so just hold your ground. Smite — flick Protect from Magic on the exact strike tick (~4 ticks after the charge starts) to negate it fully AND guarantee your next attack's max hit; just having the prayer up still cuts ~75%.",
     remediation:
-      "Use the phase selector (Sword Cleave / Perfect Lightning) to see what the reaction buffs are worth for your setup.",
+      "Turn auto-retaliate off so a blast doesn't drag you off the tile. Use the phase selector (Sword Cleave / Perfect Lightning) to see what the reaction buffs are worth for your setup.",
   },
   {
     id: "mad-angel-enrage",
@@ -1509,6 +1538,60 @@ const MAD_ANGEL: MechanicRequirement[] = [
     description: "Missed specials hit 30+ through the fight and prayer stays up constantly.",
     satisfiedBy: { anyOf: [[id(385)], [id(391)], [id(2434)], [id(3024)]] },
     remediation: "Sharks/Manta rays + Prayer potions or Super restores; brews for learning trips.",
+  },
+];
+
+// ---------------- Vampyre Snail (Sotfa Forest, Vampyrium) ----------------
+// Released 2026-08-12 (Summer Sweep Up - Agility & Chambers of Xeric Changes);
+// health scaling raised 2026-08-19 (Summer Sweep Up - Hunter & Skilling).
+// Source: https://oldschool.runescape.wiki/w/Vampyre_Snail (+ /Vampyre_snelm and
+// https://oldschool.runescape.wiki/w/Sotfa_Forest, which calls it a boss).
+const VAMPYRE_SNAIL: MechanicRequirement[] = [
+  {
+    id: "vampyre-snail-group",
+    label: "Group boss: spawns only with 10+ players in the arena",
+    description:
+      "The snail lives in the darkwood trees of Sotfa Forest, east of the Ruined Village, and only appears once 10 or more players are in the arena. It targets one player at a time and its HP scales with how many players are present when it spawns (the 500 HP in the catalog is the base, not a group total; scaling was raised on 19 Aug 2026). Joining a fight that is already running just lets you watch.",
+    remediation:
+      "Go to a busy world (the wiki suggests World 302) or join a snail mass. Treat the DPS numbers here as relative — the real kill time depends on the group.",
+  },
+  {
+    id: "vampyre-snail-ranged-chip",
+    label: "Ranged volleys hit everyone — chip damage goes through prayer",
+    description:
+      "Its ranged attack hits every player in the arena (87+ max) and still deals chip damage through Protect from Missiles; snelms don't reduce that chip damage. It backs away from the player it has targeted, but melees them if they walk into melee range.",
+    remediation:
+      "Keep Protect from Missiles up and food flowing. As the targeted player, don't chase it into melee range.",
+  },
+  {
+    id: "vampyre-snail-dash-slam",
+    label: "Slurrrp charge: dash + 8x8 slam, then it picks a new target",
+    description:
+      "Periodically it says \"Slurrrrrrrrp...\" and charges a dash toward its targeted player, then slams the ground (30 max) hitting every player in an 8x8 area centred on it, and chooses a new target.",
+    remediation:
+      "When you see or hear the charge, get out of the dash line and away from where it will land.",
+  },
+  {
+    id: "vampyre-snail-defence",
+    label: "Crush and ranged are the only soft spots",
+    description:
+      "Defence level 300 with +600 stab, slash and magic defence but only +50 crush and +50 ranged, so non-crush melee and magic barely connect. It is immune to cannons and thralls, and its earth weakness is only 5%.",
+    remediation:
+      "Bring a crush weapon (Inquisitor's armour boosts exactly this style) or a ranged setup; leave stab, slash and magic at home.",
+  },
+  {
+    id: "vampyre-snail-snelm",
+    label: "Top damage dealer wins the vampyre snelm",
+    description:
+      "Every kill drops one vampyre snelm (reduces damage taken from snails by 13), awarded to whoever did the most damage. A player who already owns one is skipped unless everyone else in the fight has one too, and you need a free inventory slot and must not be blocked from reaching it.",
+    remediation: "Bank your DPS: keep a free inventory slot and don't stop attacking to dodge things you can tank.",
+  },
+  {
+    id: "food",
+    label: "Food + prayer pots",
+    description: "The group-wide chip damage and the 30-max slam add up over a long, scaled-HP fight.",
+    satisfiedBy: { anyOf: [[id(385)], [id(391)], [id(2434)], [id(3024)]] },
+    remediation: "Sharks/Manta rays + Prayer potions or Super restores.",
   },
 ];
 
@@ -1561,6 +1644,8 @@ export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   "sol-heredit": SOL_HEREDIT,
   // Wyrmscraig
   "mad-angel": MAD_ANGEL,
+  // Vampyrium
+  "vampyre-snail": VAMPYRE_SNAIL,
 };
 
 /**

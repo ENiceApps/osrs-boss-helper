@@ -25,6 +25,10 @@ import { magicAttackRoll, magicMaxHit } from "./magic";
 import { applyFactors, conditionalMultipliers } from "./conditional";
 import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
 import { expectedMultiHitDamage, type HitProfile } from "./multihit";
+import {
+  DEFAULT_DEMONBANE_VULNERABILITY,
+  scaleDemonbanePct,
+} from "@/data/monsters/demonbane-vulnerability";
 
 export interface DpsScenario {
   style: CombatStyle;
@@ -43,6 +47,19 @@ export interface DpsScenario {
   spellElement?: SpellElement;
   /** Magic-only: monster's elemental weakness, severity is percentage points (40 = +40%). */
   targetWeakness?: MonsterWeakness;
+  /**
+   * Magic-only: flat max-hit bonus on the spell's BASE hit — the +2 an Amulet of
+   * air/water/earth/fire (matching `spellElement`) or the Elemental amulet grants
+   * on elemental spells (Summer Sweep-Up Miscellaneous, 2026-09-02). Resolved
+   * upstream (`activeBonusesForTarget` -> computeSetDps) against the cast spell's
+   * element; undefined/0 when no matching amulet. Mirrors upstream
+   * osrs-dps-calc #966 `hasMatchingElementalAmulet`: the +2 is added to the base
+   * spell max hit (after Charge, before the magic damage %), so it is MULTIPLIED
+   * by the magic damage % / Twinflame / Void-style factors and also lands inside
+   * the `baseMax` snapshot the elemental-weakness bonus is taken from. Powered
+   * staves and Ancient/Arceuus spells have no element, so never get it.
+   */
+  elementalSpellFlatBonus?: number;
   tomeOfFireEquipped?: boolean;
   /** Magic-only: ×6/5 accuracy + ×6/5 damage when spellElement === "water". */
   tomeOfWaterEquipped?: boolean;
@@ -74,18 +91,32 @@ export interface DpsScenario {
    */
   sanguinestiProc?: boolean;
   /**
+   * Target's demonbane vulnerability as a percent (default 100 = an ordinary
+   * demon). Resolved upstream (computeSetDps) from the target's name/id via
+   * data/monsters/demonbane-vulnerability.ts (Duke Sucellus 70, Yama 120, Yama
+   * void flares 200, Ice demon 115 — raised from 100 in the 2026-07-22 Summer
+   * Sweep-Up). Scales EVERY demonbane source below / in the conditional
+   * factors, mirroring wgloop's demonbaneFactor (bonus percent becomes
+   * trunc(pct × vulnerability / 100)), except the on-task Scorching-bow fold
+   * into the slayer mask, which upstream leaves unscaled (see the fold below).
+   */
+  demonbaneVulnerability?: number;
+  /**
    * Magic-only: a demonbane spell (Inferior/Superior/Dark Demonbane) cast vs a
    * demon — raises magic accuracy by this percentage (e.g. 20 → ×120/100).
    * Resolved upstream (computeSetDps) where the cast spell, target attributes,
    * Mark of Darkness, and Purging staff are all known: base 20, Mark of
    * Darkness 40, Purging staff doubles either (→ 40/80). Undefined when N/A.
+   * This is the UNSCALED percent — the engine applies `demonbaneVulnerability`.
    */
   demonbaneSpellAccuracyPct?: number;
   /**
    * Magic-only: demonbane spell DAMAGE bonus percentage — non-zero only with
    * Mark of Darkness active (25, or 50 with the Purging staff). wgloop applies
-   * it per-hitsplat (h + trunc(h×pct/100)); this mean engine applies it to the
-   * max hit, which matches to within the per-roll truncation (<0.5 damage).
+   * it per-hitsplat (h + trunc(trunc(h×pct/100) × vulnerability/100)); this
+   * mean engine applies the same formula to the max hit, which matches to
+   * within the per-roll truncation (<0.5 damage). Also UNSCALED — the engine
+   * applies `demonbaneVulnerability`.
    */
   demonbaneSpellDamagePct?: number;
   /** Magic-only: Twinflame staff casting a standard spellbook spell — +10% accuracy & damage. */
@@ -186,7 +217,10 @@ export interface DpsScenario {
   /**
    * Raised minimum hit as [numerator, denominator] of the final max hit (Mad
    * Angel reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1]).
-   * Lifts the landed-hit mean from max/2 to (trunc(max×n/d) + max)/2.
+   * The hit still ROLLS uniformly over 0..max and is then floored to
+   * min = trunc(max×n/d) — wgloop's `firstHitMinimum` since upstream #948 —
+   * so the landed-hit mean is [min(min+1) + max(max+1)] / (2(max+1)), NOT
+   * (min+max)/2. See `meanLandedHitWithMinimum`.
    */
   targetMinHitFactor?: [number, number];
 }
@@ -214,6 +248,43 @@ function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonus
   }
 }
 
+/**
+ * Mean damage of a LANDED hit that rolls uniformly over 0..max and is then
+ * floored to `min` (wgloop `AttackDistribution.firstHitMinimum`:
+ * damage = max(roll, min)). With M = max, m = min:
+ *
+ *   rolls 0..m all become m          -> (m+1) values worth m
+ *   rolls m+1..M stay as rolled      -> sum = (M(M+1) - m(m+1)) / 2
+ *   mean = [m(m+1) + (M(M+1) - m(m+1))/2] / (M+1)
+ *        = [m(m+1) + M(M+1)] / (2(M+1))
+ *
+ * Checks: m = 0 -> M/2 (the plain uniform mean); m = M -> M (always max, Perfect
+ * Lightning's [1,1]); M = 40, m = 20 -> 1030/41 ~= 25.12 (the old
+ * mean-of-endpoints model said 30).
+ */
+export function meanLandedHitWithMinimum(max: number, min: number): number {
+  if (max <= 0) return 0;
+  const m = Math.min(Math.max(min, 0), max);
+  if (m >= max) return max;
+  return (m * (m + 1) + max * (max + 1)) / (2 * (max + 1));
+}
+
+/**
+ * The spell base max hit the magic pipeline starts from: the resolved spell hit
+ * plus any matching elemental-amulet flat bonus. Used at BOTH max-hit sites (the
+ * magic damage % step and the post-multiplier elemental-weakness step) so the
+ * +2 sits before the damage % and inside the weakness base, as upstream does.
+ * A zero base (no spell / a 0-damage spell) stays zero — upstream returns
+ * [0, 0] before any flat bonus is added.
+ */
+function spellBaseMaxHit(scenario: DpsScenario): number {
+  const base = scenario.baseSpellMaxHit ?? 0;
+  if (base <= 0) return 0;
+  const el = scenario.spellElement;
+  const flat = el && el !== "none" ? (scenario.elementalSpellFlatBonus ?? 0) : 0;
+  return base + flat;
+}
+
 export function calculateDps(scenario: DpsScenario): DpsResult {
   const sb = styleBonuses(scenario.style, scenario.attackStyle);
   // A weapon with no recorded speed (e.g. holiday/cosmetic items wrongly in the
@@ -225,7 +296,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // On-task ranged: ranged-bane damage folds into the mask (see below), so
   // the standalone DHCB/wilderness damage factors are omitted from the list.
   const foldRangedBane = scenario.slayerOnTask === true && scenario.style === "ranged";
-  const mult = conditionalMultipliers(scenario.conditionalBonuses, foldRangedBane);
+  const demonbaneVuln = scenario.demonbaneVulnerability ?? DEFAULT_DEMONBANE_VULNERABILITY;
+  const mult = conditionalMultipliers(scenario.conditionalBonuses, foldRangedBane, demonbaneVuln);
   const defenceRoll = npcDefenceRoll(scenario.targetDefenceLevel, scenario.targetDefenceBonusForStyle);
 
   let attackRoll: number;
@@ -306,13 +378,15 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       // Demonbane spell (Arceuus) vs a demon — magic accuracy only. Applied to
       // the raw attack roll before tome/weakness/conditional mods, mirroring how
       // the spell's own accuracy bonus folds in upstream of gear multipliers.
+      // The percent is scaled by the target's demonbane vulnerability first
+      // (wgloop demonbaneFactor: trunc(pct × vulnerability/100), e.g. 40% at
+      // Duke Sucellus 70% -> 28%).
       if (scenario.demonbaneSpellAccuracyPct) {
-        attackRoll = Math.trunc(
-          (attackRoll * (100 + scenario.demonbaneSpellAccuracyPct)) / 100,
-        );
+        const pct = scaleDemonbanePct(scenario.demonbaneSpellAccuracyPct, demonbaneVuln);
+        attackRoll = Math.trunc((attackRoll * (100 + pct)) / 100);
       }
 
-      const base = scenario.baseSpellMaxHit ?? 0;
+      const base = spellBaseMaxHit(scenario);
       let pctFromGear = scenario.magicDamagePercent ?? 0;
       // Shadow ×3 (overworld) / ×4 (Tombs of Amascut) on gear magic damage,
       // hard-capped at a total of 100%.
@@ -345,6 +419,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       // plus a second cast worth ~40% of the first on Bolt/Blast/Wave (Strike and
       // Surge get only the +10%). The double-cast is mean-equivalent to a ×7/5
       // damage multiplier here. https://oldschool.runescape.wiki/w/Twinflame_staff
+      // An elemental amulet's +2 (in `base` above) is part of the first cast's max
+      // hit, so it flows into both the +10% and the second cast — upstream builds
+      // the second hitsplat as trunc(first hit * 4/10) of the amulet-inclusive hit.
       if (scenario.twinflameStandard) {
         attackRoll = Math.trunc((attackRoll * 11) / 10);
         maxHit = Math.trunc((maxHit * 11) / 10);
@@ -390,6 +467,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // "additive with slayer only" merge. When folding, the standalone
     // DHCB/wilderness DAMAGE factors were omitted from `mult` above (see
     // conditionalMultipliers' foldRangedBaneDamage); accuracy is untouched.
+    // NOTE: wgloop's fold adds a FLAT +6 for the Scorching bow
+    // (`numerator += 6`) — it does not apply the demonbane vulnerability on
+    // task, only off task (below). Mirrored as-is, so at Duke/Yama an on-task
+    // Scorching bow matches the wiki calc rather than the "correct" scaling.
     let dmgN = n;
     if (foldRangedBane) {
       if (cbFlags?.wildernessWeapon) dmgN += 10;
@@ -398,10 +479,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     }
     maxHit = Math.trunc((maxHit * dmgN) / d);
   } else if (scorchingBowVsDemon) {
-    // Off-task the +30% damage stands alone (wgloop's trackAddFactor(30));
-    // DHCB/wilderness damage stayed in `mult` as ordinary multiplicative
-    // factors, so only the Scorching bow needs handling here.
-    maxHit = maxHit + Math.trunc((maxHit * 30) / 100);
+    // Off-task the +30% damage stands alone (wgloop's
+    // trackAddFactor(demonbaneFactor(30))), so it IS scaled by the target's
+    // demonbane vulnerability. DHCB/wilderness damage stayed in `mult` as
+    // ordinary multiplicative factors, so only the Scorching bow needs
+    // handling here.
+    maxHit = maxHit + Math.trunc((maxHit * scaleDemonbanePct(30, demonbaneVuln)) / 100);
   }
 
   // Twisted bow scaling: applies AFTER dragonbane / Salve multipliers per
@@ -428,7 +511,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // wgloop: ...×DHW → +weakness → ×tome. The tome multiplies the weakness, the
   // dragon-hunter/salve/slayer multipliers do not.
   if (scenario.style === "magic") {
-    const base = scenario.baseSpellMaxHit ?? 0;
+    const base = spellBaseMaxHit(scenario);
     const el = scenario.spellElement;
     const weak = scenario.targetWeakness;
     if (weak && el && weak.element === el) {
@@ -438,10 +521,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     if (scenario.tomeOfWaterEquipped && el === "water") maxHit = Math.trunc((maxHit * 6) / 5);
     if (scenario.tomeOfEarthEquipped && el === "earth") maxHit = Math.trunc((maxHit * 11) / 10);
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
-    // the very end of the pipeline; applied here to the max hit (additive,
-    // like their h + trunc(h×pct/100)).
+    // the very end of the pipeline; applied here to the max hit (additive),
+    // using their exact per-hitsplat formula including the vulnerability:
+    //   h + trunc(trunc(h × pct/100) × vulnerability/100)
+    // (two truncations — unlike the accuracy path's scaled percent). At the
+    // default 100% this reduces to the plain h + trunc(h×pct/100).
     if (scenario.demonbaneSpellDamagePct) {
-      maxHit = maxHit + Math.trunc((maxHit * scenario.demonbaneSpellDamagePct) / 100);
+      const bonus = Math.trunc((maxHit * scenario.demonbaneSpellDamagePct) / 100);
+      maxHit = maxHit + Math.trunc((bonus * demonbaneVuln) / 100);
     }
   }
 
@@ -493,15 +580,28 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   let dps = dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
 
-  // Raised minimum hit (Mad Angel reaction buffs): landed-hit mean becomes
-  // (min + max)/2 instead of max/2. Single-hit path only — the bolt/multi-hit
-  // branches below overwrite dps with their own means (wgloop applies the buff
-  // to the FIRST hit only there; leaving those paths unbuffed is the
-  // conservative mean-model equivalent).
+  // Raised minimum hit (Mad Angel "Sword Cleave" / "Perfect Lightning"
+  // reaction buffs). Upstream #948 (d1ae5b4, 2026-08-22, "Correct Mad Angel
+  // cleave to roll from 0-max and increase low hits") models it as: the first
+  // hit is guaranteed accurate (`firstHitAccurate`), rolls uniformly over
+  // 0..max as normal, and is then floored — `firstHitMinimum(minimum)`, i.e.
+  // damage = max(roll, minimum), minimum = trunc(max × n/d) (1/2 for Sword
+  // Cleave; Perfect Lightning is `firstHitMax`, equivalent to min = max). The
+  // landed-hit mean is therefore meanLandedHitWithMinimum(max, min) =
+  // [m(m+1) + M(M+1)] / (2(M+1)) — NOT the (min+max)/2 of a roll uniform over
+  // [min, max], which this engine used before the 2026-08-30 sync fix and which
+  // overstated Sword Cleave by ~19%.
+  //
+  // Single-hit path only: the bolt and multi-hit branches below overwrite dps
+  // with their own means, so the buff is deliberately NOT applied there. That
+  // is the conservative mean-model choice, and a close match for upstream,
+  // which never applies the buff to the Dual macuahuitl in its general path
+  // (`weapon.name !== 'Dual macuahuitl'`); its macuahuitl-specific path floors
+  // only the FIRST hitsplat, at trunc(firstMax / 2) of that hitsplat's own max.
   if (scenario.targetMinHitFactor) {
     const [n, d] = scenario.targetMinHitFactor;
     const minHit = Math.trunc((maxHit * n) / d);
-    dps = (accuracy * ((minHit + maxHit) / 2)) / (bloodragerSpeed * 0.6);
+    dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit)) / (bloodragerSpeed * 0.6);
   }
 
   if (scenario.boltProc && scenario.style === "ranged") {

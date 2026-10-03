@@ -15,6 +15,7 @@ import { estimatePrayerSupplies } from "@/data/prayer-drain";
 import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
 import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
+import { scaleDemonbanePct } from "@/data/monsters/demonbane-vulnerability";
 import type { BudgetResult } from "@/lib/optimize/budget";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
@@ -27,6 +28,12 @@ interface Props {
   set?: LoadoutSet;
   dps?: DpsResult;
   activeBonuses: TargetActiveBonuses | null;
+  /**
+   * The current target's demonbane vulnerability as a percent (100 = ordinary
+   * demon; Duke Sucellus 70, Yama 120, ...), so the Arclight/Emberlight flag
+   * shows the percent the engine really applies. Omit for neutral wording.
+   */
+  demonbaneVulnerability?: number;
   /** Budget-mode optimizer output — upgrade path, sell list, totals. */
   result: BudgetResult | null;
   /** True when manual slot edits are active (the upgrade path then refers to
@@ -73,9 +80,10 @@ export interface TripAssumptions {
 const TICK_SECONDS = 0.6;
 
 /** Conditional bonuses firing against this target, as short display flags. */
-function buildActiveFlags(
+export function buildActiveFlags(
   set: LoadoutSet,
   activeBonuses: TargetActiveBonuses | null,
+  demonbaneVulnerability?: number,
 ): string[] {
   const flags: string[] = [];
   if (set.armorSetBonus) {
@@ -88,7 +96,14 @@ function buildActiveFlags(
     const parts = [acc && `+${acc} acc`, dmg && `+${dmg} dmg`].filter(Boolean).join(" / ");
     flags.push(`${set.armorSetBonus.name} (${parts})`);
   }
-  if (activeBonuses?.conditionalBonuses.demonbane) flags.push("Demonbane +70%");
+  if (activeBonuses?.conditionalBonuses.demonbane) {
+    // Demonbane scales per monster, so only quote a percent when we know the target.
+    flags.push(
+      demonbaneVulnerability === undefined
+        ? "Demonbane"
+        : `Demonbane +${scaleDemonbanePct(70, demonbaneVulnerability)}%`,
+    );
+  }
   if (activeBonuses?.conditionalBonuses.dragonHunterCrossbow) flags.push("DHCB +30/+25%");
   if (activeBonuses?.conditionalBonuses.dragonHunterLance) flags.push("DHL +20%");
   if (activeBonuses?.conditionalBonuses.dragonHunterWand) flags.push("DH wand +75/+40%");
@@ -100,6 +115,13 @@ function buildActiveFlags(
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc+dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% acc+dmg");
+  if (activeBonuses?.elementalAmuletMaxHitBonus && set.spellElement && set.spellElement !== "none") {
+    // Only fires when the amulet matches the cast spell's element (resolved in
+    // activeBonusesForTarget) — nothing is shown for a mismatched amulet.
+    flags.push(
+      `${set.slots.neck?.itemName ?? "Elemental amulet"}: +${activeBonuses.elementalAmuletMaxHitBonus} max hit on ${set.spellElement} spells`,
+    );
+  }
   if (activeBonuses?.twistedBowEquipped)
     flags.push(
       `Tbow scaling (M=${activeBonuses.targetMonsterMagicLevel}${activeBonuses.targetIsXerician ? ", CoX cap" : ""})`,
@@ -201,6 +223,7 @@ export function ResultsPanel({
   set,
   dps,
   activeBonuses,
+  demonbaneVulnerability,
   result,
   edited,
   boltProcFlag,
@@ -225,7 +248,7 @@ export function ResultsPanel({
   const rapidRangedAdjust =
     set?.attackStyleChoice === "rapid" && set?.style === "ranged" ? -1 : 0;
   const effectiveTicks = set ? Math.max(1, set.attackSpeedTicks + rapidRangedAdjust) : 0;
-  const activeFlags = set ? buildActiveFlags(set, activeBonuses) : [];
+  const activeFlags = set ? buildActiveFlags(set, activeBonuses, demonbaneVulnerability) : [];
   if (set && boltProcFlag) activeFlags.push(boltProcFlag);
 
   // Per-hour economics. The theoretical-max kills/hr is scaled by the player's

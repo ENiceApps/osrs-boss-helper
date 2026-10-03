@@ -19,6 +19,7 @@ import type { LoadoutSet } from "@/types/loadout";
 import { defaultDamageModifier } from "@/data/bosses/mechanic-phases";
 import type { PhasedMonster } from "@/lib/phases";
 import { categoryForMonster } from "@/data/monsters/categories";
+import { demonbaneVulnerabilityFor } from "@/data/monsters/demonbane-vulnerability";
 import {
   activeBonusesForTarget,
   defenceBonusForAttackType,
@@ -95,6 +96,17 @@ const BLOOD_MOON_LEGS_IDS = new Set([29025, 29045, 29070]);
 // TzHaar/obsidian MELEE weapons — Berserker necklace gives +20% damage with these.
 // Toktz-xil-ak (sword), Toktz-xil-ek (dagger), Tzhaar-ket-em (mace), Tzhaar-ket-om (maul).
 const TZHAAR_MELEE_WEAPON_IDS = new Set([6523, 6525, 6527, 6528]);
+// Soulreaper axe + its (o) ornament kit variant — identical stats and stack
+// mechanic; the 2026-07-22 Summer Sweep-Up covers both ("Soulreaper Axe and
+// Soulreaper Axe (o)"). Exported so UI gates (the max-stacks toggle) share one
+// list instead of re-hardcoding 28338.
+export const SOULREAPER_AXE_IDS: ReadonlySet<number> = new Set([28338, 33335]);
+// Blue Moon spear (item id 28988). Corpbane exclusion keys off the ID, not the
+// name: the 2026-09-16 Summer Sweep-Up pet-improvements update renamed it in
+// game from "Blue moon spear" to "Blue Moon spear" and a vendor refresh will
+// eventually carry the new casing — a case-sensitive name compare would then
+// silently flip it to a corpbane spear (full damage vs Corporeal Beast).
+const BLUE_MOON_SPEAR_ID = 28988;
 // Sanguinesti staff variants (regular + Holy, charged + uncharged) — the same
 // ids as their entries in data/items/powered-staff-spells.ts.
 const SANGUINESTI_STAFF_IDS = new Set([22323, 22481, 25731, 25733]);
@@ -137,11 +149,12 @@ export function computeSetDps(
     activeBonuses.conditionalBonuses.salveAmulet || activeBonuses.conditionalBonuses.salveAmuletEi;
   const slayerOnTask = set.itemBonusFlags.slayerHelmImbued && onTask && !salveActive;
   let effectiveSkills = applyCombatBoost(skills, boost);
-  // Soulreaper axe (28338): +6% Strength level per stack × 5 max stacks = +30%.
-  // The wiki confirms the boost applies to the visible Strength level (after boost
-  // potion), multiplicative, floored — identical to how Piety/Turmoil apply.
+  // Soulreaper axe (28338, and the (o) variant 33335): +6% Strength level per
+  // stack × 5 max stacks = +30%. The wiki confirms the boost applies to the
+  // visible Strength level (after boost potion), multiplicative, floored —
+  // identical to how Piety/Turmoil apply.
   const weaponId = set.slots.weapon?.itemId;
-  if (soulreaperMaxStacks && weaponId === 28338) {
+  if (soulreaperMaxStacks && weaponId !== undefined && SOULREAPER_AXE_IDS.has(weaponId)) {
     effectiveSkills = { ...effectiveSkills, strength: Math.floor(effectiveSkills.strength * 1.3) };
   }
   // Dharok's full set: max-hit scales with missing HP. Detect all 4 pieces worn
@@ -174,15 +187,19 @@ export function computeSetDps(
     weaponId !== undefined &&
     TZHAAR_MELEE_WEAPON_IDS.has(weaponId);
   // Corporeal Beast halves damage from non-"corpbane" weapons: full damage only
-  // from magic, or a STAB-style spear / halberd / Osmumten's fang (Blue moon
-  // spear excluded). Mirrors wgloop's isWearingCorpbaneWeapon.
+  // from magic, or a STAB-style spear / halberd / Osmumten's fang (Blue Moon
+  // spear excluded). Mirrors wgloop's isWearingCorpbaneWeapon. The Blue Moon
+  // spear is excluded by item id (28988) — see BLUE_MOON_SPEAR_ID — with a
+  // case-insensitive name fallback for callers/sets that carry no item id.
   const weaponName = set.slots.weapon?.itemName ?? "";
+  const isBlueMoonSpear =
+    weaponId === BLUE_MOON_SPEAR_ID || weaponName.toLowerCase() === "blue moon spear";
   const isCorpbane =
     set.style === "magic" ||
     (set.attackType === "stab" &&
       (set.itemBonusFlags?.fang === true ||
         weaponName.endsWith("halberd") ||
-        (weaponName.toLowerCase().includes("spear") && weaponName !== "Blue moon spear")));
+        (weaponName.toLowerCase().includes("spear") && !isBlueMoonSpear)));
   const corpDamageHalved = target.slug === "corporeal-beast" && !isCorpbane;
   // Per-monster/per-phase damage scale (Tormented Demon's shield ×4/5, Abyssal
   // Sire transition ×1/2, Hueycoatl pillar ×13/10, Doom immunity ×0). The
@@ -319,10 +336,16 @@ export function computeSetDps(
     tomeOfFireEquipped: activeBonuses.tomeOfFireEquipped,
     tomeOfWaterEquipped: activeBonuses.tomeOfWaterEquipped,
     tomeOfEarthEquipped: activeBonuses.tomeOfEarthEquipped,
+    // Elemental amulet +2 on the cast spell's base hit (0 -> undefined = inactive).
+    elementalSpellFlatBonus: activeBonuses.elementalAmuletMaxHitBonus || undefined,
     shadowEquipped,
     shadowToaQuadruple,
     kalphiteTripleProc: activeBonuses.conditionalBonuses.kerisVsKalphite,
     sanguinestiProc,
+    // Per-monster demonbane vulnerability (Duke Sucellus 70, Yama 120, Yama void
+    // flares 200, Ice demon 115, else 100) scales every demonbane source —
+    // weapon tiers, Scorching bow, and the spell bonuses above.
+    demonbaneVulnerability: demonbaneVulnerabilityFor(target),
     demonbaneSpellAccuracyPct,
     demonbaneSpellDamagePct,
     twinflameStandard,

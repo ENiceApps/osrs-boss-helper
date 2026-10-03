@@ -3,6 +3,10 @@
 //
 // The wiki has no Cargo/SMW API, so we parse the raw page wikitext for
 // {{DropsLine}} templates (grouped under {{DropsTableHead|dropversion=…}}).
+// The parsing itself lives in ./drop-table-parser (pure, unit-tested), including
+// which of a page's tables make up one NORMAL kill of a catalog monster (its
+// version's tables plus the untagged ones; Yama's Contract/Junk extras and other
+// locations' variants are left out) and the few per-slug overrides.
 // For each line we fold the rarity and roll count into an EXPECTED quantity per
 // kill; the runtime multiplies that by live GE prices, so prices are NOT baked
 // in here — only item id, name, and expected-per-kill.
@@ -14,119 +18,14 @@ import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MONSTER_CATALOG } from "../data/monsters/catalog";
+import { DROP_VERSION_OVERRIDES, extractDrops, type BossDrop } from "./drop-table-parser";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const UA = "osrs-boss-helper drop-table codegen (https://osrs-boss-helper-2026.vercel.app)";
 const WIKI_API = "https://oldschool.runescape.wiki/api.php";
 const MAPPING_API = "https://prices.runescape.wiki/api/v1/osrs/mapping";
-const COINS_ID = 995;
-
-interface BossDrop {
-  itemId: number;
-  name: string;
-  /** Expected units obtained per kill (rarity × rolls × avg quantity, merged). */
-  expected: number;
-}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** Average of every integer found in a quantity string ("5-15 (noted)" → 10). */
-function parseQuantity(raw: string | undefined): number {
-  if (!raw) return 1;
-  const cleaned = raw.replace(/\(.*?\)/g, " "); // drop "(noted)" etc.
-  const nums = cleaned.match(/\d[\d,]*/g);
-  if (!nums || nums.length === 0) return 1;
-  const vals = nums.map((n) => Number(n.replace(/,/g, "")));
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-
-/** Rarity string → per-roll probability, or null if not quantifiable. */
-function parseRarity(raw: string | undefined): number | null {
-  if (!raw) return null;
-  const s = raw.trim().toLowerCase();
-  if (s === "always") return 1;
-  // Take the first fraction, e.g. "~1/128" or "5/150 (1/64 on task)".
-  const m = s.match(/~?\s*(\d+(?:\.\d+)?)\s*\/\s*([\d,]+)/);
-  if (m) {
-    const num = Number(m[1]);
-    const den = Number(m[2].replace(/,/g, ""));
-    if (den > 0) return num / den;
-  }
-  return null; // "Varies", "Common", "Unknown", etc. — skip.
-}
-
-/** Parse a `{{DropsLine|...}}` body into its named params. */
-function parseTemplateParams(body: string): Record<string, string> {
-  const params: Record<string, string> = {};
-  for (const part of body.split("|")) {
-    const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    params[part.slice(0, eq).trim().toLowerCase()] = part.slice(eq + 1).trim();
-  }
-  return params;
-}
-
-/**
- * Extract drops from one page's wikitext, honoring the catalog version: when a
- * {{DropsTableHead}} declares a dropversion that doesn't match this boss's
- * version, its lines are skipped (otherwise multi-version pages double-count).
- */
-function extractDrops(
-  wikitext: string,
-  catalogVersion: string,
-  nameToId: Map<string, number>,
-): Map<number, BossDrop> {
-  const byId = new Map<number, BossDrop>();
-  let currentVersion: string | null = null;
-
-  // Only gate on version when the catalog's version label actually appears as a
-  // dropversion on this page. The wiki often splits drops on a DIFFERENT axis
-  // (e.g. "MVP"/"non-MVP") than the catalog's version ("Group"); filtering by a
-  // non-matching label would drop everything. When it doesn't match, the axis
-  // is orthogonal → include all lines.
-  const pageVersions = new Set(
-    [...wikitext.matchAll(/dropversion\s*=\s*([^|}\n]+)/gi)].map((m) => m[1].trim()),
-  );
-  const gateVersion = catalogVersion && pageVersions.has(catalogVersion) ? catalogVersion : null;
-
-  for (const rawLine of wikitext.split("\n")) {
-    const line = rawLine.trim();
-
-    const head = line.match(/\{\{DropsTableHead\b([^}]*)\}\}/i);
-    if (head) {
-      const dv = parseTemplateParams(head[1]).dropversion;
-      currentVersion = dv && dv.length > 0 ? dv : null;
-      continue;
-    }
-
-    const dl = line.match(/\{\{DropsLine\b([^}]*)\}\}/i);
-    if (!dl) continue;
-    // Version gate: only skip when we have a matching gate version and this
-    // table's version differs from it.
-    if (gateVersion && currentVersion && currentVersion !== gateVersion) continue;
-
-    const p = parseTemplateParams(dl[1]);
-    const name = p.name;
-    if (!name) continue;
-
-    const prob = parseRarity(p.rarity);
-    if (prob === null) continue;
-    const rolls = p.rolls ? Math.max(1, parseInt(p.rolls, 10) || 1) : 1;
-    const qty = parseQuantity(p.quantity);
-    const expected = Math.min(1, prob * rolls) * qty;
-    if (!(expected > 0)) continue;
-
-    const lower = name.toLowerCase();
-    const itemId = lower === "coins" ? COINS_ID : nameToId.get(lower);
-    if (itemId === undefined) continue; // unpriceable / non-GE item — skip.
-
-    const existing = byId.get(itemId);
-    if (existing) existing.expected += expected;
-    else byId.set(itemId, { itemId, name, expected });
-  }
-
-  return byId;
-}
 
 async function fetchMapping(): Promise<Map<string, number>> {
   const res = await fetch(MAPPING_API, { headers: { "User-Agent": UA } });
@@ -202,7 +101,7 @@ async function main() {
     for (const m of chunk) {
       const wikitext = batch.get(m.name);
       if (!wikitext) continue;
-      const byId = extractDrops(wikitext, m.version, nameToId);
+      const byId = extractDrops(wikitext, m.version, nameToId, DROP_VERSION_OVERRIDES[m.slug]);
       if (byId.size === 0) continue;
       // Largest expected-value contributors first is price-dependent, so just
       // sort by expected count here; the runtime re-sorts by gp value.

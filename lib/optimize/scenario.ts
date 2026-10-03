@@ -7,7 +7,7 @@
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { hasTrigger } from "@/data/bonus-trigger-items";
+import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
@@ -391,6 +391,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
     slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
     wildernessWeapon: hasTrigger(slotItemIds, "WILDERNESS_WEAPON"),
+    elementalAmulet: elementalAmuletKind(slotItemIds),
   };
 
   // Tier is purely informational on the recommend path; mark scratch loadouts
