@@ -279,6 +279,9 @@ export function orderingCombos(): CanonicalCombo[] {
       [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
     orderingCombo("powered-staff-longrange-tumekens-shadow-vetion", "vetion",
       [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
+    // The stance sits inside the Wilderness ×3/2 (Accursed sceptre).
+    orderingCombo("powered-staff-accurate-accursed-sceptre-vetion", "vetion",
+      [ACCURSED_SCEPTRE, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
   ];
 }
 

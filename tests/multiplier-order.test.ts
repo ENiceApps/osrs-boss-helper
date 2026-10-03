@@ -358,6 +358,8 @@ const WGLOOP: Record<string, { maxHit: number; attackRoll: number; defenceRoll: 
   "powered-staff-accurate-trident-swamp-zulrah": { maxHit: 37, attackRoll: 25460, defenceRoll: 5871 },
   "powered-staff-accurate-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 63248, defenceRoll: 97026 },
   "powered-staff-longrange-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 62304, defenceRoll: 97026 },
+  // trunc(134 × 187 × 3/2) = 37587; the old +3 gave trunc(135 × 187 × 3/2) = 37867.
+  "powered-staff-accurate-accursed-sceptre-vetion": { maxHit: 48, attackRoll: 37587, defenceRoll: 97026 },
 };
 
 describe("multiplier-order combos match wgloop (scripts/oracle/combos.ts)", () => {
