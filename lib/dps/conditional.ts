@@ -143,6 +143,11 @@ export function conditionalMultipliers(
     // Barronite mace vs golem: damage only — no accuracy component in wgloop.
     damage.push({ numerator: 23, denominator: 20, reason: "Barronite mace vs golem" });
   }
+  if (flags.leafBladedBattleaxe) {
+    // Leaf-bladed battleaxe vs a leafy target: +17.5% damage (×47/40),
+    // multiplicative (wgloop MAX_HIT_LEAFY trackFactor). Damage only.
+    damage.push({ numerator: 47, denominator: 40, reason: "Leaf-bladed battleaxe vs leafy" });
+  }
   if (flags.salveAmuletEi) {
     accuracy.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
     damage.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });

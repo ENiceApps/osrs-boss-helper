@@ -55,9 +55,9 @@ export interface ItemBonusFlags {
   /** Granite hammer — golembane (×13/10 accuracy AND damage vs golems). */
   golembaneGraniteHammer?: boolean;
   tomeOfFire: boolean;
-  /** Tome of Water (charged) — ×6/5 accuracy + ×6/5 damage on water spells. */
+  /** Tome of Water (charged) — ×6/5 accuracy + ×11/10 damage on water spells. */
   tomeOfWater: boolean;
-  /** Tome of Earth (charged) — ×11/10 accuracy + ×11/10 damage on earth spells. */
+  /** Tome of Earth (charged) — ×11/10 damage on earth spells (no accuracy bonus). */
   tomeOfEarth: boolean;
   /** Twisted bow — always active when equipped; scaling pulled from target magic level. */
   twistedBow: boolean;

@@ -112,9 +112,13 @@ export function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.wildernessWeapon) flags.push("Wilderness weapon +50%");
   if (activeBonuses?.conditionalBonuses.golembaneGraniteHammer) flags.push("Golembane (Granite hammer) +30%");
   if (activeBonuses?.conditionalBonuses.golembaneBarronite) flags.push("Golembane (Barronite mace) +15% dmg");
+  if (activeBonuses?.conditionalBonuses.leafBladedBattleaxe) flags.push("Leaf-bladed battleaxe +17.5% dmg");
+  // Not a bonus but the reason this loadout shows 0 DPS — say so where the
+  // target-specific effects are listed.
+  if (activeBonuses?.leafyImmune) flags.push("Leafy: no damage without a leaf-bladed weapon, broad ammo or Magic Dart");
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
-  if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc+dmg");
-  if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% acc+dmg");
+  if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc / +10% dmg");
+  if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% dmg");
   if (activeBonuses?.elementalAmuletMaxHitBonus && set.spellElement && set.spellElement !== "none") {
     // Only fires when the amulet matches the cast spell's element (resolved in
     // activeBonusesForTarget) — nothing is shown for a mismatched amulet.

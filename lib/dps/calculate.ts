@@ -60,10 +60,16 @@ export interface DpsScenario {
    * staves and Ancient/Arceuus spells have no element, so never get it.
    */
   elementalSpellFlatBonus?: number;
+  /** Magic-only: ×11/10 damage when spellElement === "fire". */
   tomeOfFireEquipped?: boolean;
-  /** Magic-only: ×6/5 accuracy + ×6/5 damage when spellElement === "water". */
+  /**
+   * Magic-only: ×6/5 accuracy + ×11/10 damage when spellElement === "water".
+   * The damage boost vs NPCs dropped from 20% to 10% in Project Rebalance
+   * (2024-05-29); the accuracy stays ×6/5, as in wgloop (see the accuracy
+   * step below for why).
+   */
   tomeOfWaterEquipped?: boolean;
-  /** Magic-only: ×11/10 accuracy + ×11/10 damage when spellElement === "earth". */
+  /** Magic-only: ×11/10 damage when spellElement === "earth" (no accuracy bonus). */
   tomeOfEarthEquipped?: boolean;
   /**
    * Magic-only: Tumeken's shadow is equipped — triples the worn magic attack
@@ -215,6 +221,15 @@ export interface DpsScenario {
   /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
   targetAlwaysHit?: boolean;
   /**
+   * The target takes NO damage from this loadout — a leafy monster without a
+   * leaf-bladed source, or a zero damage-modifier phase (Doom's shield).
+   * wgloop's isImmune turns the whole hit distribution into a 0, so procs and
+   * extra hitsplats (enchanted bolts, Sanguinesti leech, Keris) are zeroed
+   * too, not just the max hit. Accuracy is still reported. Resolved upstream
+   * (computeSetDps).
+   */
+  targetImmune?: boolean;
+  /**
    * Raised minimum hit as [numerator, denominator] of the final max hit (Mad
    * Angel reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1]).
    * The hit still ROLLS uniformly over 0..max and is then floored to
@@ -302,6 +317,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   let attackRoll: number;
   let maxHit: number;
+  // Magic only: the attack roll before ANY multiplier — the elemental-weakness
+  // accuracy bonus is taken from this, not from the running roll (see the
+  // magic accuracy step after the slayer block).
+  let magicBaseRoll = 0;
 
   // Void's accuracy bonus multiplies the EFFECTIVE LEVEL (floored before the
   // gear multiply), not the final roll — see ArmorSetBonus.accuracyOnEffectiveLevel.
@@ -374,9 +393,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         ? scenario.attackBonus * shadowMult
         : scenario.attackBonus;
       attackRoll = magicAttackRoll(applyEffLvlAcc(effMag), magicAtkBonus);
+      magicBaseRoll = attackRoll;
 
       // Demonbane spell (Arceuus) vs a demon — magic accuracy only. Applied to
-      // the raw attack roll before tome/weakness/conditional mods, mirroring how
+      // the raw attack roll before tome/conditional mods, mirroring how
       // the spell's own accuracy bonus folds in upstream of gear multipliers.
       // The percent is scaled by the target's demonbane vulnerability first
       // (wgloop demonbaneFactor: trunc(pct × vulnerability/100), e.g. 40% at
@@ -397,24 +417,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       const prayerPctBoost = (scenario.prayers.magicDamageMultiplier - 1) * 100;
       maxHit = magicMaxHit(base, pctFromGear + prayerPctBoost);
 
-      // Spellement weakness + elemental tomes affect BOTH accuracy and damage.
-      // The ACCURACY side (multiplicative) is applied here; the DAMAGE side is
-      // applied LATER (see the magic damage block after the conditional bonuses)
-      // because the weakness max-hit bonus is ADDITIVE from baseMax and must not
-      // be scaled by DHW / Salve / Void / Slayer multipliers — matching wgloop's
-      // order (those multiply first, THEN the weakness is added, THEN the tome).
-      const spellElement = scenario.spellElement;
-      const weak = scenario.targetWeakness;
-      if (weak && spellElement && weak.element === spellElement) {
-        attackRoll = Math.trunc((attackRoll * (100 + weak.severity)) / 100);
-      }
-      // Tome of Water / Earth accuracy (×6/5, ×11/10). Tome of Fire is damage-only.
-      if (scenario.tomeOfWaterEquipped && spellElement === "water") {
-        attackRoll = Math.trunc((attackRoll * 6) / 5);
-      }
-      if (scenario.tomeOfEarthEquipped && spellElement === "earth") {
-        attackRoll = Math.trunc((attackRoll * 11) / 10);
-      }
+      // Spellement weakness + the Tome of Water are applied AFTER the
+      // multiplicative bonuses (DHW / Salve / Void / Slayer) on BOTH sides —
+      // accuracy right after the slayer block, damage in the magic damage
+      // block further down — because both weakness bonuses are ADDITIVE from
+      // the unboosted base and must not be scaled by those multipliers.
       // Twinflame staff: +10% accuracy & damage on any standard spellbook spell,
       // plus a second cast worth ~40% of the first on Bolt/Blast/Wave (Strike and
       // Surge get only the +10%). The double-cast is mean-equivalent to a ×7/5
@@ -487,6 +494,26 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = maxHit + Math.trunc((maxHit * scaleDemonbanePct(30, demonbaneVuln)) / 100);
   }
 
+  // Magic accuracy: Tome of Water, then the elemental weakness — the last two
+  // steps of wgloop's getPlayerMaxMagicAttackRoll, after every multiplier above.
+  //  - Tome of Water: ×6/5 on water spells. The wiki's effect text says 10% vs
+  //    NPCs, but that edit (2024-05-29) folded accuracy in with the Project
+  //    Rebalance DAMAGE cut, while Jagex's notes only mention damage; wgloop
+  //    keeps ×6/5. The Tome of Earth has no accuracy bonus at all.
+  //  - Weakness: + trunc(baseRoll × severity/100), additive from the roll
+  //    before any multiplier, so neither the tome nor the slayer helm / Salve /
+  //    DHW scales it.
+  if (scenario.style === "magic") {
+    const el = scenario.spellElement;
+    if (scenario.tomeOfWaterEquipped && el === "water") {
+      attackRoll = Math.trunc((attackRoll * 6) / 5);
+    }
+    const weak = scenario.targetWeakness;
+    if (weak && el && weak.element === el) {
+      attackRoll = attackRoll + Math.trunc((magicBaseRoll * weak.severity) / 100);
+    }
+  }
+
   // Twisted bow scaling: applies AFTER dragonbane / Salve multipliers per
   // wgloop's order of operations. The bonus % is computed with INTEGER-truncated
   // intermediate terms and has NO upper clamp (the natural peak is e.g. 141%
@@ -509,7 +536,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // multiplicative bonuses (DHW / Salve / Void / Slayer above) so the ADDITIVE
   // weakness bonus (⌊baseMax × severity/100⌋) isn't scaled by them. Mirrors
   // wgloop: ...×DHW → +weakness → ×tome. The tome multiplies the weakness, the
-  // dragon-hunter/salve/slayer multipliers do not.
+  // dragon-hunter/salve/slayer multipliers do not. All three charged tomes are
+  // ×11/10 vs NPCs (the Tome of Water dropped from ×6/5 in Project Rebalance).
   if (scenario.style === "magic") {
     const base = spellBaseMaxHit(scenario);
     const el = scenario.spellElement;
@@ -517,9 +545,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     if (weak && el && weak.element === el) {
       maxHit = maxHit + Math.trunc((base * weak.severity) / 100);
     }
-    if (scenario.tomeOfFireEquipped && el === "fire") maxHit = Math.trunc((maxHit * 11) / 10);
-    if (scenario.tomeOfWaterEquipped && el === "water") maxHit = Math.trunc((maxHit * 6) / 5);
-    if (scenario.tomeOfEarthEquipped && el === "earth") maxHit = Math.trunc((maxHit * 11) / 10);
+    if (
+      (scenario.tomeOfFireEquipped && el === "fire") ||
+      (scenario.tomeOfWaterEquipped && el === "water") ||
+      (scenario.tomeOfEarthEquipped && el === "earth")
+    ) {
+      maxHit = Math.trunc((maxHit * 11) / 10);
+    }
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
     // the very end of the pipeline; applied here to the max hit (additive),
     // using their exact per-hitsplat formula including the vulnerability:
@@ -629,6 +661,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   if (scenario.sanguinestiProc) {
     dps += (accuracy * 8) / 5 / (bloodragerSpeed * 0.6);
   }
+
+  // Immune target: every hit — procs included — deals 0. Last, so no mean
+  // branch above can leak damage through (a Ruby bolt proc ignores max hit).
+  if (scenario.targetImmune) return { dps: 0, maxHit: 0, accuracy };
 
   return { dps, maxHit, accuracy };
 }

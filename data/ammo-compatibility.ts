@@ -156,6 +156,10 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Mithril bolts": { class: "bolt", tier: 4 },
   "Adamant bolts": { class: "bolt", tier: 5 },
   "Runite bolts": { class: "bolt", tier: 6 },
+  // Broad bolts — the Slayer bolts that can hurt Turoth/Kurask (leafy). Rune
+  // crossbow tier (wgloop's cb_t61 list), like Runite bolts.
+  "Broad bolts": { class: "bolt", tier: 6 },
+  "Amethyst broad bolts": { class: "bolt", tier: 6 },
 
   // Gem-tipped bolts on a runite base — fire from Rune crossbow and above.
   "Opal bolts (e)": { class: "bolt", tier: 1 },
@@ -202,12 +206,16 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Rune arrow": { class: "arrow", tier: 6 },
   "Amethyst arrow": { class: "arrow", tier: 6 },
   "Dragon arrow": { class: "arrow", tier: 7 },
+  // Broad arrows (leafy-capable Slayer ammo) — Magic-bow tier, alongside
+  // Amethyst arrows (wgloop's bow_t50 list).
+  "Broad arrows": { class: "arrow", tier: 6 },
 
   // Seeking arrows (post-The Blood Moon Rises quest) — same tier as their base
   // metal, +20 ranged accuracy and a minimum hit of 3. Only PvM-relevant tiers.
   "Seeking rune arrow": { class: "arrow", tier: 6 },
   "Seeking amethyst arrow": { class: "arrow", tier: 6 },
   "Seeking dragon arrow": { class: "arrow", tier: 7 },
+  "Seeking broad arrows": { class: "arrow", tier: 6 },
 
   // Darts — for Blowpipe. Strength bonuses are large for Dragon dart.
   // Note: in the item catalog, darts have slot:"weapon" (they are thrown

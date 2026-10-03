@@ -257,9 +257,13 @@ export function spellEffectiveMaxHit(spell: SpellEntry, ctx: SpellSelectionConte
   if (weak && spell.element !== "none" && weak.element === spell.element) {
     hit += Math.trunc((hit * weak.severity) / 100);
   }
-  if (ctx.tomeOfFire && spell.element === "fire") hit = Math.floor((hit * 11) / 10);
-  else if (ctx.tomeOfWater && spell.element === "water") hit = Math.floor((hit * 6) / 5);
-  else if (ctx.tomeOfEarth && spell.element === "earth") hit = Math.floor((hit * 11) / 10);
+  if (
+    (ctx.tomeOfFire && spell.element === "fire") ||
+    (ctx.tomeOfWater && spell.element === "water") ||
+    (ctx.tomeOfEarth && spell.element === "earth")
+  ) {
+    hit = Math.floor((hit * 11) / 10);
+  }
   // Twinflame's second cast adds ~40% expected damage on qualifying spells, which
   // can make Fire Wave beat Fire Surge.
   if (ctx.twinflame && qualifiesForTwinflame(spell)) hit = Math.floor((hit * 7) / 5);

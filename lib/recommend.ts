@@ -364,6 +364,10 @@ export function computeSetDps(
     targetDamageFactor,
     targetAccuracyFactor,
     targetAlwaysHit,
+    // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
+    // Dart, or a phase that zeroes damage (Doom's shield) — wgloop isImmune.
+    // A ×0 phase is immunity, not a scale: it must also zero bolt procs.
+    targetImmune: activeBonuses.leafyImmune || targetDamageFactor?.[0] === 0,
     targetMinHitFactor,
     slayerOnTask,
     targetWeakness: target.weakness

@@ -247,10 +247,10 @@ describe("engine — elementalSpellFlatBonus (replicates upstream ElementalSpell
     expect(calculateDps(magicScenario({ ...base, elementalSpellFlatBonus: 2 })).maxHit).toBe(28 + 13);
   });
 
-  it("the tome multiplies the amulet-inclusive hit (tome of water, base 24: 24+2 -> x6/5 = 31, not 24 x 6/5 + 2 = 30)", () => {
-    const base = { baseSpellMaxHit: 24, spellElement: "water" as const, tomeOfWaterEquipped: true };
-    expect(calculateDps(magicScenario(base)).maxHit).toBe(28); // trunc(24 x 6/5)
-    expect(calculateDps(magicScenario({ ...base, elementalSpellFlatBonus: 2 })).maxHit).toBe(31); // trunc(26 x 6/5)
+  it("the tome multiplies the amulet-inclusive hit (tome of water, base 28: 28+2 -> x11/10 = 33, not 28 x 11/10 + 2 = 32)", () => {
+    const base = { baseSpellMaxHit: 28, spellElement: "water" as const, tomeOfWaterEquipped: true };
+    expect(calculateDps(magicScenario(base)).maxHit).toBe(30); // trunc(28 x 11/10)
+    expect(calculateDps(magicScenario({ ...base, elementalSpellFlatBonus: 2 })).maxHit).toBe(33); // trunc(30 x 11/10)
   });
 
   it("flows into the Twinflame casts (Fire Wave 20+2 -> x11/10 -> x7/5 = 33 vs 30)", () => {
@@ -501,14 +501,14 @@ describe("bestSpell — elemental amulet and target weakness decide the element"
     expect(eff({ elementalAmulet: "water", targetWeakness: { element: "water", severity: 50 } })).toBe(
       26 + 13,
     );
-    expect(eff({ elementalAmulet: "water", tomeOfWater: true })).toBe(31); // trunc(26 x 6/5), not 28 + 2
+    expect(eff({ elementalAmulet: "water", tomeOfWater: true })).toBe(28); // trunc(26 x 11/10)
     expect(
       eff({
         elementalAmulet: "water",
         targetWeakness: { element: "water", severity: 50 },
         tomeOfWater: true,
       }),
-    ).toBe(46); // trunc(39 x 6/5)
+    ).toBe(42); // trunc(39 x 11/10)
     // A weakness to another element, or "none", is ignored.
     expect(eff({ targetWeakness: { element: "fire", severity: 90 } })).toBe(24);
     expect(eff({ targetWeakness: { element: "none", severity: 90 } })).toBe(24);

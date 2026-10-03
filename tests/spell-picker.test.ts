@@ -91,9 +91,9 @@ describe("spellEffectiveMaxHit — tome interaction (ranking)", () => {
   // Every Surge hits for 24 at 95+ Magic (the elemental ladder: each spell takes
   // the max hit of the highest unlocked spell of its class), so the Water/Earth
   // Surge bases below are 24, not their old fixed 22 / 23.
-  it("Tome of Water boosts a water spell ×6/5", () => {
+  it("Tome of Water boosts a water spell ×11/10 (×6/5 before Project Rebalance)", () => {
     const waterSurge = SPELLS_BY_NAME.get("Water Surge")!; // 24 at 99 Magic
-    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfWater: true })).toBe(28); // floor(24×6/5)
+    expect(spellEffectiveMaxHit(waterSurge, { magicLevel: 99, targetAttributes: [], tomeOfWater: true })).toBe(26); // floor(24×11/10)
   });
 
   it("Tome of Earth boosts an earth spell ×11/10", () => {

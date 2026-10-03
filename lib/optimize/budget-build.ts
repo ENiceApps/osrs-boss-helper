@@ -34,12 +34,16 @@ import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
+import { BROAD_AMMO_IDS, LEAF_BLADED_MELEE_WEAPON_IDS, LEAFY_SPELL_NAME } from "@/data/items/leaf-bladed";
+import { weaponSatisfiesStaffRequirement } from "@/data/items/magic-weapon-autocast";
+import { SPELLS_BY_NAME } from "@/data/spells/catalog";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import type { CombatStyle, Skills, SpellElement, WeaponAttackType } from "@/types/osrs";
 import {
   amuletCanMatter,
   autoPickSpell,
+  bestFiredBroadAmmo,
   combatStyleFor,
   enumerateWeaponStyles,
   itemScore,
@@ -125,6 +129,15 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
   if (attrs.includes("golem")) {
     out.push(...ownedTriggerIds(affordable, "BARRONITE_MACE"));
     out.push(...ownedTriggerIds(affordable, "GRANITE_HAMMER"));
+  }
+  if (attrs.includes("leafy")) {
+    // Turoth/Kurask: every other weapon deals 0, so the top-K cap must not drop
+    // the leaf-bladed weapons or the Slayer's staves that cast Magic Dart.
+    const staff = SPELLS_BY_NAME.get(LEAFY_SPELL_NAME)?.requiresStaff;
+    for (const id of affordable) {
+      if (LEAF_BLADED_MELEE_WEAPON_IDS.has(id)) out.push(id);
+      else if (staff && weaponSatisfiesStaffRequirement(id, staff)) out.push(id);
+    }
   }
   out.push(...ownedTriggerIds(affordable, "TWISTED_BOW")); // scales with target magic
   // Wilderness weapons: big ×3/2 vs NPCs in the Wilderness the proxy can't see.
@@ -446,6 +459,27 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   }
   cands.push(...boltBranches);
 
+  // Broad-ammo branches vs a LEAFY target (Turoth/Kurask): broad arrows/bolts
+  // are the only ranged damage it takes, but the greedy ammo pick ranks raw
+  // ranged strength. Mirrors optimizeForBoss's Step 2d-ii, within the budget.
+  if (input.target.attributes.includes("leafy")) {
+    const ammoPool = bySlot.get("ammo") ?? [];
+    const broadBranches: Cand[] = [];
+    for (const c of cands) {
+      if (c.ws.combatStyle !== "ranged") continue;
+      const broad = bestFiredBroadAmmo(c.ws.weapon, ammoPool);
+      if (!broad) continue;
+      const withoutAmmo = c.ids.filter((id) => {
+        const it = ITEM_BY_ID.get(id);
+        return !it || loadoutSlotFor(it) !== "ammo";
+      });
+      const ids = [...withoutAmmo, broad.id];
+      if (totalCost(ids, c.internalAmmoId, input.priceLookup) > input.gp) continue;
+      broadBranches.push({ ids, internalAmmoId: c.internalAmmoId, ws: c.ws });
+    }
+    cands.push(...broadBranches);
+  }
+
   const scoredCands: { scored: Extract<ScoredScenario, { valid: true }>; cost: number }[] = [];
 
   // Source B: the budget-greedy candidates (constraint-aware; the only source
@@ -500,6 +534,9 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   for (const id of forcedNonWeaponIds(affordableIds, input.target)) pseudoBank.add(id);
   for (const a of bySlot.get("ammo") ?? []) {
     if (BOLT_EFFECT_BY_ITEM_ID.has(a.id)) pseudoBank.add(a.id);
+    // Broad ammo rarely survives the per-slot top-K, but vs a leafy target it's
+    // the only ranged option that deals damage (optimizeForBoss branches on it).
+    if (BROAD_AMMO_IDS.has(a.id) && input.target.attributes.includes("leafy")) pseudoBank.add(a.id);
   }
   // On task, make sure any affordable imbued slayer helm reaches optimizeForBoss
   // so its on-task force-include branch can weigh the helm against head-slot

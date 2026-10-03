@@ -178,6 +178,8 @@ export interface ConditionalBonusFlags {
   golembaneBarronite?: boolean;
   /** Granite hammer vs golem → ×13/10 accuracy AND damage (multiplicative). */
   golembaneGraniteHammer?: boolean;
+  /** Leaf-bladed battleaxe (melee) vs a leafy target (Turoth/Kurask) → ×47/40 damage. */
+  leafBladedBattleaxe?: boolean;
   /**
    * A charged wilderness weapon (Craw's/Webweaver bow, Viggora's/Ursine
    * chainmace, Thammaron's/Accursed sceptre) attacking an NPC in the Wilderness

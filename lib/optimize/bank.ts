@@ -38,8 +38,21 @@ import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import {
   autocastableSpellbooks,
   weaponCanAutocastSpellbook,
+  weaponSatisfiesStaffRequirement,
 } from "@/data/items/magic-weapon-autocast";
-import { bestSpell, canCastElement, spellMaxHit } from "@/data/spells/catalog";
+import {
+  BROAD_AMMO_IDS,
+  LEAF_BLADED_MELEE_WEAPON_IDS,
+  LEAFY_SPELL_NAME,
+} from "@/data/items/leaf-bladed";
+import {
+  SPELLS_BY_NAME,
+  bestSpell,
+  canCastElement,
+  spellCastableVs,
+  spellMaxHit,
+  type SpellEntry,
+} from "@/data/spells/catalog";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type {
@@ -362,6 +375,11 @@ function applicableForceIncludes(
     out.push(...ownedTriggerIds(bank, "BARRONITE_MACE"));
     out.push(...ownedTriggerIds(bank, "GRANITE_HAMMER"));
   }
+  if (target.attributes.includes("leafy")) {
+    // Turoth/Kurask take damage only from leaf-bladed weapons (broad ammo and
+    // Magic Dart are handled in Step 2d-ii / autoPickSpell).
+    out.push(...[...LEAF_BLADED_MELEE_WEAPON_IDS].filter((id) => bank.has(id)));
+  }
   out.push(...ownedTriggerIds(bank, "TWISTED_BOW")); // always relevant (scales with target magic)
   // Tomes boost their element's spells vs all NPCs — push them unconditionally
   // so the optimizer tries them for any magic build, not only element-weak targets.
@@ -377,6 +395,47 @@ function applicableForceIncludes(
   // can't see — force them in for wilderness bosses so they're ranked honestly.
   if (isWildernessBoss(target.slug)) out.push(...ownedTriggerIds(bank, "WILDERNESS_WEAPON"));
   return out;
+}
+
+/**
+ * The strongest broad ammo (Broad arrows/bolts, Seeking broad arrows, Amethyst
+ * broad bolts) in `ammoPool` that `weapon` actually fires, or undefined. Broad
+ * ammo is the only ranged damage a LEAFY target (Turoth/Kurask) takes, but the
+ * greedy ammo pick ranks raw ranged strength, so dragon bolts always win the
+ * slot — callers branch each ranged candidate with this instead. Same weapon
+ * gate as lib/loadout.ts canDamageLeafy (bows and crossbows only).
+ */
+export function bestFiredBroadAmmo(
+  weapon: ItemCatalogEntry,
+  ammoPool: readonly ItemCatalogEntry[],
+): ItemCatalogEntry | undefined {
+  if (weapon.category !== "Bow" && weapon.category !== "Crossbow") return undefined;
+  let best: ItemCatalogEntry | undefined;
+  for (const a of ammoPool) {
+    if (!BROAD_AMMO_IDS.has(a.id)) continue;
+    if (!checkAmmoCompatWithCategory(weapon.name, weapon.category, a.name).ok) continue;
+    if (!best || a.rangedStr > best.rangedStr) best = a;
+  }
+  return best;
+}
+
+/**
+ * Magic Dart, when the target is LEAFY (Turoth/Kurask — it's the only spell
+ * that hurts them), the weapon is a Slayer's staff (the spell's staff
+ * requirement) and the player can cast it. The general auto-pick skips
+ * staff-specific spells, so without this every magic build vs a leafy target
+ * would cast a spell that deals nothing.
+ */
+function leafyMagicDart(
+  weaponId: number,
+  magicLevel: number,
+  target: MonsterCatalogEntry,
+): SpellEntry | undefined {
+  if (!target.attributes.includes("leafy")) return undefined;
+  const dart = SPELLS_BY_NAME.get(LEAFY_SPELL_NAME);
+  if (!dart?.requiresStaff) return undefined;
+  if (!weaponSatisfiesStaffRequirement(weaponId, dart.requiresStaff)) return undefined;
+  return spellCastableVs(dart, magicLevel, target.attributes) ? dart : undefined;
 }
 
 export interface AutoSpellResult {
@@ -411,7 +470,7 @@ export function autoPickSpell(
   let autoSpellName: string | undefined;
 
   if (combatStyle === "magic" && !poweredFormula && baseSpellMaxHit === undefined) {
-    const spell = bestSpell({
+    const spell = leafyMagicDart(weapon.id, magicLevel, target) ?? bestSpell({
       magicLevel,
       targetAttributes: target.attributes,
       tomeOfFire: BONUS_TRIGGER_VARIANTS.TOME_OF_FIRE_CHARGED.some((id) => itemIds.includes(id)),
@@ -620,6 +679,30 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
     }
   }
   allCandidates.push(...boltBranches);
+
+  // Step 2d-ii: broad-ammo branches vs a LEAFY target (Turoth/Kurask). At range
+  // only broad arrows/bolts hurt them, but the greedy pick fills the ammo slot
+  // by raw ranged strength, so every ranged candidate would score 0. Branch
+  // each bow/crossbow candidate once with the strongest broad ammo it fires.
+  if (input.target.attributes.includes("leafy")) {
+    const ammoPool = bySlot.get("ammo") ?? [];
+    const broadBranches: Candidate[] = [];
+    for (const c of allCandidates) {
+      if (c.ws.combatStyle !== "ranged") continue;
+      const broad = bestFiredBroadAmmo(c.ws.weapon, ammoPool);
+      if (!broad) continue;
+      const withoutAmmo = c.itemIds.filter((id) => {
+        const it = ITEM_BY_ID.get(id);
+        return !it || loadoutSlotFor(it) !== "ammo";
+      });
+      broadBranches.push({
+        itemIds: [...withoutAmmo, broad.id],
+        internalAmmoId: c.internalAmmoId,
+        ws: c.ws,
+      });
+    }
+    allCandidates.push(...broadBranches);
+  }
 
   // Step 2e: slayer-helm force-include. On task, the imbued black mask / slayer
   // helmet grants a large on-task multiplier (×7/6 melee, ×23/20 ranged & magic)

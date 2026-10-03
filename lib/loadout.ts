@@ -10,6 +10,13 @@ import {
   amuletBoostsElement,
   ELEMENTAL_AMULET_MAX_HIT_BONUS,
 } from "@/data/bonus-trigger-items";
+import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
+import {
+  BROAD_AMMO_IDS,
+  LEAF_BLADED_BATTLEAXE_ID,
+  LEAF_BLADED_MELEE_WEAPON_IDS,
+  LEAFY_SPELL_NAME,
+} from "@/data/items/leaf-bladed";
 
 export interface TargetActiveBonuses {
   conditionalBonuses: ConditionalBonusFlags;
@@ -31,6 +38,36 @@ export interface TargetActiveBonuses {
   targetMonsterMagicLevel: number;
   /** Whether target is in Chambers of Xeric (350 cap vs 250). */
   targetIsXerician: boolean;
+  /**
+   * The target is LEAFY (Turoth/Kurask) and this loadout has no leaf-bladed
+   * damage source — it deals no damage at all (see `canDamageLeafy`).
+   */
+  leafyImmune: boolean;
+}
+
+/**
+ * True iff the loadout can damage a LEAFY monster: a leaf-bladed melee weapon
+ * on a melee style, broad ammo actually fired by the ranged weapon, or the
+ * Magic Dart spell. Mirrors wgloop's isWearingLeafBladedWeapon, with one
+ * deliberate tightening: upstream accepts broad ammo in the ammo slot with ANY
+ * ranged weapon, but a weapon that doesn't fire it (blowpipe, crystal bow, Bow
+ * of Faerdhinen, a crossbow under broad arrows) can't land a broad projectile,
+ * so the ammo must pass the weapon's ammo check here.
+ */
+export function canDamageLeafy(set: LoadoutSet): boolean {
+  switch (set.style) {
+    case "melee":
+      return LEAF_BLADED_MELEE_WEAPON_IDS.has(set.slots.weapon?.itemId ?? -1);
+    case "magic":
+      return set.autoSpellName === LEAFY_SPELL_NAME;
+    case "ranged": {
+      const { weapon, ammo } = set.slots;
+      if (!weapon || !ammo || !BROAD_AMMO_IDS.has(ammo.itemId)) return false;
+      const category = set.weaponCategory ?? "";
+      if (category !== "Bow" && category !== "Crossbow") return false;
+      return checkAmmoCompatWithCategory(weapon.itemName, category, ammo.itemName).ok;
+    }
+  }
 }
 
 /**
@@ -48,6 +85,7 @@ export function activeBonusesForTarget(
   const isDemon = target.attributes.includes("demon");
   const isKalphite = target.attributes.includes("kalphite");
   const isGolem = target.attributes.includes("golem");
+  const isLeafy = target.attributes.includes("leafy");
   // Dragon hunter wand's dragonbane is active vs dragons AND does NOT stack with
   // Salve (unlike DHCB/DHL, which do). On an undead dragon (e.g. Vorkath) the
   // wand wins (+75/+40 ≫ Salve's +20/+20), so suppress Salve when it's active.
@@ -71,6 +109,13 @@ export function activeBonusesForTarget(
       kerisBreachVsKalphite: (set.itemBonusFlags.kerisBreaching ?? false) && isKalphite,
       golembaneBarronite: (set.itemBonusFlags.golembaneBarronite ?? false) && isGolem,
       golembaneGraniteHammer: (set.itemBonusFlags.golembaneGraniteHammer ?? false) && isGolem,
+      // Keyed off the weapon slot (like the corpbane check in recommend.ts)
+      // rather than an item flag, so every loadout source — optimizer, gear
+      // editor — gets it without a flag to keep in sync.
+      leafBladedBattleaxe:
+        isLeafy &&
+        set.style === "melee" &&
+        set.slots.weapon?.itemId === LEAF_BLADED_BATTLEAXE_ID,
       // Wilderness weapons only get their ×3/2 vs NPCs fought in the Wilderness.
       wildernessWeapon:
         (set.itemBonusFlags.wildernessWeapon ?? false) && isWildernessBoss(target.slug),
@@ -97,6 +142,7 @@ export function activeBonusesForTarget(
     // a target where the difference matters.
     targetMonsterMagicLevel: target.magicLevel,
     targetIsXerician: isXerician,
+    leafyImmune: isLeafy && !canDamageLeafy(set),
   };
 }
 

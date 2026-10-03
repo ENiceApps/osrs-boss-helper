@@ -9,6 +9,7 @@ import { applyCombatBoost } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import type { TargetActiveBonuses } from "@/lib/loadout";
+import { BROAD_AMMO_IDS } from "@/data/items/leaf-bladed";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import {
   demonbaneVulnerabilityFor,
@@ -114,6 +115,7 @@ function buildReasons(
     if (cb?.demonbaneSilverlight) reasons.push(demonbaneLine(60));
     if (cb?.demonbaneClaws) reasons.push(demonbaneLine(5));
     if (cb?.demonbaneScorchingBow) reasons.push(demonbaneLine(30));
+    if (cb?.leafBladedBattleaxe) reasons.push("+17.5% damage vs this leafy target");
     if (activeBonuses?.twistedBowEquipped)
       reasons.push(
         `scales with the target's magic level (${activeBonuses.targetMonsterMagicLevel})`,
@@ -135,10 +137,18 @@ function buildReasons(
       );
     }
   }
+  if (
+    slot === "ammo" &&
+    monster.attributes.includes("leafy") &&
+    BROAD_AMMO_IDS.has(set.slots.ammo?.itemId ?? -1) &&
+    !activeBonuses?.leafyImmune
+  ) {
+    reasons.push("broad ammo — the only ranged ammo that can hurt this leafy target");
+  }
   if (slot === "shield") {
     if (activeBonuses?.tomeOfFireEquipped)  reasons.push("+10% fire spell damage");
-    if (activeBonuses?.tomeOfWaterEquipped) reasons.push("+20% water spell accuracy & damage");
-    if (activeBonuses?.tomeOfEarthEquipped) reasons.push("+10% earth spell accuracy & damage");
+    if (activeBonuses?.tomeOfWaterEquipped) reasons.push("+20% water spell accuracy, +10% damage");
+    if (activeBonuses?.tomeOfEarthEquipped) reasons.push("+10% earth spell damage");
   }
   return reasons;
 }
