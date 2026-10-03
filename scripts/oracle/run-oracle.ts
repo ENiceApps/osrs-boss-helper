@@ -52,6 +52,11 @@ interface OurResult {
    * DPS + accuracy instead.
    */
   multiHit?: boolean;
+  /**
+   * Keris vs a Kalphite: wgloop's `getMax()` is the 1/51 triple hitsplat, so
+   * its max hit is 3× ours. The comparator triples ours to match.
+   */
+  tripleProc?: boolean;
   error?: string;
 }
 
@@ -73,6 +78,8 @@ function ourEngine(combo: CanonicalCombo): OurResult {
   if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
   const weaponId = scored.loadout.slots.weapon?.itemId;
   const multiHit = hitProfileForWeapon(weaponId, { targetSize: boss.size }) !== undefined;
+  const tripleProc =
+    scored.loadout.style === "melee" && scored.activeBonuses.conditionalBonuses.kerisVsKalphite === true;
   return {
     id: combo.id,
     ok: true,
@@ -80,6 +87,7 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     accuracy: scored.dps.accuracy,
     dps: scored.dps.dps,
     multiHit,
+    tripleProc,
   };
 }
 
@@ -173,8 +181,10 @@ function compare(
 
   // Multi-hit weapons report maxHit differently on each side (single largest
   // hit vs summed max across hits), so it isn't comparable — rely on DPS + acc.
-  if (!our.multiHit && our.maxHit !== wg.maxHit) {
-    return { verdict: "MAXHIT", detail: `maxHit ours=${our.maxHit} wg=${wg.maxHit}` };
+  // Keris vs Kalphite: wgloop reports the triple hitsplat as the max.
+  const ourMax = our.tripleProc ? (our.maxHit ?? 0) * 3 : our.maxHit;
+  if (!our.multiHit && ourMax !== wg.maxHit) {
+    return { verdict: "MAXHIT", detail: `maxHit ours=${ourMax} wg=${wg.maxHit}` };
   }
   if (Math.abs((our.accuracy ?? 0) - wg.accuracy) > ACC_TOL) {
     return { verdict: "ACC", detail: `acc ours=${our.accuracy?.toFixed(4)} wg=${wg.accuracy.toFixed(4)}` };
@@ -240,7 +250,7 @@ function main(): void {
     if (o.ok && w && w.ok) {
       const ourRoll = impliedAttackRoll(o.accuracy ?? 0, w.npcDefRoll);
       console.log(
-        `    ours : maxHit ${o.maxHit}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}  roll≈${ourRoll ?? "—"}`,
+        `    ours : maxHit ${o.maxHit}${o.tripleProc ? ` (×3 = ${(o.maxHit ?? 0) * 3})` : ""}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}  roll≈${ourRoll ?? "—"}`,
       );
       console.log(
         `    wglp : maxHit ${w.maxHit}  acc ${w.accuracy.toFixed(4)}  dps ${w.dps.toFixed(3)}  roll ${w.maxAttackRoll}`,

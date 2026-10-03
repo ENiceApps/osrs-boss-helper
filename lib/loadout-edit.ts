@@ -67,6 +67,7 @@ export function itemBonusFlagsFor(slotItemIds: ReadonlySet<number>): ItemBonusFl
     demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
     kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
     kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
+    kerisAmascut: hasTrigger(slotItemIds, "KERIS_PARTISAN_AMASCUT"),
     golembaneBarronite: hasTrigger(slotItemIds, "BARRONITE_MACE"),
     golembaneGraniteHammer: hasTrigger(slotItemIds, "GRANITE_HAMMER"),
     tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),

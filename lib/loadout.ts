@@ -110,6 +110,7 @@ export function activeBonusesForTarget(
       demonbaneClaws: (set.itemBonusFlags.demonbaneClaws ?? false) && isDemon,
       demonbaneScorchingBow: (set.itemBonusFlags.demonbaneScorchingBow ?? false) && isDemon,
       kerisVsKalphite: (set.itemBonusFlags.kerisPartisan ?? false) && isKalphite,
+      kerisAmascutVsKalphite: (set.itemBonusFlags.kerisAmascut ?? false) && isKalphite,
       kerisBreachVsKalphite: (set.itemBonusFlags.kerisBreaching ?? false) && isKalphite,
       golembaneBarronite: (set.itemBonusFlags.golembaneBarronite ?? false) && isGolem,
       golembaneGraniteHammer: (set.itemBonusFlags.golembaneGraniteHammer ?? false) && isGolem,

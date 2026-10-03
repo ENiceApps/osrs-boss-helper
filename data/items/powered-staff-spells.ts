@@ -55,4 +55,15 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Eye of Ayak: max(1, trunc(magic / 3) - 6)  (27 at 99)
   [31113, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Charged
   [31115, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Uncharged
+
+  // Wilderness sceptres (wgloop getPlayerMaxMagicHit). Their ×3/2 vs NPCs in
+  // the Wilderness comes from the WILDERNESS_WEAPON trigger, not this formula.
+  // The (a) variants (27788/27785, 27679/27676) are regular staves that
+  // autocast spellbook spells, so they have no entry here.
+  // Thammaron's sceptre: max(1, trunc(magic / 3 - 8))  (25 at 99)
+  [22555, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 8))], // Charged
+  [22552, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 8))], // Uncharged
+  // Accursed sceptre: max(1, trunc(magic / 3 - 6))  (27 at 99)
+  [27665, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Charged
+  [27662, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Uncharged
 ]);

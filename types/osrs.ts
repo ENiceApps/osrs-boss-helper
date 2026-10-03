@@ -176,10 +176,12 @@ export interface ConditionalBonusFlags {
    * so it can't live in the ordinary factor list.
    */
   demonbaneScorchingBow?: boolean;
-  /** Any Keris partisan vs Kalphites/Scabarites → +33% damage (×4/3). The 1/51
+  /** Any Keris vs Kalphites/Scabarites → ×133/100 damage. The 1/51
    *  triple-damage proc is modelled separately (dps-mean only) via `kalphiteTripleProc`. */
   kerisVsKalphite?: boolean;
-  /** Keris partisan of breaching vs Kalphites/Scabarites → +33% accuracy (×4/3). */
+  /** The Keris is the partisan of amascut: its damage factor is ×115/100 instead. */
+  kerisAmascutVsKalphite?: boolean;
+  /** Keris partisan of breaching vs Kalphites/Scabarites → ×133/100 accuracy. */
   kerisBreachVsKalphite?: boolean;
   /** Barronite mace vs golem → ×23/20 damage (multiplicative, damage only). */
   golembaneBarronite?: boolean;
