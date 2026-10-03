@@ -119,6 +119,8 @@ export function buildActiveFlags(
   // target-specific effects are listed.
   if (activeBonuses?.leafyImmune) flags.push("Leafy: no damage without a leaf-bladed weapon, broad ammo or Magic Dart");
   if (activeBonuses?.flyingMeleeImmune) flags.push("Flying: melee can't reach it without a halberd or salamander");
+  if (activeBonuses?.npcMeleeImmune === "all") flags.push("Immune to melee: only ranged or magic can damage it");
+  if (activeBonuses?.npcMeleeImmune === "halberd") flags.push("Zulrah: melee can't reach it without a halberd");
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc / +10% dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% dmg");

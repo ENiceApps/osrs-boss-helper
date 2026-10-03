@@ -844,10 +844,10 @@ const LEVIATHAN: MechanicRequirement[] = [
   },
   {
     id: "leviathan-melee-range",
-    label: "Ranged is BIS; melee from the east",
+    label: "Ranged is BIS; melee can't reach it",
     description:
-      "Leviathan's lowest defence by far is ranged (50 vs 190+ for every melee style), so Twisted bow / a strong crossbow lead. If you melee instead, Scythe is best in slash — stand on his east side to avoid the tail sweep.",
-    remediation: "Twisted bow / DHCB for ranged; Scythe > Fang in melee range.",
+      "Melee can't hit the Leviathan at all (\"Your melee attacks can't reach the lure!\"), and its lowest defence by far is ranged (50, or 25 vs crossbows, against 280 magic), so Twisted bow / a strong crossbow lead.",
+    remediation: "Twisted bow or a strong crossbow; leave the melee weapon at home.",
   },
   {
     id: "food",
@@ -949,7 +949,7 @@ const KRAKEN: MechanicRequirement[] = [
     id: "kraken-magic-only",
     label: "Use magic (Trident) — the AFK standard",
     description:
-      "You fight Kraken from a fixed tile out of melee range, so magic (or ranged) is the practical choice — and its defence level is only 1, so anything hits. A powered staff is the go-to: Trident of the Swamp / Sang / Harmonised Surge.",
+      "You fight Kraken from a fixed tile out of melee range, and it's immune to melee anyway, so it's a magic fight (ranged deals only a seventh of its damage) — and its defence level is only 1, so anything hits. A powered staff is the go-to: Trident of the Swamp / Sang / Harmonised Surge.",
     remediation: "Trident of swamp + Occult + Tormented bracelet is the AFK setup.",
   },
   {

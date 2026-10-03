@@ -20,6 +20,7 @@ import { defaultDamageModifier } from "@/data/bosses/mechanic-phases";
 import type { PhasedMonster } from "@/lib/phases";
 import { categoryForMonster } from "@/data/monsters/categories";
 import { demonbaneVulnerabilityFor } from "@/data/monsters/demonbane-vulnerability";
+import { damageCapFor } from "@/data/monsters/damage-cap";
 import {
   activeBonusesForTarget,
   defenceBonusForAttackType,
@@ -393,17 +394,22 @@ export function computeSetDps(
     targetAccuracyFactor,
     targetAlwaysHit,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
-    // Dart, melee vs a flying target without a halberd / salamander, or a
-    // phase that zeroes damage (Doom's shield) — wgloop isImmune. A ×0 phase
-    // is immunity, not a scale: it must also zero bolt procs.
+    // Dart, melee vs a flying target without a halberd / salamander, melee vs
+    // a monster immune to it (the Kraken, TzKal-Zuk, the Leviathan, …; Zulrah
+    // bar a halberd), or a phase that zeroes damage (Doom's shield) — wgloop
+    // isImmune. A ×0 phase is immunity, not a scale: it must also zero bolt
+    // procs.
     targetImmune:
       activeBonuses.leafyImmune ||
       activeBonuses.flyingMeleeImmune ||
+      activeBonuses.npcMeleeImmune !== null ||
       targetDamageFactor?.[0] === 0,
     targetMinHitFactor,
     // Flat armour (Gargoyle -2, Heavy skeleton +1, …) on every accurate
     // melee/ranged hitsplat; the engine ignores it for magic.
     targetFlatArmour: target.defenceBonuses.flatArmour,
+    // Zulrah: every hitsplat over 50 deals 45-50, any style.
+    targetDamageCap: damageCapFor(target),
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

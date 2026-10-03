@@ -66,6 +66,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...npcMechanicCombos(),
     ...corpCombos(),
     ...twistedBowCombos(),
+    ...npcImmunityAndCapCombos(),
   ];
 }
 
@@ -448,10 +449,10 @@ const DRAGON_ARROW = 11212;
  * roll by under 1%, inside the accuracy tolerance. Their numbers are locked in
  * tests/twisted-bow.test.ts.
  *
- * Not here: Zulrah (Magic 300) — upstream rerolls every hit over 50 into
- * 45-50 (cappedRerollTransformer), which the engine doesn't model; and the P2
+ * Zulrah (Magic 300), where upstream also rerolls every hit over 50 into
+ * 45-50, has its own combo below (npcImmunityAndCapCombos). Not here: the P2
  * Wardens, where upstream forces accuracy to 1 and turns the (doubly
- * Tbow-scaled) attack roll into a damage modifier, also unmodelled — see
+ * Tbow-scaled) attack roll into a damage modifier, unmodelled — see
  * scripts/oracle/README.md, Known gaps.
  */
 export function twistedBowCombos(): CanonicalCombo[] {
@@ -464,6 +465,56 @@ export function twistedBowCombos(): CanonicalCombo[] {
     tbow("tbow-araxxor", "araxxor"),
     tbow("tbow-nylocas-vasilias", "nylocas-vasilias"),
     tbow("tbow-zebak", "zebak"),
+  ];
+}
+
+const SCYTHE_OF_VITUR = 22325;
+const NOXIOUS_HALBERD = 29796;
+const ZARYTE_CROSSBOW = 26374;
+const RUBY_DRAGON_BOLTS_E = 21944;
+const TUMEKENS_SHADOW = 27275;
+
+/**
+ * Per-NPC melee immunity and Zulrah's damage cap, two of upstream's NPC rules:
+ *
+ *  - Melee immunity (`immune-`): isImmune (PlayerVsNPCCalc L2057-2060 @
+ *    89c3e25) zeroes melee vs IMMUNE_TO_MELEE_DAMAGE_NPC_IDS (constants.ts
+ *    L347-354) — the Kraken, TzKal-Zuk, Jal-MejJak, the Leviathan, the Abyssal
+ *    portal, and Zulrah unless the weapon is a Polearm. The Scythe isn't one,
+ *    so it scores 0 at Zulrah too; a halberd hits.
+ *  - Zulrah's cap (`zulrah-`): applyNpcTransforms' first transform
+ *    (L1937-1940), cappedRerollTransformer(50, 5, 45) — every hitsplat over 50
+ *    deals 45-50, any style. One combo per way past 50: a Twisted bow (66), a
+ *    Tumeken's shadow (magic), a Noxious halberd (melee, the halberd
+ *    exemption), and a Zaryte crossbow's ruby proc (110, rolled after the
+ *    accurate-zero raise; wgloop's max is the capped proc, ours the normal hit).
+ *
+ * Their numbers are locked in tests/npc-immunity-and-caps.test.ts.
+ */
+export function npcImmunityAndCapCombos(): CanonicalCombo[] {
+  const rangedGear = (weapon: number, ammo: number): number[] =>
+    [weapon, ammo, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  return [
+    // ── Melee immunity: 0 DPS, accuracy still reported ──
+    orderingCombo("immune-scythe-tzkal-zuk", "tzkal-zuk",
+      meleeGear(SCYTHE_OF_VITUR, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("immune-whip-kraken", "kraken",
+      meleeGear(4151, FACEGUARD, TORTURE), "slash", "controlled"),
+    orderingCombo("immune-scythe-the-leviathan", "the-leviathan",
+      meleeGear(SCYTHE_OF_VITUR, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("immune-whip-jal-mejjak", "jal-mejjak",
+      meleeGear(4151, FACEGUARD, TORTURE), "slash", "controlled"),
+    orderingCombo("immune-scythe-zulrah", "zulrah",
+      meleeGear(SCYTHE_OF_VITUR, FACEGUARD, TORTURE), "slash", "aggressive"),
+
+    // ── Zulrah: every hitsplat over 50 deals 45-50 ──
+    orderingCombo("zulrah-tbow", "zulrah", rangedGear(TWISTED_BOW, DRAGON_ARROW), "ranged", "rapid"),
+    orderingCombo("zulrah-tumekens-shadow", "zulrah",
+      [TUMEKENS_SHADOW, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
+    orderingCombo("zulrah-noxious-halberd", "zulrah",
+      meleeGear(NOXIOUS_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("zulrah-zcb-ruby-bolts", "zulrah",
+      rangedGear(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "rapid", { knownMaxHitResidual: BOLT_MAX }),
   ];
 }
 

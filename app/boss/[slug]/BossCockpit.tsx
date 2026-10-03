@@ -20,7 +20,7 @@ import { applyCombatBoost, bankBoostResolver, boostFromBank } from "@/lib/dps/bo
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { BOLT_EFFECT_BY_ITEM_ID } from "@/data/items/bolt-procs";
 import { mechanicsForBoss } from "@/data/bosses/mechanics";
-import { requiresMeleeReach2 } from "@/data/monsters/melee-reach";
+import { meleeImmunityNote, requiresMeleeReach2 } from "@/data/monsters/melee-reach";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { evaluateMechanics } from "@/lib/mechanics";
 import { setupMechanicConflicts } from "@/lib/setup-mechanics";
@@ -256,6 +256,9 @@ export function BossCockpit({ slug }: { slug: string }) {
   // (Kree'arra, Dawn, Vespula) and terrain-gapped ones (Zulrah). The optimizer
   // drops normal-melee weapons for them. Stable per boss.
   const meleeReach2 = requiresMeleeReach2(monster);
+  // Why melee does nothing here (immune, or out of reach without a halberd),
+  // shown on an empty melee tab. Stable per boss/phase.
+  const meleeNote = meleeImmunityNote(monster);
 
   // Wilderness boss → unlocks the "Risk it" budget mode. Both "budget" and
   // "wildy-risk" build a from-scratch loadout under a GP cap (spend vs risk).
@@ -483,16 +486,21 @@ export function BossCockpit({ slug }: { slug: string }) {
         available: !!built,
         // Why it's empty + the quickest way to actually see it. Bank modes
         // (own/gp/sell) can only upgrade styles the bank can already perform,
-        // so the route to a missing style is Budget mode or syncing one.
+        // so the route to a missing style is Budget mode or syncing one. A
+        // melee tab that's empty because melee can't damage this boss (Zuk,
+        // the Kraken, Zulrah without a halberd, a flying boss) says so — a
+        // setup that deals 0 is never built.
         unavailableReason: built
           ? undefined
-          : fromScratchMode
-            ? `No ${style} setup fits this budget — raise it to see one.`
-            : `Your bank has no ${style} weapon. Switch to Budget mode to preview a ${style} setup, or sync one.`,
+          : style === "melee" && meleeNote
+            ? meleeNote
+            : fromScratchMode
+              ? `No ${style} setup fits this budget — raise it to see one.`
+              : `Your bank has no ${style} weapon. Switch to Budget mode to preview a ${style} setup, or sync one.`,
       });
     }
     return tabs;
-  }, [budgetResult, styleResults, fromScratchMode]);
+  }, [budgetResult, styleResults, fromScratchMode, meleeNote]);
 
   // The editable base is the active tab's scenario: the optimizer's pick for
   // the current budget mode (== best-from-bank when there are no upgrades),

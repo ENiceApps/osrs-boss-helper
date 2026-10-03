@@ -135,6 +135,25 @@ the cap). They run with `exactRoll`, which is what catches the clamp (the
 roll moves under 1%); their numbers are locked in `tests/twisted-bow.test.ts`.
 The engine had no clamp and read the Magic level alone until 2026-10-03.
 
+## Melee immunity and Zulrah cap combos
+
+`npcImmunityAndCapCombos()` in `combos.ts` checks two NPC rules. `immune-`
+combos: upstream's isImmune (PlayerVsNPCCalc L2057-2060) scores melee 0 vs
+IMMUNE_TO_MELEE_DAMAGE_NPC_IDS (constants.ts L347-354) — TzKal-Zuk, the
+Kraken, the Leviathan, Jal-MejJak, and Zulrah unless the weapon is a Polearm
+(the Scythe isn't). `zulrah-` combos: applyNpcTransforms' first transform
+(L1937-1940), `cappedRerollTransformer(50, 5, 45)`, turns every hitsplat over
+50 into 45-50 — a Twisted bow (66), a Tumeken's shadow, a Noxious halberd (the
+halberd exemption) and a Zaryte crossbow's ruby proc (110; wgloop's max is the
+capped proc, ours the normal hit). Their numbers are locked in
+`tests/npc-immunity-and-caps.test.ts`.
+
+The worker honours `bossVersion` since these combos: `getTestMonsterById`
+takes the FIRST entry with an id, and the Leviathan's 12214 is both
+"Post-quest" (our default) and "Awakened" (Defence 287 vs 250), so the
+Leviathan row compared different stat blocks until the worker re-picked by
+name + version.
+
 ## Sharding
 
 `--style=` runs one combat style. Fan three background agents out in parallel
@@ -258,12 +277,30 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   bow's accuracy scaling applies TWICE there (a game behaviour since
   2023-06-21). None of it is modelled: Tbow vs Elidinis' Warden Active is
   8.631 dps here, 10.167 upstream (max 62 vs 37, accuracy 0.83 vs 1).
-- **Zulrah's damage cap** — upstream rerolls every hit over 50 into 45-50
+- ~~**Zulrah's damage cap** — upstream rerolls every hit over 50 into 45-50
   (`cappedRerollTransformer(50, 5, 45)`); we don't, so big hitters run high
-  (Tbow + Dragon arrows: max 66 vs 50, 6.746 vs 6.209 dps).
-- **Per-NPC immunities** — upstream's `isImmune` lists (e.g. melee vs Kraken,
+  (Tbow + Dragon arrows: max 66 vs 50, 6.746 vs 6.209 dps).~~ **FIXED**
+  2026-10-03 — every hitsplat over 50 lands 45-50 (mean 47.5) in upstream's
+  order: after the accurate-zero raise, Corp and ruby bolts, before the phase
+  factor and flat armour; the max hit is capped per hitsplat
+  (`lib/dps/damage-cap.ts`, `data/monsters/damage-cap.ts`). A Zaryte
+  crossbow's ruby proc of 110 lands 47.5 too (was 5.730 dps, now 4.355).
+- ~~**Per-NPC immunities** — upstream's `isImmune` lists (e.g. melee vs Kraken,
   TzKal-Zuk, Jal-MejJak, the Leviathan, Zulrah bar polearms, the Abyssal
-  portal) aren't modelled; only leafy / flying are.
+  portal) aren't modelled; only leafy / flying are.~~ **FIXED** 2026-10-03
+  for melee — IMMUNE_TO_MELEE_DAMAGE_NPC_IDS scores melee 0 there, Zulrah
+  bar a Polearm, so the Scythe is 0 at Zulrah too (`npcMeleeImmunity` in
+  `data/monsters/melee-reach.ts`). The Kraken's Whirlpool (496) isn't on
+  upstream's list, so it isn't on ours. The ranged / magic immunity lists
+  (Tekton, Dusk, the Glowing crystal, the Warriors' Guild cyclopes) and the
+  Aviansies' non-salamander list (dead upstream: the flying check returns
+  first) are still unmodelled.
+- **Kraken ranged ÷7** — upstream's applyNpcTransforms (L1945-1948) divides
+  every ranged hitsplat on the Kraken and Cave kraken by 7, minimum 1
+  (`divisionTransformer(7, 1)`; the wiki: ranged "deals 1/7th of its normal
+  damage"). Not modelled, so ranged runs ×7 high there — and with melee now
+  0 the optimizer's Kraken pick is a Blazing blowpipe: 11.437 dps here, 1.495
+  upstream (max 29 vs 4). Magic is the real pick.
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).

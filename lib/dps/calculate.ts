@@ -45,6 +45,7 @@ import {
   type HitProfile,
 } from "./multihit";
 import { armouredHit, meanArmouredHit, sumArmouredHits } from "./flat-armour";
+import { cappedHitsplat, cappedMaxHit, type DamageCap } from "./damage-cap";
 import { twinflameDamage, twinflameSecondHit } from "./twinflame";
 import { applyTwistedBow, twistedBowMagic } from "./twisted-bow";
 import {
@@ -257,7 +258,7 @@ export interface DpsScenario {
    * halves EACH hitsplat — after the multi-hit split, the bolt effects and the
    * accurate-zero raise, before ruby bolts and the NPC transforms — so every
    * mean branch rolls from the pre-halving max and halves each landed
-   * hitsplat (`corpHalving` in calculateDps). Resolved upstream (computeSetDps)
+   * hitsplat (`perHitsplat` in calculateDps). Resolved upstream (computeSetDps)
    * where the weapon name, attack type and target identity are all known.
    */
   corpDamageHalved?: boolean;
@@ -315,6 +316,18 @@ export interface DpsScenario {
    * Keris's triple — see lib/dps/flat-armour.ts.
    */
   targetFlatArmour?: number;
+  /**
+   * The target's damage cap (Zulrah: every hitsplat over 50 deals 45-50, any
+   * style — data/monsters/damage-cap.ts). Upstream's FIRST NPC transform
+   * (cappedRerollTransformer(50, 5, 45), PlayerVsNPCCalc L1937-1940 @
+   * 89c3e25), so it hits each hitsplat after the attacker side (the
+   * accurate-zero raise, Corp, ruby bolts, a Mad Angel floor) and before the
+   * phase damage factor and flat armour. Every mean branch then takes each
+   * landed hitsplat through it (`perHitsplat` in calculateDps) — bolt procs,
+   * the Sanguinesti leech, each multi-hit hitsplat, the Twinflame pair — and
+   * the reported max hit is capped per hitsplat, as upstream's getMax() reads it.
+   */
+  targetDamageCap?: DamageCap;
 }
 
 interface StyleBonuses {
@@ -754,17 +767,25 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
 
   // Corporeal Beast halves damage from non-corpbane weapons, one hitsplat at a
-  // time (see `corpHalving` below): the mean branches roll from this
+  // time (see `perHitsplat` below): the mean branches roll from this
   // pre-halving max. The max hit halves with it — each half of a split weapon
   // on its own, as upstream's getMax() sums them: 42 → 21 + 21 → 10 + 10 = 20,
   // not trunc(42/2) = 21.
+  //
+  // A damage cap (Zulrah) is upstream's first NPC transform, so it caps each
+  // of those hitsplats in turn, after the halving: the Tbow's 66 vs Zulrah
+  // reports 50. The mean branches below roll from `preCorpMax` too.
+  // `attackerMax` is the max between the two — upstream's attacker-side
+  // getMax(), which a Mad Angel floor reads before any NPC transform.
   const preCorpMax = maxHit;
-  if (scenario.corpDamageHalved) {
+  const damageCap = scenario.targetDamageCap;
+  let attackerMax = maxHit;
+  if (scenario.corpDamageHalved || damageCap) {
+    const halve = (m: number): number => (scenario.corpDamageHalved ? Math.trunc(m / 2) : m);
     const profile = scenario.hitProfile;
-    maxHit =
-      profile && isSplitProfile(profile)
-        ? hitsplatMaxima(profile, maxHit).reduce((sum, m) => sum + Math.trunc(m / 2), 0)
-        : Math.trunc(maxHit / 2);
+    const splats = profile && isSplitProfile(profile) ? hitsplatMaxima(profile, maxHit) : [maxHit];
+    attackerMax = splats.reduce((sum, m) => sum + halve(m), 0);
+    maxHit = splats.reduce((sum, m) => sum + cappedMaxHit(halve(m), damageCap), 0);
   }
 
   // Per-monster/per-phase damage scale (TD shield, Sire transition, Hueycoatl
@@ -775,16 +796,17 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * n) / d);
   }
 
-  // Twinflame: upstream applies the corp halving, the Mad Angel floors and the
-  // phase factor to EACH of the two hitsplats, so the pair's max and mean are
-  // rebuilt from the first cast's max rather than taken from the pair total
-  // transformed above.
+  // Twinflame: upstream applies the corp halving, the Mad Angel floors, the
+  // damage cap and the phase factor to EACH of the two hitsplats, so the
+  // pair's max and mean are rebuilt from the first cast's max rather than
+  // taken from the pair total transformed above.
   const twinflame =
     twinflameFirstMax === undefined
       ? undefined
       : twinflameDamage(twinflameFirstMax, {
           halved: scenario.corpDamageHalved,
           minHitFactor: scenario.targetMinHitFactor,
+          damageCap,
           damageFactor: scenario.targetDamageFactor,
           damageMinimum: scenario.targetDamageMinimum,
         });
@@ -822,42 +844,49 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // What upstream does to a hitsplat after its accurate-zero raise, in order:
   // the Corp halving (the last step of getAttackerDist that touches it), a Mad
-  // Angel floor, then the NPC transforms — the phase damage factor and, last,
-  // flat armour.
+  // Angel floor, then the NPC transforms — the damage cap (Zulrah), the phase
+  // damage factor and, last, flat armour (accurate hitsplats only). The cap
+  // rerolls a big hit, so `npcHit` is the MEAN of what lands.
   const phaseHit = (h: number): number =>
     scenario.targetDamageFactor
       ? scaleHitsplat(h, scenario.targetDamageFactor, scenario.targetDamageMinimum)
       : h;
+  const npcHit = (h: number, accurate = true): number =>
+    cappedHitsplat(h, damageCap, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
   const afterRaise = (h: number, minimum = 0): number => {
     const halved = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
-    return armouredHit(phaseHit(Math.max(halved, minimum)), armour);
+    return npcHit(Math.max(halved, minimum));
   };
 
   // Corp halves each hitsplat, so halving the max and taking half of that runs
   // high: the mean of trunc(r/2) over 0..M is ⌊M²/4⌋/(M+1), under trunc(M/2)/2
   // for an even M (M = 40: 400/41 ≈ 9.76, not 10), and each half of a split
   // weapon and each bolt bonus truncates on its own (an opal's +9 on a roll of
-  // 10 lands trunc(19/2) = 9, not 5 + 9). So vs Corp every mean branch below
-  // rolls from the pre-halving max and takes each landed hitsplat through
-  // `afterRaise` (`corpMean`), in place of the closed forms on the halved max.
-  // A Twinflame double cast halves its own hitsplats (twinflameDamage).
-  const corpHalving = scenario.corpDamageHalved === true && !twinflame;
-  const corpMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
+  // 10 lands trunc(19/2) = 9, not 5 + 9). A damage cap likewise works per
+  // roll: Zulrah turns each roll over 50 into 47.5 on average, which no
+  // closed form on the capped max of 50 gives. So vs either, every mean branch
+  // below rolls from the pre-transform max and takes each landed hitsplat
+  // through `afterRaise` (`transformedMean`), in place of the closed forms on
+  // the transformed max. A Twinflame double cast does its own hitsplats
+  // (twinflameDamage).
+  const perHitsplat = (scenario.corpDamageHalved === true || damageCap !== undefined) && !twinflame;
+  const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
     meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));
 
   // Osmumten's fang rolls lo..max−lo (see fangHitTrim) — same mean as 0..max
   // until positive armour clips the low rolls or Corp halves each one. Vs Corp
-  // the trim comes off the pre-halving max, as upstream's getMinAndMax takes it.
+  // (or a cap) the trim comes off the untransformed max, as upstream's
+  // getMinAndMax takes it.
   const fangLo = scenario.fangHitTrim
-    ? Math.trunc(((corpHalving ? preCorpMax : maxHit) * 3) / 20)
+    ? Math.trunc(((perHitsplat ? preCorpMax : maxHit) * 3) / 20)
     : 0;
 
   // A Twinflame double cast (magic, so never armoured) brings its own
   // per-hitsplat landed mean.
   let dps = twinflame
     ? (accuracy * twinflame.meanLanded) / (bloodragerSpeed * 0.6)
-    : corpHalving
-      ? (accuracy * corpMean(fangLo, preCorpMax - fangLo)) / (bloodragerSpeed * 0.6)
+    : perHitsplat
+      ? (accuracy * transformedMean(fangLo, preCorpMax - fangLo)) / (bloodragerSpeed * 0.6)
       : armour === 0
         ? dpsFromHitChance(accuracy, maxHit, bloodragerSpeed)
         : (accuracy * meanArmouredHit(fangLo, maxHit - fangLo, armour)) / (bloodragerSpeed * 0.6);
@@ -881,12 +910,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // (`weapon.name !== 'Dual macuahuitl'`); its macuahuitl-specific path floors
   // only the FIRST hitsplat, at trunc(firstMax / 2) of that hitsplat's own max.
   // A Twinflame double cast already folded the buff into its per-hitsplat mean.
+  // Per hitsplat (Corp, a cap), the floor comes off the attacker-side max, as
+  // upstream's firstHitMinimum reads it before the NPC transforms.
   let madAngelMin: number | undefined;
   if (scenario.targetMinHitFactor && !twinflame) {
     const [n, d] = scenario.targetMinHitFactor;
-    madAngelMin = Math.trunc((maxHit * n) / d);
-    const landed = corpHalving
-      ? corpMean(0, preCorpMax, madAngelMin)
+    madAngelMin = Math.trunc(((perHitsplat ? attackerMax : maxHit) * n) / d);
+    const landed = perHitsplat
+      ? transformedMean(0, preCorpMax, madAngelMin)
       : meanLandedHitWithMinimum(maxHit, madAngelMin, armour);
     dps = (accuracy * landed) / (bloodragerSpeed * 0.6);
   }
@@ -896,13 +927,17 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   if (boltProc) {
     // Vs Corp the bolt effect rolls from the pre-halving max (a diamond proc
     // over 0..trunc(M × 115/100)) and is halved with the hit; ruby fires after
-    // the halving, so its proc lands whole.
-    const expected = corpHalving
+    // the halving, so its proc lands whole. Every hitsplat, ruby's included,
+    // then meets the NPC transforms: Zulrah rerolls a ruby proc of 100 into
+    // 45-50.
+    const expected = perHitsplat
       ? transformedBoltDamagePerAttack(accuracy, preCorpMax, boltProc, {
-          meanRoll: (lo, hi) => corpMean(lo, hi),
-          // A missed opal / pearl bonus is halved too, but never armoured.
-          miss: (damage) => phaseHit(Math.trunc(damage / 2)),
-          ruby: (damage) => armouredHit(phaseHit(damage), armour),
+          meanRoll: (lo, hi) => transformedMean(lo, hi),
+          // A missed opal / pearl bonus is halved and capped too, but never
+          // armoured (an inaccurate hitsplat).
+          miss: (damage) =>
+            npcHit(scenario.corpDamageHalved ? Math.trunc(damage / 2) : damage, false),
+          ruby: (damage) => npcHit(damage),
         })
       : expectedBoltDamagePerAttack(accuracy, maxHit, boltProc, armour);
     dps = expected / (bloodragerSpeed * 0.6);
@@ -911,11 +946,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
     // Vs Corp each hitsplat rolls to its share of the pre-halving max and is
     // halved on its own: Torag's 40 → two rolls over 0..20, 2 × 100/21, where
-    // halving first said 10 + 10 → 2 × 5.
+    // halving first said 10 + 10 → 2 × 5. Zulrah caps each one on its own.
     let expected = 0;
-    if (corpHalving) {
+    if (perHitsplat) {
       for (const splat of hitsplatRolls(hitProfile, accuracy, preCorpMax)) {
-        expected += splat.landChance * corpMean(0, splat.maxHit);
+        expected += splat.landChance * transformedMean(0, splat.maxHit);
       }
     } else {
       expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour);
@@ -933,11 +968,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // armoured kalphite (Locust rider, −2) rebuilds the single-hit mean from both
   // rolls instead — a Keris is a single-hit melee weapon, so no bolt or
   // multi-hit mean can be in play. Corp likewise halves the tripled hit,
-  // trunc(3d/2) (no Kalphite is the Corp, but the order is upstream's).
+  // trunc(3d/2), and a cap caps it (no Kalphite is the Corp or Zulrah, but the
+  // order is upstream's).
   if (scenario.kalphiteTripleProc) {
-    if (corpHalving) {
+    if (perHitsplat) {
       dps =
-        (accuracy * (50 * corpMean(0, preCorpMax) + corpMean(0, preCorpMax, 0, 3))) /
+        (accuracy * (50 * transformedMean(0, preCorpMax) + transformedMean(0, preCorpMax, 0, 3))) /
         51 /
         (bloodragerSpeed * 0.6);
     } else {
@@ -955,9 +991,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // since the 2026-07-22 Summer Sweep-Up. The bonus is flat — it skips every
   // damage multiplier above — so it's an additive expected-damage term:
   // accuracy × 8/5 per attack. Upstream adds it before the Corp halving, which
-  // would halve it with the hit it rides on (magic is corpbane, so it never is).
+  // would halve it with the hit it rides on (magic is corpbane, so it never is),
+  // and before the NPC transforms: vs Zulrah a leeching hit of h + 8 over 50
+  // is rerolled into 45-50 like any other.
   if (scenario.sanguinestiProc) {
-    const bonus = corpHalving ? corpMean(8, preCorpMax + 8) - corpMean(0, preCorpMax) : 8;
+    const bonus = perHitsplat ? transformedMean(8, preCorpMax + 8) - transformedMean(0, preCorpMax) : 8;
     dps += (accuracy * bonus) / 5 / (bloodragerSpeed * 0.6);
   }
 
@@ -965,9 +1003,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // (seeking arrows floor it at 3 just before). It runs after the bolt effects,
   // Berserker, Mark of Darkness, the Keris triple, the Sanguinesti leech and
   // the Maggot King punish scale, and BEFORE the Twinflame split, the Corp
-  // halving, ruby bolts, the Mad Angel buffs and the phase damage factors. So
-  // every landed roll over 0..rollMax gains landedFloorLift (1/(rollMax+1) for
-  // a plain hit, added after the Keris ×53/51 so the lifted 1 isn't tripled),
+  // halving, ruby bolts, the Mad Angel buffs, the damage cap and the phase
+  // damage factors. So every landed roll over 0..rollMax gains landedFloorLift
+  // (1/(rollMax+1) for a plain hit, added after the Keris ×53/51 so the lifted
+  // 1 isn't tripled),
   // and `afterRaise` carries the lifted hitsplat through the later transforms:
   // Corp halves the 1 back to 0, the TD shield keeps it, a Mad Angel floor
   // absorbs it, and flat armour — upstream's last transform — shifts it with

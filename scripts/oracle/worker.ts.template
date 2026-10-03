@@ -17,6 +17,7 @@ import {
   calculatePlayerVsNpc,
   findEquipmentById,
   findSpell,
+  getTestMonster,
   getTestMonsterById,
   getTestPlayer,
 } from '@/tests/utils/TestUtils';
@@ -131,7 +132,14 @@ function prayerFor(attackType: AttackType): Prayer {
 }
 
 function runOne(combo: Combo): Result {
-  const monster = getTestMonsterById(combo.bossWikiId);
+  // getTestMonsterById takes the FIRST entry with the id, but one id can carry
+  // several versions with different stats (the Leviathan's 12214 is both
+  // "Post-quest" and "Awakened"). When the combo names a version, re-pick by
+  // name + version so both engines fight the same stat block.
+  let monster = getTestMonsterById(combo.bossWikiId);
+  if (combo.bossVersion && monster.version !== combo.bossVersion) {
+    monster = getTestMonster(monster.name, combo.bossVersion);
+  }
   // getTestMonsterById applies INITIAL_MONSTER_INPUTS, which defaults
   // monsterCurrentHp to 150. Current-HP-based procs (ruby bolts' 20%) would then
   // be computed off 150 instead of the boss's real HP. Our engine assumes full

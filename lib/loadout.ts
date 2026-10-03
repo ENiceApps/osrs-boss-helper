@@ -4,7 +4,7 @@
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
-import { isFlyingImmuneToMelee } from "@/data/monsters/melee-reach";
+import { isFlyingImmuneToMelee, npcMeleeImmunity } from "@/data/monsters/melee-reach";
 import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
 import {
@@ -55,6 +55,14 @@ export interface TargetActiveBonuses {
    * (see `isFlyingImmuneToMelee`).
    */
   flyingMeleeImmune: boolean;
+  /**
+   * A MELEE loadout against a monster upstream lists as immune to melee — it
+   * deals no damage at all (see `npcMeleeImmunity`): "all" when no melee
+   * weapon can (the Kraken, TzKal-Zuk, Jal-MejJak, the Leviathan, the Abyssal
+   * portal), "halberd" at Zulrah when the weapon isn't a halberd. null
+   * otherwise (and for every ranged / magic loadout).
+   */
+  npcMeleeImmune: "all" | "halberd" | null;
 }
 
 /**
@@ -168,6 +176,7 @@ export function activeBonusesForTarget(
     targetIsXerician: isXerician,
     leafyImmune: isLeafy && !canDamageLeafy(set),
     flyingMeleeImmune: set.style === "melee" && isFlyingImmuneToMelee(target, set.weaponCategory),
+    npcMeleeImmune: set.style === "melee" ? npcMeleeImmunity(target, set.weaponCategory) : null,
   };
 }
 

@@ -97,14 +97,16 @@ const KREEARRA: BossSpecRecommendation[] = [
 ];
 
 // ---------------- Zulrah ----------------
+// Melee can't reach Zulrah except with a halberd (data/monsters/melee-reach.ts),
+// so sword specs (Voidwaker, SGS) are out.
 const ZULRAH: BossSpecRecommendation[] = [
   {
-    specWeaponId: id(27690), // Voidwaker
-    note: "Voidwaker spec hits guaranteed magic damage 50–150% of melee max — great for blocking the rotation when you're caught in melee distance.",
+    specWeaponId: id(12926), // Toxic blowpipe
+    note: "Blowpipe spec heals for half the damage dealt — sustain through a long Zulrah trip without eating.",
   },
   {
-    specWeaponId: id(11806), // Saradomin godsword
-    note: "SGS spec to heal during long Zulrah trips without using food.",
+    specWeaponId: id(23987), // Crystal halberd
+    note: "A halberd reaches Zulrah across the water, and Zulrah caps each of the spec's two hitsplats at 50 separately, so one spec can land more than 50.",
   },
 ];
 
