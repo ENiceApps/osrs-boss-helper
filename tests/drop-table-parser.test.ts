@@ -10,6 +10,10 @@
 // the Slayer-cave / Chasm-of-Fire variants used to be summed into the normal kill,
 // and so did mutually exclusive splits (Scurrius MVP / non-MVP, zombie pirate
 // Diary / Regular, the Mimic's Elite / Master caskets).
+//
+// {{DropsLineReward}} rows (the Mimic's 3rd age / runes / herbs) used to be skipped
+// outright, leaving the Mimic at one mahogany plank per kill. They now parse like
+// DropsLine (base `rarity`, never `altrarity`), but only inside a drops section.
 
 import { describe, expect, it } from "vitest";
 import {
@@ -45,6 +49,10 @@ const NAME_TO_ID = new Map<string, number>([
   ["soulflame horn", 99003],
   ["malicious ashes", 99004],
   ["big bones", 99005],
+  ["ring of 3rd age", 23185],
+  ["death rune", 560],
+  ["tinderbox", 590],
+  ["staff of air", 1381],
 ]);
 
 const drops = (wikitext: string, version = "") => extractDrops(wikitext, version, NAME_TO_ID);
@@ -183,6 +191,65 @@ describe("extractDrops", () => {
   it("multi-line templates and lowercase param keys still parse", () => {
     const wt = "{{DropsLine\n|name=Bones\n|Quantity=2\n|Rarity=Always\n|raritynotes={{Refn|name=n}}\n}}";
     expect(drops(wt).get(526)?.expected).toBe(2);
+  });
+});
+
+describe("{{DropsLineReward}} (same Module:DropsLine row, dtype=reward)", () => {
+  // Verbatim from https://oldschool.runescape.wiki/w/The_Mimic ("Pre-roll", Elite): 6/250 on a first-try
+  // kill, 6/264 when it took 2-5 attempts.
+  const RING = "{{DropsLineReward|name=Ring of 3rd Age|quantity=1|rarity=6/250|altrarity=6/264}}";
+  const inSection = (heading: string, ...rows: string[]) => [heading, "{{DropsTableHead}}", ...rows, "{{DropsTableBottom}}"].join("\n");
+
+  it("parses its params like a DropsLine and counts the base rarity, not altrarity", () => {
+    const [t] = findTemplates(RING, ["DropsLine", "DropsLineReward"]);
+    expect(t.name).toBe("DropsLineReward"); // not mistaken for a DropsLine
+    expect(parseTemplateParams(t.body)).toEqual({ name: "Ring of 3rd Age", quantity: "1", rarity: "6/250", altrarity: "6/264" });
+    expect(drops(inSection("==Elite drops==", RING)).get(23185)?.expected).toBeCloseTo(6 / 250, 12);
+  });
+
+  it("averages quantity ranges, honors rolls / {{(f)}} and nested refs exactly like DropsLine", () => {
+    const runes =
+      "{{DropsLineReward|name=Death rune|quantity=120-600|rarity=243/1250|altrarity=257/1320|quantitynotes={{Refn|group=d|Possible quantities: 600, 480, 360, 240, 120}}|raritynotes={{Refn|group=e|name=badatgame|x}}}}";
+    expect(drops(inSection("==Drops==", runes)).get(560)?.expected).toBeCloseTo((243 / 1250) * 360, 9);
+    const asDropsLine = runes.replace("DropsLineReward", "DropsLine");
+    expect(drops(inSection("==Drops==", runes))).toEqual(drops(inSection("==Drops==", asDropsLine)));
+    expect(drops(inSection("== Drops ==", "{{DropsLineReward|name=Bones|quantity=2|rarity=1/4|rolls=2}}")).get(526)?.expected).toBe(1);
+    expect(drops(inSection("==Drops==", "{{DropsLineReward|name=Bones|namenotes={{(f)}}|quantity=1|rarity=Always}}")).size).toBe(0);
+  });
+
+  it("a quantity override applies to a reward line too (the Mimic's first-try maximum)", () => {
+    const runes = "{{DropsLineReward|name=Death rune|quantity=120-600|rarity=243/1250|altrarity=257/1320}}";
+    const out = extractDrops(inSection("==Elite drops==", runes), "", NAME_TO_ID, [], DROP_QUANTITY_OVERRIDES["the-mimic"]);
+    expect(out.get(560)?.expected).toBeCloseTo((243 / 1250) * 600, 9);
+  });
+
+  it("counts reward lines only inside a drops section (not the cave goblins' 'Dialogue rewards', the Juvinates' 'Rewards')", () => {
+    const dialogue = "{{DropsLineReward|name=Tinderbox|quantity=1|rarity=Always|raritynotes=<ref group=d>Awarded through dialogue only if the player does not have a tinderbox.</ref>}}";
+    const wt = [
+      inSection("==Drops==\n===Other===", "{{DropsLine|name=Tinderbox|quantity=1|rarity=4/50}}"),
+      inSection("==Dialogue rewards==", dialogue),
+      inSection("==Rewards==\n===Weaponry===", "{{DropsLineReward|name=Staff of air|quantity=1 (noted)|rarity=1/256}}"),
+    ].join("\n");
+    const out = drops(wt);
+    expect(out.get(590)?.expected).toBeCloseTo(4 / 50, 12); // the real drop only, not + 1 per kill
+    expect(out.has(1381)).toBe(false);
+    // ... nor before any heading, while sub-sections (===Pre-roll===) of a drops section still count
+    expect(drops(`{{DropsTableHead}}\n${RING}`).size).toBe(0);
+    expect(drops(inSection("==Master drops==\n===Pre-roll===", RING)).has(23185)).toBe(true);
+    // A DropsLine still counts wherever it sits, as before (Gemstone crab's loot is under ==Rewards==).
+    expect(drops(inSection("==Rewards==", "{{DropsLine|name=Tinderbox|quantity=1|rarity=Always}}")).get(590)?.expected).toBe(1);
+  });
+
+  it("reward lines join their table's dropversion like any line (Yama's Junk table stays out of a normal kill)", () => {
+    const wt = [
+      "==Drops==",
+      "{{DropsTableHead}}",
+      "{{DropsLine|name=Bones|quantity=1|rarity=Always}}",
+      "{{DropsTableHead|dropversion=Junk}}",
+      "{{DropsLineReward|name=Big bones|quantity=1|rarity=3/11}}",
+    ].join("\n");
+    expect(parseDropTables(wt).map((t) => t.lines.length)).toEqual([1, 1]);
+    expect([...drops(wt, "Normal").keys()]).toEqual([526]);
   });
 });
 
@@ -536,8 +603,30 @@ describe("generated data (data/bosses/drops.ts) keeps what the old parser lost",
     // Wilderness Diary as a requirement and uses the Diary table's x/378 rates.
     expect(has("zombie-pirate", "Coins")?.expected).toBeCloseTo(4500 * (12 / 378), 3); // was + 4500 × 12/1260
     expect(has("zombie-pirate", "Bones")?.expected).toBe(1);
-    // The Mimic: one plank per kill (only its 100% lines are DropsLines; the rest are DropsLineReward).
+    // The Mimic: one plank per kill from the Elite 100% table, not + the Master one.
     expect(has("the-mimic", "Mahogany plank")?.expected).toBe(1);
+  });
+
+  it("the Mimic's DropsLineReward loot is there: Elite first-try rates, maximum quantities, no Master table on top", () => {
+    // https://oldschool.runescape.wiki/w/The_Mimic, Elite: ring 6/250, each of the 23 3rd age items 1/5750
+    // (the 1/250 rare table split 23 ways), each main drop 243/1250 at its first-try (maximum) quantity, the
+    // same terms as the page's own {{EliteMimicValue}}. drops.ts keeps 6 decimals, hence the tolerances.
+    expect(has("the-mimic", "Ring of 3rd Age")?.expected).toBeCloseTo(6 / 250, 6); // not 6/264 (altrarity), not + 6/228 (Master)
+    const thirdAge = (DROPS_BY_SLUG["the-mimic"] ?? []).filter((d) => /^3rd Age /.test(d.name));
+    expect(thirdAge).toHaveLength(23);
+    for (const d of thirdAge) expect(d.expected, d.name).toBeCloseTo(1 / 5750, 6);
+    const main = { "Death rune": 600, "Blood rune": 500, "Grimy ranarr weed": 25, "Wine of Zamorak": 25, "Raw manta ray": 15 };
+    for (const [name, max] of Object.entries(main)) expect(has("the-mimic", name)?.expected, name).toBeCloseTo((243 / 1250) * max, 6);
+    expect(has("the-mimic", "Mimic scroll case")).toBeUndefined(); // untradeable
+  });
+
+  it("reward lines outside a drops section or in an alternate table add nothing (cave goblin, Juvinate, Yama)", () => {
+    // Cave goblin's "Dialogue rewards" would add a whole tinderbox per kill on top of the real 4/50 drop.
+    expect(has("cave-goblin-monster", "Tinderbox")?.expected).toBeCloseTo(4 / 50, 6);
+    // The Vampyre Juvinate's "Rewards" come from curing one in Burgh de Rott / Temple Trekking, not a kill.
+    expect(DROPS_BY_SLUG["vampyre-juvinate"]?.map((d) => d.name)).toEqual(["Vampyre dust"]);
+    // Yama's reward lines are its Junk table, which is not a normal kill.
+    for (const junk of ["Cabbage", "Black bead", "Spinach roll"]) expect(has("yama", junk), junk).toBeUndefined();
   });
 
   it("variants that matched no tag no longer sum alternate tables", () => {

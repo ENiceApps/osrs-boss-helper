@@ -1,7 +1,7 @@
 // Pure wikitext parsing for scripts/build-drop-tables.ts: template scanning,
-// param splitting, and the {{DropsLine}} -> expected-quantity folding. No I/O and
-// no top-level side effects, so tests can import this without triggering the
-// network run in the codegen script.
+// param splitting, and the {{DropsLine}} / {{DropsLineReward}} -> expected-quantity
+// folding. No I/O and no top-level side effects, so tests can import this without
+// triggering the network run in the codegen script.
 //
 // Why this exists: the codegen used to match `{{DropsLine\b([^}]*)\}\}` (which
 // truncates at the FIRST `}`) and split params on EVERY `|`. Once a template
@@ -285,7 +285,7 @@ export function parseRarity(raw: string | undefined): number | null {
   return null; // "Varies", "Common", "Unknown", etc. — skip.
 }
 
-/** One parsed `{{DropsLine}}`: the item name and its expected units per kill. */
+/** One parsed `{{DropsLine}}` / `{{DropsLineReward}}`: the item name and its expected units per kill. */
 export interface ParsedDropLine {
   name: string;
   expected: number;
@@ -331,14 +331,59 @@ export const DROP_QUANTITY_OVERRIDES: Readonly<Record<string, readonly QuantityO
   // of Kourend`), so it always drops exactly one. (Lesser/Black demon carry the same line, but their catalog
   // versions are the Wilderness Slayer Cave ones, whose own table says `quantity=1`.)
   "greater-demon": [{ name: "Vile ashes", wikiQuantity: "1;2", quantity: 1 }],
+  // https://oldschool.runescape.wiki/w/The_Mimic — "Main drops": "The quantities received depend on how many
+  // attempts it took to kill the Mimic. Each failure reduces the quantity by 1/5 [Master: 1/6] of the maximum",
+  // footnoted "Possible quantities: 600, 480, 360, 240, 120". So `120-600` lists one amount per attempt, not a
+  // random range to average. The lines' `rarity` is the first-attempt rate (`altrarity` is the 2nd-5th attempt
+  // one), and the page's own {{EliteMimicValue}} / {{MasterMimicValue}} price a first-try kill at rarity ×
+  // the MAXIMUM quantity. A normal kill here is that first-try kill. Elite is the table that counts (see
+  // selectDropTables); the Master lines are listed so a reordered page still prices a first-try kill.
+  "the-mimic": [
+    { name: "Death rune", wikiQuantity: "120-600", quantity: 600 }, // Elite
+    { name: "Blood rune", wikiQuantity: "100-500", quantity: 500 },
+    { name: "Grimy ranarr weed", wikiQuantity: "5-25 (noted)", quantity: 25 },
+    { name: "Wine of Zamorak", wikiQuantity: "5-25 (noted)", quantity: 25 },
+    { name: "Raw manta ray", wikiQuantity: "3-15 (noted)", quantity: 15 },
+    { name: "Death rune", wikiQuantity: "100-600", quantity: 600 }, // Master
+    { name: "Blood rune", wikiQuantity: "83-500", quantity: 500 },
+    { name: "Grimy ranarr weed", wikiQuantity: "4-25 (noted)", quantity: 25 },
+    { name: "Wine of Zamorak", wikiQuantity: "4-25 (noted)", quantity: 25 },
+    { name: "Raw manta ray", wikiQuantity: "2-15 (noted)", quantity: 15 },
+  ],
 };
 
 const sameQuantityText = (a: string, b: string) => a.replace(/\s+/g, "") === b.replace(/\s+/g, "");
+
+/** `==Drops==`, `== Elite drops ==`: the level-2 sections whose tables are the monster's loot. */
+const DROPS_SECTION = /\bdrops?\b/i;
+
+/** Level-2 headings (`==Title==`, not `===Sub===`) in document order: offset + trimmed title. */
+function level2Headings(wikitext: string): { at: number; title: string }[] {
+  return [...wikitext.matchAll(/^==(?!=)(.*?[^=])==(?!=)[ \t\r]*$/gm)].map((m) => ({ at: m.index, title: m[1].trim() }));
+}
 
 /**
  * Parse every drop table on a page, in document order, without choosing between
  * them. Free-to-play-only (`{{(f)}}`) lines and lines whose rarity can't be
  * quantified are dropped here; item-name lookup happens later (`extractDrops`).
+ *
+ * `{{DropsLineReward}}` is the same row as `{{DropsLine}}`: both templates are
+ * `{{#invoke:DropsLine|main|dtype=…}}` and differ only in the `dtype` (`reward` vs
+ * `combat`) Module:DropsLine records for the item's drop-sources list, so its
+ * name / quantity / rarity / rolls / `{{(f)}}` handling is identical here too. As
+ * with DropsLine, only `rarity` counts. `altrarity` is a second rate the module
+ * prints after it in the same cell ("6/250; 6/264", or "1/300–1/171.5" with
+ * `altraritydash`) and never uses in the value columns. Pages put a conditional
+ * rate there: the Mimic's 2nd-5th attempt, Drake's or TzTok-Jad's on-task rate.
+ * Like a tagged table, it is an alternative to the normal kill, so it is not
+ * counted.
+ *
+ * Template:DropsLineReward/doc says it lists "rewards from sources such as from
+ * event items, caskets, and the like", and pages use it for things that are not a
+ * kill's loot: the cave goblins' "Dialogue rewards", the Vampyre Juvinates'
+ * "Rewards" for curing one. So a reward line counts only inside a level-2 section
+ * whose heading says drops (`==Drops==`, the Mimic's `==Elite drops==`). Every
+ * DropsLine counts wherever it sits, as before.
  */
 export function parseDropTables(rawWikitext: string, quantityOverrides: readonly QuantityOverride[] = []): DropTable[] {
   // Editor comments can sit inside a param ("quantity=1<!-- … changing this to 2 … -->")
@@ -346,16 +391,22 @@ export function parseDropTables(rawWikitext: string, quantityOverrides: readonly
   const wikitext = stripHtmlComments(rawWikitext);
   const tables: DropTable[] = [];
   let current: DropTable | null = null;
+  const headings = level2Headings(wikitext);
+  let nextHeading = 0;
+  let section = ""; // title of the level-2 section the current template sits in
 
   // Every head/line in document order (balanced-brace scan, so nested templates
   // such as {{Refn|name=…}} inside a param don't truncate or corrupt the line).
-  for (const t of findTemplates(wikitext, ["DropsTableHead", "DropsLine"])) {
+  for (const t of findTemplates(wikitext, ["DropsTableHead", "DropsLine", "DropsLineReward"])) {
+    while (nextHeading < headings.length && headings[nextHeading].at < t.start) section = headings[nextHeading++].title;
+
     if (t.name === "DropsTableHead") {
       const dv = parseTemplateParams(t.body).dropversion ?? "";
       current = { versions: splitVersionTags(dv), lines: [] };
       tables.push(current);
       continue;
     }
+    if (t.name === "DropsLineReward" && !DROPS_SECTION.test(section)) continue;
 
     // `{{(f)}}` marks a free-to-play-ONLY drop (a separate F2P-world table, often
     // alongside a `{{(m)}}` members one). This is a members-world estimate, so

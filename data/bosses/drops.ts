@@ -29517,9 +29517,154 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
   ],
   "the-mimic": [
     {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 116.64
+    },
+    {
+      "itemId": 565,
+      "name": "Blood rune",
+      "expected": 97.2
+    },
+    {
+      "itemId": 207,
+      "name": "Grimy ranarr weed",
+      "expected": 4.86
+    },
+    {
+      "itemId": 245,
+      "name": "Wine of Zamorak",
+      "expected": 4.86
+    },
+    {
+      "itemId": 389,
+      "name": "Raw manta ray",
+      "expected": 2.916
+    },
+    {
       "itemId": 8782,
       "name": "Mahogany plank",
       "expected": 1
+    },
+    {
+      "itemId": 23185,
+      "name": "Ring of 3rd Age",
+      "expected": 0.024
+    },
+    {
+      "itemId": 10350,
+      "name": "3rd Age full helmet",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10348,
+      "name": "3rd Age platebody",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10346,
+      "name": "3rd Age platelegs",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 23242,
+      "name": "3rd Age plateskirt",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10352,
+      "name": "3rd Age kiteshield",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10334,
+      "name": "3rd Age range coif",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10330,
+      "name": "3rd Age range top",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10332,
+      "name": "3rd Age range legs",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10336,
+      "name": "3rd Age vambraces",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10342,
+      "name": "3rd Age mage hat",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10338,
+      "name": "3rd Age robe top",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10340,
+      "name": "3rd Age robe",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 10344,
+      "name": "3rd Age amulet",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 12426,
+      "name": "3rd Age longsword",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 12424,
+      "name": "3rd Age bow",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 12422,
+      "name": "3rd Age wand",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 12437,
+      "name": "3rd Age cloak",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 23336,
+      "name": "3rd Age druidic robe top",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 23339,
+      "name": "3rd Age druidic robe bottoms",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 23345,
+      "name": "3rd Age druidic cloak",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 23342,
+      "name": "3rd Age druidic staff",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 20014,
+      "name": "3rd Age pickaxe",
+      "expected": 0.000174
+    },
+    {
+      "itemId": 20011,
+      "name": "3rd Age axe",
+      "expected": 0.000174
     }
   ],
   "the-nightmare": [

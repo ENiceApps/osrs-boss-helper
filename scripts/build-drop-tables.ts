@@ -2,7 +2,8 @@
 // OSRS Wiki, used for the profit/hr estimate (lib/profit.ts).
 //
 // The wiki has no Cargo/SMW API, so we parse the raw page wikitext for
-// {{DropsLine}} templates (grouped under {{DropsTableHead|dropversion=…}}).
+// {{DropsLine}} templates (grouped under {{DropsTableHead|dropversion=…}}), plus
+// the {{DropsLineReward}} rows inside a page's drops sections (the Mimic's loot).
 // The parsing itself lives in ./drop-table-parser (pure, unit-tested), including
 // which of a page's tables make up one NORMAL kill of a catalog monster (its
 // version's tables plus the untagged ones; Yama's Contract/Junk extras and other
