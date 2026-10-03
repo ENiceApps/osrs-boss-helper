@@ -118,6 +118,14 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Jab", attackType: "crush", choice: "aggressive", defensive: false },
     { name: "Block", attackType: "slash", choice: "defensive", defensive: true },
   ],
+  Partisan: [
+    // Keris partisan family. Stances per wgloop getCombatStylesForCategory:
+    // Stab Accurate, Lunge Aggressive, Pound (crush) Aggressive, Block.
+    { name: "Stab", attackType: "stab", choice: "accurate", defensive: false },
+    { name: "Lunge", attackType: "stab", choice: "aggressive", defensive: false },
+    { name: "Pound", attackType: "crush", choice: "aggressive", defensive: false },
+    { name: "Block", attackType: "stab", choice: "defensive", defensive: true },
+  ],
   Spiked: [
     // Inquisitor's mace.
     { name: "Pound", attackType: "crush", choice: "accurate", defensive: false },

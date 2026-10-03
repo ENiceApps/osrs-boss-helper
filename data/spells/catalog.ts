@@ -23,6 +23,7 @@ import {
   ELEMENTAL_AMULET_MAX_HIT_BONUS,
   type ElementalAmuletKind,
 } from "@/data/bonus-trigger-items";
+import { twinflameDamage, twinflameSecondHit } from "@/lib/dps/twinflame";
 
 export type Spellbook = "standard" | "ancient" | "arceuus";
 
@@ -244,11 +245,11 @@ export interface SpellSelectionContext {
 }
 
 /**
- * Effective max hit used for ranking — folds in the elemental amulet, the
- * target's elemental weakness, tome and Twinflame bonuses, in the engine's order
- * (amulet +2 on the base, weakness on that base, tome, Twinflame second cast).
+ * The spell's max hit before the Twinflame's second cast — the elemental amulet,
+ * the target's elemental weakness and the tome, in the engine's order (amulet +2
+ * on the base, weakness on that base, tome).
  */
-export function spellEffectiveMaxHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
+function spellFirstCastMaxHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
   let hit = spellMaxHit(spell, ctx.magicLevel);
   if (amuletBoostsElement(ctx.elementalAmulet, spell.element)) {
     hit += ELEMENTAL_AMULET_MAX_HIT_BONUS;
@@ -264,17 +265,40 @@ export function spellEffectiveMaxHit(spell: SpellEntry, ctx: SpellSelectionConte
   ) {
     hit = Math.floor((hit * 11) / 10);
   }
-  // Twinflame's second cast adds ~40% expected damage on qualifying spells, which
-  // can make Fire Wave beat Fire Surge.
-  if (ctx.twinflame && qualifiesForTwinflame(spell)) hit = Math.floor((hit * 7) / 5);
   return hit;
+}
+
+function twinflameCasts(spell: SpellEntry, ctx: SpellSelectionContext): boolean {
+  return ctx.twinflame === true && qualifiesForTwinflame(spell);
+}
+
+/**
+ * Effective max hit — folds in the elemental amulet, the target's elemental
+ * weakness, tome and Twinflame bonuses, in the engine's order (amulet +2 on the
+ * base, weakness on that base, tome, Twinflame second cast h + trunc(h × 4/10)).
+ */
+export function spellEffectiveMaxHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
+  const hit = spellFirstCastMaxHit(spell, ctx);
+  return twinflameCasts(spell, ctx) ? hit + twinflameSecondHit(hit) : hit;
+}
+
+/**
+ * Mean damage of a landed cast, used for ranking — half the effective max hit,
+ * except under the Twinflame's second cast, whose own truncation puts the mean
+ * ~0.4 below 7/10 of the first cast's max (the engine's exact mean, see
+ * lib/dps/twinflame.ts). That second cast is what can make Fire Wave beat Fire
+ * Surge (20 → 286/21 ≈ 13.6 vs 24 → 12).
+ */
+export function spellExpectedHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
+  const hit = spellFirstCastMaxHit(spell, ctx);
+  return twinflameCasts(spell, ctx) ? twinflameDamage(hit).meanLanded : hit / 2;
 }
 
 /**
  * Best castable spell across ALL spellbooks for the given level/target/tomes,
- * ranked by effective max hit. The manual picker can override this. Assumes the
- * player can access whichever spellbook wins (the picker is there for when they
- * can't, or want a specific spell).
+ * ranked by the mean of a landed cast (`spellExpectedHit`). The manual picker
+ * can override this. Assumes the player can access whichever spellbook wins
+ * (the picker is there for when they can't, or want a specific spell).
  *
  * Spells needing a specific staff (Iban Blast, Magic Dart, god spells) are
  * excluded from the auto-pick — we can't assume that exact staff is equipped, so
@@ -296,6 +320,6 @@ export function bestSpell(ctx: SpellSelectionContext): SpellEntry | undefined {
   }
   if (castable.length === 0) return undefined;
   return castable.reduce((best, s) =>
-    spellEffectiveMaxHit(s, ctx) > spellEffectiveMaxHit(best, ctx) ? s : best,
+    spellExpectedHit(s, ctx) > spellExpectedHit(best, ctx) ? s : best,
   );
 }

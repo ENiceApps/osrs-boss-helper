@@ -266,6 +266,13 @@ export function computeSetDps(
   // — quadruples them inside the Tombs of Amascut (magic damage still capped 100%).
   const shadowEquipped = weaponId === 27275 || weaponId === 27277;
   const shadowToaQuadruple = shadowEquipped && categoryForMonster(target.slug) === "toa";
+  // Keris partisan of amascut: the catalog carries its in-raid stats; outside
+  // the Tombs of Amascut it loses 50 stab attack and 22 strength (wgloop
+  // calculateEquipmentBonusesFromGear).
+  const kerisAmascutWeakened =
+    set.style === "melee" &&
+    set.itemBonusFlags.kerisAmascut === true &&
+    categoryForMonster(target.slug) !== "toa";
   const castSpell = set.style === "magic" && set.autoSpellName
     ? SPELLS_BY_NAME.get(set.autoSpellName)
     : undefined;
@@ -330,8 +337,9 @@ export function computeSetDps(
     attackStyle: set.attackStyleChoice,
     prayers: prayer ?? DEFAULT_PRAYERS[set.style],
     skills: effectiveSkills,
-    attackBonus: set.totals.attackBonus,
-    strengthBonus: set.totals.strengthBonus,
+    attackBonus:
+      set.totals.attackBonus - (kerisAmascutWeakened && set.attackType === "stab" ? 50 : 0),
+    strengthBonus: set.totals.strengthBonus - (kerisAmascutWeakened ? 22 : 0),
     magicDamagePercent,
     baseSpellMaxHit: set.style === "magic" ? set.baseSpellMaxHit : undefined,
     attackSpeedTicks,
@@ -346,7 +354,9 @@ export function computeSetDps(
     elementalSpellFlatBonus: activeBonuses.elementalAmuletMaxHitBonus || undefined,
     shadowEquipped,
     shadowToaQuadruple,
-    kalphiteTripleProc: activeBonuses.conditionalBonuses.kerisVsKalphite,
+    // Melee only, like wgloop's isUsingMeleeStyle() gate on the keris dist.
+    kalphiteTripleProc:
+      set.style === "melee" && activeBonuses.conditionalBonuses.kerisVsKalphite === true,
     sanguinestiProc,
     // Per-monster demonbane vulnerability (Duke Sucellus 70, Yama 120, Yama void
     // flares 200, Ice demon 115, else 100) scales every demonbane source —

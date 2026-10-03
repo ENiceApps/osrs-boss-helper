@@ -79,9 +79,18 @@ disagree: on-task slayer helm (i) vs DHL / Granite hammer / Barronite mace /
 Leaf-bladed battleaxe / Arclight / Ursine chainmace / DHCB / Webweaver / DHW /
 Dark Demonbane / Twinflame; Salve variants per style (melee DHL, ranged DHCB,
 magic Kodai); Inquisitor's and Obsidian with Salve; smoke staves; Elite Void
-magic. Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
-Targets avoid non-zero flat armour, so the max hit shows the multiplier order
-alone (flat armour has its own combos, below).
+magic. The same set pins two weapon families' factors. The Keris rows check
+×133/100 (not ×4/3), the amascut partisan's ×115/100 and its weaker stats
+outside ToA. The Accursed / Thammaron's sceptre rows check the built-in spell
+and the ×3/2 after the mask. The `powered-staff-` combos pin the magic stance
+bonus (Accurate +2 on magic's +9, Longrange +0; the engine had +3 on Accurate
+until 2026-10-03). Their wgloop numbers are locked in
+`tests/multiplier-order.test.ts`. Targets avoid non-zero flat armour, so the
+max hit shows the multiplier order alone (flat armour has its own combos,
+below).
+
+For a Keris vs a Kalphite, wgloop's `getMax()` is the 1/51 triple hitsplat, so
+the comparator (and the locked test) triples our max hit before comparing.
 
 ## NPC-mechanic combos
 
@@ -89,7 +98,7 @@ alone (flat armour has its own combos, below).
 is rolled. `armour-` combos check flat armour (every accurate melee/ranged
 hitsplat becomes max(0, d − armour)) on each mean branch: single hit, each
 Scythe hitsplat, Torag's two halves, the Dual macuahuitl's sequential halves,
-Dark bow, the fang's trimmed roll, and ruby / diamond / opal bolt procs, on
+Dark bow, the Keris triple, the fang's trimmed roll, and ruby / diamond / opal bolt procs, on
 both signs. `flying-` combos check melee immunity against flying targets
 (Polearm / Salamander exempt, Vespula never). Their wgloop numbers are locked
 in `tests/npc-mechanics.test.ts`. A combo can carry `knownMaxHitResidual`
@@ -148,6 +157,10 @@ localize to specific mechanics:
 - ~~**Multiplier order** — Salve / slayer helm vs weapon banes, magic Salve and
   smoke-staff percents, Inquisitor's / Obsidian / Elite Void magic placement.~~
   **FIXED** 2026-10-03 (`lib/dps/calculate.ts`); see the ordering combos.
+- ~~**Twinflame second cast** — DPS 1.3–2.0% high (mean taken as ×7/5 of the
+  max hit).~~ **FIXED** 2026-10-03 — exact per-roll mean of
+  [h, trunc(h × 4/10)] (`lib/dps/twinflame.ts`). The ~0.2% left is wgloop
+  raising accurate 0s to 1, which our engine skips for every weapon.
 
 ## Known gaps (sweeps, as of 2026-10-03 @ 89c3e25)
 
@@ -158,26 +171,26 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   hitsplat (`lib/dps/flat-armour.ts`).
 - ~~**Flying monsters**~~ **FIXED** 2026-10-03 — melee scores 0 unless the
   weapon is a Polearm / Salamander; Vespula never (`isFlyingImmuneToMelee`).
-- **Accurate zeros** — wgloop raises an accurate 0 to 1 (`accurateZeroApplicable`);
-  our engine doesn't, so every melee/ranged row runs low by acc/(max+1) per
-  hitsplat per attack: ~0.1% at max hit 40, ~1% at max hit 10. Inside the DPS
-  tolerance at typical max hits. Positive flat armour of 1+ swallows the 1, so
-  those rows match exactly.
+- ~~**Ranged Accurate damage** — +3 added to accuracy only, so max hits ran 1
+  low at some bases (Rune crossbow vs Vorkath: 35 vs 36).~~ **FIXED**
+  2026-10-03 — the +3 joins the ranged strength effective level too.
+- **Sanguinesti staff** always shows `MAXHIT` (e.g. 39 vs 47): wgloop reports
+  the distribution max, which includes the 1/5 +8 proc; ours is the base max.
+  Base max hit, accuracy and DPS match — keep it out of exact combos.
+- **Accurate zeros** — wgloop raises every accurate 0-damage hit to 1, adding
+  `acc / (max + 1)` to the mean hit. Our engine uses the plain `acc × max / 2`,
+  so DPS runs low by `2 / (max × (max + 1))` (~0.1% at a 45 max hit, ~1.8% at
+  10). Max hit and accuracy are unaffected. Positive flat armour of 1+
+  swallows the raised 1, so those rows match exactly.
 - **Bolt-proc and fang max hits** — wgloop's max hit includes the proc hit
   (ruby / diamond / opal) and is the fang's trimmed normal max; ours is the
   normal hit / the fang's true max (the UI derives the fang's normal max).
   DPS matches; combos carry `knownMaxHitResidual`.
-- **Keris dagger** — wgloop gives the Kalphite bonus to any item named "Keris",
-  including the plain dagger (10581); our `KERIS_PARTISAN` trigger list only
-  has the partisans, so the dagger gets no bonus here.
-- **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
-  truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
-  accuracy match (rows carry `knownDpsResidual`).
-- **Keris partisan** (weapon category "Partisan") has no style mapping in
-  `data/weapon-styles.ts`, so our engine can't score it; its ×133/100 (wgloop)
-  vs our ×4/3 is unverified.
-- **Accursed / Thammaron's sceptre** have no powered-staff max-hit formula in
-  `data/items/powered-staff-spells.ts` (max hit 0).
+- ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
+  **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
+  partisan's out-of-ToA stats, and the Keris dagger's passive).
+- ~~**Accursed / Thammaron's sceptre** — no built-in spell formula (max hit
+  0).~~ **FIXED** 2026-10-03 (`data/items/powered-staff-spells.ts`).
 
 ## Caveat — data version skew
 

@@ -31,6 +31,22 @@ describe("POWERED_STAFF_FORMULA — catalog reconciliation", () => {
   });
 });
 
+describe("POWERED_STAFF_FORMULA — base max hits", () => {
+  // Trident of the Swamp is floor(magic / 3) - 2: the wiki gives 24 at 78 Magic
+  // and 39 at 123 (ToA smelling salts); upstream osrs-dps-calc @ 89c3e25 has
+  // trunc(magic / 3 - 2). The table had - 4 (29 at 99), 2 under.
+  it("Trident of the Swamp: 24 at 78, 31 at 99, 39 at 123 (every variant)", () => {
+    for (const id of [12899, 12900, 22292, 22294, 33314, 33316, 33318, 33320]) {
+      const formula = POWERED_STAFF_FORMULA.get(id)!;
+      expect([formula(78), formula(99), formula(123)]).toEqual([24, 31, 39]);
+    }
+  });
+
+  it("Trident of the Seas stays 3 under the Swamp: 28 at 99", () => {
+    expect(POWERED_STAFF_FORMULA.get(11905)!(99)).toBe(28);
+  });
+});
+
 // Build a Trident of the Seas magic loadout exactly the way lib/optimize/bank.ts
 // does: derive baseSpellMaxHit from POWERED_STAFF_FORMULA keyed by the weapon id.
 // If the id is missing from the map (the old bug) this is undefined → ~0 DPS.
@@ -77,5 +93,34 @@ describe("Trident of the Seas — magic loadout", () => {
 
   it("does not surface a spell-picker chip (powered staves have no autocast)", () => {
     expect(autocastableSpellbooks(TRIDENT_OF_THE_SEAS_UNCHARGED)).toEqual([]);
+  });
+});
+
+// Wilderness sceptres (wgloop getPlayerMaxMagicHit). Before 2026-10-03 they
+// had no entry, so their max hit was 0 and the optimizer's wilderness-weapon
+// force-include could never win.
+describe("Accursed / Thammaron's sceptre — built-in spell", () => {
+  const THAMMARONS = [22555, 22552]; // Charged, Uncharged
+  const ACCURSED = [27665, 27662]; // Charged, Uncharged
+  const ATTUNED = [27788, 27785, 27679, 27676]; // (a): regular staves, autocast spells
+
+  it("Thammaron's sceptre: max(1, trunc(magic/3 - 8)) — 25 at 99, 12 at its 60 requirement", () => {
+    for (const id of THAMMARONS) {
+      const f = POWERED_STAFF_FORMULA.get(id);
+      expect(f?.(99)).toBe(25);
+      expect(f?.(60)).toBe(12);
+    }
+  });
+
+  it("Accursed sceptre: max(1, trunc(magic/3 - 6)) — 27 at 99, 17 at its 70 requirement", () => {
+    for (const id of ACCURSED) {
+      const f = POWERED_STAFF_FORMULA.get(id);
+      expect(f?.(99)).toBe(27);
+      expect(f?.(70)).toBe(17); // trunc(23.33… - 6)
+    }
+  });
+
+  it("the (a) sceptres cast spellbook spells, so they have no built-in formula", () => {
+    for (const id of ATTUNED) expect(POWERED_STAFF_FORMULA.has(id)).toBe(false);
   });
 });

@@ -36,6 +36,7 @@ import {
   type HitProfile,
 } from "./multihit";
 import { armouredHit, meanArmouredHit, sumArmouredHits } from "./flat-armour";
+import { twinflameDamage, twinflameSecondHit } from "./twinflame";
 import {
   DEFAULT_DEMONBANE_VULNERABILITY,
   scaleDemonbanePct,
@@ -95,10 +96,10 @@ export interface DpsScenario {
    */
   shadowToaQuadruple?: boolean;
   /**
-   * Melee-only: Keris partisan's 1/51 chance to deal triple damage vs
-   * Kalphites/Scabarites. Mean-only — the +33% damage lives in the conditional
-   * factors (and the displayed max hit), while this rare proc lifts only mean
-   * DPS by ×53/51. Resolved upstream alongside the kerisVsKalphite flag.
+   * Melee-only: a Keris's 1/51 chance to deal triple damage vs
+   * Kalphites/Scabarites. Mean-only — the ×133/100 damage lives in the
+   * conditional factors (and the displayed max hit), while this rare proc lifts
+   * only mean DPS by ×53/51. Resolved upstream alongside the kerisVsKalphite flag.
    */
   kalphiteTripleProc?: boolean;
   /**
@@ -145,9 +146,10 @@ export interface DpsScenario {
   smokeStaffStandard?: boolean;
   /**
    * Magic-only: Twinflame staff casting a qualifying Bolt/Blast/Wave — a second
-   * cast for trunc(hit × 4/10), i.e. ×7/5 on the max hit. Applied to the FINAL
-   * hit (after slayer helm, dragonbane, weakness, tome), as upstream's
-   * distribution transform does.
+   * hitsplat of trunc(h × 4/10) on the FINAL first-cast hit h (after slayer
+   * helm, dragonbane, weakness, tome), as upstream's distribution transform
+   * does. Max hit h + trunc(h × 4/10); the mean is taken per roll, hitsplat by
+   * hitsplat (lib/dps/twinflame.ts), not as 7/10 of that max.
    */
   twinflameDoubleCast?: boolean;
   /** Ranged-only: Twisted bow is equipped — scales accuracy/damage by target magic level. */
@@ -269,7 +271,8 @@ export interface DpsScenario {
    * The hit still ROLLS uniformly over 0..max and is then floored to
    * min = trunc(max×n/d) — wgloop's `firstHitMinimum` since upstream #948 —
    * so the landed-hit mean is [min(min+1) + max(max+1)] / (2(max+1)), NOT
-   * (min+max)/2. See `meanLandedHitWithMinimum`.
+   * (min+max)/2. See `meanLandedHitWithMinimum`. A Twinflame double cast
+   * applies it to each of its two hitsplats instead (lib/dps/twinflame.ts).
    */
   targetMinHitFactor?: [number, number];
   /**
@@ -291,9 +294,19 @@ interface StyleBonuses {
 }
 
 function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonuses {
+  // Magic: only a powered staff's Accurate stance adds anything, and it is +2
+  // on magic's +9 base (upstream getPlayerMaxMagicAttackRoll), not melee and
+  // ranged's +3 on +8. The wiki's "+3 accurate / +1 longrange" (Bitterkoekje)
+  // sits on a +8 base: the same 11 / 9 either way. +3 here gave 12.
+  if (style === "magic") {
+    return { attack: choice === "accurate" ? 2 : 0, strength: 0, attackSpeedAdjust: 0 };
+  }
   switch (choice) {
     case "accurate":
-      return { attack: 3, strength: 0, attackSpeedAdjust: 0 };
+      // Ranged Accurate's invisible +3 boosts damage as well as accuracy
+      // (upstream adds it to both ranged rolls, before Void's multiply).
+      // https://oldschool.runescape.wiki/w/Combat_Options
+      return { attack: 3, strength: style === "ranged" ? 3 : 0, attackSpeedAdjust: 0 };
     case "aggressive":
       return { attack: 0, strength: 3, attackSpeedAdjust: 0 };
     case "controlled":
@@ -643,6 +656,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * tbowBonus(14, 250)) / 100);
   }
 
+  // The Twinflame's first-cast max, kept for the per-hitsplat model below.
+  let twinflameFirstMax: number | undefined;
+
   // Magic damage: elemental weakness then elemental tome — applied AFTER the
   // multiplicative bonuses (Slayer / DHW / wilderness above) so the ADDITIVE
   // weakness bonus (⌊baseMax × severity/100⌋) isn't scaled by them. Mirrors
@@ -675,12 +691,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // Twinflame's second cast on Bolt/Blast/Wave: a hitsplat of trunc(h × 4/10)
     // on top of the FINAL hit h — upstream transforms the finished distribution,
     // after the slayer helm, dragonbane, weakness and tome — so the pair maxes
-    // at h + trunc(h × 4/10) = trunc(h × 7/5). This mean model takes ×7/5 of
-    // the max hit; upstream truncates every second hitsplat, so its DPS runs
-    // ~1–2% lower (max hit and accuracy match exactly). An elemental amulet's
-    // +2 sits in the base, so it reaches both casts.
+    // at h + trunc(h × 4/10). Every second hitsplat truncates, so the mean sits
+    // ~0.4 below 7/10 of the max; it is rebuilt per hitsplat after the target
+    // transforms below. An elemental amulet's +2 sits in the base, so it
+    // reaches both casts.
     if (scenario.twinflameDoubleCast) {
-      maxHit = Math.trunc((maxHit * 7) / 5);
+      twinflameFirstMax = maxHit;
+      maxHit = maxHit + twinflameSecondHit(maxHit);
     }
   }
 
@@ -706,6 +723,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     const [n, d] = scenario.targetDamageFactor;
     maxHit = Math.trunc((maxHit * n) / d);
   }
+
+  // Twinflame: upstream applies the corp halving, the Mad Angel floors and the
+  // phase factor to EACH of the two hitsplats, so the pair's max and mean are
+  // rebuilt from the first cast's max rather than taken from the pair total
+  // transformed above.
+  const twinflame =
+    twinflameFirstMax === undefined
+      ? undefined
+      : twinflameDamage(twinflameFirstMax, {
+          halved: scenario.corpDamageHalved,
+          minHitFactor: scenario.targetMinHitFactor,
+          damageFactor: scenario.targetDamageFactor,
+        });
+  if (twinflame) maxHit = twinflame.maxHit;
 
   // Per-phase attack-roll scale (Royal Titans ranged ×6) — the last accuracy
   // multiplier before rolling, mirroring wgloop's PLAYER_ACCURACY_TITANS_RANGED.
@@ -740,8 +771,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // until positive armour clips the low rolls.
   const fangLo = scenario.fangHitTrim ? Math.trunc((maxHit * 3) / 20) : 0;
 
-  let dps =
-    armour === 0
+  // A Twinflame double cast (magic, so never armoured) brings its own
+  // per-hitsplat landed mean.
+  let dps = twinflame
+    ? (accuracy * twinflame.meanLanded) / (bloodragerSpeed * 0.6)
+    : armour === 0
       ? dpsFromHitChance(accuracy, maxHit, bloodragerSpeed)
       : (accuracy * meanArmouredHit(fangLo, maxHit - fangLo, armour)) / (bloodragerSpeed * 0.6);
 
@@ -763,7 +797,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // which never applies the buff to the Dual macuahuitl in its general path
   // (`weapon.name !== 'Dual macuahuitl'`); its macuahuitl-specific path floors
   // only the FIRST hitsplat, at trunc(firstMax / 2) of that hitsplat's own max.
-  if (scenario.targetMinHitFactor) {
+  // A Twinflame double cast already folded the buff into its per-hitsplat mean.
+  if (scenario.targetMinHitFactor && !twinflame) {
     const [n, d] = scenario.targetMinHitFactor;
     const minHit = Math.trunc((maxHit * n) / d);
     dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit, armour)) / (bloodragerSpeed * 0.6);
@@ -779,13 +814,15 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     dps = expected / (bloodragerSpeed * 0.6);
   }
 
-  // Keris partisan's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
-  // (50·1 + 1·3)/51 = ×53/51. The +33% damage is already baked into maxHit via
-  // the conditional factors; this is the rare-proc expectation on top, applied
-  // to whichever mean (single-hit / bolt / multi-hit) was computed above.
+  // A Keris's 1/51 triple-damage proc vs Kalphites lifts mean DPS by
+  // (50·1 + 1·3)/51 = ×53/51 — wgloop's dist is 50/51 of the standard hits plus
+  // 1/51 of them at ×3 damage, the same mean. The ×133/100 damage is already
+  // baked into maxHit via the conditional factors; this is the rare-proc
+  // expectation on top, applied to whichever mean (single-hit / bolt /
+  // multi-hit) was computed above.
   // Flat armour shifts the TRIPLED hit (max(0, 3d − A), not 3·(d − A)), so an
   // armoured kalphite (Locust rider, −2) rebuilds the single-hit mean from both
-  // rolls instead — the Keris is a single-hit melee weapon, so no bolt or
+  // rolls instead — a Keris is a single-hit melee weapon, so no bolt or
   // multi-hit mean can be in play.
   if (scenario.kalphiteTripleProc) {
     dps =

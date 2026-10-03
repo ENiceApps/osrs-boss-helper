@@ -352,7 +352,8 @@ describe("flying monsters and melee", () => {
  * upstream (Scythe vs Gargoyle 76 = 42 + 22 + 12) and the bolt rows include
  * the proc hit; ours is one hitsplat / the normal hit, so those aren't
  * compared. Split weapons (Torag's, Dual macuahuitl) report the whole attack
- * on both sides (Torag's vs Gargoyle 44 = 22 + 22). DPS: ours is
+ * on both sides (Torag's vs Gargoyle 44 = 22 + 22), and a Keris vs a Kalphite
+ * reports its triple hitsplat upstream. DPS: ours is
  * short by wgloop's accurate-zero raise (an accurate 0 deals 1, which the
  * engine doesn't model) — acc/(max+1) per hitsplat, ~0.1–0.5% here. Positive
  * armour of 1+ swallows that 1, so those rows match exactly.
@@ -365,6 +366,7 @@ const WGLOOP: Record<
   "armour-scythe-gargoyle": { maxHit: 76, attackRoll: 28476, defenceRoll: 14384, dps: 10.255194892388621 },
   "armour-torags-hammers-gargoyle": { maxHit: 44, attackRoll: 23436, defenceRoll: 5104, dps: 7.156845335451813 },
   "armour-dual-macuahuitl-earthen-nagua": { maxHit: 50, attackRoll: 27972, defenceRoll: 5586, dps: 10.365638378415543 },
+  "armour-keris-locust-rider": { maxHit: 125, attackRoll: 17766, defenceRoll: 15246, dps: 5.548985395925693 },
   "armour-fang-drake": { maxHit: 38, attackRoll: 25956, defenceRoll: 8901, dps: 6.725516560724347, exactDps: true },
   "armour-dark-bow-riyl-shade": { maxHit: 60, attackRoll: 35658, defenceRoll: 4416, dps: 6.46306732822409 },
   "armour-ruby-bolts-veiled-kraken": { maxHit: 30, attackRoll: 35028, defenceRoll: 7936, dps: 2.383493260024705, exactDps: true },
@@ -405,7 +407,14 @@ describe("NPC-mechanic combos match wgloop (scripts/oracle/combos.ts)", () => {
         targetFlatArmour: boss.defenceBonuses.flatArmour,
       });
       const comparable = (!profile || isSplitProfile(profile)) && !combo.knownMaxHitResidual;
-      if (comparable) expect(r.dps.maxHit).toBe(want.maxHit);
+      // Keris vs a Kalphite: wgloop's max is the 1/51 triple hitsplat, tripled
+      // before the armour shift (3 × 41 + 2 = 125).
+      const fa = r.dps.flatArmour;
+      const ourMax =
+        r.activeBonuses.conditionalBonuses.kerisVsKalphite && fa
+          ? Math.max(0, fa.rawMaxHit * 3 - fa.armour)
+          : r.dps.maxHit;
+      if (comparable) expect(ourMax).toBe(want.maxHit);
 
       const isFang = r.loadout.slots.weapon?.itemId === 26219;
       if (isFang) {

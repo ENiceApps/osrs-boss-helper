@@ -26,15 +26,15 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   [33326, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Charged
   [33328, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Uncharged
 
-  // Trident of the Swamp: floor(magic / 3) - 4  (29 at 99)
-  [12899, (lvl) => Math.floor(lvl / 3) - 4], // Charged
-  [12900, (lvl) => Math.floor(lvl / 3) - 4], // Uncharged
-  [22292, (lvl) => Math.floor(lvl / 3) - 4], // (e) Charged
-  [22294, (lvl) => Math.floor(lvl / 3) - 4], // (e) Uncharged
-  [33314, (lvl) => Math.floor(lvl / 3) - 4], // (o) Charged
-  [33316, (lvl) => Math.floor(lvl / 3) - 4], // (o) Uncharged
-  [33318, (lvl) => Math.floor(lvl / 3) - 4], // (e) (o) Charged
-  [33320, (lvl) => Math.floor(lvl / 3) - 4], // (e) (o) Uncharged
+  // Trident of the Swamp: floor(magic / 3) - 2  (31 at 99; 24 at 78, 39 at 123)
+  [12899, (lvl) => Math.floor(lvl / 3) - 2], // Charged
+  [12900, (lvl) => Math.floor(lvl / 3) - 2], // Uncharged
+  [22292, (lvl) => Math.floor(lvl / 3) - 2], // (e) Charged
+  [22294, (lvl) => Math.floor(lvl / 3) - 2], // (e) Uncharged
+  [33314, (lvl) => Math.floor(lvl / 3) - 2], // (o) Charged
+  [33316, (lvl) => Math.floor(lvl / 3) - 2], // (o) Uncharged
+  [33318, (lvl) => Math.floor(lvl / 3) - 2], // (e) (o) Charged
+  [33320, (lvl) => Math.floor(lvl / 3) - 2], // (e) (o) Uncharged
 
   // Sanguinesti staff: floor(magic / 3)  (33 at 99)
   // Summer Sweep-Up (2026-07-22): base max hit +1, was floor(magic / 3) - 1.
@@ -55,4 +55,15 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Eye of Ayak: max(1, trunc(magic / 3) - 6)  (27 at 99)
   [31113, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Charged
   [31115, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Uncharged
+
+  // Wilderness sceptres (wgloop getPlayerMaxMagicHit). Their ×3/2 vs NPCs in
+  // the Wilderness comes from the WILDERNESS_WEAPON trigger, not this formula.
+  // The (a) variants (27788/27785, 27679/27676) are regular staves that
+  // autocast spellbook spells, so they have no entry here.
+  // Thammaron's sceptre: max(1, trunc(magic / 3 - 8))  (25 at 99)
+  [22555, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 8))], // Charged
+  [22552, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 8))], // Uncharged
+  // Accursed sceptre: max(1, trunc(magic / 3 - 6))  (27 at 99)
+  [27665, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Charged
+  [27662, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Uncharged
 ]);

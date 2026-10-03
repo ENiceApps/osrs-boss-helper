@@ -52,10 +52,18 @@ export interface ItemBonusFlags {
   demonbaneClaws?: boolean;
   /** Scorching bow — RANGED demonbane vs demons (+30% acc/dmg). */
   demonbaneScorchingBow?: boolean;
-  /** Any Keris partisan — +33% damage + 1/51 triple vs Kalphites/Scabarites. */
+  /**
+   * Any Keris — every partisan and the Contact! dagger — ×133/100 damage + 1/51
+   * triple vs Kalphites/Scabarites (×115/100 for the amascut partisan).
+   */
   kerisPartisan?: boolean;
-  /** Keris partisan of breaching — additionally +33% accuracy vs Kalphites/Scabarites. */
+  /** Keris partisan of breaching — additionally ×133/100 accuracy vs Kalphites/Scabarites. */
   kerisBreaching?: boolean;
+  /**
+   * Keris partisan of amascut — its kalphite bonus is ×115/100, and outside the
+   * Tombs of Amascut it loses 50 stab attack and 22 strength.
+   */
+  kerisAmascut?: boolean;
   /** Barronite mace — golembane (×23/20 damage vs golems). */
   golembaneBarronite?: boolean;
   /** Granite hammer — golembane (×13/10 accuracy AND damage vs golems). */

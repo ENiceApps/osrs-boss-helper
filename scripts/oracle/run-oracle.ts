@@ -54,6 +54,13 @@ interface OurResult {
    * it: both sides report the whole attack's max.
    */
   multiHit?: boolean;
+  /**
+   * Keris vs a Kalphite: wgloop's `getMax()` is the 1/51 triple hitsplat, so
+   * its max hit is 3× ours. The comparator triples ours to match.
+   */
+  tripleProc?: boolean;
+  /** Our engine's flat-armour shift (armour + pre-armour max), when any. */
+  flatArmour?: { armour: number; rawMaxHit: number };
   error?: string;
 }
 
@@ -81,6 +88,8 @@ function ourEngine(combo: CanonicalCombo): OurResult {
   // A split weapon (Dual macuahuitl, Torag's) reports the whole attack's max
   // on both sides, so only the other multi-hitters skip the max-hit check.
   const multiHit = profile !== undefined && !isSplitProfile(profile);
+  const tripleProc =
+    scored.loadout.style === "melee" && scored.activeBonuses.conditionalBonuses.kerisVsKalphite === true;
   return {
     id: combo.id,
     ok: true,
@@ -88,6 +97,8 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     accuracy: scored.dps.accuracy,
     dps: scored.dps.dps,
     multiHit,
+    tripleProc,
+    flatArmour: scored.dps.flatArmour,
   };
 }
 
@@ -168,6 +179,17 @@ function impliedAttackRoll(accuracy: number, defRoll: number): number | undefine
   return Math.round(accuracy * 2 * (defRoll + 1));
 }
 
+/**
+ * Our max hit as wgloop reports it. Keris vs a Kalphite: wgloop's max is the
+ * 1/51 triple hitsplat — tripled BEFORE flat armour shifts it (3M − A, e.g.
+ * 3 × 41 + 2 = 125 vs a Locust rider), so the pre-armour max is tripled.
+ */
+function comparableMaxHit(our: OurResult): number | undefined {
+  if (!our.tripleProc) return our.maxHit;
+  const fa = our.flatArmour;
+  return fa ? Math.max(0, fa.rawMaxHit * 3 - fa.armour) : (our.maxHit ?? 0) * 3;
+}
+
 type Verdict = "OK" | "MAXHIT" | "ACC" | "ROLL" | "DPS" | "ERROR";
 
 function compare(
@@ -181,9 +203,10 @@ function compare(
 
   // Multi-hit weapons report maxHit differently on each side (single largest
   // hit vs summed max across hits), so it isn't comparable — rely on DPS + acc.
+  const ourMax = comparableMaxHit(our);
   let maxHitNote = "";
-  if (!our.multiHit && our.maxHit !== wg.maxHit) {
-    const detail = `maxHit ours=${our.maxHit} wg=${wg.maxHit}`;
+  if (!our.multiHit && ourMax !== wg.maxHit) {
+    const detail = `maxHit ours=${ourMax} wg=${wg.maxHit}`;
     if (!combo.knownMaxHitResidual) return { verdict: "MAXHIT", detail };
     maxHitNote = `${detail} — known: ${combo.knownMaxHitResidual}`;
   }
@@ -254,7 +277,7 @@ function main(): void {
     if (o.ok && w && w.ok) {
       const ourRoll = impliedAttackRoll(o.accuracy ?? 0, w.npcDefRoll);
       console.log(
-        `    ours : maxHit ${o.maxHit}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}  roll≈${ourRoll ?? "—"}`,
+        `    ours : maxHit ${o.maxHit}${o.tripleProc ? ` (triple = ${comparableMaxHit(o)})` : ""}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}  roll≈${ourRoll ?? "—"}`,
       );
       console.log(
         `    wglp : maxHit ${w.maxHit}  acc ${w.accuracy.toFixed(4)}  dps ${w.dps.toFixed(3)}  roll ${w.maxAttackRoll}`,
