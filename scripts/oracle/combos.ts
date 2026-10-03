@@ -84,6 +84,7 @@ const SALVE_E = 10588;
 const SALVE_I = 12017;
 const SALVE_EI = 12018;
 const DRAGON_BOLTS = 21905;
+const ADAMANT_BOLTS = 9143;
 const RING_OF_RECOIL = 2550;
 const TORMENTED_BRACELET = 19544;
 const AVERNIC_DEFENDER = 22322;
@@ -218,6 +219,12 @@ export function orderingCombos(): CanonicalCombo[] {
       [21012, DRAGON_BOLTS, SLAYER_HELM_I, SALVE_E, ...RANGED_REST], "ranged", "rapid", onTask),
     orderingCombo("ontask-webweaver-vetion", "vetion",
       [27655, SLAYER_HELM_I, ANGUISH, ...RANGED_REST], "ranged", "rapid", onTask),
+    // Accurate's +3 joins the ranged STRENGTH level too (max 36, was 35), and
+    // sits inside Elite Void's ×9/8: trunc((121 + 3 + 8) × 9/8) = 148 → 40 (was 39).
+    orderingCombo("accurate-rune-crossbow-vorkath", "vorkath",
+      [9185, ADAMANT_BOLTS, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "accurate"),
+    orderingCombo("accurate-elite-void-rune-crossbow-general-graardor", "general-graardor",
+      [9185, ADAMANT_BOLTS, 11664, 13072, 13073, 8842, ANGUISH, 21914, 13237, 11771], "ranged", "accurate"),
 
     // ── Magic: Salve(i/ei) + smoke-staff % fold into one additive bonus ──
     orderingCombo("salve-ei-magic-abhorrent-spectre", "abhorrent-spectre",

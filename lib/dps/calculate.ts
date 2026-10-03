@@ -270,7 +270,10 @@ interface StyleBonuses {
 function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonuses {
   switch (choice) {
     case "accurate":
-      return { attack: 3, strength: 0, attackSpeedAdjust: 0 };
+      // Ranged Accurate's invisible +3 boosts damage as well as accuracy
+      // (upstream adds it to both ranged rolls, before Void's multiply).
+      // https://oldschool.runescape.wiki/w/Combat_Options
+      return { attack: 3, strength: style === "ranged" ? 3 : 0, attackSpeedAdjust: 0 };
     case "aggressive":
       return { attack: 0, strength: 3, attackSpeedAdjust: 0 };
     case "controlled":

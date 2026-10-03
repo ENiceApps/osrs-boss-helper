@@ -9,6 +9,8 @@
 //     (×115/100 amascut), not ×4/3.
 //   - ranged: Salve (i)/(ei) / imbued mask first (DHCB, wilderness and
 //     Scorching bow damage folded into the mask on task), then Tbow / banes.
+//     The Accurate stance's +3 is added to BOTH effective levels (attack and
+//     strength), before the +8 and Void's ×11/10 / ×9/8.
 //   - magic: Salve (ei) +20 / (i) +15 and the smoke-staff family +10 are flat
 //     percents — one attack-roll percent, and added to the magic damage bonus
 //     (with Elite Void's +5). Damage: % → black mask → dragonbane → wilderness
@@ -184,6 +186,36 @@ describe("ranged: Salve / imbued mask before DHCB", () => {
   });
 });
 
+describe("ranged: Accurate's +3 reaches the max hit, inside Void's multiply", () => {
+  const eliteVoidRanged: ArmorSetBonus = {
+    id: "elite-void-ranged", name: "Elite Void Knight (Ranged)",
+    accuracyFactor: [11, 10], damageFactor: [9, 8],
+    accuracyOnEffectiveLevel: true, damageOnEffectiveLevel: true,
+  };
+
+  it("both effective levels are 99 + 3 + 8 = 110: roll 18040, max floor(0.5 + 110 × 144/640) = 25 (was 24)", () => {
+    const r = calculateDps(ranged({ attackStyle: "accurate" }));
+    expect(r.maxHit).toBe(25);
+    expect(r.accuracy).toBe(accFor(18040)); // 110 × 164
+    expect(calculateDps(ranged()).maxHit).toBe(24); // rapid: 107
+  });
+
+  it("Elite Void ×9/8 takes the stance with it: trunc((93 + 3 + 8) × 9/8) = 117 → 37 (+3 after: 116 → 36; none: 113 → 35)", () => {
+    const r = calculateDps(ranged({
+      attackStyle: "accurate", skills: { ...SKILLS, ranged: 93 }, strengthBonus: 136,
+      armorSetBonus: eliteVoidRanged,
+    }));
+    expect(r.maxHit).toBe(37); // floor(0.5 + 117 × 200/640)
+    expect(r.accuracy).toBe(accFor(18696)); // trunc(104 × 11/10) = 114, × 164
+  });
+
+  it("melee Accurate stays attack-only: strength 99 + 8 = 107 → 40", () => {
+    const r = calculateDps(melee({ attackStyle: "accurate" }));
+    expect(r.maxHit).toBe(40); // floor(0.5 + 107 × 239/640)
+    expect(r.accuracy).toBe(accFor(18040)); // (99 + 3 + 8) × 164
+  });
+});
+
 describe("magic: flat Salve / smoke-staff percents and the mask's two slots", () => {
   it("Salve(i) is +15% accuracy and +15% magic damage: roll 11674, max 24 + trunc(24 × 40%) = 33 (was ×7/6: 11844 / 35)", () => {
     const r = calculateDps(magic({ conditionalBonuses: { salveAmulet: true } }));
@@ -326,6 +358,8 @@ const WGLOOP: Record<string, { maxHit: number; attackRoll: number; defenceRoll: 
   "salve-e-dhcb-vorkath": { maxHit: 47, attackRoll: 43898, defenceRoll: 20070 },
   "ontask-salve-e-dhcb-vorkath": { maxHit: 53, attackRoll: 49163, defenceRoll: 20070 },
   "ontask-webweaver-vetion": { maxHit: 46, attackRoll: 57814, defenceRoll: 134936 },
+  "accurate-rune-crossbow-vorkath": { maxHit: 36, attackRoll: 35862, defenceRoll: 20070 },
+  "accurate-elite-void-rune-crossbow-general-graardor": { maxHit: 40, attackRoll: 27777, defenceRoll: 39886 },
   "salve-ei-magic-abhorrent-spectre": { maxHit: 35, attackRoll: 28670, defenceRoll: 19776 },
   "salve-i-magic-abhorrent-spectre": { maxHit: 34, attackRoll: 27475, defenceRoll: 19776 },
   "salve-e-magic-abhorrent-spectre": { maxHit: 31, attackRoll: 23892, defenceRoll: 19776 },

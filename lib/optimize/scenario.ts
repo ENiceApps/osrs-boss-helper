@@ -113,7 +113,7 @@ function defaultStyleFor(
   const isRangedCat = offensive.some((o) => o.attackType === "ranged");
   const isPoweredStaff = weapon.category === "Powered Staff";
 
-  // Ranged → prefer rapid (extra tick beats +3 accuracy in realistic ranges).
+  // Ranged → prefer rapid (extra tick beats Accurate's +3 level in realistic ranges).
   if (isRangedCat) {
     const rapid = offensive.find((o) => o.choice === "rapid");
     if (rapid) return { attackType: rapid.attackType, choice: rapid.choice };
