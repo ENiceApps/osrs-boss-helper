@@ -46,6 +46,39 @@ function offensiveFor(item: ItemCatalogEntry, attackType: AttackType): number {
   }
 }
 
+/**
+ * Item-implied conditional bonus flags for a set of worn item ids. The single
+ * source for both the optimizer (scenario.ts) and the manual gear editor
+ * (applyOverrides) so the two can't drift. Variant-aware (hasTrigger): cosmetic
+ * kits and minigame re-imbues carry distinct ids but the same bonus — e.g.
+ * Salve amulet(ei) (Emir's Arena), DHCB (t)/(b).
+ */
+export function itemBonusFlagsFor(slotItemIds: ReadonlySet<number>): ItemBonusFlags {
+  return {
+    dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
+    dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
+    dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
+    salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
+    salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
+    demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
+    demonbaneSilverlight: hasTrigger(slotItemIds, "SILVERLIGHT"),
+    demonbaneClaws: hasTrigger(slotItemIds, "BURNING_CLAWS"),
+    demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
+    kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
+    kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
+    golembaneBarronite: hasTrigger(slotItemIds, "BARRONITE_MACE"),
+    golembaneGraniteHammer: hasTrigger(slotItemIds, "GRANITE_HAMMER"),
+    tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
+    tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
+    tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
+    twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
+    fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
+    slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
+    wildernessWeapon: hasTrigger(slotItemIds, "WILDERNESS_WEAPON"),
+    elementalAmulet: elementalAmuletKind(slotItemIds),
+  };
+}
+
 interface ResolvedSlotItem {
   itemId: number;
   itemName: string;
@@ -141,31 +174,10 @@ export function applyOverrides(
       break;
   }
 
-  // Item-implied conditional bonus flags — same logic as scenario.ts, and
-  // variant-aware (Salve Soul Wars/Emir's Arena imbues, DHCB (t)/(b) kits).
   const slotItemIds = new Set(
     Object.values(resolved).map((s) => s?.itemId).filter((n): n is number => typeof n === "number"),
   );
-  const itemBonusFlags: ItemBonusFlags = {
-    dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
-    dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
-    dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
-    salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
-    salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
-    demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
-    demonbaneSilverlight: hasTrigger(slotItemIds, "SILVERLIGHT"),
-    demonbaneClaws: hasTrigger(slotItemIds, "BURNING_CLAWS"),
-    demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
-    kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
-    kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
-    tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
-    tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
-    tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
-    twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
-    fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
-    slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
-    elementalAmulet: elementalAmuletKind(slotItemIds),
-  };
+  const itemBonusFlags = itemBonusFlagsFor(slotItemIds);
 
   // Respect the base's speed override (e.g. Harmonised's 5→4 reduction).
   // We can't detect that automatically from items, so if the base had a

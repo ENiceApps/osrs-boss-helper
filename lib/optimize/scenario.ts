@@ -7,11 +7,9 @@
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
-import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
-import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
-import { findCatalogItem } from "@/lib/loadout-edit";
+import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
 import {
   WEAPON_STYLES,
   type WeaponStyleOption,
@@ -21,7 +19,6 @@ import { computeSetDps } from "@/lib/recommend";
 import type { BoostResolver } from "@/lib/dps/boost";
 import { activeBonusesForTarget } from "@/lib/loadout";
 import type {
-  ItemBonusFlags,
   LoadoutSet,
   LoadoutSlotKey,
   LoadoutTier,
@@ -367,32 +364,9 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     case "magic": magicDamagePct = magStr / 10; break;
   }
 
-  // Variant-aware (hasTrigger): cosmetic kits and minigame re-imbues carry
-  // distinct ids but the same bonus — e.g. Salve amulet(ei) (Emir's Arena).
+  // Shared with the manual gear editor (applyOverrides) so the two can't drift.
   const slotItemIds = new Set(itemIds);
-  const itemBonusFlags: ItemBonusFlags = {
-    dragonHunterCrossbow: hasTrigger(slotItemIds, "DRAGON_HUNTER_CROSSBOW"),
-    dragonHunterLance: hasTrigger(slotItemIds, "DRAGON_HUNTER_LANCE"),
-    dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
-    salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
-    salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
-    demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
-    demonbaneSilverlight: hasTrigger(slotItemIds, "SILVERLIGHT"),
-    demonbaneClaws: hasTrigger(slotItemIds, "BURNING_CLAWS"),
-    demonbaneScorchingBow: hasTrigger(slotItemIds, "SCORCHING_BOW"),
-    kerisPartisan: hasTrigger(slotItemIds, "KERIS_PARTISAN"),
-    kerisBreaching: hasTrigger(slotItemIds, "KERIS_PARTISAN_BREACHING"),
-    golembaneBarronite: hasTrigger(slotItemIds, "BARRONITE_MACE"),
-    golembaneGraniteHammer: hasTrigger(slotItemIds, "GRANITE_HAMMER"),
-    tomeOfFire: hasTrigger(slotItemIds, "TOME_OF_FIRE_CHARGED"),
-    tomeOfWater: hasTrigger(slotItemIds, "TOME_OF_WATER_CHARGED"),
-    tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
-    twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
-    fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
-    slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
-    wildernessWeapon: hasTrigger(slotItemIds, "WILDERNESS_WEAPON"),
-    elementalAmulet: elementalAmuletKind(slotItemIds),
-  };
+  const itemBonusFlags = itemBonusFlagsFor(slotItemIds);
 
   // Tier is purely informational on the recommend path; mark scratch loadouts
   // as "end" so they sort alongside curated endgame sets when both apply.
