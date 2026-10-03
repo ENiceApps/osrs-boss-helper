@@ -90,6 +90,10 @@ export function activeBonusesForTarget(
   // Salve (unlike DHCB/DHL, which do). On an undead dragon (e.g. Vorkath) the
   // wand wins (+75/+40 ≫ Salve's +20/+20), so suppress Salve when it's active.
   const wandActive = set.itemBonusFlags.dragonHunterWand && isDragon;
+  // The regular and (e) Salve amulets boost melee only; ranged and magic need
+  // the imbued (i)/(ei) (wgloop gates Salve per style the same way). A
+  // non-firing Salve also leaves the black mask free to apply on task.
+  const salveFits = set.style === "melee" || set.itemBonusFlags.salveImbued === true;
   const isXerician = target.attributes.includes("xerician");
   const castsFire = set.spellElement === "fire";
   const castsWater = set.spellElement === "water";
@@ -99,8 +103,8 @@ export function activeBonusesForTarget(
       dragonHunterCrossbow: set.itemBonusFlags.dragonHunterCrossbow && isDragon,
       dragonHunterLance: set.itemBonusFlags.dragonHunterLance && isDragon,
       dragonHunterWand: wandActive,
-      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive,
-      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive,
+      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive && salveFits,
+      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive && salveFits,
       demonbane: set.itemBonusFlags.demonbane && isDemon,
       demonbaneSilverlight: (set.itemBonusFlags.demonbaneSilverlight ?? false) && isDemon,
       demonbaneClaws: (set.itemBonusFlags.demonbaneClaws ?? false) && isDemon,

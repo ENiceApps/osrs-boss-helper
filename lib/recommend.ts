@@ -264,23 +264,27 @@ export function computeSetDps(
   // — quadruples them inside the Tombs of Amascut (magic damage still capped 100%).
   const shadowEquipped = weaponId === 27275 || weaponId === 27277;
   const shadowToaQuadruple = shadowEquipped && categoryForMonster(target.slug) === "toa";
-  // Twinflame staff (30634): +10% acc/dmg on any standard spell, plus a second
-  // cast (~40%) on Bolt/Blast/Wave. It casts standard spells, so the auto-/picked
-  // spell's element is elemental and its name reveals whether it qualifies.
-  const twinflameStandard =
-    weaponId === 30634 &&
+  const castSpell = set.style === "magic" && set.autoSpellName
+    ? SPELLS_BY_NAME.get(set.autoSpellName)
+    : undefined;
+  // Smoke battlestaff (11998), Mystic smoke staff (12000) and Twinflame staff
+  // (30634) — wgloop's isWearingSmokeStaff — add +10% accuracy & damage to
+  // standard-spellbook spells. The cast spell's book decides; with no named
+  // spell, an elemental element implies a standard one (no other book has
+  // them). The Twinflame also casts a second hit (~40%) on Bolt/Blast/Wave.
+  const castsStandardSpell = castSpell
+    ? castSpell.spellbook === "standard"
+    : set.spellElement !== undefined && set.spellElement !== "none";
+  const smokeStaffStandard =
     set.style === "magic" &&
-    set.spellElement !== undefined &&
-    set.spellElement !== "none";
+    (weaponId === 11998 || weaponId === 12000 || weaponId === 30634) &&
+    castsStandardSpell;
   const twinflameDoubleCast =
-    twinflameStandard && /(Bolt|Blast|Wave)$/.test(set.autoSpellName ?? "");
+    smokeStaffStandard && weaponId === 30634 && /(Bolt|Blast|Wave)$/.test(set.autoSpellName ?? "");
   // Demonbane spells (Arceuus) — fire only when the cast spell is a demonbane
   // spell AND the target carries the "demon" attribute. Mirrors wgloop:
   //   accuracy: +20% base, +40% with Mark of Darkness, ×2 with Purging staff
   //   damage:   only with Mark of Darkness — +25%, or +50% with Purging staff
-  const castSpell = set.style === "magic" && set.autoSpellName
-    ? SPELLS_BY_NAME.get(set.autoSpellName)
-    : undefined;
   const demonbaneSpellActive =
     castSpell?.vsDemonAccuracyPct !== undefined && target.attributes.includes("demon");
   const purgingStaffEquipped = weaponId === BONUS_TRIGGER_ITEM_IDS.PURGING_STAFF;
@@ -348,7 +352,7 @@ export function computeSetDps(
     demonbaneVulnerability: demonbaneVulnerabilityFor(target),
     demonbaneSpellAccuracyPct,
     demonbaneSpellDamagePct,
-    twinflameStandard,
+    smokeStaffStandard,
     twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,
     fangEquipped: activeBonuses.fangEquipped,

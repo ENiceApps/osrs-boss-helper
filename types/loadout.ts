@@ -38,6 +38,12 @@ export interface ItemBonusFlags {
   salveAmuletEi: boolean;
   /** Salve amulet (regular)/(i) — ×7/6 vs undead. */
   salveAmulet: boolean;
+  /**
+   * The Salve worn is imbued — (i) or (ei). Only the imbued amulets work for
+   * ranged and magic; the regular / (e) amulet boosts melee alone. Optional
+   * for back-compat with existing flag literals; absent = not imbued.
+   */
+  salveImbued?: boolean;
   /** Arclight / Emberlight — demonbane vs demons (+70% acc/dmg). */
   demonbane: boolean;
   /** Silverlight (incl. Dyed) / Darklight — demonbane vs demons (+60% acc/dmg). */

@@ -9,7 +9,7 @@ import {
 import { meleeMaxHit } from "@/lib/dps/melee";
 import { rangedMaxHit } from "@/lib/dps/ranged";
 import { magicMaxHit } from "@/lib/dps/magic";
-import { applyFactors, conditionalMultipliers } from "@/lib/dps/conditional";
+import { applyFactors, conditionalMultipliers, salveFactor } from "@/lib/dps/conditional";
 import { calculateDps } from "@/lib/dps/calculate";
 import { expectedMultiHitDamage } from "@/lib/dps/multihit";
 
@@ -112,16 +112,18 @@ describe("Conditional multipliers", () => {
     ]);
   });
 
-  it("DHCB + Salve(ei) stacks sequentially with intermediate trunc", () => {
-    // Reproduces the ranged-end calibration: base maxHit 38 → floor(×5/4)=47 → floor(×6/5)=56.
-    const m = conditionalMultipliers({
-      ...NO_FLAGS,
-      dragonHunterCrossbow: true,
-      salveAmuletEi: true,
-    });
-    expect(applyFactors(38, m.damage)).toBe(56);
-    // And for attack roll, 38304 → floor(×13/10)=49795 → floor(×6/5)=59754.
-    expect(applyFactors(38304, m.accuracy)).toBe(59754);
+  it("Salve(ei) then DHCB, truncating after each (wgloop order: Salve first)", () => {
+    const flags = { ...NO_FLAGS, dragonHunterCrossbow: true, salveAmuletEi: true };
+    const salve = salveFactor(flags)!;
+    const m = conditionalMultipliers(flags);
+    // The bane list no longer carries the Salve — calculate.ts applies it first.
+    expect(m.damage).toHaveLength(1);
+    // Max hit: 38 → trunc(×6/5)=45 → trunc(×5/4)=56.
+    expect(applyFactors(applyFactors(38, [salve]), m.damage)).toBe(56);
+    // Attack roll: 38304 → trunc(×6/5)=45964 → trunc(×13/10)=59753. The old
+    // DHCB-first order gave 59754 (49795 → ×6/5); the oracle confirms 59753's
+    // order on Vorkath (salve-ei-dhcb-vorkath).
+    expect(applyFactors(applyFactors(38304, [salve]), m.accuracy)).toBe(59753);
   });
 
   it("demonbane (Arclight/Emberlight) applies +70% ADDITIVELY", () => {
@@ -132,11 +134,12 @@ describe("Conditional multipliers", () => {
   });
 
   it("regular/imbued Salve is ×7/6, distinct from the enchanted ×6/5", () => {
-    const m = conditionalMultipliers({ ...NO_FLAGS, salveAmulet: true });
-    expect(applyFactors(60, m.damage)).toBe(70); // trunc(60×7/6)=70
+    const salve = salveFactor({ ...NO_FLAGS, salveAmulet: true })!;
+    expect(applyFactors(60, [salve])).toBe(70); // trunc(60×7/6)=70
     // enchanted variant is stronger
-    const ei = conditionalMultipliers({ ...NO_FLAGS, salveAmuletEi: true });
-    expect(applyFactors(60, ei.damage)).toBe(72); // trunc(60×6/5)=72
+    const ei = salveFactor({ ...NO_FLAGS, salveAmuletEi: true })!;
+    expect(applyFactors(60, [ei])).toBe(72); // trunc(60×6/5)=72
+    expect(salveFactor(NO_FLAGS)).toBeUndefined();
   });
 });
 

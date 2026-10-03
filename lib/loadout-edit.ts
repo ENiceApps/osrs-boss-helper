@@ -60,6 +60,7 @@ export function itemBonusFlagsFor(slotItemIds: ReadonlySet<number>): ItemBonusFl
     dragonHunterWand: hasTrigger(slotItemIds, "DRAGON_HUNTER_WAND"),
     salveAmuletEi: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_E"),
     salveAmulet: hasTrigger(slotItemIds, "SALVE_AMULET") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
+    salveImbued: hasTrigger(slotItemIds, "SALVE_AMULET_EI") || hasTrigger(slotItemIds, "SALVE_AMULET_I"),
     demonbane: hasTrigger(slotItemIds, "ARCLIGHT") || hasTrigger(slotItemIds, "EMBERLIGHT"),
     demonbaneSilverlight: hasTrigger(slotItemIds, "SILVERLIGHT"),
     demonbaneClaws: hasTrigger(slotItemIds, "BURNING_CLAWS"),

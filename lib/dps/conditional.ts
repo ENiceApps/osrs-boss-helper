@@ -9,7 +9,9 @@
 // Key calibration facts:
 //   1. DHCB is ASYMMETRIC: ×13/10 accuracy, ×5/4 damage.
 //   2. DHL is symmetric ×6/5 / ×6/5.
-//   3. Salve amulet (ei)/(e) vs undead is ×6/5; base Salve / (i) is ×7/6.
+//   3. Salve amulet (ei)/(e) vs undead is ×6/5; base Salve / (i) is ×7/6
+//      (melee; ranged takes only the imbued two). It lives outside the weapon
+//      list (`salveFactor`), applied first; magic uses `salveMagicPct` instead.
 //   4. Demonbane (Arclight/Emberlight) vs demons is +70% accuracy AND damage,
 //      applied ADDITIVELY (weirdgloop's trackAddFactor): value + trunc(value×70/100).
 //      weirdgloop further scales the weapon's bonus PERCENT by a per-monster
@@ -23,6 +25,9 @@
 //   5. Multipliers stack via Math.trunc after EACH application — not by
 //      multiplying into a single combined factor. This matters because
 //      Math.trunc(38 × 5/4) × 6/5 = 56, whereas Math.trunc(38 × 1.5) = 57.
+//      For the same reason the ORDER matters (trunc(trunc(41×47/40)×7/6) = 56
+//      but trunc(trunc(41×7/6)×47/40) = 55); calculate.ts sequences these
+//      lists against Salve / black mask exactly as wgloop does.
 
 import type { ConditionalBonusFlags } from "@/types/osrs";
 import {
@@ -38,6 +43,11 @@ export interface ConditionalFactor {
    * (demonbane). Otherwise multiplicative — result = trunc(value×num/den).
    */
   additive?: boolean;
+  /**
+   * The wilderness-weapon ×3/2. Magic applies it later than the other factors
+   * (after the black mask and demonbane spell), so calculate.ts splits it out.
+   */
+  wilderness?: boolean;
   /** Free-text reason for the multiplier; useful for "show more" breakdowns. */
   reason: string;
 }
@@ -148,25 +158,55 @@ export function conditionalMultipliers(
     // multiplicative (wgloop MAX_HIT_LEAFY trackFactor). Damage only.
     damage.push({ numerator: 47, denominator: 40, reason: "Leaf-bladed battleaxe vs leafy" });
   }
-  if (flags.salveAmuletEi) {
-    accuracy.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
-    damage.push({ numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" });
-  } else if (flags.salveAmulet) {
-    // Mutually exclusive with the enchanted variant (only one amulet equipped).
-    accuracy.push({ numerator: 7, denominator: 6, reason: "Salve amulet (regular/i) vs undead" });
-    damage.push({ numerator: 7, denominator: 6, reason: "Salve amulet (regular/i) vs undead" });
-  }
   if (flags.wildernessWeapon) {
     // Charged wilderness weapon vs an NPC in the Wilderness: +50% accuracy AND
     // damage. Same ×3/2 for all six weapons (Craw's/Webweaver, Viggora's/
     // Ursine, Thammaron's/Accursed). Multiplicative — EXCEPT on-task ranged,
     // where the damage half folds into the mask (see foldRangedBaneDamage).
-    accuracy.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+    // Last in the list, and tagged: magic applies it after the black mask and
+    // demonbane spell (wgloop's rev-weapon step).
+    const reason = "Wilderness weapon vs NPC in the Wilderness";
+    accuracy.push({ numerator: 3, denominator: 2, reason, wilderness: true });
     if (!foldRangedBaneDamage) {
-      damage.push({ numerator: 3, denominator: 2, reason: "Wilderness weapon vs NPC in the Wilderness" });
+      damage.push({ numerator: 3, denominator: 2, reason, wilderness: true });
     }
   }
   return { accuracy, damage };
+}
+
+/**
+ * The Salve amulet's factor vs undead, or undefined when none is active:
+ * (ei)/(e) ×6/5, regular/(i) ×7/6 — melee and ranged, on accuracy AND damage.
+ * Not part of `conditionalMultipliers`: Salve shares wgloop's first bonus slot
+ * with the black mask (they never stack) and lands BEFORE every weapon bane,
+ * so calculate.ts applies it ahead of that list. Which variants count for the
+ * style (ranged needs (i)/(ei)) is resolved upstream in activeBonusesForTarget.
+ * Magic doesn't use this factor: its Salve is a flat percent folded into the
+ * magic accuracy / damage bonus (see `salveMagicPct`).
+ */
+export function salveFactor(flags: ConditionalBonusFlags | undefined): ConditionalFactor | undefined {
+  if (flags?.salveAmuletEi) {
+    return { numerator: 6, denominator: 5, reason: "Salve amulet (ei/e) vs undead" };
+  }
+  if (flags?.salveAmulet) {
+    // Mutually exclusive with the enchanted variant (only one amulet equipped).
+    return { numerator: 7, denominator: 6, reason: "Salve amulet (regular/i) vs undead" };
+  }
+  return undefined;
+}
+
+/**
+ * Magic Salve bonus as a whole percent: Salve amulet(ei) +20, Salve amulet(i)
+ * +15 — wgloop adds it to the magic attack-roll percent (with the smoke-staff
+ * +10) and to the magic damage bonus, rather than multiplying ×6/5 / ×7/6.
+ * Only the imbued variants work for magic; activeBonusesForTarget already
+ * drops the (e) / regular amulet for magic, so here (ei) is `salveAmuletEi`
+ * and (i) is `salveAmulet`.
+ */
+export function salveMagicPct(flags: ConditionalBonusFlags | undefined): number {
+  if (flags?.salveAmuletEi) return 20;
+  if (flags?.salveAmulet) return 15;
+  return 0;
 }
 
 export function applyFactors(value: number, factors: ConditionalFactor[]): number {

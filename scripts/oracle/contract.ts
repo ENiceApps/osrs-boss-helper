@@ -47,6 +47,18 @@ export interface CanonicalCombo {
    */
   inWilderness?: boolean;
   /**
+   * Also require the exact attack roll to match (recovered from our hit
+   * chance). Set on multiplier-order combos, where a truncation-order bug moves
+   * the roll by a few points — well inside the accuracy tolerance.
+   */
+  exactRoll?: boolean;
+  /**
+   * A documented reason this combo's DPS may differ beyond tolerance while max
+   * hit and accuracy match (e.g. a mean-model shortcut). The DPS check is then
+   * reported as a note instead of a divergence.
+   */
+  knownDpsResidual?: string;
+  /**
    * Optional locked baseline this combo was lifted from (oracle-matrix). When
    * present the diff report does a three-way check: our engine vs wgloop vs
    * this wiki-target baseline.
@@ -68,5 +80,5 @@ export type OracleResult =
   | { id: string; ok: false; error: string };
 
 /** Pinned upstream commit — bump deliberately, never float to HEAD. */
-export const WGLOOP_PINNED_SHA = "2dfed704b06b2345b024f090716bb3382fc662cc";
+export const WGLOOP_PINNED_SHA = "89c3e25b344aea90d0189746e4b5f73dde0f0383";
 export const WGLOOP_REPO = "https://github.com/weirdgloop/osrs-dps-calc.git";

@@ -5,7 +5,7 @@
 // a divergence table. Where a combo carries a locked oracle-matrix baseline, the
 // row is a three-way check (ours / wgloop / baseline).
 //
-//   npx tsx scripts/oracle/run-oracle.ts                       # validation set (8 fixtures)
+//   npx tsx scripts/oracle/run-oracle.ts                       # validation set (fixtures + ordering combos)
 //   npx tsx scripts/oracle/run-oracle.ts --only=tbow           # filter combos by id substring
 //   npx tsx scripts/oracle/run-oracle.ts --all                 # print matching rows too
 //   npx tsx scripts/oracle/run-oracle.ts --sweep --style=magic # broad sweep, sharded by style
@@ -66,6 +66,8 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     attackStyle: { attackType: combo.attackType, choice: combo.choice },
     baseSpellMaxHit: combo.baseSpellMaxHit,
     spellElement: combo.spellElement,
+    // The spell name gates Twinflame's double cast and demonbane spells.
+    autoSpellName: combo.spellName,
     onTask: combo.onTask ?? false,
   });
   if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
@@ -144,9 +146,27 @@ function runWorker(combos: CanonicalCombo[]): OracleResult[] {
   return JSON.parse(readFileSync(outPath, "utf8")) as OracleResult[];
 }
 
-type Verdict = "OK" | "MAXHIT" | "ACC" | "DPS" | "ERROR";
+/**
+ * Our attack roll, recovered from our hit chance and wgloop's NPC defence roll
+ * by inverting the standard formula (see lib/dps/common.ts hitChance). Exposes
+ * a few-point roll difference that the accuracy tolerance would hide. Only
+ * meaningful for the plain single-roll formula — not fang / always-hit rows.
+ */
+function impliedAttackRoll(accuracy: number, defRoll: number): number | undefined {
+  if (!(accuracy > 0 && accuracy < 1)) return undefined;
+  // A > D branch: acc = 1 - (D+2) / (2(A+1)); A < D branch: acc = A / (2(D+1)).
+  const high = (defRoll + 2) / (2 * (1 - accuracy)) - 1;
+  if (high > defRoll) return Math.round(high);
+  return Math.round(accuracy * 2 * (defRoll + 1));
+}
 
-function compare(our: OurResult, wg: OracleResult | undefined): { verdict: Verdict; detail: string } {
+type Verdict = "OK" | "MAXHIT" | "ACC" | "ROLL" | "DPS" | "ERROR";
+
+function compare(
+  our: OurResult,
+  wg: OracleResult | undefined,
+  combo: CanonicalCombo,
+): { verdict: Verdict; detail: string } {
   if (!our.ok) return { verdict: "ERROR", detail: `ours: ${our.error}` };
   if (!wg) return { verdict: "ERROR", detail: "wgloop: no result" };
   if (!wg.ok) return { verdict: "ERROR", detail: `wgloop: ${wg.error}` };
@@ -159,10 +179,18 @@ function compare(our: OurResult, wg: OracleResult | undefined): { verdict: Verdi
   if (Math.abs((our.accuracy ?? 0) - wg.accuracy) > ACC_TOL) {
     return { verdict: "ACC", detail: `acc ours=${our.accuracy?.toFixed(4)} wg=${wg.accuracy.toFixed(4)}` };
   }
+  if (combo.exactRoll) {
+    const ourRoll = impliedAttackRoll(our.accuracy ?? 0, wg.npcDefRoll);
+    if (ourRoll !== undefined && ourRoll !== wg.maxAttackRoll) {
+      return { verdict: "ROLL", detail: `attack roll ours≈${ourRoll} wg=${wg.maxAttackRoll}` };
+    }
+  }
   const dOurs = our.dps ?? 0;
   const rel = Math.abs(dOurs - wg.dps) / Math.max(wg.dps, 1e-9);
   if (rel > DPS_REL_TOL && Math.abs(dOurs - wg.dps) > DPS_ABS_TOL) {
-    return { verdict: "DPS", detail: `dps ours=${dOurs.toFixed(3)} wg=${wg.dps.toFixed(3)} (${(rel * 100).toFixed(1)}%)` };
+    const detail = `dps ours=${dOurs.toFixed(3)} wg=${wg.dps.toFixed(3)} (${(rel * 100).toFixed(1)}%)`;
+    if (combo.knownDpsResidual) return { verdict: "OK", detail: `${detail} — known: ${combo.knownDpsResidual}` };
+    return { verdict: "DPS", detail };
   }
   return { verdict: "OK", detail: "" };
 }
@@ -203,18 +231,19 @@ function main(): void {
   for (const c of combos) {
     const o = ours.get(c.id)!;
     const w = wg.get(c.id);
-    const { verdict, detail } = compare(o, w);
+    const { verdict, detail } = compare(o, w, c);
     if (verdict !== "OK") diverged++;
     if (verdict === "OK" && !showAll) continue;
 
     const mark = verdict === "OK" ? "✓" : "✗";
     console.log(`\n${mark} [${verdict}] ${c.id}  (${c.bossSlug}, ${c.attackType}/${c.choice})`);
     if (o.ok && w && w.ok) {
+      const ourRoll = impliedAttackRoll(o.accuracy ?? 0, w.npcDefRoll);
       console.log(
-        `    ours : maxHit ${o.maxHit}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}`,
+        `    ours : maxHit ${o.maxHit}  acc ${o.accuracy?.toFixed(4)}  dps ${o.dps?.toFixed(3)}  roll≈${ourRoll ?? "—"}`,
       );
       console.log(
-        `    wglp : maxHit ${w.maxHit}  acc ${w.accuracy.toFixed(4)}  dps ${w.dps.toFixed(3)}`,
+        `    wglp : maxHit ${w.maxHit}  acc ${w.accuracy.toFixed(4)}  dps ${w.dps.toFixed(3)}  roll ${w.maxAttackRoll}`,
       );
       if (c.baseline) {
         const b = c.baseline;

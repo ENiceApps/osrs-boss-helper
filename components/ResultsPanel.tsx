@@ -108,7 +108,8 @@ export function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.dragonHunterLance) flags.push("DHL +20%");
   if (activeBonuses?.conditionalBonuses.dragonHunterWand) flags.push("DH wand +75/+40%");
   if (activeBonuses?.conditionalBonuses.salveAmuletEi) flags.push("Salve(ei) +20%");
-  if (activeBonuses?.conditionalBonuses.salveAmulet) flags.push("Salve +16.7%");
+  if (activeBonuses?.conditionalBonuses.salveAmulet)
+    flags.push(set.style === "magic" ? "Salve(i) +15%" : "Salve +16.7%");
   if (activeBonuses?.conditionalBonuses.wildernessWeapon) flags.push("Wilderness weapon +50%");
   if (activeBonuses?.conditionalBonuses.golembaneGraniteHammer) flags.push("Golembane (Granite hammer) +30%");
   if (activeBonuses?.conditionalBonuses.golembaneBarronite) flags.push("Golembane (Barronite mace) +15% dmg");

@@ -152,9 +152,16 @@ export interface ConditionalBonusFlags {
   dragonHunterLance?: boolean;
   /** Dragon hunter wand vs dragon → ×7/4 accuracy, ×7/5 damage. Does NOT stack with Salve. */
   dragonHunterWand?: boolean;
-  /** Salve amulet (ei)/(e) vs undead → ×6/5. */
+  /**
+   * Salve amulet (ei)/(e) vs undead → ×6/5 on melee/ranged; magic takes it as
+   * a flat +20%. Ranged and magic only ever see the (ei) here — the unimbued
+   * (e) is dropped for them in activeBonusesForTarget.
+   */
   salveAmuletEi?: boolean;
-  /** Salve amulet (regular)/(i) vs undead → ×7/6. */
+  /**
+   * Salve amulet (regular)/(i) vs undead → ×7/6 on melee/ranged; magic takes
+   * the (i) as a flat +15%. Ranged and magic only ever see the (i).
+   */
   salveAmulet?: boolean;
   /** Arclight / Emberlight vs demons → +70% accuracy & damage (additive). */
   demonbane?: boolean;

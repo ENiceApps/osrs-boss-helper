@@ -124,10 +124,14 @@ function buildReasons(
       reasons.push("rolls accuracy twice on stab — much higher hit chance");
     if (set.slots.weapon?.itemId === 30634)
       reasons.push("Twinflame: +10% acc/dmg on standard spells, +40% second cast on Bolt/Blast/Wave");
+    if (set.slots.weapon?.itemId === 11998 || set.slots.weapon?.itemId === 12000)
+      reasons.push("+10% accuracy & damage on standard spells");
   }
   if (slot === "neck") {
+    // Magic takes the imbued Salve as a flat +20% / +15% (melee/ranged ×6/5, ×7/6).
     if (cb?.salveAmuletEi) reasons.push("+20% accuracy & damage vs this undead target");
-    else if (cb?.salveAmulet) reasons.push("+16.7% accuracy & damage vs this undead target");
+    else if (cb?.salveAmulet)
+      reasons.push(`+${set.style === "magic" ? "15" : "16.7"}% accuracy & damage vs this undead target`);
     // Elemental amulet: only when it matches the cast spell's element (the
     // resolver returns 0 for an Amulet of fire under Water Surge, a powered
     // staff, or any non-elemental spell).

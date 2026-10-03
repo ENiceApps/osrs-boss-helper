@@ -24,14 +24,15 @@ numbers are identical to wgloop's own test suite.
 
 Parity assumptions (both engines): no potions, always-on offensive prayer
 (Piety / Rigour / Augury — mirrors our `DEFAULT_PRAYERS`), `onSlayerTask` and
-Kandarin diary off unless a combo opts in.
+Kandarin diary off unless a combo opts in (the `ontask-` ordering combos do).
 
 ## Usage
 
 ```bash
 npm run oracle:setup        # one-time: clone wgloop @ pinned SHA + yarn install (slow)
-npm run oracle              # validation set — the 8 oracle-matrix fixtures
+npm run oracle              # validation set — oracle-matrix fixtures + multiplier-order combos
 npm run oracle -- --all     # also print the rows that match
+npm run oracle -- --only=ontask   # filter combos by id substring
 npm run oracle -- --sweep --style=magic --limit=60   # broad sweep, one shard
 npm run oracle -- --sweep --style=ranged
 npm run oracle -- --sweep --style=melee
@@ -50,6 +51,33 @@ not data version.
 
 Exit code is non-zero when any combo diverges beyond tolerance (maxHit must match
 exactly; accuracy ±0.0015; dps ±0.5%) — usable as a CI gate once green.
+
+Every row prints both attack rolls (ours is recovered from our hit chance and
+wgloop's defence roll). Combos with `exactRoll` (the multiplier-order set) fail
+with `ROLL` when the rolls differ at all — a truncation-order bug moves the roll
+by a point or two, well inside the accuracy tolerance. A combo can carry a
+`knownDpsResidual` reason; its DPS gap is then printed as a note, not a failure.
+
+`ORACLE_DETAILS=1 npm run oracle -- --only=<id>` keeps wgloop's step-by-step
+trace (`details`: label → value) in `.oracle/io/results.json` — the quickest way
+to see where a divergent row splits.
+
+**Side effect:** running the clone's jest lets its Next 14 config "patch" the
+nearest `package-lock.json` (adds `@next/swc-win32-ia32-msvc`) — ours, when the
+clone sits under this checkout. Revert it (`git checkout -- package-lock.json`)
+before committing.
+
+## Multiplier-order combos
+
+`orderingCombos()` in `combos.ts` pins the ORDER multipliers apply in — every
+factor truncates, so order moves results by ~1 max hit or a few roll points.
+One combo per pairing, with gear varied so the base lands where the two orders
+disagree: on-task slayer helm (i) vs DHL / Granite hammer / Barronite mace /
+Leaf-bladed battleaxe / Arclight / Ursine chainmace / DHCB / Webweaver / DHW /
+Dark Demonbane / Twinflame; Salve variants per style (melee DHL, ranged DHCB,
+magic Kodai); Inquisitor's and Obsidian with Salve; smoke staves; Elite Void
+magic. Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
+Targets avoid non-zero flat armour (below).
 
 ## Sharding
 
@@ -76,7 +104,11 @@ the combo to set the monster `inputs` (isFromCoxCm, toaInvocationLevel, etc.).
 | `run-oracle.ts` | runs both engines, diffs, three-way vs locked baselines |
 
 The clone lives in `.oracle/` (gitignored). Bump `WGLOOP_PINNED_SHA` in
-`contract.ts` and re-run `oracle:setup` to pick up upstream changes.
+`contract.ts` and re-run `oracle:setup` to pick up upstream changes. Keep it at
+the same upstream commit our vendored data was synced from: upstream renamed
+items (e.g. "Tome of fire" → "Tome of Fire") in Aug 2026, so an older engine
+silently misses bonuses on the newer item names (it zeroed the Zulrah tome row
+until the pin moved from 2dfed70 to 89c3e25).
 
 ## Known divergences (validation set, as of first run)
 
@@ -96,6 +128,27 @@ localize to specific mechanics:
   exactly now. Our engine was correct all along.
 - **Twisted bow with no arrows** — fixture omits ammo; the app always fills it.
   Not an engine bug.
+- ~~**Multiplier order** — Salve / slayer helm vs weapon banes, magic Salve and
+  smoke-staff percents, Inquisitor's / Obsidian / Elite Void magic placement.~~
+  **FIXED** 2026-10-03 (`lib/dps/calculate.ts`); see the ordering combos.
+
+## Known gaps (sweeps, as of 2026-10-03 @ 89c3e25)
+
+Pre-existing modelling gaps the sweeps surface — not harness errors:
+
+- **Flat armour** — wgloop adds/subtracts `defensive.flat_armour` on every
+  accurate non-magic hit (Gargoyle −2 → +2 damage, Earthen nagua +4, Heavy
+  skeleton −1, Dusk −1; 110 monsters are non-zero). Our engine ignores it.
+- **Flying monsters** (Kree'arra's minions, Aviansies) are immune to melee in
+  wgloop; our engine still scores melee against them.
+- **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
+  truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
+  accuracy match (rows carry `knownDpsResidual`).
+- **Keris partisan** (weapon category "Partisan") has no style mapping in
+  `data/weapon-styles.ts`, so our engine can't score it; its ×133/100 (wgloop)
+  vs our ×4/3 is unverified.
+- **Accursed / Thammaron's sceptre** have no powered-staff max-hit formula in
+  `data/items/powered-staff-spells.ts` (max hit 0).
 
 ## Caveat — data version skew
 

@@ -55,6 +55,27 @@ export interface ArmorSetBonus {
    * hit. (Magic void's +5% is a separate magic-damage-% path, not this flag.)
    */
   damageOnEffectiveLevel?: boolean;
+  /**
+   * Elite Void (magic): the damage factor is a visible +N% magic damage, ADDED
+   * to the magic damage percent (wgloop: magic_str += 50) rather than a
+   * separate multiplier on the max hit. calculate.ts adds (n−d)/d × 100 to the
+   * percent and skips the factor on the max hit.
+   */
+  damageOnMagicPercent?: boolean;
+  /**
+   * Inquisitor's: both factors apply AFTER Salve / black mask and every
+   * weapon target bonus (dragonbane, golembane, …) — wgloop applies the
+   * Inquisitor multiplier near the end of the melee pipeline. Without the flag
+   * a set's factors apply first, before Salve / the mask (Crystal armour).
+   */
+  afterTargetBonuses?: boolean;
+  /**
+   * Obsidian (melee): the bonus is ADDED, computed from the pre-multiplier
+   * base — value + trunc(base × (n−d)/d), i.e. + trunc(base/10) — right after
+   * the Salve / black mask step, as wgloop does. Equal to ×11/10 when nothing
+   * precedes it; differs once a Salve has scaled the value.
+   */
+  additiveFromBase?: boolean;
 }
 
 /**
@@ -178,7 +199,12 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     ],
     // +45% accuracy + +5% magic damage. Bumped from 2.5% → 5% in the
     // 29 May 2024 game update.
-    bonus: { accuracyFactor: [29, 20], damageFactor: [21, 20], accuracyOnEffectiveLevel: true },
+    bonus: {
+      accuracyFactor: [29, 20],
+      damageFactor: [21, 20],
+      accuracyOnEffectiveLevel: true,
+      damageOnMagicPercent: true,
+    },
   },
   {
     id: "void-magic",
@@ -252,7 +278,8 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "body", itemIds: [24420], weight: 2 }, // Inquisitor's hauberk     +1%
       { slot: "legs", itemIds: [24421], weight: 2 }, // Inquisitor's plateskirt  +1%
     ],
-    bonus: { accuracyFactor: [205, 200], damageFactor: [205, 200] }, // full set: +2.5% / +2.5%
+    // Applied after Salve / the black mask and every weapon target bonus.
+    bonus: { accuracyFactor: [205, 200], damageFactor: [205, 200], afterTargetBonuses: true }, // full set: +2.5% / +2.5%
   },
 
   // ============ Obsidian armour — only fires with a TzHaar weapon ============
@@ -276,7 +303,9 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
       { slot: "body", itemIds: [21301] }, // Obsidian platebody
       { slot: "legs", itemIds: [21304] }, // Obsidian platelegs
     ],
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] }, // +10% / +10%
+    // + trunc(base/10), added after Salve (wgloop PLAYER_ACCURACY_OBSIDIAN /
+    // MAX_HIT_OBSIDIAN).
+    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], additiveFromBase: true }, // +10% / +10%
   },
   {
     id: "obsidian-ranged",
@@ -335,7 +364,7 @@ export function detectArmorSetBonus(
       );
       if (n === 0) continue;
       const factor: readonly [number, number] = [set.perPieceDenominator + n, set.perPieceDenominator];
-      return { id: set.id, name: set.name, accuracyFactor: factor, damageFactor: factor };
+      return { id: set.id, name: set.name, ...set.bonus, accuracyFactor: factor, damageFactor: factor };
     }
     const allPresent = set.pieces.every((p) =>
       p.itemIds.some((id) => itemIds.has(id)),

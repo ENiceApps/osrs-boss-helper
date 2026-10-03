@@ -257,7 +257,7 @@ describe("engine — elementalSpellFlatBonus (replicates upstream ElementalSpell
     const base = {
       baseSpellMaxHit: 20,
       spellElement: "fire" as const,
-      twinflameStandard: true,
+      smokeStaffStandard: true,
       twinflameDoubleCast: true,
     };
     expect(calculateDps(magicScenario(base)).maxHit).toBe(30);
@@ -397,13 +397,17 @@ describe("flag derivation and resolution against the cast spell", () => {
     }
   });
 
-  it("Twinflame staff: the +2 flows into both casts (Fire Wave 20+2 -> 24 -> 33, vs 30)", () => {
-    // End-to-end through computeSetDps (twinflameStandard + double cast are
-    // resolved from the weapon id and the spell name).
+  it("Twinflame staff: the +2 flows into both casts (Fire Wave 20+2 -> 25 -> 35, vs 30)", () => {
+    // End-to-end through computeSetDps (smokeStaffStandard + double cast are
+    // resolved from the weapon id and the spell name). The staff's +10% sits in
+    // the magic damage bonus with Augury's +4%: 22 + trunc(22 × 14%) = 25, then
+    // the second cast adds trunc(25 × 4/10) = 10 -> 35 (wgloop agrees, oracle
+    // twinflame-amulet-of-fire-fire-wave-general-graardor). Plain: 20 + 2 = 22
+    // -> 30.
     const plain = scoreCast([TWINFLAME_STAFF], NEUTRAL, "Fire Wave");
     const amulet = scoreCast([TWINFLAME_STAFF, AMULET_OF_FIRE], NEUTRAL, "Fire Wave");
     expect(plain.dps.maxHit).toBe(30);
-    expect(amulet.dps.maxHit).toBe(33);
+    expect(amulet.dps.maxHit).toBe(35);
   });
 
   it("non-elemental spells never get the +2 (Ice Barrage, Iban Blast)", () => {

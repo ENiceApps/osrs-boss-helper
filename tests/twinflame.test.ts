@@ -42,7 +42,7 @@ describe("Twinflame staff — DPS engine", () => {
 
   it("+10% accuracy & damage on a standard cast", () => {
     const off = calculateDps(magicBase);
-    const on = calculateDps({ ...magicBase, twinflameStandard: true });
+    const on = calculateDps({ ...magicBase, smokeStaffStandard: true });
     expect(on.maxHit).toBe(22); // trunc(20 × 11/10)
     expect(on.accuracy).toBeGreaterThan(off.accuracy);
   });
@@ -50,7 +50,7 @@ describe("Twinflame staff — DPS engine", () => {
   it("second cast adds ~40% damage on a qualifying spell (stacks on the +10%)", () => {
     const both = calculateDps({
       ...magicBase,
-      twinflameStandard: true,
+      smokeStaffStandard: true,
       twinflameDoubleCast: true,
     });
     expect(both.maxHit).toBe(30); // trunc(trunc(20 × 11/10) × 7/5) = trunc(22 × 7/5) = 30
@@ -58,7 +58,7 @@ describe("Twinflame staff — DPS engine", () => {
 
   it("raises DPS over a plain staff casting the same spell", () => {
     const plain = calculateDps(magicBase);
-    const twin = calculateDps({ ...magicBase, twinflameStandard: true, twinflameDoubleCast: true });
+    const twin = calculateDps({ ...magicBase, smokeStaffStandard: true, twinflameDoubleCast: true });
     expect(twin.dps).toBeGreaterThan(plain.dps);
   });
 });

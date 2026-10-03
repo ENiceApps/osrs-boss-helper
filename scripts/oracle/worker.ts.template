@@ -79,7 +79,16 @@ interface Combo {
 }
 
 type Result =
-  | { id: string; ok: true; maxHit: number; accuracy: number; dps: number; maxAttackRoll: number; npcDefRoll: number }
+  | {
+      id: string;
+      ok: true;
+      maxHit: number;
+      accuracy: number;
+      dps: number;
+      maxAttackRoll: number;
+      npcDefRoll: number;
+      details?: [string, unknown][];
+    }
   | { id: string; ok: false; error: string };
 
 const STANCE_BY_CHOICE: Record<Choice, string> = {
@@ -191,6 +200,9 @@ function runOne(combo: Combo): Result {
     dps: r.dps,
     maxAttackRoll: r.maxAttackRoll,
     npcDefRoll: r.npcDefRoll,
+    // ORACLE_DETAILS=1: keep wgloop's step-by-step calc trace (label -> value)
+    // in results.json, for diagnosing WHERE a divergent row splits.
+    ...(process.env.ORACLE_DETAILS ? { details: r.details.map((d) => [d.label, d.value]) } : {}),
   };
 }
 

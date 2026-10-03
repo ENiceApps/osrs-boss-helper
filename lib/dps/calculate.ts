@@ -22,7 +22,12 @@ import {
 import { meleeAttackRoll, meleeMaxHit } from "./melee";
 import { rangedAttackRoll, rangedMaxHit } from "./ranged";
 import { magicAttackRoll, magicMaxHit } from "./magic";
-import { applyFactors, conditionalMultipliers } from "./conditional";
+import {
+  applyFactors,
+  conditionalMultipliers,
+  salveFactor,
+  salveMagicPct,
+} from "./conditional";
 import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
 import { expectedMultiHitDamage, type HitProfile } from "./multihit";
 import {
@@ -125,9 +130,19 @@ export interface DpsScenario {
    * applies `demonbaneVulnerability`.
    */
   demonbaneSpellDamagePct?: number;
-  /** Magic-only: Twinflame staff casting a standard spellbook spell — +10% accuracy & damage. */
-  twinflameStandard?: boolean;
-  /** Magic-only: Twinflame staff casting a qualifying Bolt/Blast/Wave — second cast (×7/5 damage). */
+  /**
+   * Magic-only: a Smoke battlestaff, Mystic smoke staff or Twinflame staff
+   * casting a standard-spellbook spell — +10% accuracy & damage. Upstream adds
+   * the 10 to the same percents as the Salve (i)/(ei) (one attack-roll percent,
+   * one magic damage bonus), so it is not a separate ×11/10.
+   */
+  smokeStaffStandard?: boolean;
+  /**
+   * Magic-only: Twinflame staff casting a qualifying Bolt/Blast/Wave — a second
+   * cast for trunc(hit × 4/10), i.e. ×7/5 on the max hit. Applied to the FINAL
+   * hit (after slayer helm, dragonbane, weakness, tome), as upstream's
+   * distribution transform does.
+   */
   twinflameDoubleCast?: boolean;
   /** Ranged-only: Twisted bow is equipped — scales accuracy/damage by target magic level. */
   twistedBowEquipped?: boolean;
@@ -147,12 +162,18 @@ export interface DpsScenario {
    * slayer task, and not superseded by an active Salve (they don't stack).
    * Style-dependent: ×7/6 melee, ×23/20 ranged & magic, on accuracy AND damage.
    * Resolved upstream (computeSetDps) where the on-task flag + Salve are known.
+   * Where it lands follows wgloop: melee/ranged first (Salve's slot, before
+   * every weapon bane); magic damage right after the magic damage %, magic
+   * accuracy after the dragonbane factor.
    */
   slayerOnTask?: boolean;
   /**
    * Armor-set bonus active on the loadout (e.g. Void Knight). Applied as a
    * multiplier on attack roll + max hit before conditional bonuses (DHCB/Salve)
-   * — per wgloop's PlayerVsNPCCalc order of operations.
+   * — per wgloop's PlayerVsNPCCalc order of operations — except where the set
+   * says otherwise: Inquisitor's after every target bonus
+   * (`afterTargetBonuses`), Obsidian added from the base after Salve
+   * (`additiveFromBase`).
    */
   armorSetBonus?: ArmorSetBonus;
   /**
@@ -308,19 +329,27 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // wgloop's `weapon.speed || DEFAULT_ATTACK_SPEED`.
   const baseSpeedTicks = scenario.attackSpeedTicks > 0 ? scenario.attackSpeedTicks : 4;
   const effectiveAttackSpeed = Math.max(1, baseSpeedTicks + sb.attackSpeedAdjust);
+  const cbFlags = scenario.conditionalBonuses;
+  // Salve amulet vs undead (melee / ranged): its own factor, applied first —
+  // see the Salve / black mask step below. Magic's Salve is a flat percent
+  // instead (salveMagicPct), folded in with the magic damage %.
+  const salve = scenario.style === "magic" ? undefined : salveFactor(cbFlags);
   // On-task ranged: ranged-bane damage folds into the mask (see below), so
   // the standalone DHCB/wilderness damage factors are omitted from the list.
-  const foldRangedBane = scenario.slayerOnTask === true && scenario.style === "ranged";
+  // An active Salve takes the mask's slot, leaving the banes multiplicative.
+  const foldRangedBane =
+    scenario.slayerOnTask === true && scenario.style === "ranged" && salve === undefined;
   const demonbaneVuln = scenario.demonbaneVulnerability ?? DEFAULT_DEMONBANE_VULNERABILITY;
-  const mult = conditionalMultipliers(scenario.conditionalBonuses, foldRangedBane, demonbaneVuln);
+  const mult = conditionalMultipliers(cbFlags, foldRangedBane, demonbaneVuln);
   const defenceRoll = npcDefenceRoll(scenario.targetDefenceLevel, scenario.targetDefenceBonusForStyle);
 
   let attackRoll: number;
   let maxHit: number;
-  // Magic only: the attack roll before ANY multiplier — the elemental-weakness
-  // accuracy bonus is taken from this, not from the running roll (see the
-  // magic accuracy step after the slayer block).
-  let magicBaseRoll = 0;
+  // The attack roll / max hit before ANY multiplier. Bonuses that upstream
+  // takes from the base rather than the running value read these: the magic
+  // elemental weakness (roll and max hit) and Obsidian's +10% (melee).
+  let baseRoll: number;
+  let baseMax: number;
 
   // Void's accuracy bonus multiplies the EFFECTIVE LEVEL (floored before the
   // gear multiply), not the final roll — see ArmorSetBonus.accuracyOnEffectiveLevel.
@@ -353,6 +382,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       );
       attackRoll = meleeAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = meleeMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
+      baseRoll = attackRoll;
+      baseMax = maxHit;
       if (scenario.dharok) {
         const { maxHp, currentHp } = scenario.dharok;
         maxHit = Math.trunc(maxHit * (1 + (maxHp - currentHp) * maxHp / 10000));
@@ -372,6 +403,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       );
       attackRoll = rangedAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = rangedMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
+      baseRoll = attackRoll;
+      baseMax = maxHit;
       break;
     }
     case "magic": {
@@ -393,79 +426,71 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         ? scenario.attackBonus * shadowMult
         : scenario.attackBonus;
       attackRoll = magicAttackRoll(applyEffLvlAcc(effMag), magicAtkBonus);
-      magicBaseRoll = attackRoll;
+      baseRoll = attackRoll;
 
-      // Demonbane spell (Arceuus) vs a demon — magic accuracy only. Applied to
-      // the raw attack roll before tome/conditional mods, mirroring how
-      // the spell's own accuracy bonus folds in upstream of gear multipliers.
-      // The percent is scaled by the target's demonbane vulnerability first
-      // (wgloop demonbaneFactor: trunc(pct × vulnerability/100), e.g. 40% at
-      // Duke Sucellus 70% -> 28%).
-      if (scenario.demonbaneSpellAccuracyPct) {
-        const pct = scaleDemonbanePct(scenario.demonbaneSpellAccuracyPct, demonbaneVuln);
-        attackRoll = Math.trunc((attackRoll * (100 + pct)) / 100);
-      }
+      // Salve amulet (i)/(ei) (+15 / +20) and a smoke staff or Twinflame on a
+      // standard spell (+10) are flat percents. Upstream sums them into ONE
+      // attack-roll percent (getPlayerMaxMagicAttackRoll's additiveBonus) and
+      // adds the same values to the magic damage bonus — so Salve(ei) +
+      // Twinflame is ×130/100, not trunc(trunc(×6/5)×11/10).
+      // https://oldschool.runescape.wiki/w/Twinflame_staff
+      const smokePct = scenario.smokeStaffStandard ? 10 : 0;
+      const flatPct = salveMagicPct(cbFlags) + smokePct;
+      if (flatPct !== 0) attackRoll = Math.trunc((attackRoll * (100 + flatPct)) / 100);
 
       const base = spellBaseMaxHit(scenario);
+      baseMax = base;
       let pctFromGear = scenario.magicDamagePercent ?? 0;
       // Shadow ×3 (overworld) / ×4 (Tombs of Amascut) on gear magic damage,
       // hard-capped at a total of 100%.
       if (scenario.shadowEquipped) pctFromGear = Math.min(pctFromGear * shadowMult, 100);
-      // Prayer magic damage % (e.g. Augury = +4%) folds into the single
-      // equipment-percent application, matching wgloop's behaviour where
-      // both contribute to magicDmgBonus before trackAddFactor.
+      // Prayer magic damage % (e.g. Augury = +4%) and the flat Salve / smoke
+      // staff percents fold into the single equipment-percent application,
+      // matching wgloop's magicDmgBonus before trackAddFactor.
       const prayerPctBoost = (scenario.prayers.magicDamageMultiplier - 1) * 100;
-      maxHit = magicMaxHit(base, pctFromGear + prayerPctBoost);
-
-      // Spellement weakness + the Tome of Water are applied AFTER the
-      // multiplicative bonuses (DHW / Salve / Void / Slayer) on BOTH sides —
-      // accuracy right after the slayer block, damage in the magic damage
-      // block further down — because both weakness bonuses are ADDITIVE from
-      // the unboosted base and must not be scaled by those multipliers.
-      // Twinflame staff: +10% accuracy & damage on any standard spellbook spell,
-      // plus a second cast worth ~40% of the first on Bolt/Blast/Wave (Strike and
-      // Surge get only the +10%). The double-cast is mean-equivalent to a ×7/5
-      // damage multiplier here. https://oldschool.runescape.wiki/w/Twinflame_staff
-      // An elemental amulet's +2 (in `base` above) is part of the first cast's max
-      // hit, so it flows into both the +10% and the second cast — upstream builds
-      // the second hitsplat as trunc(first hit * 4/10) of the amulet-inclusive hit.
-      if (scenario.twinflameStandard) {
-        attackRoll = Math.trunc((attackRoll * 11) / 10);
-        maxHit = Math.trunc((maxHit * 11) / 10);
-      }
-      if (scenario.twinflameDoubleCast) {
-        maxHit = Math.trunc((maxHit * 7) / 5);
-      }
+      // Elite Void's +5% is part of the same percent (damageOnMagicPercent).
+      const voidMagicDmg = scenario.armorSetBonus?.damageOnMagicPercent
+        ? scenario.armorSetBonus.damageFactor
+        : undefined;
+      const voidPct = voidMagicDmg ? ((voidMagicDmg[0] - voidMagicDmg[1]) / voidMagicDmg[1]) * 100 : 0;
+      maxHit = magicMaxHit(base, pctFromGear + prayerPctBoost + flatPct + voidPct);
       break;
     }
   }
 
-  // Armor-set bonus (Void / Elite Void) — applied BEFORE conditional bonuses
-  // (DHCB / Salve / demonbane) per wgloop's order. Pure multiplicative, no
-  // additive trick. Multiplier expressed as [n, d] (e.g. [11, 10] = ×1.10).
-  if (scenario.armorSetBonus) {
-    const setBonus = scenario.armorSetBonus;
+  // Armor-set bonus (Void / Elite Void / Crystal) — applied BEFORE Salve, the
+  // black mask and the weapon's target bonuses (DHCB / demonbane) per wgloop's
+  // order. Pure multiplicative. Multiplier expressed as [n, d] (e.g. [11, 10]
+  // = ×1.10). Inquisitor's and Obsidian are placed later (see their flags).
+  const setBonus = scenario.armorSetBonus;
+  if (setBonus && !setBonus.afterTargetBonuses && !setBonus.additiveFromBase) {
     // Void's accuracy factor was already applied to the effective level above;
     // applying it again here would double-count it.
     if (setBonus.accuracyFactor && !setBonus.accuracyOnEffectiveLevel) {
       const [n, d] = setBonus.accuracyFactor;
       attackRoll = Math.trunc((attackRoll * n) / d);
     }
-    if (setBonus.damageFactor && !setBonus.damageOnEffectiveLevel) {
+    // Void's damage factor likewise went into the effective level (melee /
+    // ranged) or the magic damage percent (Elite Void magic) above.
+    if (setBonus.damageFactor && !setBonus.damageOnEffectiveLevel && !setBonus.damageOnMagicPercent) {
       const [n, d] = setBonus.damageFactor;
       maxHit = Math.trunc((maxHit * n) / d);
     }
   }
 
-  attackRoll = applyFactors(attackRoll, mult.accuracy);
-  maxHit = applyFactors(maxHit, mult.damage);
-
-  // Black mask / slayer helmet (i) on-task — same bonus group as Salve/dragonbane.
-  // Suppressed upstream when a Salve is active, so this never double-counts.
-  const cbFlags = scenario.conditionalBonuses;
+  // Salve amulet / black mask — wgloop's first bonus slot ("these bonuses do
+  // not stack with each other"). Melee and ranged apply it right after the base
+  // roll / max hit, BEFORE every weapon target bonus: e.g. on-task Leaf-bladed
+  // battleaxe, base 41 -> trunc(trunc(41×7/6)×47/40) = 55, not 56. The mask is
+  // suppressed upstream (computeSetDps) while a Salve is active; Salve wins
+  // here too if both arrive. Magic folded its Salve into the percents above
+  // and places the mask below.
   const scorchingBowVsDemon =
     scenario.style === "ranged" && cbFlags?.demonbaneScorchingBow === true;
-  if (scenario.slayerOnTask) {
+  if (salve) {
+    attackRoll = applyFactors(attackRoll, [salve]);
+    maxHit = applyFactors(maxHit, [salve]);
+  } else if (scenario.slayerOnTask && scenario.style !== "magic") {
     const [n, d] = scenario.style === "melee" ? [7, 6] : [23, 20];
     attackRoll = Math.trunc((attackRoll * n) / d);
     // Ranged-bane DAMAGE bonuses fold additively INTO the mask multiplier on
@@ -485,13 +510,70 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       if (scorchingBowVsDemon) dmgN += 6;
     }
     maxHit = Math.trunc((maxHit * dmgN) / d);
-  } else if (scorchingBowVsDemon) {
+  }
+
+  // Magic black mask: ×23/20 — on damage right after the magic damage % (before
+  // dragonbane), on accuracy after dragonbane (below), as wgloop orders it. A
+  // Salve (i)/(ei) takes its slot, same as melee/ranged.
+  const magicMask =
+    scenario.style === "magic" && scenario.slayerOnTask === true && salveMagicPct(cbFlags) === 0;
+  if (magicMask) maxHit = Math.trunc((maxHit * 23) / 20);
+
+  // Obsidian armour + TzHaar weapon: + trunc(base/10), from the PRE-multiplier
+  // base, added after the Salve (wgloop PLAYER_ACCURACY_OBSIDIAN /
+  // MAX_HIT_OBSIDIAN) — not ×11/10 of the Salve-boosted value.
+  if (setBonus?.additiveFromBase) {
+    if (setBonus.accuracyFactor) {
+      const [n, d] = setBonus.accuracyFactor;
+      attackRoll = attackRoll + Math.trunc((baseRoll * (n - d)) / d);
+    }
+    if (setBonus.damageFactor) {
+      const [n, d] = setBonus.damageFactor;
+      maxHit = maxHit + Math.trunc((baseMax * (n - d)) / d);
+    }
+  }
+
+  // Weapon target bonuses (demonbane, dragonbane, keris, golembane, leafy,
+  // wilderness). Only one weapon is worn, so their order among themselves
+  // never matters — only their place after Salve / the mask does.
+  if (scenario.style === "magic") {
+    // wgloop magic accuracy: dragonbane → black mask → demonbane spell →
+    // wilderness (rev weapon).
+    attackRoll = applyFactors(attackRoll, mult.accuracy.filter((f) => !f.wilderness));
+    if (magicMask) attackRoll = Math.trunc((attackRoll * 23) / 20);
+    // Demonbane spell (Arceuus) vs a demon — magic accuracy only. The percent
+    // is scaled by the target's demonbane vulnerability first (wgloop
+    // demonbaneFactor: trunc(pct × vulnerability/100), e.g. 40% at Duke
+    // Sucellus 70% -> 28%).
+    if (scenario.demonbaneSpellAccuracyPct) {
+      const pct = scaleDemonbanePct(scenario.demonbaneSpellAccuracyPct, demonbaneVuln);
+      attackRoll = Math.trunc((attackRoll * (100 + pct)) / 100);
+    }
+    attackRoll = applyFactors(attackRoll, mult.accuracy.filter((f) => f.wilderness));
+  } else {
+    attackRoll = applyFactors(attackRoll, mult.accuracy);
+  }
+  maxHit = applyFactors(maxHit, mult.damage);
+
+  if (scorchingBowVsDemon && !foldRangedBane) {
     // Off-task the +30% damage stands alone (wgloop's
     // trackAddFactor(demonbaneFactor(30))), so it IS scaled by the target's
     // demonbane vulnerability. DHCB/wilderness damage stayed in `mult` as
     // ordinary multiplicative factors, so only the Scorching bow needs
     // handling here.
     maxHit = maxHit + Math.trunc((maxHit * scaleDemonbanePct(30, demonbaneVuln)) / 100);
+  }
+
+  // Inquisitor's armour: after every target bonus, as wgloop applies it.
+  if (setBonus?.afterTargetBonuses) {
+    if (setBonus.accuracyFactor) {
+      const [n, d] = setBonus.accuracyFactor;
+      attackRoll = Math.trunc((attackRoll * n) / d);
+    }
+    if (setBonus.damageFactor) {
+      const [n, d] = setBonus.damageFactor;
+      maxHit = Math.trunc((maxHit * n) / d);
+    }
   }
 
   // Magic accuracy: Tome of Water, then the elemental weakness — the last two
@@ -510,7 +592,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     }
     const weak = scenario.targetWeakness;
     if (weak && el && weak.element === el) {
-      attackRoll = attackRoll + Math.trunc((magicBaseRoll * weak.severity) / 100);
+      attackRoll = attackRoll + Math.trunc((baseRoll * weak.severity) / 100);
     }
   }
 
@@ -533,17 +615,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
 
   // Magic damage: elemental weakness then elemental tome — applied AFTER the
-  // multiplicative bonuses (DHW / Salve / Void / Slayer above) so the ADDITIVE
+  // multiplicative bonuses (Slayer / DHW / wilderness above) so the ADDITIVE
   // weakness bonus (⌊baseMax × severity/100⌋) isn't scaled by them. Mirrors
   // wgloop: ...×DHW → +weakness → ×tome. The tome multiplies the weakness, the
-  // dragon-hunter/salve/slayer multipliers do not. All three charged tomes are
+  // dragon-hunter/slayer multipliers do not. All three charged tomes are
   // ×11/10 vs NPCs (the Tome of Water dropped from ×6/5 in Project Rebalance).
   if (scenario.style === "magic") {
-    const base = spellBaseMaxHit(scenario);
     const el = scenario.spellElement;
     const weak = scenario.targetWeakness;
     if (weak && el && weak.element === el) {
-      maxHit = maxHit + Math.trunc((base * weak.severity) / 100);
+      maxHit = maxHit + Math.trunc((baseMax * weak.severity) / 100);
     }
     if (
       (scenario.tomeOfFireEquipped && el === "fire") ||
@@ -561,6 +642,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     if (scenario.demonbaneSpellDamagePct) {
       const bonus = Math.trunc((maxHit * scenario.demonbaneSpellDamagePct) / 100);
       maxHit = maxHit + Math.trunc((bonus * demonbaneVuln) / 100);
+    }
+    // Twinflame's second cast on Bolt/Blast/Wave: a hitsplat of trunc(h × 4/10)
+    // on top of the FINAL hit h — upstream transforms the finished distribution,
+    // after the slayer helm, dragonbane, weakness and tome — so the pair maxes
+    // at h + trunc(h × 4/10) = trunc(h × 7/5). This mean model takes ×7/5 of
+    // the max hit; upstream truncates every second hitsplat, so its DPS runs
+    // ~1–2% lower (max hit and accuracy match exactly). An elemental amulet's
+    // +2 sits in the base, so it reaches both casts.
+    if (scenario.twinflameDoubleCast) {
+      maxHit = Math.trunc((maxHit * 7) / 5);
     }
   }
 
