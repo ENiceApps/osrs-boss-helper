@@ -7,10 +7,13 @@
 //
 // The second half pins which of a page's drop tables count as one NORMAL kill
 // (selectDropTables / infoboxDropVersions): Yama's `Contract`/`Junk` tables and
-// the Slayer-cave / Chasm-of-Fire variants used to be summed into the normal kill.
+// the Slayer-cave / Chasm-of-Fire variants used to be summed into the normal kill,
+// and so did mutually exclusive splits (Scurrius MVP / non-MVP, zombie pirate
+// Diary / Regular, the Mimic's Elite / Master caskets).
 
 import { describe, expect, it } from "vitest";
 import {
+  DROP_QUANTITY_OVERRIDES,
   DROP_VERSION_OVERRIDES,
   evalArithmetic,
   extractDrops,
@@ -145,7 +148,7 @@ describe("extractDrops", () => {
     ].join("\n");
     expect(drops(wt, "Normal").get(526)?.expected).toBe(1);
     expect(drops(wt, "Hard").get(526)?.expected).toBe(5);
-    expect(drops(wt, "Other").get(526)?.expected).toBe(6); // orthogonal axis → everything counts
+    expect(drops(wt, "Other").get(526)?.expected).toBe(1); // matches neither → the first-listed alternative only
   });
 
   it("evaluates {{#expr}} rarities instead of reading a fraction out of the expression (Alchemical Hydra)", () => {
@@ -222,6 +225,50 @@ describe("parseQuantity", () => {
     expect(parseQuantity("4-8,7-11")).toBe(7.5);
     expect(parseQuantity("1;2")).toBe(1.5);
   });
+
+  it("treats `;` exactly like `,` — Module:DropsLine splits quantity on [,;] (Drake, the Whisperer)", () => {
+    expect(parseQuantity("8;10;12")).toBe(10); // Drake's shark lure: 8, 10 or 12
+    expect(parseQuantity("280; 420 (noted)")).toBe(350); // the Whisperer's pure essence
+    for (const [semi, comma] of [["1;2", "1,2"], ["4-8;7-11", "4-8,7-11"], ["933;1400", "933,1400"]]) {
+      expect(parseQuantity(semi), semi).toBe(parseQuantity(comma));
+    }
+  });
+});
+
+describe("quantity overrides (a list entry that is really a footnoted conditional extra)", () => {
+  // Greater demon's 100% line: the 2nd set of ashes only drops for a preferred-method Chasm of Fire kill.
+  const ASHES =
+    "{{DropsTableHead|dropversion=Regular}}\n{{DropsLine|name=Malicious ashes|quantity=1;2|rarity=Always|raritynotes={{refn|group=d|name=100%|A second set of ashes is dropped when the demon is killed with preferred method in the [[Chasm of Fire]].}}}}";
+  const OVERRIDE = [{ name: "Malicious ashes", wikiQuantity: "1;2", quantity: 1 }];
+
+  it("without an override the list averages, as the template's own price column does", () => {
+    expect(drops(ASHES).get(99004)?.expected).toBe(1.5);
+  });
+
+  it("an override replaces the matching line's quantity (rarity and rolls still apply)", () => {
+    expect(extractDrops(ASHES, "", NAME_TO_ID, [], OVERRIDE).get(99004)?.expected).toBe(1);
+    const halfRate = ASHES.replace("rarity=Always", "rarity=1/2|rolls=3");
+    expect(extractDrops(halfRate, "", NAME_TO_ID, [], [{ ...OVERRIDE[0], quantity: 4 }]).get(99004)?.expected).toBe(4); // min(1, 3/2) × 4
+  });
+
+  it("matches the item name case-insensitively and the wiki quantity ignoring whitespace", () => {
+    const spaced = ASHES.replace("quantity=1;2", "quantity= 1; 2 ");
+    expect(extractDrops(spaced, "", NAME_TO_ID, [], [{ name: "malicious ASHES", wikiQuantity: "1;2", quantity: 1 }]).get(99004)?.expected).toBe(1);
+  });
+
+  it("lapses once the wiki line changes, and never touches other items", () => {
+    const edited = ASHES.replace("quantity=1;2", "quantity=1;3");
+    expect(extractDrops(edited, "", NAME_TO_ID, [], OVERRIDE).get(99004)?.expected).toBe(2); // normal parsing again
+    const other = `${ASHES}\n{{DropsLine|name=Big bones|quantity=1;2|rarity=Always}}`;
+    expect(extractDrops(other, "", NAME_TO_ID, [], OVERRIDE).get(99005)?.expected).toBe(1.5);
+    expect(parseDropTables(ASHES, OVERRIDE)[0].lines).toEqual([{ name: "Malicious ashes", expected: 1 }]);
+  });
+
+  it("every quantity-override slug exists in the monster catalog", async () => {
+    const { MONSTER_CATALOG } = await import("@/data/monsters/catalog");
+    const slugs = new Set(MONSTER_CATALOG.map((m) => m.slug));
+    for (const slug of Object.keys(DROP_QUANTITY_OVERRIDES)) expect(slugs.has(slug), slug).toBe(true);
+  });
 });
 
 describe("extractDrops: which tables make up a normal kill", () => {
@@ -269,16 +316,58 @@ describe("extractDrops: which tables make up a normal kill", () => {
     }
   });
 
-  it("keeps every table when ALL of them are tagged and the version matches none (orthogonal axis: MVP / non-MVP)", () => {
+  it("takes only the first-listed alternative when ALL tables are tagged and the version matches none (Scurrius MVP / non-MVP)", () => {
     const wt = [
-      "{{Infobox Monster|version1 = Solo|version2 = Group|dropversion = MVP,non-MVP}}",
+      "{{Infobox Monster|version1 = Solo|version2 = Group}}",
+      "==Drops (MVP/Solo)==",
       "{{DropsTableHead|dropversion=MVP}}",
       line("Big bones", "Always"),
+      line("Rune dagger", "6/100"),
+      "{{DropsTableHead|dropversion=MVP}}",
+      line("Bones", "1/33"),
+      "==Drops (non-MVP)==",
       "{{DropsTableHead|dropversion=non-MVP}}",
       line("Big bones", "Always"),
+      line("Rune dagger", "3/33"),
+      "{{DropsTableHead|dropversion=non-MVP}}",
+      line("Bones", "1/33"),
     ].join("\n");
-    expect(drops(wt, "Group").get(99005)?.expected).toBe(2);
-    expect(drops(wt, "").get(99005)?.expected).toBe(2);
+    for (const version of ["Group", "Solo", ""]) {
+      const out = drops(wt, version);
+      expect(out.get(99005)?.expected, version).toBe(1); // not 2: a kill rolls MVP OR non-MVP
+      expect(out.get(1213)?.expected, version).toBeCloseTo(6 / 100, 9); // the MVP rate alone
+      expect(out.get(526)?.expected, version).toBeCloseTo(1 / 33, 9); // every table of that alternative counts
+    }
+  });
+
+  it("first-listed follows document order (zombie pirate Diary / Regular, the Mimic's Elite / Master)", () => {
+    const pirate = [
+      "{{Infobox Monster|version1 = Level 22|version2 = Level 28|version3 = Level 34|dropversion = Diary,Regular}}",
+      "{{DropsTableHead|dropversion=Diary}}",
+      line("Rune dagger", "12/378"),
+      "{{DropsTableHead|dropversion=Regular}}",
+      line("Rune dagger", "12/1260"),
+    ].join("\n");
+    expect(drops(pirate, "Level 34").get(1213)?.expected).toBeCloseTo(12 / 378, 9);
+    const mimic = [
+      "{{DropsTableHead|leagueRegion=Kourend|dropversion=Elite}}",
+      line("Flax", "Always"),
+      "{{DropsTableHead|leagueRegion=Kourend|dropversion=Master}}",
+      line("Flax", "Always"),
+    ].join("\n");
+    expect(drops(mimic, "").get(1779)?.expected).toBe(1);
+  });
+
+  it("a multi-tag first table brings in every table sharing its first tag, not the second tag's own tables", () => {
+    const wt = [
+      "{{DropsTableHead|dropversion=A, B}}",
+      line("Bones", "Always"),
+      "{{DropsTableHead|dropversion=B}}",
+      line("Rune dagger", "Always"),
+      "{{DropsTableHead|dropversion=a}}",
+      line("Flax", "Always"),
+    ].join("\n");
+    expect([...drops(wt, "C").keys()].sort((x, y) => x - y)).toEqual([526, 1779]);
   });
 
   it("leaves a matching version as before: its tables plus the untagged ones, nothing else", () => {
@@ -360,6 +449,14 @@ describe("extractDrops: which tables make up a normal kill", () => {
     expect(drops(wt, "").get(1213)?.expected).toBe(0.5);
     const f2pOnly = `{{DropsTableHead|dropversion=F2P}}\n${line("Rune dagger", "1/2")}`;
     expect(drops(f2pOnly, "").get(1213)?.expected).toBe(0.5);
+    // a free-to-play table listed FIRST still loses to the members one
+    const f2pFirst = [
+      "{{DropsTableHead|dropversion=Free-to-play}}",
+      line("Rune dagger", "1/2"),
+      "{{DropsTableHead|dropversion=Members}}",
+      line("Rune dagger", "1/4"),
+    ].join("\n");
+    expect(drops(f2pFirst, "").get(1213)?.expected).toBe(0.25);
   });
 
   it("an override picks the sub-variant's tables; one the page doesn't carry falls back to the normal rules", () => {
@@ -370,7 +467,7 @@ describe("extractDrops: which tables make up a normal kill", () => {
       line("Rune dagger", "Always"),
     ].join("\n");
     expect([...extractDrops(wt, "Level 48, 1", NAME_TO_ID, ["Level 48"]).keys()]).toEqual([1213]);
-    expect(extractDrops(wt, "Level 48, 1", NAME_TO_ID, ["Level 99"]).size).toBe(2);
+    expect([...extractDrops(wt, "Level 48, 1", NAME_TO_ID, ["Level 99"]).keys()]).toEqual([526]); // first-listed (Level 25)
   });
 
   it("parseDropTables / selectDropTables expose the table split (tags are comma-split and trimmed)", () => {
@@ -424,11 +521,23 @@ describe("generated data (data/bosses/drops.ts) keeps what the old parser lost",
   it("Black demon / Greater demon ashes come from their own table, not the sum of every location's", () => {
     // Black demon (Level 188) is the Wilderness Slayer Cave variant: that table's lone `Malicious ashes ... Always`.
     expect(has("black-demon", "Malicious ashes")?.expected).toBe(1);
-    // Greater demon (Level 113) uses the "Regular" table. Its line is `quantity=1;2` (the 2nd set is Chasm-of-Fire
-    // only), which the parser averages to 1.5; the old bug added the Wilderness Slayer Cave table's 1 on top (2.5).
-    const vile = has("greater-demon", "Vile ashes")?.expected ?? NaN;
-    expect(vile).toBeGreaterThanOrEqual(1);
-    expect(vile).toBeLessThanOrEqual(1.5);
+    // Greater demon (Level 113) uses the "Regular" table. Its line is `quantity=1;2` where the 2nd set is a
+    // Chasm-of-Fire-only extra (DROP_QUANTITY_OVERRIDES), so exactly 1 — not the list average 1.5, and not the
+    // old bug's 2.5 (the Wilderness Slayer Cave table's 1 added on top).
+    expect(has("greater-demon", "Vile ashes")?.expected).toBe(1);
+  });
+
+  it("mutually exclusive tables are no longer summed (Scurrius MVP, zombie pirate Diary, the Mimic's Elite casket)", () => {
+    // https://oldschool.runescape.wiki/w/Money_making_guide/Killing_Scurrius uses the MVP table's 6/100 rates.
+    expect(has("scurrius", "Big bones")?.expected).toBe(1); // was 2 (MVP + non-MVP)
+    expect(has("scurrius", "Rune arrow")?.expected).toBeCloseTo(35 * (6 / 100), 6); // was + 27.5 × 3/33
+    expect(has("scurrius", "Chaos rune")?.expected).toBeCloseTo(97.5 * (6 / 100), 6); // was 10.85
+    // https://oldschool.runescape.wiki/w/Money_making_guide/Killing_zombie_pirates_(Budget) lists the Medium
+    // Wilderness Diary as a requirement and uses the Diary table's x/378 rates.
+    expect(has("zombie-pirate", "Coins")?.expected).toBeCloseTo(4500 * (12 / 378), 3); // was + 4500 × 12/1260
+    expect(has("zombie-pirate", "Bones")?.expected).toBe(1);
+    // The Mimic: one plank per kill (only its 100% lines are DropsLines; the rest are DropsLineReward).
+    expect(has("the-mimic", "Mahogany plank")?.expected).toBe(1);
   });
 
   it("variants that matched no tag no longer sum alternate tables", () => {

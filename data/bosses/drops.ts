@@ -13593,7 +13593,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 25769,
       "name": "Vile ashes",
-      "expected": 1.5
+      "expected": 1
     },
     {
       "itemId": 562,
@@ -24148,32 +24148,27 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 10.85
-    },
-    {
-      "itemId": 560,
-      "name": "Death rune",
-      "expected": 5.586364
+      "expected": 5.85
     },
     {
       "itemId": 890,
       "name": "Adamant arrow",
-      "expected": 4.6
+      "expected": 2.1
     },
     {
       "itemId": 892,
       "name": "Rune arrow",
-      "expected": 4.6
+      "expected": 2.1
+    },
+    {
+      "itemId": 560,
+      "name": "Death rune",
+      "expected": 1.95
     },
     {
       "itemId": 532,
       "name": "Big bones",
-      "expected": 2
-    },
-    {
-      "itemId": 563,
-      "name": "Law rune",
-      "expected": 1.509091
+      "expected": 1
     },
     {
       "itemId": 2134,
@@ -24181,34 +24176,24 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 1
     },
     {
+      "itemId": 563,
+      "name": "Law rune",
+      "expected": 0.6
+    },
+    {
       "itemId": 333,
       "name": "Trout",
-      "expected": 0.301818
+      "expected": 0.12
     },
     {
       "itemId": 361,
       "name": "Tuna",
-      "expected": 0.301818
+      "expected": 0.12
     },
     {
       "itemId": 379,
       "name": "Lobster",
-      "expected": 0.301818
-    },
-    {
-      "itemId": 173,
-      "name": "Ranging potion(1)",
-      "expected": 0.120909
-    },
-    {
-      "itemId": 161,
-      "name": "Super strength(1)",
-      "expected": 0.120909
-    },
-    {
-      "itemId": 385,
-      "name": "Shark",
-      "expected": 0.060303
+      "expected": 0.12
     },
     {
       "itemId": 1123,
@@ -24246,9 +24231,24 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
       "expected": 0.06
     },
     {
+      "itemId": 385,
+      "name": "Shark",
+      "expected": 0.03
+    },
+    {
+      "itemId": 173,
+      "name": "Ranging potion(1)",
+      "expected": 0.03
+    },
+    {
+      "itemId": 161,
+      "name": "Super strength(1)",
+      "expected": 0.03
+    },
+    {
       "itemId": 1985,
       "name": "Cheese",
-      "expected": 0.040303
+      "expected": 0.01
     }
   ],
   "sea-snake-hatchling": [
@@ -29519,7 +29519,7 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 8782,
       "name": "Mahogany plank",
-      "expected": 2
+      "expected": 1
     }
   ],
   "the-nightmare": [
@@ -34830,137 +34830,137 @@ export const DROPS_BY_SLUG: Record<string, BossDrop[]> = {
     {
       "itemId": 995,
       "name": "Coins",
-      "expected": 185.714286
+      "expected": 142.857143
     },
     {
       "itemId": 2,
       "name": "Steel cannonball",
-      "expected": 2.47619
+      "expected": 1.904762
     },
     {
       "itemId": 526,
       "name": "Bones",
-      "expected": 2
+      "expected": 1
     },
     {
       "itemId": 560,
       "name": "Death rune",
-      "expected": 0.825397
+      "expected": 0.634921
     },
     {
       "itemId": 562,
       "name": "Chaos rune",
-      "expected": 0.825397
+      "expected": 0.634921
     },
     {
       "itemId": 558,
       "name": "Mind rune",
-      "expected": 0.825397
+      "expected": 0.634921
     },
     {
       "itemId": 24607,
       "name": "Blighted ancient ice sack",
-      "expected": 0.825397
+      "expected": 0.634921
     },
     {
       "itemId": 565,
       "name": "Blood rune",
-      "expected": 0.619048
+      "expected": 0.47619
     },
     {
       "itemId": 24592,
       "name": "Blighted anglerfish",
-      "expected": 0.412698
+      "expected": 0.31746
     },
     {
       "itemId": 24589,
       "name": "Blighted manta ray",
-      "expected": 0.412698
+      "expected": 0.31746
     },
     {
       "itemId": 24595,
       "name": "Blighted karambwan",
-      "expected": 0.412698
+      "expected": 0.31746
     },
     {
       "itemId": 444,
       "name": "Gold ore",
-      "expected": 0.412698
+      "expected": 0.31746
     },
     {
       "itemId": 29458,
       "name": "Adamant seeds",
-      "expected": 0.206349
+      "expected": 0.15873
     },
     {
       "itemId": 24598,
       "name": "Blighted super restore(4)",
-      "expected": 0.08254
+      "expected": 0.063492
     },
     {
       "itemId": 1391,
       "name": "Battlestaff",
-      "expected": 0.055026
+      "expected": 0.042328
     },
     {
       "itemId": 29449,
       "name": "Zombie pirate key",
-      "expected": 0.055026
+      "expected": 0.042328
     },
     {
       "itemId": 1123,
       "name": "Adamant platebody",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1147,
       "name": "Rune med helm",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1347,
       "name": "Rune warhammer",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1373,
       "name": "Rune battleaxe",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1303,
       "name": "Rune longsword",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1289,
       "name": "Rune sword",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1432,
       "name": "Rune mace",
-      "expected": 0.020635
+      "expected": 0.015873
     },
     {
       "itemId": 1215,
       "name": "Dragon dagger",
-      "expected": 0.003439
+      "expected": 0.002646
     },
     {
       "itemId": 1305,
       "name": "Dragon longsword",
-      "expected": 0.003439
+      "expected": 0.002646
     },
     {
       "itemId": 4587,
       "name": "Dragon scimitar",
-      "expected": 0.003439
+      "expected": 0.002646
     },
     {
       "itemId": 29455,
       "name": "Teleport anchoring scroll",
-      "expected": 0.000065
+      "expected": 0.00005
     }
   ],
   "zombie-pirate-braindeath-island": [

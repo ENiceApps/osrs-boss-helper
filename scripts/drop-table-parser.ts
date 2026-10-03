@@ -251,6 +251,12 @@ export function resolveInlineExprs(value: string): string {
  * the Desert Treasure II bosses give a min,max pair), it is never a thousands
  * separator in a DropsLine quantity, so it must not glue digit groups together
  * ("933,1400" is two numbers, not 9,331,400).
+ *
+ * A semicolon is the SAME list separator: Module:DropsLine splits the quantity
+ * on `[,;]` and renders every list back as `a; b`, so `8;10;12` (Drake's shark
+ * lure) means "8, 10 or 12" and averages to 10. The list carries no weights; when
+ * an entry is really a conditional extra explained only in a footnote (the
+ * demons' `1;2` ashes), see {@link DROP_QUANTITY_OVERRIDES}.
  */
 export function parseQuantity(raw: string | undefined): number {
   if (!raw) return 1;
@@ -297,11 +303,44 @@ export interface DropTable {
 }
 
 /**
+ * A quantity the wiki line can't express: its `quantity=` list mixes a normal
+ * kill's amount with a conditional extra that only a footnote explains (the
+ * template has no way to say which entry applies when).
+ */
+export interface QuantityOverride {
+  /** Item name on the DropsLine (case-insensitive). */
+  name: string;
+  /**
+   * The line's `quantity=` as the wiki writes it (whitespace ignored). The
+   * override applies only while the line still reads this, so an edited page
+   * falls back to normal parsing instead of being silently pinned.
+   */
+  wikiQuantity: string;
+  /** Units per normal kill of this catalog monster. */
+  quantity: number;
+}
+
+/**
+ * Per-monster {@link QuantityOverride}s, slug → overrides. Each entry names the
+ * page it was checked against.
+ */
+export const DROP_QUANTITY_OVERRIDES: Readonly<Record<string, readonly QuantityOverride[]>> = {
+  // https://oldschool.runescape.wiki/w/Greater_demon — `Vile ashes|quantity=1;2` in the "Regular" 100% table,
+  // footnoted "A second set of ashes is dropped when the demon is killed with preferred method in the Chasm
+  // of Fire". The catalog's Level 113 is a Catacombs of Kourend demon (infobox `dropversion5 = Regular,Catacombs
+  // of Kourend`), so it always drops exactly one. (Lesser/Black demon carry the same line, but their catalog
+  // versions are the Wilderness Slayer Cave ones, whose own table says `quantity=1`.)
+  "greater-demon": [{ name: "Vile ashes", wikiQuantity: "1;2", quantity: 1 }],
+};
+
+const sameQuantityText = (a: string, b: string) => a.replace(/\s+/g, "") === b.replace(/\s+/g, "");
+
+/**
  * Parse every drop table on a page, in document order, without choosing between
  * them. Free-to-play-only (`{{(f)}}`) lines and lines whose rarity can't be
  * quantified are dropped here; item-name lookup happens later (`extractDrops`).
  */
-export function parseDropTables(rawWikitext: string): DropTable[] {
+export function parseDropTables(rawWikitext: string, quantityOverrides: readonly QuantityOverride[] = []): DropTable[] {
   // Editor comments can sit inside a param ("quantity=1<!-- … changing this to 2 … -->")
   // and would otherwise feed their digits into the quantity average.
   const wikitext = stripHtmlComments(rawWikitext);
@@ -331,7 +370,10 @@ export function parseDropTables(rawWikitext: string): DropTable[] {
     const prob = parseRarity(p.rarity);
     if (prob === null) continue;
     const rolls = p.rolls ? Math.max(1, parseInt(p.rolls, 10) || 1) : 1;
-    const qty = parseQuantity(p.quantity);
+    const override = quantityOverrides.find(
+      (o) => o.name.toLowerCase() === name.toLowerCase() && p.quantity !== undefined && sameQuantityText(o.wikiQuantity, p.quantity),
+    );
+    const qty = override ? override.quantity : parseQuantity(p.quantity);
     const expected = Math.min(1, prob * rolls) * qty;
     if (!(expected > 0)) continue;
 
@@ -430,10 +472,14 @@ const isF2pOnly = (t: DropTable) => t.versions.length > 0 && t.versions.every((v
  * 4. Untagged tables exist → ONLY those. A tagged table is then an alternate mode
  *    the wiki lists separately (Yama's `Junk` / `Contract`, a Slayer-cave variant,
  *    a page-turning task) and summing it into the normal kill double-counts.
- * 5. Every table is tagged and none matches → the wiki split the page on an axis
- *    the catalog doesn't model (MVP / non-MVP, Diary / Regular, …) → keep them
- *    all, except free-to-play-only tables when members tables exist (this is a
- *    members-world estimate; the F2P table is a full copy of the same kill).
+ * 5. Every table is tagged and none matches → the tags split the page into
+ *    alternatives the catalog doesn't model (MVP / non-MVP, Diary / Regular,
+ *    Elite / Master casket, Members / Free-to-play). A kill rolls ONE of them, so
+ *    summing them overstates it: keep only the first-listed alternative's tables.
+ *    The wiki leads with the primary table — Scurrius' "Drops (MVP/Solo)", the
+ *    zombie pirate's Medium Wilderness Diary table, both of which the pages'
+ *    money-making guides assume. Free-to-play-only tables are skipped when
+ *    members tables exist (this is a members-world estimate).
  */
 export function selectDropTables(
   tables: readonly DropTable[],
@@ -453,7 +499,10 @@ export function selectDropTables(
     (infoboxTags ? withTags(infoboxTags) : null);
   if (chosen) return chosen;
   if (tables.some(untagged)) return tables.filter(untagged);
-  return tables.some((t) => !isF2pOnly(t)) ? tables.filter((t) => !isF2pOnly(t)) : [...tables];
+  const members = tables.filter((t) => !isF2pOnly(t));
+  const pool = members.length > 0 ? members : tables;
+  const first = pool[0]?.versions[0];
+  return first === undefined ? [] : pool.filter((t) => t.versions.some((v) => sameTag(v, first)));
 }
 
 /**
@@ -467,11 +516,12 @@ export function extractDrops(
   catalogVersion: string,
   nameToId: Map<string, number>,
   overrideTags: readonly string[] = [],
+  quantityOverrides: readonly QuantityOverride[] = [],
 ): Map<number, BossDrop> {
   const byId = new Map<number, BossDrop>();
   const wikitext = stripHtmlComments(rawWikitext);
   const chosen = selectDropTables(
-    parseDropTables(wikitext),
+    parseDropTables(wikitext, quantityOverrides),
     catalogVersion,
     infoboxDropVersions(wikitext, catalogVersion),
     overrideTags,

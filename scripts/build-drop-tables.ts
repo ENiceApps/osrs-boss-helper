@@ -6,7 +6,8 @@
 // The parsing itself lives in ./drop-table-parser (pure, unit-tested), including
 // which of a page's tables make up one NORMAL kill of a catalog monster (its
 // version's tables plus the untagged ones; Yama's Contract/Junk extras and other
-// locations' variants are left out) and the few per-slug overrides.
+// locations' variants are left out; of mutually exclusive tables such as MVP /
+// non-MVP only the first-listed counts) and the few per-slug overrides.
 // For each line we fold the rarity and roll count into an EXPECTED quantity per
 // kill; the runtime multiplies that by live GE prices, so prices are NOT baked
 // in here — only item id, name, and expected-per-kill.
@@ -18,7 +19,7 @@ import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MONSTER_CATALOG } from "../data/monsters/catalog";
-import { DROP_VERSION_OVERRIDES, extractDrops, type BossDrop } from "./drop-table-parser";
+import { DROP_QUANTITY_OVERRIDES, DROP_VERSION_OVERRIDES, extractDrops, type BossDrop } from "./drop-table-parser";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const UA = "osrs-boss-helper drop-table codegen (https://osrs-boss-helper-2026.vercel.app)";
@@ -101,7 +102,7 @@ async function main() {
     for (const m of chunk) {
       const wikitext = batch.get(m.name);
       if (!wikitext) continue;
-      const byId = extractDrops(wikitext, m.version, nameToId, DROP_VERSION_OVERRIDES[m.slug]);
+      const byId = extractDrops(wikitext, m.version, nameToId, DROP_VERSION_OVERRIDES[m.slug], DROP_QUANTITY_OVERRIDES[m.slug]);
       if (byId.size === 0) continue;
       // Largest expected-value contributors first is price-dependent, so just
       // sort by expected count here; the runtime re-sorts by gp value.

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Gitignored local clone of upstream weirdgloop/osrs-dps-calc (scripts/oracle/setup-oracle.ts).
+    ".oracle/**",
   ]),
 ]);
 
