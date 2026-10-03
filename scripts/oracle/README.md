@@ -189,6 +189,20 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   (ruby / diamond / opal) and is the fang's trimmed normal max; ours is the
   normal hit / the fang's true max (the UI derives the fang's normal max).
   DPS matches; combos carry `knownMaxHitResidual`.
+- **Corporeal Beast halving** — upstream halves each rolled hitsplat
+  (`divisionTransformer(2)`); we halve the max hit and take half of that.
+  For an even pre-halving max M the mean of trunc(X/2) over 0..M is
+  k²/(2k+1) (M = 2k), so ours runs ×(M+1)/M high; odd M is exact. Split
+  weapons compound it: we split the halved max (Torag's 39 → 19 → 9 + 10),
+  upstream halves each 0..19 / 0..20 half (+5.6% vs Corp).
+- **Corp × enchanted bolts** — upstream applies opal / pearl / dragonstone /
+  diamond / onyx BEFORE the Corp halving, so their bonus damage is halved
+  too; we add the full proc on top of the halved max (ACB vs Corp: opal
+  +11.4%, dragonstone +8.0%, pearl +6.9%, onyx / diamond +2.3%). Ruby fires
+  after the halving upstream as well (+0.7% here).
+- **Harness: Tormented Demon** — the worker's TD instance reports accuracy
+  1.0000 (max hits match ours), so TD rows can't be oracle-checked yet. The
+  shield's ×4/5 minimum-1 transform is covered by the unit tests instead.
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).

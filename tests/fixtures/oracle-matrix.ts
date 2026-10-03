@@ -56,7 +56,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "demonbane: +70% damage ADDITIVE vs demon attribute",
     ],
     wikiNotes: "Piety prayer. K'ril Tsutsaroth. Arclight must be equipped (not Inactive).",
-    baseline: { maxHit: 45, accuracy: 0.3705, dps: 3.474, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    baseline: { maxHit: 45, accuracy: 0.3705, dps: 3.477, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
   },
 
   // ─── Void Knight (Ranged — regular) ───────────────────────────────────────
@@ -75,7 +75,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     wikiNotes: "Rigour prayer. General Graardor. No Kandarin diary (bolts are not enchanted).",
     // accuracy corrected 0.3423 → 0.3408 (bug #8: void ×11/10 applies to the
     // effective level, not the attack roll). Now matches wgloop.
-    baseline: { maxHit: 38, accuracy: 0.3408, dps: 2.158, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
+    baseline: { maxHit: 38, accuracy: 0.3408, dps: 2.161, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Elite Void Knight (Ranged) ───────────────────────────────────────────
@@ -93,7 +93,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     ],
     wikiNotes: "Rigour prayer. General Graardor. Elite void top + robe equipped.",
     // accuracy corrected 0.3423 → 0.3408 (bug #8). Now matches wgloop.
-    baseline: { maxHit: 39, accuracy: 0.3408, dps: 2.215, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
+    baseline: { maxHit: 39, accuracy: 0.3408, dps: 2.218, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Void Knight (Melee) ──────────────────────────────────────────────────
@@ -110,7 +110,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     ],
     wikiNotes: "Piety prayer. General Graardor. Void gloves are mandatory for the set.",
     // accuracy corrected 0.2971 → 0.2952 (bug #8). Now matches wgloop.
-    baseline: { maxHit: 39, accuracy: 0.2952, dps: 2.398, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
+    baseline: { maxHit: 39, accuracy: 0.2952, dps: 2.401, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Tome of Fire + elemental weakness ────────────────────────────────────
@@ -132,7 +132,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     // dps corrected 9.262 → 7.410 after the magic cast-speed fix (Fire Surge
     // autocasts at 5 ticks, not the Kodai wand's 4-tick melee speed). Now matches
     // the wgloop engine (7.416) via scripts/oracle.
-    baseline: { maxHit: 48, accuracy: 0.9262, dps: 7.41, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
+    baseline: { maxHit: 48, accuracy: 0.9262, dps: 7.416, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Twisted bow at high-magic boss ───────────────────────────────────────
@@ -150,7 +150,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
       "Tbow cap: 250 (non-Xerician boss) — different scaling point than Vorkath fixtures",
     ],
     wikiNotes: "Rigour prayer. Cerberus. Twisted bow equipped.",
-    baseline: { maxHit: 38, accuracy: 0.7922, dps: 5.017, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
+    baseline: { maxHit: 38, accuracy: 0.7922, dps: 5.025, verifiedOn: "engine-only (TODO: verify at dps.osrs.wiki)" },
   },
 
   // ─── Inquisitor's armour (attack-type-gated set bonus) ────────────────────
@@ -169,7 +169,7 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     wikiNotes: "Piety prayer. General Graardor. Full Inquisitor's set. Barrelchest anchor (crush style).",
     // Matches wgloop exactly once the oracle replays our post-buff Inquisitor
     // stat-overrides into the clone (its pinned equipment.json is pre-buff).
-    baseline: { maxHit: 47, accuracy: 0.374, dps: 2.441, verifiedOn: "2026-06-23 (oracle vs wgloop)" },
+    baseline: { maxHit: 47, accuracy: 0.374, dps: 2.443, verifiedOn: "2026-10-03 (oracle vs wgloop)" },
   },
 
   // ─── Obsidian armour (weapon-gated set bonus) ─────────────────────────────
@@ -187,15 +187,15 @@ export const ORACLE_MATRIX: OracleFixture[] = [
     ],
     wikiNotes: "Piety prayer. Cerberus. Toktz-xil-ak (obsidian sword) equipped. Full obsidian set. Berserker necklace.",
     // maxHit corrected 36 → 43 after modelling the Berserker necklace ×6/5 (bug
-    // #6). maxHit + accuracy now match wgloop exactly; dps 5.693 vs wgloop 5.625
-    // (~1.2%) — a residual from wgloop flooring each value of the scaled hit
+    // #6). maxHit + accuracy now match wgloop exactly; dps 5.700 vs wgloop 5.625
+    // (~1.3%) — a residual from wgloop flooring each value of the scaled hit
     // distribution, which our max-hit-only model doesn't capture (see dpsNote).
     baseline: {
       maxHit: 43,
       accuracy: 0.6355,
-      dps: 5.693,
-      verifiedOn: "2026-06-23 (oracle vs wgloop)",
-      dpsNote: "wgloop 5.625; ~1.2% gap from distribution-flooring on the necklace ×6/5",
+      dps: 5.7,
+      verifiedOn: "2026-10-03 (oracle vs wgloop)",
+      dpsNote: "wgloop 5.625; ~1.3% gap from distribution-flooring on the necklace ×6/5",
     },
   },
 ];
