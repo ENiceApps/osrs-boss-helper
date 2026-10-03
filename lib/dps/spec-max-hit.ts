@@ -9,6 +9,8 @@
 // TRUE max (the fang's normal attack is capped to ~85%, see `uncapped`).
 
 import { findSpecWeapon, specMaxHitMod } from "@/data/spec-weapons";
+import type { DpsResult } from "@/types/osrs";
+import { npcHitMax, npcHitMin, type NpcHitTransforms } from "./npc-transforms";
 
 export interface SpecMaxHitDisplay {
   /** Spec's wiki name, e.g. "Eviscerate", "The Judgement". */
@@ -46,24 +48,42 @@ function fangNormalMax(trueMax: number): number {
 export function specMaxHitDisplay(
   weaponItemId: number,
   maxHit: number,
-  flatArmour?: { armour: number; rawMaxHit: number },
+  flatArmour?: DpsResult["flatArmour"],
+  npcHit?: DpsResult["npcHitTransforms"],
 ): SpecMaxHitDisplay | null {
   const mod = specMaxHitMod(weaponItemId);
   if (!mod) return null;
 
-  if (flatArmour) {
-    const raw = specMaxHitDisplay(weaponItemId, flatArmour.rawMaxHit);
+  // NPC transforms reshape each spec hit as they do a normal one: Zulrah caps
+  // it at 50 (over 50 rerolls into 45-50), the Kraken divides a ranged one by
+  // 7 (minimum 1), and flat armour shifts it last. So derive the raw spec
+  // from the max before them and put each hit through them, rather than
+  // scaling the already-transformed max (Zulrah: trunc(50 × 5/4) = 62).
+  if (flatArmour || npcHit) {
+    const raw = specMaxHitDisplay(
+      weaponItemId,
+      npcHit ? npcHit.rawMaxHit : flatArmour!.rawMaxHit,
+    );
     if (!raw) return null;
-    const shift = (n: number): number => Math.max(0, n - flatArmour.armour);
+    const t: NpcHitTransforms = npcHit ?? {};
+    const shift = (n: number): number => Math.max(0, n - (flatArmour?.armour ?? 0));
     // A spec that hits as magic (Voidwaker) skips flat armour.
-    const specShift = mod.magicDamage ? (n: number) => n : shift;
+    const armoured = mod.magicDamage ? (n: number) => n : shift;
+    const top = (n: number): number => armoured(npcHitMax(n, t));
+    // The floor of the rolls lo..hi once transformed: a roll over the cap can
+    // land as low as the reroll's bottom.
+    const floor = (lo: number, hi: number | null): number => {
+      const low = npcHitMin(lo, t);
+      const over = t.damageCap !== undefined && hi !== null && hi > t.damageCap.limit;
+      return armoured(over ? Math.min(low, npcHitMin(hi, t)) : low);
+    };
     return {
       ...raw,
       // The fang's normal max is derived (trimmed) here; every other weapon's
       // is the engine's own.
-      normalMaxHit: mod.uncapped ? shift(raw.normalMaxHit) : maxHit,
-      specMaxHit: raw.specMaxHit === null ? null : specShift(raw.specMaxHit),
-      ...(raw.minHit !== undefined ? { minHit: specShift(raw.minHit) } : {}),
+      normalMaxHit: mod.uncapped ? shift(npcHitMax(raw.normalMaxHit, t)) : maxHit,
+      specMaxHit: raw.specMaxHit === null ? null : top(raw.specMaxHit),
+      ...(raw.minHit !== undefined ? { minHit: floor(raw.minHit, raw.specMaxHit) } : {}),
     };
   }
 

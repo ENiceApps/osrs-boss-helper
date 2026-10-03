@@ -67,6 +67,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...corpCombos(),
     ...twistedBowCombos(),
     ...npcImmunityAndCapCombos(),
+    ...krakenRangedCombos(),
   ];
 }
 
@@ -515,6 +516,40 @@ export function npcImmunityAndCapCombos(): CanonicalCombo[] {
       meleeGear(NOXIOUS_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
     orderingCombo("zulrah-zcb-ruby-bolts", "zulrah",
       rangedGear(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "rapid", { knownMaxHitResidual: BOLT_MAX }),
+  ];
+}
+
+const BLAZING_BLOWPIPE = 28688; // Charged
+const DRAGON_DART = 11230;
+const TRIDENT_OF_THE_SWAMP = 12899;
+
+/**
+ * The Kraken's ranged ÷7 (upstream applyNpcTransforms L1945-1948,
+ * `divisionTransformer(7, 1)` for 'Kraken' and 'Cave kraken' when the style
+ * is ranged): every ranged hitsplat d lands max(1, trunc(d/7)) — a miss stays
+ * 0 — after the accurate-zero raise and ruby bolts, after Zulrah's cap and
+ * before the phase factors and flat armour. One combo per ranged mean branch:
+ * a blowpipe (the optimizer's old pick), each Armadyl crossbow bolt branch
+ * (ruby's proc of 51 lands 7; a diamond proc rolls to trunc(M × 115/100)
+ * first; an opal bonus on a miss lands max(1, trunc(9/7)) = 1), Dark bow's two
+ * arrows, the Cave kraken, and a magic control (Trident of the swamp) at full
+ * damage. Their numbers are locked in tests/kraken-ranged.test.ts.
+ */
+export function krakenRangedCombos(): CanonicalCombo[] {
+  const rangedGear = (weapon: number, ammo?: number): number[] =>
+    [weapon, ...(ammo === undefined ? [] : [ammo]), ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const blowpipe = { internalAmmoId: DRAGON_DART };
+  const boltMax = { knownMaxHitResidual: BOLT_MAX };
+  return [
+    orderingCombo("kraken-blazing-blowpipe", "kraken", rangedGear(BLAZING_BLOWPIPE), "ranged", "rapid", blowpipe),
+    orderingCombo("kraken-acb-ruby-bolts", "kraken", rangedGear(ARMADYL_CROSSBOW, 9242), "ranged", "rapid", boltMax),
+    orderingCombo("kraken-acb-diamond-bolts", "kraken", rangedGear(ARMADYL_CROSSBOW, 9243), "ranged", "rapid", boltMax),
+    orderingCombo("kraken-acb-opal-bolts", "kraken", rangedGear(ARMADYL_CROSSBOW, 9236), "ranged", "rapid", boltMax),
+    orderingCombo("kraken-dark-bow", "kraken", rangedGear(11235, DRAGON_ARROW), "ranged", "rapid"),
+    orderingCombo("cave-kraken-blazing-blowpipe", "cave-kraken",
+      rangedGear(BLAZING_BLOWPIPE), "ranged", "rapid", blowpipe),
+    orderingCombo("kraken-trident-of-the-swamp", "kraken",
+      [TRIDENT_OF_THE_SWAMP, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
   ];
 }
 

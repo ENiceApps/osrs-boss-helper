@@ -21,6 +21,7 @@ import type { PhasedMonster } from "@/lib/phases";
 import { categoryForMonster } from "@/data/monsters/categories";
 import { demonbaneVulnerabilityFor } from "@/data/monsters/demonbane-vulnerability";
 import { damageCapFor } from "@/data/monsters/damage-cap";
+import { styleDamageScaleFor } from "@/data/monsters/style-damage-scale";
 import {
   activeBonusesForTarget,
   defenceBonusForAttackType,
@@ -410,6 +411,8 @@ export function computeSetDps(
     targetFlatArmour: target.defenceBonuses.flatArmour,
     // Zulrah: every hitsplat over 50 deals 45-50, any style.
     targetDamageCap: damageCapFor(target),
+    // The Kraken / Cave kraken take ranged at trunc(d/7), minimum 1.
+    targetStyleDamageScale: styleDamageScaleFor(target, set.style),
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

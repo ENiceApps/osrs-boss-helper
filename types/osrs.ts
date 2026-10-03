@@ -218,6 +218,19 @@ export interface DpsResult {
    * derive other maxima (spec maxes) start from `rawMaxHit`. Omitted otherwise.
    */
   flatArmour?: { armour: number; rawMaxHit: number };
+  /**
+   * Set when an NPC transform before flat armour reshaped this loadout's hits
+   * — Zulrah's damage cap (over 50 → 45-50), the Kraken's ranged ÷7 (minimum
+   * 1): the per-hitsplat max before them (`rawMaxHit`) and the transforms
+   * (lib/dps/npc-transforms.ts). `maxHit` already includes them; spec-max
+   * displays start from `rawMaxHit` and put each spec hit through them.
+   * Omitted otherwise.
+   */
+  npcHitTransforms?: {
+    rawMaxHit: number;
+    damageCap?: { limit: number; rerollMin: number; rerollMax: number };
+    styleScale?: { factor: [number, number]; minimum?: number };
+  };
 }
 
 export interface BankContents {

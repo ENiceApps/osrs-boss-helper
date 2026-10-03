@@ -309,7 +309,7 @@ export function ResultsPanel({
         // godswords, Voidwaker, …), split the headline into the normal-attack max
         // and a separate special-attack max so they aren't conflated.
         const specMax = set.slots.weapon
-          ? specMaxHitDisplay(set.slots.weapon.itemId, dps.maxHit, dps.flatArmour)
+          ? specMaxHitDisplay(set.slots.weapon.itemId, dps.maxHit, dps.flatArmour, dps.npcHitTransforms)
           : null;
         const specValue = specMax
           ? specMax.varies ??

@@ -16,8 +16,9 @@
 // Every later transform runs on each hitsplat separately, in this order:
 // the Corporeal Beast halving (still inside getAttackerDist), the Mad Angel
 // reaction buffs, then the NPC transforms (applyNpcTransforms): Zulrah's damage
-// cap and the per-phase damage factor. So
-// the max hit and the mean are both rebuilt hitsplat by hitsplat here. Magic is
+// cap, a style scale (the Kraken's is ranged-only, so never this magic split)
+// and the per-phase damage factor. So the max hit and the mean are both
+// rebuilt hitsplat by hitsplat here. Magic is
 // corpbane, and none of these targets overlap, so in practice at most one of
 // them applies — but the order is upstream's either way.
 //
@@ -27,7 +28,7 @@
 // staff's leech is another weapon, so it never meets this split.
 
 import { scaleHitsplat } from "./common";
-import { cappedHitsplat, cappedMaxHit, type DamageCap } from "./damage-cap";
+import { npcHitMax, npcHitMean, type NpcHitTransforms } from "./npc-transforms";
 
 export interface TwinflameTransforms {
   /** Corporeal Beast halves each hitsplat (`DpsScenario.corpDamageHalved`). */
@@ -48,11 +49,11 @@ export interface TwinflameTransforms {
    */
   minHitFactor?: [number, number];
   /**
-   * The target's damage cap (`DpsScenario.targetDamageCap`, Zulrah: over 50 →
-   * 45-50), per hitsplat — upstream's first NPC transform, ahead of the phase
-   * factor.
+   * The NPC transforms ahead of the phase factor, per hitsplat: the damage cap
+   * (`DpsScenario.targetDamageCap`, Zulrah: over 50 → 45-50) and the style
+   * scale (`DpsScenario.targetStyleDamageScale`) — lib/dps/npc-transforms.ts.
    */
-  damageCap?: DamageCap;
+  npcHit?: NpcHitTransforms;
   /** Per-phase NPC damage scale (`DpsScenario.targetDamageFactor`), per hitsplat. */
   damageFactor?: [number, number];
   /** Its minimum (`DpsScenario.targetDamageMinimum`: the TD shield keeps a 1 at 1). */
@@ -81,7 +82,7 @@ export function twinflameDamage(
   transforms: TwinflameTransforms = {},
 ): TwinflameDamage {
   if (firstMax <= 0) return { maxHit: 0, meanLanded: 0 };
-  const { halved, minHitFactor, damageCap, damageFactor, damageMinimum } = transforms;
+  const { halved, minHitFactor, npcHit = {}, damageFactor, damageMinimum } = transforms;
 
   // Attacker side: the split, then the corp halving (each hitsplat).
   const halve = (s: number): number => (halved ? Math.trunc(s / 2) : s);
@@ -97,11 +98,11 @@ export function twinflameDamage(
     else floor = Math.trunc(((top1 + top2) * n) / d);
   }
 
-  // NPC side, each hitsplat: the damage cap (a mean — it rerolls a big hit),
-  // then the per-phase damage factor.
+  // NPC side, each hitsplat: the damage cap (a mean — it rerolls a big hit)
+  // and the style scale, then the per-phase damage factor.
   const scale = (s: number): number =>
     damageFactor ? scaleHitsplat(s, damageFactor, damageMinimum) : s;
-  const npc = (s: number): number => cappedHitsplat(s, damageCap, scale);
+  const npc = (s: number): number => npcHitMean(s, npcHit, scale);
 
   let total = 0;
   let maxHit = 0;
@@ -111,7 +112,7 @@ export function twinflameDamage(
     const s1 = Math.max(pinFirst ? top1 : halve(h), floor);
     const s2 = Math.max(halve(twinflameSecondHit(h)), floor);
     total += npc(s1) + npc(s2);
-    const pairMax = scale(cappedMaxHit(s1, damageCap)) + scale(cappedMaxHit(s2, damageCap));
+    const pairMax = scale(npcHitMax(s1, npcHit)) + scale(npcHitMax(s2, npcHit));
     if (pairMax > maxHit) maxHit = pairMax;
   }
   return { maxHit, meanLanded: total / (firstMax + 1) };

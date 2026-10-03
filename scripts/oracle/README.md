@@ -154,6 +154,19 @@ takes the FIRST entry with an id, and the Leviathan's 12214 is both
 Leviathan row compared different stat blocks until the worker re-picked by
 name + version.
 
+## Kraken ranged combos
+
+`krakenRangedCombos()` in `combos.ts` checks the Kraken's ranged ÷7
+(applyNpcTransforms L1945-1948, `divisionTransformer(7, 1)` for 'Kraken' and
+'Cave kraken' when the style is ranged): every ranged hitsplat of at least 1
+lands max(1, trunc(d/7)), misses included (an opal bonus on a miss lands 1).
+One combo per ranged mean branch: a Blazing blowpipe (max 26 → 3), the Armadyl
+crossbow's ruby (the proc of 51 lands 7), diamond and opal bolts, Dark bow's
+two arrows, the Cave kraken, and a Trident of the swamp as the magic control.
+wgloop's bolt max hits include the proc (`knownMaxHitResidual`). Their numbers
+are locked in `tests/kraken-ranged.test.ts`. The spec-max display in the
+results panel takes the same transforms (and Zulrah's cap) per spec hit.
+
 ## Sharding
 
 `--style=` runs one combat style. Fan three background agents out in parallel
@@ -295,12 +308,24 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   (Tekton, Dusk, the Glowing crystal, the Warriors' Guild cyclopes) and the
   Aviansies' non-salamander list (dead upstream: the flying check returns
   first) are still unmodelled.
-- **Kraken ranged ÷7** — upstream's applyNpcTransforms (L1945-1948) divides
+- ~~**Kraken ranged ÷7** — upstream's applyNpcTransforms (L1945-1948) divides
   every ranged hitsplat on the Kraken and Cave kraken by 7, minimum 1
   (`divisionTransformer(7, 1)`; the wiki: ranged "deals 1/7th of its normal
   damage"). Not modelled, so ranged runs ×7 high there — and with melee now
   0 the optimizer's Kraken pick is a Blazing blowpipe: 11.437 dps here, 1.495
-  upstream (max 29 vs 4). Magic is the real pick.
+  upstream (max 29 vs 4). Magic is the real pick.~~ **FIXED** 2026-10-03 —
+  every ranged hitsplat lands max(1, trunc(d/7)) (a miss stays 0), after the
+  Zulrah cap and before the phase factor and flat armour
+  (`data/monsters/style-damage-scale.ts`, `lib/dps/npc-transforms.ts`); the
+  Kraken's pick is magic again (Harmonised staff + Earth Surge, 10.812 here,
+  10.817 upstream — the gap is the Confliction gauntlets, below). See the
+  Kraken ranged combos.
+- **Confliction gauntlets** — upstream models the one-handed magic attack
+  after a miss rolling accuracy twice (BaseCalc
+  getConflictionGauntletsAccuracyRoll: hit chance d/(1 + d − s), d the
+  double-roll chance, s the single); we don't, so magic picks wearing them
+  run a little low (Harmonised staff + Fire Surge vs Zulrah:
+  accuracy 0.9350 vs 0.9386, 10.233 vs 10.273 dps; vs the Kraken 0.04%).
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).

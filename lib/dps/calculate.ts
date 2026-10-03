@@ -45,7 +45,9 @@ import {
   type HitProfile,
 } from "./multihit";
 import { armouredHit, meanArmouredHit, sumArmouredHits } from "./flat-armour";
-import { cappedHitsplat, cappedMaxHit, type DamageCap } from "./damage-cap";
+import type { DamageCap } from "./damage-cap";
+import { hasNpcHitTransforms, npcHitMax, npcHitMean, type NpcHitTransforms } from "./npc-transforms";
+import type { StyleDamageScale } from "@/data/monsters/style-damage-scale";
 import { twinflameDamage, twinflameSecondHit } from "./twinflame";
 import { applyTwistedBow, twistedBowMagic } from "./twisted-bow";
 import {
@@ -328,6 +330,15 @@ export interface DpsScenario {
    * the reported max hit is capped per hitsplat, as upstream's getMax() reads it.
    */
   targetDamageCap?: DamageCap;
+  /**
+   * A per-monster damage scale for this loadout's style — ranged vs the Kraken
+   * / Cave kraken: trunc(d/7), minimum 1 (upstream divisionTransformer(7, 1),
+   * PlayerVsNPCCalc L1945-1948; data/monsters/style-damage-scale.ts). An NPC
+   * transform: after the damage cap, before the phase factor and flat armour,
+   * on every hitsplat — a raised 0 stays 1, a ruby proc of 51 lands 7, a miss
+   * stays 0. Resolved upstream (computeSetDps) only for the matching style.
+   */
+  targetStyleDamageScale?: StyleDamageScale;
 }
 
 interface StyleBonuses {
@@ -772,20 +783,25 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // on its own, as upstream's getMax() sums them: 42 → 21 + 21 → 10 + 10 = 20,
   // not trunc(42/2) = 21.
   //
-  // A damage cap (Zulrah) is upstream's first NPC transform, so it caps each
-  // of those hitsplats in turn, after the halving: the Tbow's 66 vs Zulrah
-  // reports 50. The mean branches below roll from `preCorpMax` too.
+  // A damage cap (Zulrah) is upstream's first NPC transform and the Kraken's
+  // ranged ÷7 comes next, so each of those hitsplats takes them in turn, after
+  // the halving: the Tbow's 66 vs Zulrah reports 50, a blowpipe's 29 vs the
+  // Kraken 4. The mean branches below roll from `preCorpMax` too.
   // `attackerMax` is the max between the two — upstream's attacker-side
   // getMax(), which a Mad Angel floor reads before any NPC transform.
   const preCorpMax = maxHit;
-  const damageCap = scenario.targetDamageCap;
+  const npcT: NpcHitTransforms = {
+    damageCap: scenario.targetDamageCap,
+    styleScale: scenario.targetStyleDamageScale,
+  };
+  const npcTransforms = hasNpcHitTransforms(npcT);
   let attackerMax = maxHit;
-  if (scenario.corpDamageHalved || damageCap) {
+  if (scenario.corpDamageHalved || npcTransforms) {
     const halve = (m: number): number => (scenario.corpDamageHalved ? Math.trunc(m / 2) : m);
     const profile = scenario.hitProfile;
     const splats = profile && isSplitProfile(profile) ? hitsplatMaxima(profile, maxHit) : [maxHit];
     attackerMax = splats.reduce((sum, m) => sum + halve(m), 0);
-    maxHit = splats.reduce((sum, m) => sum + cappedMaxHit(halve(m), damageCap), 0);
+    maxHit = splats.reduce((sum, m) => sum + npcHitMax(halve(m), npcT), 0);
   }
 
   // Per-monster/per-phase damage scale (TD shield, Sire transition, Hueycoatl
@@ -797,16 +813,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
 
   // Twinflame: upstream applies the corp halving, the Mad Angel floors, the
-  // damage cap and the phase factor to EACH of the two hitsplats, so the
-  // pair's max and mean are rebuilt from the first cast's max rather than
-  // taken from the pair total transformed above.
+  // damage cap / style scale and the phase factor to EACH of the two
+  // hitsplats, so the pair's max and mean are rebuilt from the first cast's
+  // max rather than taken from the pair total transformed above.
   const twinflame =
     twinflameFirstMax === undefined
       ? undefined
       : twinflameDamage(twinflameFirstMax, {
           halved: scenario.corpDamageHalved,
           minHitFactor: scenario.targetMinHitFactor,
-          damageCap,
+          npcHit: npcT,
           damageFactor: scenario.targetDamageFactor,
           damageMinimum: scenario.targetDamageMinimum,
         });
@@ -844,15 +860,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // What upstream does to a hitsplat after its accurate-zero raise, in order:
   // the Corp halving (the last step of getAttackerDist that touches it), a Mad
-  // Angel floor, then the NPC transforms — the damage cap (Zulrah), the phase
-  // damage factor and, last, flat armour (accurate hitsplats only). The cap
-  // rerolls a big hit, so `npcHit` is the MEAN of what lands.
+  // Angel floor, then the NPC transforms — the damage cap (Zulrah), the style
+  // scale (the Kraken's ranged ÷7), the phase damage factor and, last, flat
+  // armour (accurate hitsplats only). The cap rerolls a big hit, so `npcHit`
+  // is the MEAN of what lands.
   const phaseHit = (h: number): number =>
     scenario.targetDamageFactor
       ? scaleHitsplat(h, scenario.targetDamageFactor, scenario.targetDamageMinimum)
       : h;
   const npcHit = (h: number, accurate = true): number =>
-    cappedHitsplat(h, damageCap, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
+    npcHitMean(h, npcT, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
   const afterRaise = (h: number, minimum = 0): number => {
     const halved = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
     return npcHit(Math.max(halved, minimum));
@@ -862,14 +879,15 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // high: the mean of trunc(r/2) over 0..M is ⌊M²/4⌋/(M+1), under trunc(M/2)/2
   // for an even M (M = 40: 400/41 ≈ 9.76, not 10), and each half of a split
   // weapon and each bolt bonus truncates on its own (an opal's +9 on a roll of
-  // 10 lands trunc(19/2) = 9, not 5 + 9). A damage cap likewise works per
-  // roll: Zulrah turns each roll over 50 into 47.5 on average, which no
-  // closed form on the capped max of 50 gives. So vs either, every mean branch
-  // below rolls from the pre-transform max and takes each landed hitsplat
-  // through `afterRaise` (`transformedMean`), in place of the closed forms on
-  // the transformed max. A Twinflame double cast does its own hitsplats
-  // (twinflameDamage).
-  const perHitsplat = (scenario.corpDamageHalved === true || damageCap !== undefined) && !twinflame;
+  // 10 lands trunc(19/2) = 9, not 5 + 9). The NPC transforms likewise work
+  // per roll: Zulrah turns each roll over 50 into 47.5 on average, the Kraken
+  // takes max(1, trunc(d/7)) of each ranged roll — no closed form on the
+  // transformed max (50, or 4 for a blowpipe's 29) gives either. So vs any of
+  // them, every mean branch below rolls from the pre-transform max and takes
+  // each landed hitsplat through `afterRaise` (`transformedMean`), in place of
+  // the closed forms on the transformed max. A Twinflame double cast does its
+  // own hitsplats (twinflameDamage).
+  const perHitsplat = (scenario.corpDamageHalved === true || npcTransforms) && !twinflame;
   const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
     meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));
 
@@ -929,12 +947,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // over 0..trunc(M × 115/100)) and is halved with the hit; ruby fires after
     // the halving, so its proc lands whole. Every hitsplat, ruby's included,
     // then meets the NPC transforms: Zulrah rerolls a ruby proc of 100 into
-    // 45-50.
+    // 45-50, the Kraken takes trunc(51/7) = 7 of its 51.
     const expected = perHitsplat
       ? transformedBoltDamagePerAttack(accuracy, preCorpMax, boltProc, {
           meanRoll: (lo, hi) => transformedMean(lo, hi),
-          // A missed opal / pearl bonus is halved and capped too, but never
-          // armoured (an inaccurate hitsplat).
+          // A missed opal / pearl bonus is halved, capped and scaled too
+          // (the Kraken: max(1, trunc(bonus/7))), but never armoured (an
+          // inaccurate hitsplat).
           miss: (damage) =>
             npcHit(scenario.corpDamageHalved ? Math.trunc(damage / 2) : damage, false),
           ruby: (damage) => npcHit(damage),
@@ -1046,13 +1065,22 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // hammers) reports the whole attack, so each half takes the shift (41 → 22 +
   // 23 = 45 vs −2); other multi-hit weapons report their largest hitsplat.
   // (Corp's own per-half halving is already in maxHit; Corp has no armour.)
+  // The cap / style scale are in maxHit too; `npcHitTransforms` carries the
+  // max before them, so a spec max can be derived and capped the same way.
+  const npcHitTransforms = npcTransforms ? { ...npcT, rawMaxHit: attackerMax } : undefined;
   if (armour !== 0) {
     const profile = scenario.hitProfile;
     const reported =
       profile && isSplitProfile(profile)
         ? hitsplatMaxima(profile, maxHit).reduce((sum, m) => sum + armouredHit(m, armour), 0)
         : armouredHit(maxHit, armour);
-    return { dps, maxHit: reported, accuracy, flatArmour: { armour, rawMaxHit: maxHit } };
+    return {
+      dps,
+      maxHit: reported,
+      accuracy,
+      flatArmour: { armour, rawMaxHit: maxHit },
+      ...(npcHitTransforms ? { npcHitTransforms } : {}),
+    };
   }
-  return { dps, maxHit, accuracy };
+  return { dps, maxHit, accuracy, ...(npcHitTransforms ? { npcHitTransforms } : {}) };
 }
