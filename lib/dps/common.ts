@@ -79,6 +79,24 @@ export function landedFloorLift(
 }
 
 /**
+ * Mean of `after(r)` over a roll uniform over lo..hi: the exact landed mean of
+ * a hitsplat whose later per-hitsplat transforms truncate each roll on its
+ * own. Corp's halving is the case that needs it: Σ_{r=0..M} trunc(r/2) =
+ * ⌊M²/4⌋, so a roll over 0..40 averages 400/41 ≈ 9.76 once halved, where
+ * halving the max first says trunc(40/2)/2 = 10 (an odd max agrees).
+ */
+export function meanTransformedRoll(
+  lo: number,
+  hi: number,
+  after: (hitsplat: number) => number,
+): number {
+  if (hi < lo) return 0;
+  let sum = 0;
+  for (let r = lo; r <= hi; r++) sum += after(r);
+  return sum / (hi - lo + 1);
+}
+
+/**
  * One hitsplat through a per-phase damage factor — wgloop's
  * multiplyTransformer(n, d, minimum): trunc(h × n/d), except that with a
  * minimum a hit of at least `minimum` never drops below it, and a smaller one

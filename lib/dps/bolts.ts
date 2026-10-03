@@ -163,7 +163,14 @@ export function expectedBoltDamagePerAttack(
   spec: BoltProcSpec,
   flatArmour = 0,
 ): number {
-  if (flatArmour !== 0) return armouredBoltDamagePerAttack(accuracy, maxHit, spec, flatArmour);
+  if (flatArmour !== 0) {
+    return transformedBoltDamagePerAttack(accuracy, maxHit, spec, {
+      meanRoll: (lo, hi) => meanArmouredHit(lo, hi, flatArmour),
+      // A missed opal / pearl hitsplat stays inaccurate: armour leaves it whole.
+      miss: (damage) => damage,
+      ruby: (damage) => armouredHit(damage, flatArmour),
+    });
+  }
   const base = accuracy * (maxHit / 2);
   switch (spec.kind) {
     case "flatBonus":
@@ -187,37 +194,61 @@ export function expectedBoltDamagePerAttack(
   }
 }
 
-/** expectedBoltDamagePerAttack against a target with non-zero flat armour. */
-function armouredBoltDamagePerAttack(
+/**
+ * What upstream does to a bolt attack's hitsplats after the bolt effect, one
+ * hitsplat at a time (see transformedBoltDamagePerAttack).
+ */
+export interface BoltHitsplatTransforms {
+  /**
+   * Mean of one ACCURATE hitsplat rolled uniformly over lo..hi, after every
+   * later transform (an opal / pearl / dragonstone bonus shifts the range).
+   */
+  meanRoll: (lo: number, hi: number) => number;
+  /** An INACCURATE hitsplat of `damage`: an opal / pearl bonus on a miss. */
+  miss: (damage: number) => number;
+  /** Ruby's proc hitsplat, which upstream adds after the Corp halving. */
+  ruby: (damage: number) => number;
+}
+
+/**
+ * expectedBoltDamagePerAttack with every hitsplat put through per-hitsplat
+ * transforms, in upstream's order: the bolt effect on the roll over
+ * 0..`rollMax`, then (for all but ruby) the later transforms in `t` — flat
+ * armour, and vs Corp the halving first, so an opal bonus is halved with the
+ * roll it rides on: trunc((d + bonus)/2), not trunc(d/2) + bonus. `rollMax`
+ * is the max the bolt sees (upstream's boltContext.maxHit), so a diamond /
+ * onyx proc rolls 0..trunc(rollMax × pct/100) before any halving. The
+ * accurate-zero raise is added separately (boltAccurateZeroes).
+ */
+export function transformedBoltDamagePerAttack(
   accuracy: number,
-  maxHit: number,
+  rollMax: number,
   spec: BoltProcSpec,
-  armour: number,
+  t: BoltHitsplatTransforms,
 ): number {
-  // A landed normal hit, rolled 0..maxHit, after armour.
-  const hit = meanArmouredHit(0, maxHit, armour);
+  // A landed normal hit, rolled 0..rollMax.
+  const hit = t.meanRoll(0, rollMax);
   switch (spec.kind) {
     case "flatBonus": {
-      // The bonus is added to the rolled hit before armour: d + bonus over
-      // d = 0..maxHit is the range bonus..maxHit+bonus.
-      const boosted = meanArmouredHit(spec.bonusDamage, maxHit + spec.bonusDamage, armour);
+      // The bonus is added to the rolled hit first: d + bonus over d = 0..rollMax
+      // is the range bonus..rollMax+bonus.
+      const boosted = t.meanRoll(spec.bonusDamage, rollMax + spec.bonusDamage);
       const landed = accuracy * (spec.chance * boosted + (1 - spec.chance) * hit);
-      // Opal/pearl also roll on a miss; that hitsplat stays inaccurate, so
-      // armour leaves the bonus whole.
+      // Opal/pearl also roll on a miss; that hitsplat stays inaccurate.
       return spec.accurateOnly
         ? landed
-        : landed + (1 - accuracy) * spec.chance * spec.bonusDamage;
+        : landed + (1 - accuracy) * spec.chance * t.miss(spec.bonusDamage);
     }
     case "scaledMax": {
-      const effectMax = Math.trunc((maxHit * spec.effectMaxPercent) / 100);
-      const proc = meanArmouredHit(0, effectMax, armour);
+      const effectMax = Math.trunc((rollMax * spec.effectMaxPercent) / 100);
+      const proc = t.meanRoll(0, effectMax);
       if (spec.accurateOnly) {
         return accuracy * (spec.chance * proc + (1 - spec.chance) * hit);
       }
       return spec.chance * proc + (1 - spec.chance) * accuracy * hit;
     }
     case "replaceFixed":
-      return spec.chance * armouredHit(spec.procDamage, armour) + (1 - spec.chance) * accuracy * hit;
+      return spec.chance * t.ruby(spec.procDamage) + (1 - spec.chance) * accuracy * hit;
   }
 }
 

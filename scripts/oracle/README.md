@@ -53,7 +53,9 @@ Both engines are fed identical item stats: the harness replays our
 not data version.
 
 Exit code is non-zero when any combo diverges beyond tolerance (maxHit must match
-exactly; accuracy ±0.0015; dps ±0.5%) — usable as a CI gate once green.
+exactly; accuracy ±0.0015; dps ±0.5% or ±0.02, whichever is looser) — usable as
+a CI gate once green. Combos with `strictDps` hold DPS to ±0.05% with no
+absolute slack: at Corp's ~0.5 dps the ±0.02 would hide gaps of several percent.
 
 Every row prints both attack rolls (ours is recovered from our hit chance and
 wgloop's defence roll). Combos with `exactRoll` (the multiplier-order set) fail
@@ -105,6 +107,21 @@ in `tests/npc-mechanics.test.ts`. A combo can carry `knownMaxHitResidual`
 when the max-hit difference is by design (bolt procs, the fang); its max-hit
 gap is then printed as a note.
 
+## Corp combos
+
+`corpCombos()` in `combos.ts` checks the Corporeal Beast's halving, which
+wgloop applies to EACH hitsplat (`divisionTransformer(2)` in getAttackerDist:
+after the multi-hit split, the bolt effects and the accurate-zero raise, before
+ruby bolts and the NPC transforms). One `corp-` combo per mean branch: single
+hits on an odd and an even pre-halving max (whip 41 / 40), Torag's halves, the
+Scythe's three hitsplats, the Dual macuahuitl's sequential halves, Dark bow,
+seeking arrows' floor of 3 (Scorching bow, Dark bow), all six enchanted bolts on
+the Armadyl crossbow, and corpbane controls (stab spear / fang, magic) at full
+damage. They run with `strictDps`; their wgloop numbers are locked in
+`tests/corp-halving.test.ts`. The fang's halved trimmed roll (slash) has no
+combo: upstream's Stab Sword "Slash" is Aggressive, ours Controlled, so the
+worker can't match the stance — the unit tests cover it.
+
 ## Sharding
 
 `--style=` runs one combat style. Fan three background agents out in parallel
@@ -145,7 +162,7 @@ localize to specific mechanics:
 - ~~**Standard-spellbook cast speed** — magic DPS ×5/4 too high.~~ **FIXED**
   (`lib/dps/magic-cast-speed.ts`).
 - ~~**Obsidian + Berserker necklace** — damage under-modelled (36 vs 43).~~
-  **FIXED** (`berserkerObsidian` in `lib/dps/calculate.ts`). ~1.2% dps residual
+  **FIXED** (`berserkerObsidian` in `lib/dps/calculate.ts`). ~1.3% dps residual
   remains from wgloop's distribution flooring on the necklace ×6/5 — minor.
 - ~~**Void set** — accuracy ~0.4% high.~~ **FIXED** — void now applies ×11/10 to
   the effective level, not the roll (`accuracyOnEffectiveLevel`).
@@ -159,8 +176,9 @@ localize to specific mechanics:
   **FIXED** 2026-10-03 (`lib/dps/calculate.ts`); see the ordering combos.
 - ~~**Twinflame second cast** — DPS 1.3–2.0% high (mean taken as ×7/5 of the
   max hit).~~ **FIXED** 2026-10-03 — exact per-roll mean of
-  [h, trunc(h × 4/10)] (`lib/dps/twinflame.ts`). The ~0.2% left is wgloop
-  raising accurate 0s to 1, which our engine skips for every weapon.
+  [h, trunc(h × 4/10)] (`lib/dps/twinflame.ts`). The ~0.2% that was left
+  (wgloop raising accurate 0s to 1) is fixed too — see "Accurate zeros" under
+  Known gaps, below.
 
 ## Known gaps (sweeps, as of 2026-10-03 @ 89c3e25)
 
@@ -189,17 +207,29 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   (ruby / diamond / opal) and is the fang's trimmed normal max; ours is the
   normal hit / the fang's true max (the UI derives the fang's normal max).
   DPS matches; combos carry `knownMaxHitResidual`.
-- **Corporeal Beast halving** — upstream halves each rolled hitsplat
+- ~~**Corporeal Beast halving** — upstream halves each rolled hitsplat
   (`divisionTransformer(2)`); we halve the max hit and take half of that.
   For an even pre-halving max M the mean of trunc(X/2) over 0..M is
   k²/(2k+1) (M = 2k), so ours runs ×(M+1)/M high; odd M is exact. Split
   weapons compound it: we split the halved max (Torag's 39 → 19 → 9 + 10),
-  upstream halves each 0..19 / 0..20 half (+5.6% vs Corp).
-- **Corp × enchanted bolts** — upstream applies opal / pearl / dragonstone /
+  upstream halves each 0..19 / 0..20 half (+5.6% vs Corp).~~ **FIXED**
+  2026-10-03 — vs Corp every mean branch rolls from the pre-halving max and
+  halves each landed hitsplat in upstream's order (`corpHalving` in
+  `lib/dps/calculate.ts`), and a split weapon's max hit halves per half (Dual
+  macuahuitl 42 → 10 + 10 = 20, not 21). Was: whip (max 40) +2.5%, Torag's
+  (max 40) +5.0%, Scythe +4.2%, Dual macuahuitl +2.1%, seeking arrows
+  +2.9% / +3.8%; the `corp-` combos now match to float precision.
+- ~~**Corp × enchanted bolts** — upstream applies opal / pearl / dragonstone /
   diamond / onyx BEFORE the Corp halving, so their bonus damage is halved
   too; we add the full proc on top of the halved max (ACB vs Corp: opal
   +11.4%, dragonstone +8.0%, pearl +6.9%, onyx / diamond +2.3%). Ruby fires
-  after the halving upstream as well (+0.7% here).
+  after the halving upstream as well (+0.7% here).~~ **FIXED** 2026-10-03 —
+  the bolt effect rolls off the pre-halving max and is halved with the hit
+  (an opal's +9 on a roll of 10 lands trunc(19/2) = 9), a missed opal / pearl
+  bonus is halved too, and ruby lands whole after the halving
+  (`transformedBoltDamagePerAttack` in `lib/dps/bolts.ts`). Was, on the
+  `corp-acb-` combos: opal +20.4%, dragonstone +8.8%, pearl +6.0%, diamond
+  +2.0%, ruby +0.8%, onyx −0.3%.
 - **Harness: Tormented Demon** — the worker's TD instance reports accuracy
   1.0000 (max hits match ours), so TD rows can't be oracle-checked yet. The
   shield's ×4/5 minimum-1 transform is covered by the unit tests instead.

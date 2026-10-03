@@ -18,6 +18,7 @@ import {
   fangHitChance,
   hitChance,
   landedFloorLift,
+  meanTransformedRoll,
   npcDefenceRoll,
   scaleHitsplat,
 } from "./common";
@@ -33,6 +34,7 @@ import {
 import {
   boltAccurateZeroes,
   expectedBoltDamagePerAttack,
+  transformedBoltDamagePerAttack,
   type BoltProcSpec,
 } from "./bolts";
 import {
@@ -245,10 +247,12 @@ export interface DpsScenario {
   berserkerObsidian?: boolean;
   /**
    * Corporeal Beast halves damage from non-"corpbane" weapons (everything except
-   * magic, or a stab-style spear/halberd/fang, or King's barrage). When set, the
-   * final max hit is halved — mirroring wgloop's divisionTransformer(2) on the
-   * damage distribution. Resolved upstream (computeSetDps) where the weapon name,
-   * attack type and target identity are all known.
+   * magic, or a stab-style spear/halberd/fang). wgloop's divisionTransformer(2)
+   * halves EACH hitsplat — after the multi-hit split, the bolt effects and the
+   * accurate-zero raise, before ruby bolts and the NPC transforms — so every
+   * mean branch rolls from the pre-halving max and halves each landed
+   * hitsplat (`corpHalving` in calculateDps). Resolved upstream (computeSetDps)
+   * where the weapon name, attack type and target identity are all known.
    */
   corpDamageHalved?: boolean;
   /**
@@ -737,17 +741,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * 6) / 5);
   }
 
-  // Corporeal Beast halves damage from non-corpbane weapons. Applied last (after
-  // every damage multiplier), before the bolt/multi-hit expected-damage calc so
-  // it propagates to those means too.
+  // Corporeal Beast halves damage from non-corpbane weapons, one hitsplat at a
+  // time (see `corpHalving` below): the mean branches roll from this
+  // pre-halving max. The max hit halves with it — each half of a split weapon
+  // on its own, as upstream's getMax() sums them: 42 → 21 + 21 → 10 + 10 = 20,
+  // not trunc(42/2) = 21.
+  const preCorpMax = maxHit;
   if (scenario.corpDamageHalved) {
-    maxHit = Math.trunc(maxHit / 2);
+    const profile = scenario.hitProfile;
+    maxHit =
+      profile && isSplitProfile(profile)
+        ? hitsplatMaxima(profile, maxHit).reduce((sum, m) => sum + Math.trunc(m / 2), 0)
+        : Math.trunc(maxHit / 2);
   }
 
   // Per-monster/per-phase damage scale (TD shield, Sire transition, Hueycoatl
-  // pillar, Doom immunity). Like the corp halving above: applied after every
-  // damage multiplier so it scales the final mean, and before the
-  // bolt/multi-hit expected-damage calc.
+  // pillar, Doom immunity). Applied after every damage multiplier so it scales
+  // the final mean, and before the bolt/multi-hit expected-damage calc.
   if (scenario.targetDamageFactor) {
     const [n, d] = scenario.targetDamageFactor;
     maxHit = Math.trunc((maxHit * n) / d);
@@ -797,17 +807,48 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // below takes it; `maxHit` keeps the pre-armour value they roll from.
   const armour =
     scenario.style !== "magic" && maxHit > 0 ? (scenario.targetFlatArmour ?? 0) : 0;
+
+  // What upstream does to a hitsplat after its accurate-zero raise, in order:
+  // the Corp halving (the last step of getAttackerDist that touches it), a Mad
+  // Angel floor, then the NPC transforms — the phase damage factor and, last,
+  // flat armour.
+  const phaseHit = (h: number): number =>
+    scenario.targetDamageFactor
+      ? scaleHitsplat(h, scenario.targetDamageFactor, scenario.targetDamageMinimum)
+      : h;
+  const afterRaise = (h: number, minimum = 0): number => {
+    const halved = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
+    return armouredHit(phaseHit(Math.max(halved, minimum)), armour);
+  };
+
+  // Corp halves each hitsplat, so halving the max and taking half of that runs
+  // high: the mean of trunc(r/2) over 0..M is ⌊M²/4⌋/(M+1), under trunc(M/2)/2
+  // for an even M (M = 40: 400/41 ≈ 9.76, not 10), and each half of a split
+  // weapon and each bolt bonus truncates on its own (an opal's +9 on a roll of
+  // 10 lands trunc(19/2) = 9, not 5 + 9). So vs Corp every mean branch below
+  // rolls from the pre-halving max and takes each landed hitsplat through
+  // `afterRaise` (`corpMean`), in place of the closed forms on the halved max.
+  // A Twinflame double cast halves its own hitsplats (twinflameDamage).
+  const corpHalving = scenario.corpDamageHalved === true && !twinflame;
+  const corpMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
+    meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));
+
   // Osmumten's fang rolls lo..max−lo (see fangHitTrim) — same mean as 0..max
-  // until positive armour clips the low rolls.
-  const fangLo = scenario.fangHitTrim ? Math.trunc((maxHit * 3) / 20) : 0;
+  // until positive armour clips the low rolls or Corp halves each one. Vs Corp
+  // the trim comes off the pre-halving max, as upstream's getMinAndMax takes it.
+  const fangLo = scenario.fangHitTrim
+    ? Math.trunc(((corpHalving ? preCorpMax : maxHit) * 3) / 20)
+    : 0;
 
   // A Twinflame double cast (magic, so never armoured) brings its own
   // per-hitsplat landed mean.
   let dps = twinflame
     ? (accuracy * twinflame.meanLanded) / (bloodragerSpeed * 0.6)
-    : armour === 0
-      ? dpsFromHitChance(accuracy, maxHit, bloodragerSpeed)
-      : (accuracy * meanArmouredHit(fangLo, maxHit - fangLo, armour)) / (bloodragerSpeed * 0.6);
+    : corpHalving
+      ? (accuracy * corpMean(fangLo, preCorpMax - fangLo)) / (bloodragerSpeed * 0.6)
+      : armour === 0
+        ? dpsFromHitChance(accuracy, maxHit, bloodragerSpeed)
+        : (accuracy * meanArmouredHit(fangLo, maxHit - fangLo, armour)) / (bloodragerSpeed * 0.6);
 
   // Raised minimum hit (Mad Angel "Sword Cleave" / "Perfect Lightning"
   // reaction buffs). Upstream #948 (d1ae5b4, 2026-08-22, "Correct Mad Angel
@@ -832,18 +873,41 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   if (scenario.targetMinHitFactor && !twinflame) {
     const [n, d] = scenario.targetMinHitFactor;
     madAngelMin = Math.trunc((maxHit * n) / d);
-    dps = (accuracy * meanLandedHitWithMinimum(maxHit, madAngelMin, armour)) / (bloodragerSpeed * 0.6);
+    const landed = corpHalving
+      ? corpMean(0, preCorpMax, madAngelMin)
+      : meanLandedHitWithMinimum(maxHit, madAngelMin, armour);
+    dps = (accuracy * landed) / (bloodragerSpeed * 0.6);
   }
 
   const boltProc = scenario.style === "ranged" ? scenario.boltProc : undefined;
   const hitProfile = scenario.hitProfile?.length ? scenario.hitProfile : undefined;
   if (boltProc) {
-    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, boltProc, armour);
+    // Vs Corp the bolt effect rolls from the pre-halving max (a diamond proc
+    // over 0..trunc(M × 115/100)) and is halved with the hit; ruby fires after
+    // the halving, so its proc lands whole.
+    const expected = corpHalving
+      ? transformedBoltDamagePerAttack(accuracy, preCorpMax, boltProc, {
+          meanRoll: (lo, hi) => corpMean(lo, hi),
+          // A missed opal / pearl bonus is halved too, but never armoured.
+          miss: (damage) => phaseHit(Math.trunc(damage / 2)),
+          ruby: (damage) => armouredHit(phaseHit(damage), armour),
+        })
+      : expectedBoltDamagePerAttack(accuracy, maxHit, boltProc, armour);
     dps = expected / (bloodragerSpeed * 0.6);
   } else if (hitProfile) {
     // Multi-hit weapons override the single-hit mean with their hit profile.
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
-    const expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour);
+    // Vs Corp each hitsplat rolls to its share of the pre-halving max and is
+    // halved on its own: Torag's 40 → two rolls over 0..20, 2 × 100/21, where
+    // halving first said 10 + 10 → 2 × 5.
+    let expected = 0;
+    if (corpHalving) {
+      for (const splat of hitsplatRolls(hitProfile, accuracy, preCorpMax)) {
+        expected += splat.landChance * corpMean(0, splat.maxHit);
+      }
+    } else {
+      expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour);
+    }
     dps = expected / (bloodragerSpeed * 0.6);
   }
 
@@ -856,23 +920,33 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // Flat armour shifts the TRIPLED hit (max(0, 3d − A), not 3·(d − A)), so an
   // armoured kalphite (Locust rider, −2) rebuilds the single-hit mean from both
   // rolls instead — a Keris is a single-hit melee weapon, so no bolt or
-  // multi-hit mean can be in play.
+  // multi-hit mean can be in play. Corp likewise halves the tripled hit,
+  // trunc(3d/2) (no Kalphite is the Corp, but the order is upstream's).
   if (scenario.kalphiteTripleProc) {
-    dps =
-      armour === 0
-        ? (dps * 53) / 51
-        : (accuracy *
-            (50 * meanArmouredHit(0, maxHit, armour) + meanArmouredHit(0, maxHit, armour, 3))) /
-          51 /
-          (bloodragerSpeed * 0.6);
+    if (corpHalving) {
+      dps =
+        (accuracy * (50 * corpMean(0, preCorpMax) + corpMean(0, preCorpMax, 0, 3))) /
+        51 /
+        (bloodragerSpeed * 0.6);
+    } else {
+      dps =
+        armour === 0
+          ? (dps * 53) / 51
+          : (accuracy *
+              (50 * meanArmouredHit(0, maxHit, armour) + meanArmouredHit(0, maxHit, armour, 3))) /
+            51 /
+            (bloodragerSpeed * 0.6);
+    }
   }
 
   // Sanguinesti staff's life leech (1/5 on landed hits) deals 8 bonus damage
   // since the 2026-07-22 Summer Sweep-Up. The bonus is flat — it skips every
   // damage multiplier above — so it's an additive expected-damage term:
-  // accuracy × 8/5 per attack.
+  // accuracy × 8/5 per attack. Upstream adds it before the Corp halving, which
+  // would halve it with the hit it rides on (magic is corpbane, so it never is).
   if (scenario.sanguinestiProc) {
-    dps += (accuracy * 8) / 5 / (bloodragerSpeed * 0.6);
+    const bonus = corpHalving ? corpMean(8, preCorpMax + 8) - corpMean(0, preCorpMax) : 8;
+    dps += (accuracy * bonus) / 5 / (bloodragerSpeed * 0.6);
   }
 
   // Accurate-zero raise: wgloop lifts every ACCURATE hitsplat of 0 to 1
@@ -890,14 +964,6 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // (twinflameDamage). A max of 0 (Bind) returns before upstream's raise.
   if (rollMax > 0 && !twinflame) {
     const floor = scenario.seekingArrows ? 3 : 1;
-    const afterRaise = (h: number, minimum = 0): number => {
-      let v = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
-      v = Math.max(v, minimum);
-      if (scenario.targetDamageFactor) {
-        v = scaleHitsplat(v, scenario.targetDamageFactor, scenario.targetDamageMinimum);
-      }
-      return armouredHit(v, armour);
-    };
     let raised = 0;
     if (boltProc) {
       raised = boltAccurateZeroes(accuracy, rollMax, boltProc) * (afterRaise(1) - afterRaise(0));
@@ -928,6 +994,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // that splits one max hit across hitsplats (Dual macuahuitl, Torag's
   // hammers) reports the whole attack, so each half takes the shift (41 → 22 +
   // 23 = 45 vs −2); other multi-hit weapons report their largest hitsplat.
+  // (Corp's own per-half halving is already in maxHit; Corp has no armour.)
   if (armour !== 0) {
     const profile = scenario.hitProfile;
     const reported =

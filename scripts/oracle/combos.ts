@@ -58,9 +58,14 @@ function fixtureToCombo(f: OracleFixture): CanonicalCombo {
   };
 }
 
-/** The oracle-matrix fixtures plus the multiplier-order and NPC-mechanic combos below. */
+/** The oracle-matrix fixtures plus the multiplier-order, NPC-mechanic and Corp combos below. */
 export function validationCombos(): CanonicalCombo[] {
-  return [...ORACLE_MATRIX.map(fixtureToCombo), ...orderingCombos(), ...npcMechanicCombos()];
+  return [
+    ...ORACLE_MATRIX.map(fixtureToCombo),
+    ...orderingCombos(),
+    ...npcMechanicCombos(),
+    ...corpCombos(),
+  ];
 }
 
 // Gear shells for the ordering combos (weapon/head/neck added per combo).
@@ -359,6 +364,70 @@ export function npcMechanicCombos(): CanonicalCombo[] {
       meleeGear(DRAGON_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
     orderingCombo("flying-dragon-halberd-vespula", "vespula",
       meleeGear(DRAGON_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
+  ];
+}
+
+const ARMADYL_CROSSBOW = 11785;
+const FANG = "fang: ours reports the true max, wgloop the trimmed normal max";
+
+/**
+ * Corporeal Beast. wgloop halves every hitsplat of a non-corpbane weapon
+ * (`divisionTransformer(2)` in getAttackerDist): after the multi-hit split, the
+ * enchanted-bolt effects and the accurate-zero raise, before ruby bolts and the
+ * NPC transforms. One combo per mean branch the halving has to reach — single
+ * hits on both max parities (an even max is where halving the max overstated
+ * the mean), Torag's halves, the Scythe's three hitsplats, the Dual
+ * macuahuitl's sequential halves, Dark bow's two arrows, seeking arrows' floor
+ * of 3, and all six enchanted bolts on the Armadyl crossbow — plus corpbane
+ * controls (stab spear / fang, magic) that keep full damage. The fang's
+ * halved trimmed roll (slash) has no combo: upstream's Stab Sword "Slash" is
+ * Aggressive, ours Controlled, so the worker can't match the stance; the unit
+ * tests cover it. Their numbers are locked in tests/corp-halving.test.ts.
+ */
+export function corpCombos(): CanonicalCombo[] {
+  const corp = "corporeal-beast";
+  const rangedGear = (weapon: number, ammo: number): number[] =>
+    [weapon, ammo, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const glory = (gear: number[]): number[] => gear.map((id) => (id === ANGUISH ? GLORY : id));
+  const bolts = (ammo: number): number[] => rangedGear(ARMADYL_CROSSBOW, ammo);
+  const boltMax = { knownMaxHitResidual: BOLT_MAX };
+  // Corp DPS sits near 0.5, where the default ±0.02 slack is several percent.
+  const combo: typeof orderingCombo = (id, bossSlug, itemIds, attackType, choice, extra = {}) =>
+    orderingCombo(id, bossSlug, itemIds, attackType, choice, { strictDps: true, ...extra });
+  return [
+    // ── Single hits, both parities of the pre-halving max (41, 40) ──
+    combo("corp-whip", corp, meleeGear(4151, FACEGUARD, TORTURE), "slash", "controlled"),
+    combo("corp-whip-glory", corp, meleeGear(4151, FACEGUARD, GLORY), "slash", "controlled"),
+    // A spear is corpbane only on stab: Swipe (slash) is halved.
+    combo("corp-dragon-spear-slash", corp, meleeGear(1249, FACEGUARD, TORTURE), "slash", "controlled"),
+
+    // ── Multi-hit: each hitsplat is halved on its own ──
+    combo("corp-torags-hammers", corp, meleeGear(4747, FACEGUARD, TORTURE), "crush", "aggressive"),
+    combo("corp-scythe", corp, meleeGear(22325, FACEGUARD, TORTURE), "slash", "aggressive"),
+    combo("corp-dual-macuahuitl", corp, meleeGear(28997, FACEGUARD, TORTURE), "crush", "aggressive"),
+    combo("corp-dark-bow", corp, rangedGear(11235, 11212), "ranged", "rapid"),
+    // A Glory (no ranged strength) puts these on an even max: 34 and 26.
+    combo("corp-scorching-bow-seeking-arrows", corp, glory(rangedGear(29591, 33595)), "ranged", "rapid"),
+    combo("corp-dark-bow-seeking-arrows", corp, glory(rangedGear(11235, 33595)), "ranged", "rapid"),
+
+    // ── Enchanted bolts: opal / pearl / dragonstone / diamond / onyx roll
+    // before the halving (their bonus is halved too), ruby after it ──
+    combo("corp-acb-opal-bolts", corp, bolts(9236), "ranged", "rapid", boltMax),
+    combo("corp-acb-pearl-bolts", corp, bolts(9238), "ranged", "rapid", boltMax),
+    combo("corp-acb-dragonstone-bolts", corp, bolts(9244), "ranged", "rapid", boltMax),
+    combo("corp-acb-diamond-bolts", corp, bolts(9243), "ranged", "rapid", boltMax),
+    combo("corp-acb-onyx-bolts", corp, bolts(9245), "ranged", "rapid", boltMax),
+    combo("corp-acb-ruby-bolts", corp, bolts(9242), "ranged", "rapid", boltMax),
+
+    // ── Corpbane: full damage ──
+    combo("corp-dragon-spear-stab", corp, meleeGear(1249, FACEGUARD, TORTURE), "stab", "controlled"),
+    combo("corp-fang-stab", corp, meleeGear(26219, FACEGUARD, TORTURE), "stab", "aggressive", {
+      exactRoll: false, // fang's two-roll accuracy — the roll inversion doesn't apply
+      knownMaxHitResidual: FANG,
+    }),
+    combo("corp-kodai-fire-surge", corp, [21006, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", {
+      baseSpellMaxHit: 24, spellElement: "fire", spellName: "Fire Surge",
+    }),
   ];
 }
 

@@ -93,9 +93,11 @@ describe("calculateDps — single hit", () => {
   });
 
   it("Corp halving runs after the raise and turns the 1 back into 0", () => {
+    // Each roll halves on its own: Σ trunc(r/2) over 0..10 = 25 (see
+    // tests/corp-halving.test.ts); the raised 0 adds nothing.
     const r = calculateDps(cast(10, { corpDamageHalved: true }));
     expect(r.maxHit).toBe(5);
-    expect(r.dps).toBeCloseTo((r.accuracy * 5) / 2 / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((r.accuracy * 25) / 11 / SECONDS, 12);
   });
 
   it("TD shield (×4/5, minimum 1) keeps the raised 1: M = 10 → 8/2 + 1/11", () => {

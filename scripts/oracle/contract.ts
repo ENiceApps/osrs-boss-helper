@@ -65,6 +65,12 @@ export interface CanonicalCombo {
    */
   knownMaxHitResidual?: string;
   /**
+   * Hold DPS to a 0.05% relative tolerance, with no absolute slack. For
+   * low-DPS rows (the Corporeal Beast sits near 0.5 dps), where the default
+   * ±0.02 absolute slack would hide gaps of several percent.
+   */
+  strictDps?: boolean;
+  /**
    * Optional locked baseline this combo was lifted from (oracle-matrix). When
    * present the diff report does a three-way check: our engine vs wgloop vs
    * this wiki-target baseline.

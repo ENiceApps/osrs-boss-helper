@@ -39,6 +39,8 @@ const IO_DIR = join(ROOT, ".oracle", "io");
 const ACC_TOL = 0.0015;
 const DPS_REL_TOL = 0.005;
 const DPS_ABS_TOL = 0.02;
+// Combos with `strictDps` (see contract.ts): relative only, and tighter.
+const STRICT_DPS_REL_TOL = 0.0005;
 
 interface OurResult {
   id: string;
@@ -218,8 +220,12 @@ function compare(
   }
   const dOurs = our.dps ?? 0;
   const rel = Math.abs(dOurs - wg.dps) / Math.max(wg.dps, 1e-9);
-  if (rel > DPS_REL_TOL && Math.abs(dOurs - wg.dps) > DPS_ABS_TOL) {
-    const detail = `dps ours=${dOurs.toFixed(3)} wg=${wg.dps.toFixed(3)} (${(rel * 100).toFixed(1)}%)`;
+  const dpsOff = combo.strictDps
+    ? rel > STRICT_DPS_REL_TOL
+    : rel > DPS_REL_TOL && Math.abs(dOurs - wg.dps) > DPS_ABS_TOL;
+  if (dpsOff) {
+    const dp = combo.strictDps ? 5 : 3;
+    const detail = `dps ours=${dOurs.toFixed(dp)} wg=${wg.dps.toFixed(dp)} (${(rel * 100).toFixed(dp - 2)}%)`;
     if (combo.knownDpsResidual) {
       const note = `${detail} — known: ${combo.knownDpsResidual}`;
       return { verdict: "OK", detail: maxHitNote ? `${maxHitNote}; ${note}` : note };
