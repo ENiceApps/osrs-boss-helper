@@ -133,15 +133,10 @@ function orderingCombo(
  */
 export function orderingCombos(): CanonicalCombo[] {
   const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
-  // Twinflame's second cast is mean-modelled as ×7/5 of the max hit; upstream
-  // truncates each second hitsplat (trunc(h × 4/10)), ~1–2% less DPS. Max hit
-  // and accuracy still match exactly.
-  const fireWave = {
-    baseSpellMaxHit: 20,
-    spellElement: "fire" as const,
-    spellName: "Fire Wave",
-    knownDpsResidual: "Twinflame second cast mean-modelled as ×7/5",
-  };
+  // Twinflame's second cast is a hitsplat of trunc(h × 4/10); the engine takes
+  // its exact mean per roll (lib/dps/twinflame.ts), so these rows carry no
+  // DPS residual.
+  const fireWave = { baseSpellMaxHit: 20, spellElement: "fire" as const, spellName: "Fire Wave" };
   const onTask = { onTask: true };
   return [
     // ── Melee: slayer helm / Salve first, then the weapon's bane ──

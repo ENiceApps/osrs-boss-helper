@@ -131,6 +131,10 @@ localize to specific mechanics:
 - ~~**Multiplier order** — Salve / slayer helm vs weapon banes, magic Salve and
   smoke-staff percents, Inquisitor's / Obsidian / Elite Void magic placement.~~
   **FIXED** 2026-10-03 (`lib/dps/calculate.ts`); see the ordering combos.
+- ~~**Twinflame second cast** — DPS 1.3–2.0% high (mean taken as ×7/5 of the
+  max hit).~~ **FIXED** 2026-10-03 — exact per-roll mean of
+  [h, trunc(h × 4/10)] (`lib/dps/twinflame.ts`). The ~0.2% left is wgloop
+  raising accurate 0s to 1, which our engine skips for every weapon.
 
 ## Known gaps (sweeps, as of 2026-10-03 @ 89c3e25)
 
@@ -141,9 +145,6 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   skeleton −1, Dusk −1; 110 monsters are non-zero). Our engine ignores it.
 - **Flying monsters** (Kree'arra's minions, Aviansies) are immune to melee in
   wgloop; our engine still scores melee against them.
-- **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
-  truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
-  accuracy match (rows carry `knownDpsResidual`).
 - **Keris partisan** (weapon category "Partisan") has no style mapping in
   `data/weapon-styles.ts`, so our engine can't score it; its ×133/100 (wgloop)
   vs our ×4/3 is unverified.

@@ -30,6 +30,7 @@ import {
 } from "./conditional";
 import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
 import { expectedMultiHitDamage, type HitProfile } from "./multihit";
+import { twinflameDamage, twinflameSecondHit } from "./twinflame";
 import {
   DEFAULT_DEMONBANE_VULNERABILITY,
   scaleDemonbanePct,
@@ -139,9 +140,10 @@ export interface DpsScenario {
   smokeStaffStandard?: boolean;
   /**
    * Magic-only: Twinflame staff casting a qualifying Bolt/Blast/Wave — a second
-   * cast for trunc(hit × 4/10), i.e. ×7/5 on the max hit. Applied to the FINAL
-   * hit (after slayer helm, dragonbane, weakness, tome), as upstream's
-   * distribution transform does.
+   * hitsplat of trunc(h × 4/10) on the FINAL first-cast hit h (after slayer
+   * helm, dragonbane, weakness, tome), as upstream's distribution transform
+   * does. Max hit h + trunc(h × 4/10); the mean is taken per roll, hitsplat by
+   * hitsplat (lib/dps/twinflame.ts), not as 7/10 of that max.
    */
   twinflameDoubleCast?: boolean;
   /** Ranged-only: Twisted bow is equipped — scales accuracy/damage by target magic level. */
@@ -256,7 +258,8 @@ export interface DpsScenario {
    * The hit still ROLLS uniformly over 0..max and is then floored to
    * min = trunc(max×n/d) — wgloop's `firstHitMinimum` since upstream #948 —
    * so the landed-hit mean is [min(min+1) + max(max+1)] / (2(max+1)), NOT
-   * (min+max)/2. See `meanLandedHitWithMinimum`.
+   * (min+max)/2. See `meanLandedHitWithMinimum`. A Twinflame double cast
+   * applies it to each of its two hitsplats instead (lib/dps/twinflame.ts).
    */
   targetMinHitFactor?: [number, number];
 }
@@ -614,6 +617,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * tbowBonus(14, 250)) / 100);
   }
 
+  // The Twinflame's first-cast max, kept for the per-hitsplat model below.
+  let twinflameFirstMax: number | undefined;
+
   // Magic damage: elemental weakness then elemental tome — applied AFTER the
   // multiplicative bonuses (Slayer / DHW / wilderness above) so the ADDITIVE
   // weakness bonus (⌊baseMax × severity/100⌋) isn't scaled by them. Mirrors
@@ -646,12 +652,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // Twinflame's second cast on Bolt/Blast/Wave: a hitsplat of trunc(h × 4/10)
     // on top of the FINAL hit h — upstream transforms the finished distribution,
     // after the slayer helm, dragonbane, weakness and tome — so the pair maxes
-    // at h + trunc(h × 4/10) = trunc(h × 7/5). This mean model takes ×7/5 of
-    // the max hit; upstream truncates every second hitsplat, so its DPS runs
-    // ~1–2% lower (max hit and accuracy match exactly). An elemental amulet's
-    // +2 sits in the base, so it reaches both casts.
+    // at h + trunc(h × 4/10). Every second hitsplat truncates, so the mean sits
+    // ~0.4 below 7/10 of the max; it is rebuilt per hitsplat after the target
+    // transforms below. An elemental amulet's +2 sits in the base, so it
+    // reaches both casts.
     if (scenario.twinflameDoubleCast) {
-      maxHit = Math.trunc((maxHit * 7) / 5);
+      twinflameFirstMax = maxHit;
+      maxHit = maxHit + twinflameSecondHit(maxHit);
     }
   }
 
@@ -678,6 +685,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * n) / d);
   }
 
+  // Twinflame: upstream applies the corp halving, the Mad Angel floors and the
+  // phase factor to EACH of the two hitsplats, so the pair's max and mean are
+  // rebuilt from the first cast's max rather than taken from the pair total
+  // transformed above.
+  const twinflame =
+    twinflameFirstMax === undefined
+      ? undefined
+      : twinflameDamage(twinflameFirstMax, {
+          halved: scenario.corpDamageHalved,
+          minHitFactor: scenario.targetMinHitFactor,
+          damageFactor: scenario.targetDamageFactor,
+        });
+  if (twinflame) maxHit = twinflame.maxHit;
+
   // Per-phase attack-roll scale (Royal Titans ranged ×6) — the last accuracy
   // multiplier before rolling, mirroring wgloop's PLAYER_ACCURACY_TITANS_RANGED.
   if (scenario.targetAccuracyFactor) {
@@ -701,7 +722,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     ? Math.max(1, effectiveAttackSpeed - 0.33 * accuracy * (1 + 0.67 * accuracy))
     : effectiveAttackSpeed;
 
-  let dps = dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
+  let dps = twinflame
+    ? (accuracy * twinflame.meanLanded) / (bloodragerSpeed * 0.6)
+    : dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
 
   // Raised minimum hit (Mad Angel "Sword Cleave" / "Perfect Lightning"
   // reaction buffs). Upstream #948 (d1ae5b4, 2026-08-22, "Correct Mad Angel
@@ -721,7 +744,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // which never applies the buff to the Dual macuahuitl in its general path
   // (`weapon.name !== 'Dual macuahuitl'`); its macuahuitl-specific path floors
   // only the FIRST hitsplat, at trunc(firstMax / 2) of that hitsplat's own max.
-  if (scenario.targetMinHitFactor) {
+  // A Twinflame double cast already folded the buff into its per-hitsplat mean.
+  if (scenario.targetMinHitFactor && !twinflame) {
     const [n, d] = scenario.targetMinHitFactor;
     const minHit = Math.trunc((maxHit * n) / d);
     dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit)) / (bloodragerSpeed * 0.6);
