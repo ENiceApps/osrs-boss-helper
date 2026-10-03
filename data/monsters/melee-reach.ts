@@ -28,3 +28,29 @@ export function requiresMeleeReach2(monster: {
   if (monster.attributes.includes("flying")) return true;
   return MELEE_REACH_2_SLUGS.has(monster.slug);
 }
+
+/** Vespula (Chambers of Xeric) — flagged flying, yet takes no melee damage at all. */
+const VESPULA_WIKI_IDS: ReadonlySet<number> = new Set([7530, 7531, 7532]);
+
+/** Weapon categories whose melee attacks still damage a flying monster. */
+const FLYING_MELEE_CATEGORIES: ReadonlySet<string> = new Set(["Polearm", "Salamander"]);
+
+/**
+ * True iff a MELEE attack with this weapon category deals no damage to the
+ * monster because it flies — wgloop's isImmune rule (PlayerVsNPCCalc @
+ * 89c3e25): a "flying" target is immune to melee unless the weapon category is
+ * Polearm (every halberd) or Salamander, and Vespula is immune to all melee.
+ * The DPS engine scores such a loadout at 0 (see activeBonusesForTarget).
+ *
+ * Narrower than `requiresMeleeReach2`'s weapon list: the optimizer's reach gate
+ * also admits the Scythe of Vitur (data/items/halberd-weapons.ts), which
+ * upstream does not exempt — so a Scythe passes that gate but scores 0 here.
+ */
+export function isFlyingImmuneToMelee(
+  monster: { wikiId: number; attributes: readonly string[] },
+  weaponCategory: string | undefined,
+): boolean {
+  if (!monster.attributes.includes("flying")) return false;
+  if (VESPULA_WIKI_IDS.has(monster.wikiId)) return true;
+  return !FLYING_MELEE_CATEGORIES.has(weaponCategory ?? "");
+}

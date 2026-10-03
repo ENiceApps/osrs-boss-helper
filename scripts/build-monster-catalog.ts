@@ -39,6 +39,8 @@ interface DefenceBonuses {
   rangedHeavy: number;
   rangedStandard: number;
   rangedLight: number;
+  /** Upstream `defensive.flat_armour`; emitted only when non-zero (see defenceBonusesOf). */
+  flatArmour?: number;
 }
 
 /** One selectable phase/form of a monster — the combat-relevant stat block of
@@ -197,6 +199,27 @@ for (const m of monsters) {
   phasePool.set(m.name, list);
 }
 
+/**
+ * Defence bonuses in catalog shape. Flat armour (upstream
+ * `defensive.flat_armour`, e.g. Gargoyle -2, Heavy skeleton +1) is added to
+ * every accurate melee/ranged hitsplat by the DPS engine. It is emitted only
+ * when non-zero to keep the generated file small; a phase spread replaces the
+ * whole `defenceBonuses` object, so an omitted value always reads as 0.
+ */
+function defenceBonusesOf(m: VendorMonster): DefenceBonuses {
+  const flat = m.defensive.flat_armour ?? 0;
+  return {
+    stab: m.defensive.stab,
+    slash: m.defensive.slash,
+    crush: m.defensive.crush,
+    magic: m.defensive.magic,
+    rangedHeavy: m.defensive.heavy,
+    rangedStandard: m.defensive.standard,
+    rangedLight: m.defensive.light,
+    ...(flat !== 0 ? { flatArmour: flat } : {}),
+  };
+}
+
 function toPhase(m: VendorMonster): PhaseEntry {
   return {
     version: m.version ?? "",
@@ -205,15 +228,7 @@ function toPhase(m: VendorMonster): PhaseEntry {
     hp: m.skills.hp,
     defenceLevel: m.skills.def,
     magicLevel: m.skills.magic,
-    defenceBonuses: {
-      stab: m.defensive.stab,
-      slash: m.defensive.slash,
-      crush: m.defensive.crush,
-      magic: m.defensive.magic,
-      rangedHeavy: m.defensive.heavy,
-      rangedStandard: m.defensive.standard,
-      rangedLight: m.defensive.light,
-    },
+    defenceBonuses: defenceBonusesOf(m),
     attributes: m.attributes ?? [],
     weakness: m.weakness ?? null,
     image: m.image,
@@ -274,15 +289,7 @@ for (const [name, candidates] of byName) {
     hp: primary.skills.hp,
     defenceLevel: primary.skills.def,
     magicLevel: primary.skills.magic,
-    defenceBonuses: {
-      stab: primary.defensive.stab,
-      slash: primary.defensive.slash,
-      crush: primary.defensive.crush,
-      magic: primary.defensive.magic,
-      rangedHeavy: primary.defensive.heavy,
-      rangedStandard: primary.defensive.standard,
-      rangedLight: primary.defensive.light,
-    },
+    defenceBonuses: defenceBonusesOf(primary),
     attributes: primary.attributes ?? [],
     weakness: primary.weakness ?? null,
     image: primary.image,
@@ -371,6 +378,12 @@ lines.push(`  magic: number;`);
 lines.push(`  rangedHeavy: number;`);
 lines.push(`  rangedStandard: number;`);
 lines.push(`  rangedLight: number;`);
+lines.push(`  /**`);
+lines.push(`   * Flat armour (upstream \`defensive.flat_armour\`): subtracted from every`);
+lines.push(`   * accurate melee/ranged hitsplat, floored at 0 — negative values add`);
+lines.push(`   * damage (Gargoyle -2). Omitted when 0.`);
+lines.push(`   */`);
+lines.push(`  flatArmour?: number;`);
 lines.push(`}`);
 lines.push(``);
 lines.push(`/** One selectable phase/form of a monster. Spread over the parent entry`);

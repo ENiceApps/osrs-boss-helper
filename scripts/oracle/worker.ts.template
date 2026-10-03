@@ -181,10 +181,13 @@ function runOne(combo: Combo): Result {
     prayers: [prayerFor(combo.attackType)],
     spell: combo.spellName ? findSpell(combo.spellName) : null,
     buffs: {
-      // Match our engine's neutral assumptions. generateEmptyPlayer defaults
-      // onSlayerTask=true and kandarinDiary=true — both forced here.
+      // Match our engine's assumptions. generateEmptyPlayer defaults
+      // onSlayerTask=true (forced to the combo's value here) and
+      // kandarinDiary=true — kept: our engine always applies the Kandarin Hard
+      // diary's ×1.1 bolt-proc chance (lib/dps/bolts.ts, the wiki calc's
+      // default too). It only touches enchanted-bolt procs.
       onSlayerTask: combo.onTask ?? false,
-      kandarinDiary: false,
+      kandarinDiary: true,
       // Our engine auto-applies the Wilderness weapon ×3/2 for wilderness bosses;
       // set the buff so wgloop matches.
       inWilderness: combo.inWilderness ?? false,

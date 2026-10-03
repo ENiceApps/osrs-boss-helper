@@ -17,6 +17,7 @@ import {
   ZARYTE_CROSSBOW_ID,
   type BoltEffect,
 } from "@/data/items/bolt-procs";
+import { armouredHit, meanArmouredHit } from "./flat-armour";
 
 export type BoltProcSpec =
   | {
@@ -149,12 +150,20 @@ export function resolveBoltProc(input: ResolveBoltProcInput): BoltProcSpec | und
  * Expected damage per attack with the proc folded in. Base expectation is
  * accuracy × maxHit/2 (uniform 0..maxHit on a successful roll) — identical to
  * dpsFromHitChance's numerator, so non-proc results stay byte-for-byte equal.
+ *
+ * `flatArmour` is the target's flat armour (lib/dps/flat-armour.ts). Upstream
+ * shifts every ACCURATE hitsplat after the bolt transform, so proc hits take
+ * it too: ruby/diamond/onyx proc hitsplats are accurate (even a diamond or
+ * ruby proc that replaced a miss), an opal/pearl bonus on an accurate hit is
+ * shifted with the hit, and an opal/pearl bonus on a miss is not.
  */
 export function expectedBoltDamagePerAttack(
   accuracy: number,
   maxHit: number,
   spec: BoltProcSpec,
+  flatArmour = 0,
 ): number {
+  if (flatArmour !== 0) return armouredBoltDamagePerAttack(accuracy, maxHit, spec, flatArmour);
   const base = accuracy * (maxHit / 2);
   switch (spec.kind) {
     case "flatBonus":
@@ -175,6 +184,40 @@ export function expectedBoltDamagePerAttack(
     case "replaceFixed":
       // Ruby: fixed damage, bypasses accuracy.
       return spec.chance * spec.procDamage + (1 - spec.chance) * base;
+  }
+}
+
+/** expectedBoltDamagePerAttack against a target with non-zero flat armour. */
+function armouredBoltDamagePerAttack(
+  accuracy: number,
+  maxHit: number,
+  spec: BoltProcSpec,
+  armour: number,
+): number {
+  // A landed normal hit, rolled 0..maxHit, after armour.
+  const hit = meanArmouredHit(0, maxHit, armour);
+  switch (spec.kind) {
+    case "flatBonus": {
+      // The bonus is added to the rolled hit before armour: d + bonus over
+      // d = 0..maxHit is the range bonus..maxHit+bonus.
+      const boosted = meanArmouredHit(spec.bonusDamage, maxHit + spec.bonusDamage, armour);
+      const landed = accuracy * (spec.chance * boosted + (1 - spec.chance) * hit);
+      // Opal/pearl also roll on a miss; that hitsplat stays inaccurate, so
+      // armour leaves the bonus whole.
+      return spec.accurateOnly
+        ? landed
+        : landed + (1 - accuracy) * spec.chance * spec.bonusDamage;
+    }
+    case "scaledMax": {
+      const effectMax = Math.trunc((maxHit * spec.effectMaxPercent) / 100);
+      const proc = meanArmouredHit(0, effectMax, armour);
+      if (spec.accurateOnly) {
+        return accuracy * (spec.chance * proc + (1 - spec.chance) * hit);
+      }
+      return spec.chance * proc + (1 - spec.chance) * accuracy * hit;
+    }
+    case "replaceFixed":
+      return spec.chance * armouredHit(spec.procDamage, armour) + (1 - spec.chance) * accuracy * hit;
   }
 }
 

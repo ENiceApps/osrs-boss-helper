@@ -140,7 +140,7 @@ function buildWikiPayload(
       },
       offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
       defensive: {
-        flat_armour: 0,
+        flat_armour: monster.defenceBonuses.flatArmour ?? 0,
         stab:     monster.defenceBonuses.stab,
         slash:    monster.defenceBonuses.slash,
         crush:    monster.defenceBonuses.crush,

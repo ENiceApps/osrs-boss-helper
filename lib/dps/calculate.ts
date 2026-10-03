@@ -29,7 +29,13 @@ import {
   salveMagicPct,
 } from "./conditional";
 import { expectedBoltDamagePerAttack, type BoltProcSpec } from "./bolts";
-import { expectedMultiHitDamage, type HitProfile } from "./multihit";
+import {
+  expectedMultiHitDamage,
+  hitsplatMaxima,
+  isSplitProfile,
+  type HitProfile,
+} from "./multihit";
+import { armouredHit, meanArmouredHit, sumArmouredHits } from "./flat-armour";
 import {
   DEFAULT_DEMONBANE_VULNERABILITY,
   scaleDemonbanePct,
@@ -158,6 +164,13 @@ export interface DpsScenario {
    */
   fangEquipped?: boolean;
   /**
+   * Osmumten's fang is the weapon (any style): its normal hits roll uniformly
+   * over lo..max−lo, lo = trunc(max × 3/20) (wgloop getPlayerMaxMeleeHit). The
+   * trim is mean-neutral on its own, so only the flat-armour mean reads it —
+   * positive armour clips that range differently from 0..max.
+   */
+  fangHitTrim?: boolean;
+  /**
    * Black mask / slayer helmet (i) bonus is active — imbued head worn, on a
    * slayer task, and not superseded by an active Salve (they don't stack).
    * Style-dependent: ×7/6 melee, ×23/20 ranged & magic, on accuracy AND damage.
@@ -259,6 +272,16 @@ export interface DpsScenario {
    * (min+max)/2. See `meanLandedHitWithMinimum`.
    */
   targetMinHitFactor?: [number, number];
+  /**
+   * Target's flat armour (catalog `defenceBonuses.flatArmour`, upstream
+   * `defensive.flat_armour`): wgloop's LAST NPC transform turns every accurate
+   * melee/ranged hitsplat d into max(0, d − armour). Negative armour adds
+   * damage (Gargoyle −2, Earthen nagua −4), positive subtracts it (Heavy
+   * skeleton +1). Ignored for magic. Shifts the reported max hit and every mean
+   * branch — single hit, raised minimum, bolt procs, each multi-hit hitsplat,
+   * Keris's triple — see lib/dps/flat-armour.ts.
+   */
+  targetFlatArmour?: number;
 }
 
 interface StyleBonuses {
@@ -297,10 +320,16 @@ function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonus
  * Checks: m = 0 -> M/2 (the plain uniform mean); m = M -> M (always max, Perfect
  * Lightning's [1,1]); M = 40, m = 20 -> 1030/41 ~= 25.12 (the old
  * mean-of-endpoints model said 30).
+ *
+ * With flat armour A (lib/dps/flat-armour.ts) the floored hit is shifted
+ * afterwards, as upstream orders it: [(m+1)·max(0, m−A) + Σ_{d=m+1}^{M} max(0, d−A)] / (M+1).
  */
-export function meanLandedHitWithMinimum(max: number, min: number): number {
+export function meanLandedHitWithMinimum(max: number, min: number, flatArmour = 0): number {
   if (max <= 0) return 0;
   const m = Math.min(Math.max(min, 0), max);
+  if (flatArmour !== 0) {
+    return ((m + 1) * armouredHit(m, flatArmour) + sumArmouredHits(m + 1, max, flatArmour)) / (max + 1);
+  }
   if (m >= max) return max;
   return (m * (m + 1) + max * (max + 1)) / (2 * (max + 1));
 }
@@ -701,7 +730,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     ? Math.max(1, effectiveAttackSpeed - 0.33 * accuracy * (1 + 0.67 * accuracy))
     : effectiveAttackSpeed;
 
-  let dps = dpsFromHitChance(accuracy, maxHit, bloodragerSpeed);
+  // Flat armour shifts every accurate melee/ranged hitsplat, after everything
+  // above (wgloop's last NPC transform). A 0 max hit stays 0: upstream returns
+  // an all-miss distribution before any NPC transform runs. Every mean branch
+  // below takes it; `maxHit` keeps the pre-armour value they roll from.
+  const armour =
+    scenario.style !== "magic" && maxHit > 0 ? (scenario.targetFlatArmour ?? 0) : 0;
+  // Osmumten's fang rolls lo..max−lo (see fangHitTrim) — same mean as 0..max
+  // until positive armour clips the low rolls.
+  const fangLo = scenario.fangHitTrim ? Math.trunc((maxHit * 3) / 20) : 0;
+
+  let dps =
+    armour === 0
+      ? dpsFromHitChance(accuracy, maxHit, bloodragerSpeed)
+      : (accuracy * meanArmouredHit(fangLo, maxHit - fangLo, armour)) / (bloodragerSpeed * 0.6);
 
   // Raised minimum hit (Mad Angel "Sword Cleave" / "Perfect Lightning"
   // reaction buffs). Upstream #948 (d1ae5b4, 2026-08-22, "Correct Mad Angel
@@ -724,16 +766,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   if (scenario.targetMinHitFactor) {
     const [n, d] = scenario.targetMinHitFactor;
     const minHit = Math.trunc((maxHit * n) / d);
-    dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit)) / (bloodragerSpeed * 0.6);
+    dps = (accuracy * meanLandedHitWithMinimum(maxHit, minHit, armour)) / (bloodragerSpeed * 0.6);
   }
 
   if (scenario.boltProc && scenario.style === "ranged") {
-    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc);
+    const expected = expectedBoltDamagePerAttack(accuracy, maxHit, scenario.boltProc, armour);
     dps = expected / (bloodragerSpeed * 0.6);
   } else if (scenario.hitProfile && scenario.hitProfile.length > 0) {
     // Multi-hit weapons override the single-hit mean with their hit profile.
     // (Mutually exclusive with bolts — a crossbow is never a multi-hit weapon.)
-    const expected = expectedMultiHitDamage(scenario.hitProfile, accuracy, maxHit);
+    const expected = expectedMultiHitDamage(scenario.hitProfile, accuracy, maxHit, armour);
     dps = expected / (bloodragerSpeed * 0.6);
   }
 
@@ -741,8 +783,18 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // (50·1 + 1·3)/51 = ×53/51. The +33% damage is already baked into maxHit via
   // the conditional factors; this is the rare-proc expectation on top, applied
   // to whichever mean (single-hit / bolt / multi-hit) was computed above.
+  // Flat armour shifts the TRIPLED hit (max(0, 3d − A), not 3·(d − A)), so an
+  // armoured kalphite (Locust rider, −2) rebuilds the single-hit mean from both
+  // rolls instead — the Keris is a single-hit melee weapon, so no bolt or
+  // multi-hit mean can be in play.
   if (scenario.kalphiteTripleProc) {
-    dps = (dps * 53) / 51;
+    dps =
+      armour === 0
+        ? (dps * 53) / 51
+        : (accuracy *
+            (50 * meanArmouredHit(0, maxHit, armour) + meanArmouredHit(0, maxHit, armour, 3))) /
+          51 /
+          (bloodragerSpeed * 0.6);
   }
 
   // Sanguinesti staff's life leech (1/5 on landed hits) deals 8 bonus damage
@@ -757,5 +809,18 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // branch above can leak damage through (a Ruby bolt proc ignores max hit).
   if (scenario.targetImmune) return { dps: 0, maxHit: 0, accuracy };
 
+  // Reported max hit after flat armour, as upstream's getMax() reads it off the
+  // transformed distribution (e.g. 39 vs Earthen nagua's −4 → 43). A weapon
+  // that splits one max hit across hitsplats (Dual macuahuitl, Torag's
+  // hammers) reports the whole attack, so each half takes the shift (41 → 22 +
+  // 23 = 45 vs −2); other multi-hit weapons report their largest hitsplat.
+  if (armour !== 0) {
+    const profile = scenario.hitProfile;
+    const reported =
+      profile && isSplitProfile(profile)
+        ? hitsplatMaxima(profile, maxHit).reduce((sum, m) => sum + armouredHit(m, armour), 0)
+        : armouredHit(maxHit, armour);
+    return { dps, maxHit: reported, accuracy, flatArmour: { armour, rawMaxHit: maxHit } };
+  }
   return { dps, maxHit, accuracy };
 }

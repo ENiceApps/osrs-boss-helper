@@ -249,9 +249,11 @@ export function computeSetDps(
         rubyProcEnabled,
       })
     : undefined;
-  // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow, Tonalztics).
+  // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow, Tonalztics;
+  // the two-halves weapons only vs flat armour, which shifts each half).
   const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
     targetSize: target.size,
+    targetFlatArmour: target.defenceBonuses.flatArmour,
   });
   // Sanguinesti staff (incl. Holy, charged + uncharged catalog variants): the
   // 1/5 life-leech proc deals 8 bonus damage since the 2026-07-22 Summer
@@ -356,6 +358,7 @@ export function computeSetDps(
     twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,
     fangEquipped: activeBonuses.fangEquipped,
+    fangHitTrim: set.style === "melee" && set.itemBonusFlags.fang === true,
     targetMonsterMagicLevel: activeBonuses.targetMonsterMagicLevel,
     targetIsXerician: activeBonuses.targetIsXerician,
     armorSetBonus: set.armorSetBonus,
@@ -369,10 +372,17 @@ export function computeSetDps(
     targetAccuracyFactor,
     targetAlwaysHit,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
-    // Dart, or a phase that zeroes damage (Doom's shield) — wgloop isImmune.
-    // A ×0 phase is immunity, not a scale: it must also zero bolt procs.
-    targetImmune: activeBonuses.leafyImmune || targetDamageFactor?.[0] === 0,
+    // Dart, melee vs a flying target without a halberd / salamander, or a
+    // phase that zeroes damage (Doom's shield) — wgloop isImmune. A ×0 phase
+    // is immunity, not a scale: it must also zero bolt procs.
+    targetImmune:
+      activeBonuses.leafyImmune ||
+      activeBonuses.flyingMeleeImmune ||
+      targetDamageFactor?.[0] === 0,
     targetMinHitFactor,
+    // Flat armour (Gargoyle -2, Heavy skeleton +1, …) on every accurate
+    // melee/ranged hitsplat; the engine ignores it for magic.
+    targetFlatArmour: target.defenceBonuses.flatArmour,
     slayerOnTask,
     targetWeakness: target.weakness
       ? {

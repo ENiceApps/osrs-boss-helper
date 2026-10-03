@@ -58,9 +58,9 @@ function fixtureToCombo(f: OracleFixture): CanonicalCombo {
   };
 }
 
-/** The oracle-matrix fixtures plus the multiplier-order combos below. */
+/** The oracle-matrix fixtures plus the multiplier-order and NPC-mechanic combos below. */
 export function validationCombos(): CanonicalCombo[] {
-  return [...ORACLE_MATRIX.map(fixtureToCombo), ...orderingCombos()];
+  return [...ORACLE_MATRIX.map(fixtureToCombo), ...orderingCombos(), ...npcMechanicCombos()];
 }
 
 // Gear shells for the ordering combos (weapon/head/neck added per combo).
@@ -128,8 +128,8 @@ function orderingCombo(
  *
  * Gear is varied per combo (ring / neck / body swaps) so the base value is one
  * where the two orders disagree — at many bases they agree by luck. Targets
- * avoid non-zero flat armour (e.g. Gargoyle's -2): wgloop models it and our
- * engine doesn't yet, which would mask the ordering check.
+ * avoid non-zero flat armour (e.g. Gargoyle's -2) so the max hit shows the
+ * multiplier order alone; flat armour has its own combos (npcMechanicCombos).
  */
 export function orderingCombos(): CanonicalCombo[] {
   const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
@@ -219,6 +219,78 @@ export function orderingCombos(): CanonicalCombo[] {
     // Elite Void's +5% joins the magic damage percent (wgloop magic_str += 50).
     orderingCombo("elite-void-magic-fire-surge-general-graardor", "general-graardor",
       [21006, 11663, 13072, 13073, 8842, FURY, 13235, 11770], "magic", "longrange", fireSurge),
+  ];
+}
+
+const RUNE_CROSSBOW = 9185;
+const DRAGON_HALBERD = 3204;
+const BOLT_MAX = "bolt procs: wgloop's max hit includes the proc hit, ours the normal hit";
+
+/**
+ * NPC-side mechanics wgloop applies after the player's hit is rolled:
+ *
+ *  - Flat armour (`armour-`): every accurate melee/ranged hitsplat becomes
+ *    max(0, d − armour). One combo per mean branch the shift has to reach —
+ *    single hit, each Scythe hitsplat, two independent halves (Torag's), the
+ *    sequential halves (Dual macuahuitl), Dark bow's two arrows, the fang's
+ *    trimmed roll under positive armour, and the ruby / diamond / opal bolt
+ *    procs — on both signs (Gargoyle −2, Earthen nagua −4, Riyl shade −3,
+ *    Drake +2, Veiled kraken +15).
+ *  - Flying (`flying-`): melee deals nothing to a flying target unless the
+ *    weapon is a Polearm (halberd) or Salamander; Vespula takes no melee at
+ *    all. The halberd-vs-Aviansie combo pins that the flying exemption wins
+ *    over the Aviansies' non-salamander melee list.
+ *
+ * Their numbers are locked in tests/npc-mechanics.test.ts. Our DPS runs ~0.1% under wgloop on every
+ * melee/ranged row (armoured or not): wgloop raises an accurate 0 to 1, which
+ * the engine doesn't model — well inside the DPS tolerance.
+ */
+export function npcMechanicCombos(): CanonicalCombo[] {
+  const rangedGear = (weapon: number, ammo: number): number[] =>
+    [weapon, ammo, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  return [
+    // ── Flat armour, melee ──
+    orderingCombo("armour-whip-earthen-nagua", "earthen-nagua",
+      meleeGear(4151, FACEGUARD, TORTURE), "slash", "controlled"),
+    orderingCombo("armour-scythe-gargoyle", "gargoyle",
+      meleeGear(22325, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("armour-torags-hammers-gargoyle", "gargoyle",
+      meleeGear(4747, FACEGUARD, TORTURE), "crush", "aggressive"),
+    orderingCombo("armour-dual-macuahuitl-earthen-nagua", "earthen-nagua",
+      meleeGear(28997, FACEGUARD, TORTURE), "crush", "aggressive"),
+    // The fang's damage roll is trimmed to [trunc(M×3/20), M − that]; Drake's
+    // +2 clips the 0..M roll ours used to assume, not the trimmed one.
+    orderingCombo("armour-fang-drake", "drake",
+      meleeGear(26219, FACEGUARD, TORTURE), "stab", "aggressive", {
+        exactRoll: false, // fang's two-roll accuracy — the roll inversion doesn't apply
+        knownMaxHitResidual: "fang: ours reports the true max, wgloop the trimmed normal max",
+      }),
+
+    // ── Flat armour, ranged ──
+    orderingCombo("armour-dark-bow-riyl-shade", "riyl-shade",
+      rangedGear(11235, 11212), "ranged", "rapid"),
+    // wgloop's max hit includes the proc hit (ruby 45 → 30 here, diamond
+    // trunc(M×115/100), opal M + bonus); ours reports the normal hit.
+    orderingCombo("armour-ruby-bolts-veiled-kraken", "veiled-kraken",
+      rangedGear(RUNE_CROSSBOW, 9242), "ranged", "rapid", { knownMaxHitResidual: BOLT_MAX }),
+    orderingCombo("armour-diamond-bolts-gargoyle", "gargoyle",
+      rangedGear(RUNE_CROSSBOW, 9243), "ranged", "rapid", { knownMaxHitResidual: BOLT_MAX }),
+    orderingCombo("armour-opal-bolts-gargoyle", "gargoyle",
+      rangedGear(RUNE_CROSSBOW, 9236), "ranged", "rapid", { knownMaxHitResidual: BOLT_MAX }),
+    orderingCombo("armour-dhcb-drake", "drake",
+      rangedGear(21012, DRAGON_BOLTS), "ranged", "rapid"),
+
+    // ── Flying ──
+    orderingCombo("flying-whip-kreearra", "kreearra",
+      meleeGear(4151, FACEGUARD, TORTURE), "slash", "controlled"),
+    orderingCombo("flying-dragon-halberd-kreearra", "kreearra",
+      meleeGear(DRAGON_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("flying-scythe-flight-kilisa", "flight-kilisa",
+      meleeGear(22325, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("flying-dragon-halberd-aviansie", "aviansie",
+      meleeGear(DRAGON_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
+    orderingCombo("flying-dragon-halberd-vespula", "vespula",
+      meleeGear(DRAGON_HALBERD, FACEGUARD, TORTURE), "slash", "aggressive"),
   ];
 }
 

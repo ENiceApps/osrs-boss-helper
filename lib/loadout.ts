@@ -4,6 +4,7 @@
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
+import { isFlyingImmuneToMelee } from "@/data/monsters/melee-reach";
 import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
 import {
@@ -43,6 +44,12 @@ export interface TargetActiveBonuses {
    * damage source — it deals no damage at all (see `canDamageLeafy`).
    */
   leafyImmune: boolean;
+  /**
+   * A MELEE loadout against a flying target its weapon can't reach (anything
+   * but a halberd / salamander; Vespula always) — it deals no damage at all
+   * (see `isFlyingImmuneToMelee`).
+   */
+  flyingMeleeImmune: boolean;
 }
 
 /**
@@ -147,6 +154,7 @@ export function activeBonusesForTarget(
     targetMonsterMagicLevel: target.magicLevel,
     targetIsXerician: isXerician,
     leafyImmune: isLeafy && !canDamageLeafy(set),
+    flyingMeleeImmune: set.style === "melee" && isFlyingImmuneToMelee(target, set.weaponCategory),
   };
 }
 

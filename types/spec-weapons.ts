@@ -69,6 +69,12 @@ export interface SpecMaxHit {
   minHit?: number;
   /** Minimum hit as a fraction of the true max (Voidwaker rolls 50%–150%). */
   minFactor?: readonly [number, number];
+  /**
+   * The spec hit deals MAGIC damage (Voidwaker's Disrupt — wgloop switches the
+   * style to magic), so a target's flat armour, which only touches melee and
+   * ranged hits, doesn't shift the spec max / min.
+   */
+  magicDamage?: boolean;
   /** Shown when the spec max varies and can't be a fixed factor (Abyssal
    *  bludgeon scales with missing Prayer, etc.). */
   varies?: string;

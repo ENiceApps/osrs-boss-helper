@@ -1,8 +1,10 @@
 // Weapon id → multi-hit HitProfile. Only weapons whose profile actually differs
 // from a single combined hit appear here; see lib/dps/multihit.ts for why the
 // "two independent halves" weapons (Sulphur blades, Torag's hammers, Glacial
-// temotli, Earthbound tecpatl) are intentionally absent — their split is
-// mean-neutral, so the single-hit engine already prices them correctly.
+// temotli, Earthbound tecpatl) are absent by default — their split is
+// mean-neutral, so the single-hit engine already prices them correctly. The
+// exception is a target with flat armour, which shifts EACH hitsplat: there
+// they get their two-halves profile (see `targetFlatArmour`).
 //
 // Ids verified against data/vendor/wgloop/equipment.json.
 
@@ -15,10 +17,20 @@ const DARK_BOW_IDS = new Set([12766, 12765, 11235, 12768, 12767]);
 const DUAL_MACUAHUITL = 28997;
 const TONALZTICS_CHARGED = 28922;
 const TONALZTICS_UNCHARGED = 28919;
+// Two independent half hits (wgloop isWearingTwoHitWeapon): Torag's hammers
+// (undamaged + 100/75/50/25/0 degradation), Sulphur blades, Glacial temotli,
+// Earthbound tecpatl.
+const TWO_HIT_WEAPON_IDS = new Set([4747, 4958, 4959, 4960, 4961, 4962, 29084, 29889, 30957]);
 
 export interface HitProfileContext {
   /** NxN target size (catalog `size`). Drives the Scythe's hit count. */
   targetSize?: number;
+  /**
+   * Target's flat armour (catalog `defenceBonuses.flatArmour`). Non-zero turns
+   * on the two-halves profile of the mean-neutral two-hit weapons, since the
+   * armour shift lands on each half.
+   */
+  targetFlatArmour?: number;
 }
 
 /**
@@ -64,6 +76,13 @@ export function hitProfileForWeapon(
   if (weaponId === TONALZTICS_UNCHARGED) {
     // Uncharged: a single 0–75% hit (weaker than a normal full hit).
     return [{ maxFraction: 0.75 }];
+  }
+
+  // Two independent halves — the same mean as one combined hit, so they need
+  // no profile, except vs flat armour, which shifts each landed half (Torag's
+  // hammers vs a Gargoyle: +2 per half, up to +4 per attack).
+  if (TWO_HIT_WEAPON_IDS.has(weaponId) && (ctx.targetFlatArmour ?? 0) !== 0) {
+    return [{ maxFraction: 0.5 }, { maxFraction: 0.5 }];
   }
 
   return undefined;

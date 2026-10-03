@@ -102,6 +102,26 @@ export function BossStatsPanel({ monster }: Props) {
           </div>
         </div>
 
+        {/* Flat armour — only on the ~45 monsters that have it (Gargoyle,
+            shades, golems, …). The raw wiki value; the tooltip spells out the
+            direction (negative = extra damage). */}
+        {b.flatArmour ? (
+          <div>
+            <GroupLabel>Flat armour</GroupLabel>
+            <div className="flex gap-1.5">
+              <BonusStat
+                label="Per hit"
+                value={b.flatArmour}
+                title={
+                  b.flatArmour < 0
+                    ? `Every landed melee/ranged hit deals ${-b.flatArmour} extra damage`
+                    : `Every landed melee/ranged hit deals ${b.flatArmour} less damage (min 0)`
+                }
+              />
+            </div>
+          </div>
+        ) : null}
+
         {/* Max hit text from the wiki infobox */}
         {monster.maxHitText && (
           <div>

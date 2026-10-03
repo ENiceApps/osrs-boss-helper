@@ -537,7 +537,7 @@ export const SPEC_MAX_HIT: Record<number, SpecMaxHit> = {
   23987: { factor: [11, 10] }, // Crystal halberd — Sweep (+10%)
 
   // ---- Voidwaker (guaranteed, rolls 50%–150% of max) ----
-  27690: { factor: [3, 2], minFactor: [1, 2] },
+  27690: { factor: [3, 2], minFactor: [1, 2], magicDamage: true },
 
   // ---- Dual macuahuitl (Blood moon set; rolls 25%–125%) ----
   28997: { factor: [5, 4], minFactor: [1, 4] },

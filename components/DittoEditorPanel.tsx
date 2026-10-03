@@ -37,6 +37,8 @@ const DEFENCE_FIELDS: { key: keyof MonsterCatalogEntry["defenceBonuses"]; label:
   { key: "rangedHeavy", label: "Rng (heavy)" },
   { key: "rangedStandard", label: "Rng (std)" },
   { key: "rangedLight", label: "Rng (light)" },
+  // Added to every accurate melee/ranged hit (negative = more damage).
+  { key: "flatArmour", label: "Flat armour" },
 ];
 
 function NumField({
@@ -115,7 +117,7 @@ export function DittoEditorPanel({ monster, onChange }: Props) {
             <NumField
               key={f.key}
               label={f.label}
-              value={monster.defenceBonuses[f.key]}
+              value={monster.defenceBonuses[f.key] ?? 0}
               min={-100}
               onChange={(n) => patchDef(f.key, n)}
             />

@@ -36,13 +36,36 @@ function fangNormalMax(trueMax: number): number {
  *
  * @param weaponItemId equipped weapon's item id
  * @param maxHit       the engine's computed max hit for the active loadout
+ * @param flatArmour   the engine's `DpsResult.flatArmour`, when the target's
+ *                     flat armour shifted the hits. Every factor below works on
+ *                     the pre-armour `rawMaxHit`; each derived max is then
+ *                     shifted per hit (upstream shifts every accurate hitsplat
+ *                     last, specs included), and the normal max is the engine's
+ *                     already-shifted `maxHit`.
  */
 export function specMaxHitDisplay(
   weaponItemId: number,
   maxHit: number,
+  flatArmour?: { armour: number; rawMaxHit: number },
 ): SpecMaxHitDisplay | null {
   const mod = specMaxHitMod(weaponItemId);
   if (!mod) return null;
+
+  if (flatArmour) {
+    const raw = specMaxHitDisplay(weaponItemId, flatArmour.rawMaxHit);
+    if (!raw) return null;
+    const shift = (n: number): number => Math.max(0, n - flatArmour.armour);
+    // A spec that hits as magic (Voidwaker) skips flat armour.
+    const specShift = mod.magicDamage ? (n: number) => n : shift;
+    return {
+      ...raw,
+      // The fang's normal max is derived (trimmed) here; every other weapon's
+      // is the engine's own.
+      normalMaxHit: mod.uncapped ? shift(raw.normalMaxHit) : maxHit,
+      specMaxHit: raw.specMaxHit === null ? null : specShift(raw.specMaxHit),
+      ...(raw.minHit !== undefined ? { minHit: specShift(raw.minHit) } : {}),
+    };
+  }
 
   const specName = findSpecWeapon(weaponItemId)?.specName ?? "Special attack";
   const hits = mod.hits ?? 1;

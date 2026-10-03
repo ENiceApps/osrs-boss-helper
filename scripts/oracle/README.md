@@ -23,8 +23,11 @@ helpers and jest module-mapping (which stub asset imports and alias `@/`), so th
 numbers are identical to wgloop's own test suite.
 
 Parity assumptions (both engines): no potions, always-on offensive prayer
-(Piety / Rigour / Augury — mirrors our `DEFAULT_PRAYERS`), `onSlayerTask` and
-Kandarin diary off unless a combo opts in (the `ontask-` ordering combos do).
+(Piety / Rigour / Augury — mirrors our `DEFAULT_PRAYERS`), `onSlayerTask` off
+unless a combo opts in (the `ontask-` ordering combos do), and the Kandarin
+Hard diary ON — our engine always applies its ×1.1 enchanted-bolt proc chance
+(the worker forced it off until 2026-10-03, unnoticed until the first
+enchanted-bolt combos).
 
 ## Usage
 
@@ -77,7 +80,21 @@ Leaf-bladed battleaxe / Arclight / Ursine chainmace / DHCB / Webweaver / DHW /
 Dark Demonbane / Twinflame; Salve variants per style (melee DHL, ranged DHCB,
 magic Kodai); Inquisitor's and Obsidian with Salve; smoke staves; Elite Void
 magic. Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
-Targets avoid non-zero flat armour (below).
+Targets avoid non-zero flat armour, so the max hit shows the multiplier order
+alone (flat armour has its own combos, below).
+
+## NPC-mechanic combos
+
+`npcMechanicCombos()` in `combos.ts` covers what wgloop does to a hit after it
+is rolled. `armour-` combos check flat armour (every accurate melee/ranged
+hitsplat becomes max(0, d − armour)) on each mean branch: single hit, each
+Scythe hitsplat, Torag's two halves, the Dual macuahuitl's sequential halves,
+Dark bow, the fang's trimmed roll, and ruby / diamond / opal bolt procs, on
+both signs. `flying-` combos check melee immunity against flying targets
+(Polearm / Salamander exempt, Vespula never). Their wgloop numbers are locked
+in `tests/npc-mechanics.test.ts`. A combo can carry `knownMaxHitResidual`
+when the max-hit difference is by design (bolt procs, the fang); its max-hit
+gap is then printed as a note.
 
 ## Sharding
 
@@ -136,11 +153,23 @@ localize to specific mechanics:
 
 Pre-existing modelling gaps the sweeps surface — not harness errors:
 
-- **Flat armour** — wgloop adds/subtracts `defensive.flat_armour` on every
-  accurate non-magic hit (Gargoyle −2 → +2 damage, Earthen nagua +4, Heavy
-  skeleton −1, Dusk −1; 110 monsters are non-zero). Our engine ignores it.
-- **Flying monsters** (Kree'arra's minions, Aviansies) are immune to melee in
-  wgloop; our engine still scores melee against them.
+- ~~**Flat armour**~~ **FIXED** 2026-10-03 — `defensive.flat_armour` is in the
+  catalog (`defenceBonuses.flatArmour`) and shifts every accurate melee/ranged
+  hitsplat (`lib/dps/flat-armour.ts`).
+- ~~**Flying monsters**~~ **FIXED** 2026-10-03 — melee scores 0 unless the
+  weapon is a Polearm / Salamander; Vespula never (`isFlyingImmuneToMelee`).
+- **Accurate zeros** — wgloop raises an accurate 0 to 1 (`accurateZeroApplicable`);
+  our engine doesn't, so every melee/ranged row runs low by acc/(max+1) per
+  hitsplat per attack: ~0.1% at max hit 40, ~1% at max hit 10. Inside the DPS
+  tolerance at typical max hits. Positive flat armour of 1+ swallows the 1, so
+  those rows match exactly.
+- **Bolt-proc and fang max hits** — wgloop's max hit includes the proc hit
+  (ruby / diamond / opal) and is the fang's trimmed normal max; ours is the
+  normal hit / the fang's true max (the UI derives the fang's normal max).
+  DPS matches; combos carry `knownMaxHitResidual`.
+- **Keris dagger** — wgloop gives the Kalphite bonus to any item named "Keris",
+  including the plain dagger (10581); our `KERIS_PARTISAN` trigger list only
+  has the partisans, so the dagger gets no bonus here.
 - **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
   truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
   accuracy match (rows carry `knownDpsResidual`).

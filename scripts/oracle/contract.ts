@@ -59,6 +59,12 @@ export interface CanonicalCombo {
    */
   knownDpsResidual?: string;
   /**
+   * A documented reason the reported max hit differs by design while DPS and
+   * accuracy still match (e.g. Osmumten's fang: ours is the true max, wgloop's
+   * the trimmed normal max). The max-hit check is then reported as a note.
+   */
+  knownMaxHitResidual?: string;
+  /**
    * Optional locked baseline this combo was lifted from (oracle-matrix). When
    * present the diff report does a three-way check: our engine vs wgloop vs
    * this wiki-target baseline.

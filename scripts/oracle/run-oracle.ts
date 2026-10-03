@@ -25,6 +25,7 @@ import { SKILLS_AT_99 } from "@/lib/recommend";
 import { scoreScenario } from "@/lib/optimize/scenario";
 import { STAT_OVERRIDES } from "@/data/items/stat-overrides";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
+import { isSplitProfile } from "@/lib/dps/multihit";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
 import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
@@ -49,7 +50,8 @@ interface OurResult {
    * Multi-hit weapon (Scythe, Dark bow, …). For these, our `maxHit` is the
    * single largest hit while wgloop's `getMax()` is the summed max across all
    * hits — not comparable. The comparator skips the maxHit check and relies on
-   * DPS + accuracy instead.
+   * DPS + accuracy instead. Split weapons (Dual macuahuitl, Torag's) don't set
+   * it: both sides report the whole attack's max.
    */
   multiHit?: boolean;
   error?: string;
@@ -72,7 +74,13 @@ function ourEngine(combo: CanonicalCombo): OurResult {
   });
   if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
   const weaponId = scored.loadout.slots.weapon?.itemId;
-  const multiHit = hitProfileForWeapon(weaponId, { targetSize: boss.size }) !== undefined;
+  const profile = hitProfileForWeapon(weaponId, {
+    targetSize: boss.size,
+    targetFlatArmour: boss.defenceBonuses.flatArmour,
+  });
+  // A split weapon (Dual macuahuitl, Torag's) reports the whole attack's max
+  // on both sides, so only the other multi-hitters skip the max-hit check.
+  const multiHit = profile !== undefined && !isSplitProfile(profile);
   return {
     id: combo.id,
     ok: true,
@@ -173,8 +181,11 @@ function compare(
 
   // Multi-hit weapons report maxHit differently on each side (single largest
   // hit vs summed max across hits), so it isn't comparable — rely on DPS + acc.
+  let maxHitNote = "";
   if (!our.multiHit && our.maxHit !== wg.maxHit) {
-    return { verdict: "MAXHIT", detail: `maxHit ours=${our.maxHit} wg=${wg.maxHit}` };
+    const detail = `maxHit ours=${our.maxHit} wg=${wg.maxHit}`;
+    if (!combo.knownMaxHitResidual) return { verdict: "MAXHIT", detail };
+    maxHitNote = `${detail} — known: ${combo.knownMaxHitResidual}`;
   }
   if (Math.abs((our.accuracy ?? 0) - wg.accuracy) > ACC_TOL) {
     return { verdict: "ACC", detail: `acc ours=${our.accuracy?.toFixed(4)} wg=${wg.accuracy.toFixed(4)}` };
@@ -189,10 +200,13 @@ function compare(
   const rel = Math.abs(dOurs - wg.dps) / Math.max(wg.dps, 1e-9);
   if (rel > DPS_REL_TOL && Math.abs(dOurs - wg.dps) > DPS_ABS_TOL) {
     const detail = `dps ours=${dOurs.toFixed(3)} wg=${wg.dps.toFixed(3)} (${(rel * 100).toFixed(1)}%)`;
-    if (combo.knownDpsResidual) return { verdict: "OK", detail: `${detail} — known: ${combo.knownDpsResidual}` };
+    if (combo.knownDpsResidual) {
+      const note = `${detail} — known: ${combo.knownDpsResidual}`;
+      return { verdict: "OK", detail: maxHitNote ? `${maxHitNote}; ${note}` : note };
+    }
     return { verdict: "DPS", detail };
   }
-  return { verdict: "OK", detail: "" };
+  return { verdict: "OK", detail: maxHitNote };
 }
 
 function main(): void {

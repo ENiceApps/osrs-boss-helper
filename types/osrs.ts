@@ -206,8 +206,16 @@ export interface MonsterWeakness {
 
 export interface DpsResult {
   dps: number;
+  /** Max hit of a landed hitsplat, after the target's flat armour (when any). */
   maxHit: number;
   accuracy: number;
+  /**
+   * Set when the target's flat armour shifted this loadout's hits (melee /
+   * ranged vs a non-zero `flatArmour` target): the armour, and the max hit
+   * before it. `maxHit` already includes the shift; display helpers that
+   * derive other maxima (spec maxes) start from `rawMaxHit`. Omitted otherwise.
+   */
+  flatArmour?: { armour: number; rawMaxHit: number };
 }
 
 export interface BankContents {

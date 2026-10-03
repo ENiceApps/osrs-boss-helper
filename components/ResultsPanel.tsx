@@ -117,6 +117,7 @@ export function buildActiveFlags(
   // Not a bonus but the reason this loadout shows 0 DPS — say so where the
   // target-specific effects are listed.
   if (activeBonuses?.leafyImmune) flags.push("Leafy: no damage without a leaf-bladed weapon, broad ammo or Magic Dart");
+  if (activeBonuses?.flyingMeleeImmune) flags.push("Flying: melee can't reach it without a halberd or salamander");
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc / +10% dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% dmg");
@@ -296,7 +297,7 @@ export function ResultsPanel({
         // godswords, Voidwaker, …), split the headline into the normal-attack max
         // and a separate special-attack max so they aren't conflated.
         const specMax = set.slots.weapon
-          ? specMaxHitDisplay(set.slots.weapon.itemId, dps.maxHit)
+          ? specMaxHitDisplay(set.slots.weapon.itemId, dps.maxHit, dps.flatArmour)
           : null;
         const specValue = specMax
           ? specMax.varies ??

@@ -10,6 +10,12 @@ export interface MonsterDefenceBonuses {
   rangedHeavy: number;
   rangedStandard: number;
   rangedLight: number;
+  /**
+   * Flat armour (upstream `defensive.flat_armour`): subtracted from every
+   * accurate melee/ranged hitsplat, floored at 0 — negative values add
+   * damage (Gargoyle -2). Omitted when 0.
+   */
+  flatArmour?: number;
 }
 
 /** One selectable phase/form of a monster. Spread over the parent entry
@@ -542,7 +548,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 100,
       "rangedHeavy": 200,
       "rangedStandard": 200,
-      "rangedLight": 200
+      "rangedLight": 200,
+      "flatArmour": -2
     },
     "attributes": [
       "spectral"
@@ -570,7 +577,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 200,
           "rangedStandard": 200,
-          "rangedLight": 200
+          "rangedLight": 200,
+          "flatArmour": -2
         },
         "attributes": [
           "spectral"
@@ -597,7 +605,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 200,
           "rangedStandard": 200,
-          "rangedLight": 200
+          "rangedLight": 200,
+          "flatArmour": -2
         },
         "attributes": [
           "spectral"
@@ -1403,7 +1412,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 10,
       "rangedStandard": 10,
-      "rangedLight": 10
+      "rangedLight": 10,
+      "flatArmour": 1
     },
     "attributes": [
       "undead"
@@ -1433,7 +1443,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 10,
       "rangedStandard": 10,
-      "rangedLight": 10
+      "rangedLight": 10,
+      "flatArmour": 1
     },
     "attributes": [
       "undead"
@@ -1463,7 +1474,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 10,
       "rangedStandard": 10,
-      "rangedLight": 10
+      "rangedLight": 10,
+      "flatArmour": 2
     },
     "attributes": [
       "undead"
@@ -1902,7 +1914,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -1932,7 +1945,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -1961,7 +1975,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -3869,7 +3884,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 500,
       "rangedHeavy": 500,
       "rangedStandard": 500,
-      "rangedLight": 500
+      "rangedLight": 500,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": {
@@ -4146,7 +4162,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 500,
       "rangedHeavy": 500,
       "rangedStandard": 500,
-      "rangedLight": 500
+      "rangedLight": 500,
+      "flatArmour": -5
     },
     "attributes": [],
     "weakness": {
@@ -6261,7 +6278,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 150,
       "rangedHeavy": 50,
       "rangedStandard": 50,
-      "rangedLight": 50
+      "rangedLight": 50,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -8094,7 +8112,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 20,
       "rangedHeavy": 0,
       "rangedStandard": 100,
-      "rangedLight": 100
+      "rangedLight": 100,
+      "flatArmour": 2
     },
     "attributes": [
       "dragon"
@@ -8458,7 +8477,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -1
     },
     "attributes": [
       "golem"
@@ -8486,7 +8506,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -1
         },
         "attributes": [
           "golem"
@@ -8989,7 +9010,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 60,
       "rangedHeavy": 150,
       "rangedStandard": 150,
-      "rangedLight": 150
+      "rangedLight": 150,
+      "flatArmour": -4
     },
     "attributes": [
       "spectral"
@@ -9017,7 +9039,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 60,
           "rangedHeavy": 150,
           "rangedStandard": 150,
-          "rangedLight": 150
+          "rangedLight": 150,
+          "flatArmour": -4
         },
         "attributes": [
           "spectral"
@@ -9044,7 +9067,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 60,
           "rangedHeavy": 150,
           "rangedStandard": 150,
-          "rangedLight": 150
+          "rangedLight": 150,
+          "flatArmour": -4
         },
         "attributes": [
           "spectral"
@@ -9071,7 +9095,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 60,
           "rangedHeavy": 150,
           "rangedStandard": 150,
-          "rangedLight": 150
+          "rangedLight": 150,
+          "flatArmour": -4
         },
         "attributes": [
           "spectral"
@@ -9102,7 +9127,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 500,
       "rangedHeavy": 500,
       "rangedStandard": 500,
-      "rangedLight": 500
+      "rangedLight": 500,
+      "flatArmour": 4
     },
     "attributes": [],
     "weakness": {
@@ -9128,7 +9154,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 500,
           "rangedHeavy": 500,
           "rangedStandard": 500,
-          "rangedLight": 500
+          "rangedLight": 500,
+          "flatArmour": 4
         },
         "attributes": [],
         "weakness": {
@@ -9153,7 +9180,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 500,
           "rangedHeavy": 500,
           "rangedStandard": 500,
-          "rangedLight": 500
+          "rangedLight": 500,
+          "flatArmour": 6
         },
         "attributes": [],
         "weakness": {
@@ -10113,7 +10141,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -10143,7 +10172,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -10172,7 +10202,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -10577,7 +10608,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 60,
       "rangedHeavy": 200,
       "rangedStandard": 200,
-      "rangedLight": 200
+      "rangedLight": 200,
+      "flatArmour": -4
     },
     "attributes": [
       "spectral"
@@ -10607,7 +10639,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 150,
       "rangedHeavy": 50,
       "rangedStandard": 50,
-      "rangedLight": 50
+      "rangedLight": 50,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -10663,7 +10696,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 20,
       "rangedHeavy": -20,
       "rangedStandard": 20,
-      "rangedLight": 20
+      "rangedLight": 20,
+      "flatArmour": -2
     },
     "attributes": [
       "golem"
@@ -11496,7 +11530,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": 2
     },
     "attributes": [],
     "weakness": {
@@ -11719,7 +11754,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 150,
       "rangedHeavy": 50,
       "rangedStandard": 50,
-      "rangedLight": 50
+      "rangedLight": 50,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -12803,7 +12839,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 50,
       "rangedHeavy": 35,
       "rangedStandard": 35,
-      "rangedLight": 35
+      "rangedLight": 35,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -13270,7 +13307,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 20,
       "rangedHeavy": 0,
       "rangedStandard": 150,
-      "rangedLight": 150
+      "rangedLight": 150,
+      "flatArmour": 3
     },
     "attributes": [
       "dragon"
@@ -15404,7 +15442,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 17,
       "rangedHeavy": 20,
       "rangedStandard": 20,
-      "rangedLight": 20
+      "rangedLight": 20,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": {
@@ -15432,7 +15471,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": {
@@ -15803,7 +15843,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 106,
       "rangedHeavy": 100,
       "rangedStandard": 100,
-      "rangedLight": 100
+      "rangedLight": 100,
+      "flatArmour": -2
     },
     "attributes": [
       "spectral"
@@ -17094,7 +17135,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": -10
+      "rangedLight": -10,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -17217,7 +17259,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -17247,7 +17290,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -17276,7 +17320,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -17336,7 +17381,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -2
     },
     "attributes": [
       "kalphite"
@@ -17364,7 +17410,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -2
         },
         "attributes": [
           "kalphite"
@@ -17391,7 +17438,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 34,
           "rangedHeavy": 66,
           "rangedStandard": 66,
-          "rangedLight": 66
+          "rangedLight": 66,
+          "flatArmour": -2
         },
         "attributes": [
           "kalphite"
@@ -19011,7 +19059,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 62,
       "rangedStandard": 62,
-      "rangedLight": 62
+      "rangedLight": 62,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -19036,7 +19085,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 60,
-      "rangedLight": 60
+      "rangedLight": 60,
+      "flatArmour": 1
     },
     "attributes": [],
     "weakness": {
@@ -19977,7 +20027,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": -5,
       "rangedHeavy": 15,
       "rangedStandard": 15,
-      "rangedLight": 15
+      "rangedLight": 15,
+      "flatArmour": -2
     },
     "attributes": [
       "spectral"
@@ -20406,7 +20457,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -20436,7 +20488,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -20465,7 +20518,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -20803,7 +20857,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 100,
       "rangedStandard": 100,
-      "rangedLight": 100
+      "rangedLight": 100,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -20826,7 +20881,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20848,7 +20904,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20870,7 +20927,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20892,7 +20950,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20914,7 +20973,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20936,7 +20996,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20958,7 +21019,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -20980,7 +21042,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 100,
           "rangedHeavy": 100,
           "rangedStandard": 100,
-          "rangedLight": 100
+          "rangedLight": 100,
+          "flatArmour": -2
         },
         "attributes": [],
         "weakness": null,
@@ -22475,7 +22538,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -22505,7 +22569,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -22534,7 +22599,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -23809,7 +23875,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "undead",
@@ -23835,7 +23902,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -23860,7 +23928,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -23892,7 +23961,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "undead",
@@ -24001,7 +24071,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 50,
       "rangedHeavy": 20,
       "rangedStandard": 0,
-      "rangedLight": 20
+      "rangedLight": 20,
+      "flatArmour": 2
     },
     "attributes": [
       "dragon"
@@ -25306,7 +25377,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": -3,
       "rangedHeavy": 2,
       "rangedStandard": 2,
-      "rangedLight": 2
+      "rangedLight": 2,
+      "flatArmour": 1
     },
     "attributes": [
       "undead"
@@ -25426,7 +25498,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": -3,
       "rangedHeavy": 2,
       "rangedStandard": 2,
-      "rangedLight": 2
+      "rangedLight": 2,
+      "flatArmour": 1
     },
     "attributes": [
       "undead"
@@ -25542,7 +25615,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": -3,
       "rangedHeavy": 2,
       "rangedStandard": 2,
-      "rangedLight": 2
+      "rangedLight": 2,
+      "flatArmour": 1
     },
     "attributes": [
       "undead"
@@ -27123,7 +27197,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 15,
       "rangedStandard": 15,
-      "rangedLight": 15
+      "rangedLight": 15,
+      "flatArmour": -1
     },
     "attributes": [],
     "weakness": null,
@@ -27148,7 +27223,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 200,
       "rangedHeavy": 200,
       "rangedStandard": 200,
-      "rangedLight": 200
+      "rangedLight": 200,
+      "flatArmour": -4
     },
     "attributes": [
       "spectral"
@@ -27178,7 +27254,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 200,
       "rangedHeavy": 200,
       "rangedStandard": 200,
-      "rangedLight": 200
+      "rangedLight": 200,
+      "flatArmour": -4
     },
     "attributes": [],
     "weakness": null,
@@ -29535,7 +29612,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 150,
       "rangedHeavy": 25,
       "rangedStandard": 25,
-      "rangedLight": 25
+      "rangedLight": 25,
+      "flatArmour": -2
     },
     "attributes": [],
     "weakness": null,
@@ -30090,7 +30168,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 0,
       "rangedHeavy": 0,
       "rangedStandard": 0,
-      "rangedLight": 0
+      "rangedLight": 0,
+      "flatArmour": -3
     },
     "attributes": [
       "shade",
@@ -30120,7 +30199,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "shade",
@@ -30149,7 +30229,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 0,
           "rangedHeavy": 0,
           "rangedStandard": 0,
-          "rangedLight": 0
+          "rangedLight": 0,
+          "flatArmour": -3
         },
         "attributes": [
           "undead",
@@ -30671,7 +30752,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 325,
       "rangedHeavy": 0,
       "rangedStandard": 325,
-      "rangedLight": 325
+      "rangedLight": 325,
+      "flatArmour": 15
     },
     "attributes": [],
     "weakness": null,
@@ -31979,7 +32061,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 50,
       "rangedHeavy": 10,
       "rangedStandard": 20,
-      "rangedLight": 20
+      "rangedLight": 20,
+      "flatArmour": 1
     },
     "attributes": [
       "dragon"
