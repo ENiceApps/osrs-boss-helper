@@ -387,6 +387,13 @@ const WGLOOP: Record<string, { maxHit: number; attackRoll: number; defenceRoll: 
   "thammarons-sceptre-general-graardor": { maxHit: 29, attackRoll: 23760, defenceRoll: 32218 },
   "ontask-accursed-sceptre-vetion": { maxHit: 54, attackRoll: 43717, defenceRoll: 97026 },
   "accursed-sceptre-a-fire-surge-callisto": { maxHit: 49, attackRoll: 44431, defenceRoll: 9536 },
+  // Powered-staff stance: Accurate is (123 + 2 + 9) × (bonus + 64); the engine's
+  // old +3 gave 135 × 190 = 25650 and 135 × 472 = 63720. Longrange always matched.
+  "powered-staff-accurate-trident-swamp-zulrah": { maxHit: 37, attackRoll: 25460, defenceRoll: 5871 },
+  "powered-staff-accurate-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 63248, defenceRoll: 97026 },
+  "powered-staff-longrange-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 62304, defenceRoll: 97026 },
+  // trunc(134 × 187 × 3/2) = 37587; the old +3 gave trunc(135 × 187 × 3/2) = 37867.
+  "powered-staff-accurate-accursed-sceptre-vetion": { maxHit: 48, attackRoll: 37587, defenceRoll: 97026 },
 };
 
 describe("multiplier-order combos match wgloop (scripts/oracle/combos.ts)", () => {

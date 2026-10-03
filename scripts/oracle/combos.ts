@@ -275,6 +275,20 @@ export function orderingCombos(): CanonicalCombo[] {
       [ACCURSED_SCEPTRE, SLAYER_HELM_I, OCCULT, TORMENTED_BRACELET, ...MAGIC_REST], "magic", "longrange", onTask),
     orderingCombo("accursed-sceptre-a-fire-surge-callisto", "callisto",
       [ACCURSED_SCEPTRE_A, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
+
+    // ── Magic: powered-staff stance bonus ──
+    // Accurate is +2 on magic's +9 (upstream), not melee/ranged's +3 — the
+    // wiki's "+3 accurate / +1 longrange" sits on a +8 base, the same 11 / 9.
+    // Longrange adds nothing on +9. The stance moves the roll, never the max hit.
+    orderingCombo("powered-staff-accurate-trident-swamp-zulrah", "zulrah",
+      [12899, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
+    orderingCombo("powered-staff-accurate-tumekens-shadow-vetion", "vetion",
+      [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
+    orderingCombo("powered-staff-longrange-tumekens-shadow-vetion", "vetion",
+      [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
+    // The stance sits inside the Wilderness ×3/2 (Accursed sceptre).
+    orderingCombo("powered-staff-accurate-accursed-sceptre-vetion", "vetion",
+      [ACCURSED_SCEPTRE, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
   ];
 }
 

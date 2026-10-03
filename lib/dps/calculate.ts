@@ -268,6 +268,13 @@ interface StyleBonuses {
 }
 
 function styleBonuses(style: CombatStyle, choice: AttackStyleChoice): StyleBonuses {
+  // Magic: only a powered staff's Accurate stance adds anything, and it is +2
+  // on magic's +9 base (upstream getPlayerMaxMagicAttackRoll), not melee and
+  // ranged's +3 on +8. The wiki's "+3 accurate / +1 longrange" (Bitterkoekje)
+  // sits on a +8 base: the same 11 / 9 either way. +3 here gave 12.
+  if (style === "magic") {
+    return { attack: choice === "accurate" ? 2 : 0, strength: 0, attackSpeedAdjust: 0 };
+  }
   switch (choice) {
     case "accurate":
       // Ranged Accurate's invisible +3 boosts damage as well as accuracy

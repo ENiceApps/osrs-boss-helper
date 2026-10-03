@@ -362,15 +362,15 @@ describe("optimize/bank — powered staff formula (Trident fix)", () => {
     expect(top.dps.dps).toBeGreaterThan(0);
   });
 
-  it("Trident of the Swamp max hit at 99 magic = 30 (formula 29 + Augury +4%)", () => {
+  it("Trident of the Swamp max hit at 99 magic = 32 (formula 31 + Augury +4%)", () => {
     const { rankings } = optimizeForBoss({
       bank: [12899],
       target: REX,
       skills: SKILLS_AT_99,
     });
-    // formula: floor(99/3) - 4 = 29; Augury default prayer adds +4% magic damage:
-    // floor(29 × 1.04) = floor(30.16) = 30.
-    expect(rankings[0].dps.maxHit).toBe(30);
+    // formula: floor(99/3) - 2 = 31; Augury default prayer adds +4% magic damage:
+    // floor(31 × 1.04) = floor(32.24) = 32.
+    expect(rankings[0].dps.maxHit).toBe(32);
   });
 
   it("Trident of the Seas max hit at 99 magic = 29 (formula 28 + Augury +4%)", () => {
