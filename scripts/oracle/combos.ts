@@ -219,6 +219,17 @@ export function orderingCombos(): CanonicalCombo[] {
     // Elite Void's +5% joins the magic damage percent (wgloop magic_str += 50).
     orderingCombo("elite-void-magic-fire-surge-general-graardor", "general-graardor",
       [21006, 11663, 13072, 13073, 8842, FURY, 13235, 11770], "magic", "longrange", fireSurge),
+
+    // ── Magic: powered-staff stance bonus ──
+    // Accurate is +2 on magic's +9 (upstream), not melee/ranged's +3 — the
+    // wiki's "+3 accurate / +1 longrange" sits on a +8 base, the same 11 / 9.
+    // Longrange adds nothing on +9. The stance moves the roll, never the max hit.
+    orderingCombo("powered-staff-accurate-trident-swamp-zulrah", "zulrah",
+      [12899, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
+    orderingCombo("powered-staff-accurate-tumekens-shadow-vetion", "vetion",
+      [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "accurate"),
+    orderingCombo("powered-staff-longrange-tumekens-shadow-vetion", "vetion",
+      [27275, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange"),
   ];
 }
 

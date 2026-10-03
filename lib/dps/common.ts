@@ -54,9 +54,10 @@ export function effectiveLevel(
   voidBonus = 0,
   baseOffset = 8,
 ): number {
-  // Style-specific constant: +8 for melee/ranged, +9 for magic. See
-  // https://oldschool.runescape.wiki/w/Magic_damage (the effective magic
-  // level formula uses +9; melee/ranged use +8). Default keeps existing
+  // Style-specific constant: +8 for melee/ranged, +9 for magic, as upstream
+  // osrs-dps-calc does (getPlayerMaxMagicAttackRoll). The wiki's magic formula
+  // uses +8 with a powered staff's Accurate at +3 rather than +2 — the same
+  // total there; see styleBonuses in calculate.ts. Default keeps existing
   // ranged/melee callsites unchanged.
   return Math.floor(visibleLevel * prayerMultiplier) + styleBonus + baseOffset + voidBonus;
 }

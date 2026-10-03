@@ -76,7 +76,9 @@ disagree: on-task slayer helm (i) vs DHL / Granite hammer / Barronite mace /
 Leaf-bladed battleaxe / Arclight / Ursine chainmace / DHCB / Webweaver / DHW /
 Dark Demonbane / Twinflame; Salve variants per style (melee DHL, ranged DHCB,
 magic Kodai); Inquisitor's and Obsidian with Salve; smoke staves; Elite Void
-magic. Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
+magic. The `powered-staff-` combos pin the magic stance bonus (Accurate +2 on
+magic's +9, Longrange +0; the engine had +3 on Accurate until 2026-10-03).
+Their wgloop numbers are locked in `tests/multiplier-order.test.ts`.
 Targets avoid non-zero flat armour (below).
 
 ## Sharding
@@ -141,6 +143,13 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   skeleton −1, Dusk −1; 110 monsters are non-zero). Our engine ignores it.
 - **Flying monsters** (Kree'arra's minions, Aviansies) are immune to melee in
   wgloop; our engine still scores melee against them.
+- **Ranged Accurate damage** — wgloop (and the wiki) add the stance's +3 to the
+  ranged STRENGTH effective level too; our engine adds it to accuracy only, so
+  ranged Accurate max hits run 1 low at some bases (Rune crossbow vs Vorkath:
+  35 vs 36). Rapid, the optimizer's ranged pick, is unaffected.
+- **Sanguinesti staff** always shows `MAXHIT` (e.g. 39 vs 47): wgloop reports
+  the distribution max, which includes the 1/5 +8 proc; ours is the base max.
+  Base max hit, accuracy and DPS match — keep it out of exact combos.
 - **Twinflame second cast** is mean-modelled as ×7/5 of the max hit; wgloop
   truncates each second hitsplat, so its DPS is ~1–2% lower. Max hit and
   accuracy match (rows carry `knownDpsResidual`).

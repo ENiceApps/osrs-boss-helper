@@ -291,6 +291,11 @@ const WGLOOP: Record<string, { maxHit: number; attackRoll: number; defenceRoll: 
   "ontask-dhw-rune-dragon": { maxHit: 47, attackRoll: 46754, defenceRoll: 19270 },
   "ontask-dark-demonbane-abyssal-demon": { maxHit: 44, attackRoll: 34791, defenceRoll: 640 },
   "elite-void-magic-fire-surge-general-graardor": { maxHit: 30, attackRoll: 23302, defenceRoll: 32218 },
+  // Powered-staff stance: Accurate is (123 + 2 + 9) × (bonus + 64); the engine's
+  // old +3 gave 135 × 190 = 25650 and 135 × 472 = 63720. Longrange always matched.
+  "powered-staff-accurate-trident-swamp-zulrah": { maxHit: 37, attackRoll: 25460, defenceRoll: 5871 },
+  "powered-staff-accurate-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 63248, defenceRoll: 97026 },
+  "powered-staff-longrange-tumekens-shadow-vetion": { maxHit: 51, attackRoll: 62304, defenceRoll: 97026 },
 };
 
 describe("multiplier-order combos match wgloop (scripts/oracle/combos.ts)", () => {
