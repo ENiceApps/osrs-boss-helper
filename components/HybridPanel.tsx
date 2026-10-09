@@ -98,8 +98,8 @@ export function HybridPanel({
     <CollapsibleSection title="Hybrid armour">
       <p className="text-caption text-osrs-muted mb-3 max-w-2xl">
         For multi-style bosses. Pick the styles you&apos;ll use and how many gear slots
-        you&apos;re willing to switch — fewer switches share more armour (easier to play),
-        more switches push each style toward its best gear. The weapon always switches.
+        you&apos;re willing to switch. Fewer switches share more armour and are easier to play.
+        More switches get each style closer to its best gear. The weapon always switches.
       </p>
 
       {/* Controls */}
@@ -164,7 +164,7 @@ export function HybridPanel({
             return (
               <div key={s} className="min-w-[10rem]">
                 <label className="label-eyebrow mb-1 block" htmlFor={`hybrid-w-${s}`}>
-                  {TITLE[s]} — {pct}%
+                  {TITLE[s]}: {pct}%
                 </label>
                 <input
                   id={`hybrid-w-${s}`}
@@ -185,13 +185,13 @@ export function HybridPanel({
       {/* Result */}
       {!connected || ownedItemIds.size === 0 ? (
         <p className="text-sm text-osrs-muted">
-          Connect your bank (sync from the plugin) to build a hybrid setup from your gear.
+          Connect your bank to build a hybrid setup from your gear.
         </p>
       ) : selectedStyles.length < 2 ? (
         <p className="text-sm text-osrs-muted">Pick at least two styles to blend.</p>
       ) : !result ? (
         <p className="text-sm text-osrs-muted">
-          Your bank can&apos;t perform two of the chosen styles against {target.name}.
+          Your bank doesn&apos;t have gear for two of these styles against {target.name}.
         </p>
       ) : (
         <HybridResult result={result} ownedItemIds={ownedItemIds} mapping={mapping} />
@@ -228,7 +228,7 @@ function HybridResult({
         </span>
         {result.switchCount < result.switchBudget && (
           <span className="text-caption text-osrs-muted">
-            (only {result.switchCount} needed — extra switches wouldn&apos;t help)
+            (only {result.switchCount} needed, more wouldn&apos;t help)
           </span>
         )}
       </div>

@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: "Updates",
   description:
-    "OSRS Boss Helper changelog and roadmap: dated release notes for every version, plus what's planned next.",
+    "What's changed in OSRS Boss Helper, version by version, plus what's planned next.",
   alternates: { canonical: "/updates" },
 };
 
@@ -112,7 +112,7 @@ export default function UpdatesPage() {
           ))}
         </ul>
         <p className="text-caption text-osrs-muted mt-3">
-          This is a hobby project made by one person, so the order and scope will change and
+          This is a hobby project and it&apos;s just me, so the order and scope will change and
           nothing here is a promise. Want something? Use the Feedback button (top right), or open
           an issue on{" "}
           <a

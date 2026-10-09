@@ -131,7 +131,7 @@ export function LoadoutPanel<TabId extends string>({
     try {
       await onWikiExport();
     } catch (e) {
-      setExportError("Couldn't create shortlink — try again.");
+      setExportError("Couldn't create the link. Try again.");
       console.error("[wiki-export]", e);
     } finally {
       setExporting(false);
@@ -145,7 +145,7 @@ export function LoadoutPanel<TabId extends string>({
         {set && (
           <div className="flex items-center gap-2">
             <span className="text-caption text-osrs-muted">
-              {edited ? "custom — edited by you" : sourceLabel}
+              {edited ? "custom, edited by you" : sourceLabel}
             </span>
             {/* Persistent "go back to the recommendation" affordance. Reverts
                 any manual weapon/gear/spell swaps to the optimizer's pick, which
@@ -156,8 +156,8 @@ export function LoadoutPanel<TabId extends string>({
               disabled={!edited}
               title={
                 edited
-                  ? "Discard your edits and rebuild the optimizer's recommended loadout"
-                  : "This is the optimizer's recommendation — nothing to refresh"
+                  ? "Undo your edits and go back to the recommended loadout"
+                  : "This is already the recommended loadout. Nothing to refresh."
               }
               className={`text-caption font-semibold rounded px-1.5 py-0.5 border shrink-0 transition-colors ${
                 edited
@@ -224,21 +224,21 @@ export function LoadoutPanel<TabId extends string>({
 
       {!connected && (
         <p className="text-sm text-osrs-brown mb-3">
-          Connect the bank file the <strong>Boss Helper Bank Sync</strong>
-          RuneLite plugin writes to load your bank, inventory, worn gear, and
-          skills — then this builds the best loadout you can equip for this boss.
+          Connect your bank from the <strong>Boss Helper Bank Sync</strong>{" "}
+          RuneLite plugin. It brings in your bank, inventory, worn gear, and
+          skills, and you&apos;ll get the best loadout you can equip for this boss.
         </p>
       )}
       {connected && !set && (
         <p className="text-sm text-osrs-brown mb-3">
-          Your bank can&apos;t produce a valid loadout (you need at least a
-          weapon you can equip). Buy a starter weapon first.
+          Your bank can&apos;t make a loadout yet. You need at least one weapon
+          you can equip, so grab a starter weapon first.
         </p>
       )}
       {connected && set && (
         <p className="text-caption text-osrs-muted mb-3">
-          Hover a slot to see why it was picked and your next best options —
-          click to swap items.
+          Hover a slot to see why it was picked and your next best options.
+          Click to swap items.
         </p>
       )}
 
@@ -310,11 +310,11 @@ export function LoadoutPanel<TabId extends string>({
           {edited && (
             <div className="mt-3 text-caption text-osrs-brown flex items-center justify-between gap-2 bg-parchment-raised border border-osrs-gold/60 rounded px-2 py-1.5">
               <span>
-                <strong>Custom loadout</strong> —{" "}
+                <strong>Custom loadout</strong>:{" "}
                 {editedSlots.length === 1 ? "1 slot" : `${editedSlots.length} slots`}
                 {/* Explicit space: this JSX transform eats a leading space in a
                     text node that follows an expression and wraps lines. */}
-                {" edited on top of the optimizer's pick."}
+                {" changed from the recommended pick."}
               </span>
               <button
                 type="button"
@@ -382,7 +382,7 @@ function SetupWarnings({ conflicts }: { conflicts: SetupMechanicStatus[] }) {
       {conflicts.map((c) => (
         <div key={c.requirement.id} className="text-caption text-osrs-brown leading-snug">
           <span className="font-semibold">{c.requirement.label}</span>
-          {" — "}
+          {": "}
           {c.requirement.remediation}
         </div>
       ))}

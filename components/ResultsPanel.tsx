@@ -215,7 +215,7 @@ function LoadoutExport({
         </button>
       </div>
       <p className="text-caption text-osrs-muted mt-1.5">
-        Names for a withdrawal checklist while pulling gear from the bank.
+        Handy as a checklist while you pull gear from the bank.
       </p>
     </div>
   );
@@ -444,7 +444,7 @@ export function ResultsPanel({
                   className="w-full accent-osrs-gold"
                 />
                 <span className="text-osrs-muted">
-                  Share of the hour actually fighting (vs banking, walking, downtime).
+                  How much of the hour you&apos;re actually fighting (not banking, walking, or waiting around).
                 </span>
               </label>
               <label className="flex items-center justify-between gap-2">
@@ -470,9 +470,9 @@ export function ResultsPanel({
                 />
               </label>
               <p className="text-osrs-muted italic">
-                Per-hour numbers assume continuous{" "}
-                {trip.protectionPrayer ? "offensive + protection" : "offensive"} prayer while
-                fighting. These factors vary by player — set them to your real rate.
+                Per-hour numbers assume you keep{" "}
+                {trip.protectionPrayer ? "offensive + protection" : "offensive"} prayer up while
+                fighting. Everyone&apos;s different, so set these to match your own trips.
               </p>
             </div>
           )}
@@ -497,7 +497,7 @@ export function ResultsPanel({
                 </li>
               ))}
               <li className="text-osrs-muted italic pt-0.5">
-                Expected value from the wiki drop table at live prices.
+                Average loot per kill from the wiki drop table at live prices.
               </li>
             </ul>
           )}
@@ -513,7 +513,7 @@ export function ResultsPanel({
             </span>
           ) : (
             <span className="text-osrs-muted italic">
-              No conditional bonuses active for this target.
+              No special bonuses against this target.
             </span>
           )}
         </div>
@@ -525,8 +525,7 @@ export function ResultsPanel({
 
       {edited && (
         <p className="text-caption text-osrs-muted italic">
-          Showing your custom edits — reset the loadout to see the optimizer&apos;s
-          upgrade path again.
+          Showing your edits. Reset the loadout to see the upgrade path again.
         </p>
       )}
 
@@ -562,7 +561,7 @@ export function ResultsPanel({
             ))}
           </ul>
           <p className="text-caption text-osrs-muted mt-1.5">
-            Best loadout buildable for this budget, ignoring your bank.
+            The best setup you can buy with this budget, not counting your bank.
           </p>
         </div>
       )}
@@ -680,8 +679,8 @@ export function ResultsPanel({
 
       {!edited && result !== null && result.currentBest && upgradePath.length === 0 && excludedUpgrades.length === 0 && (
         <p className="text-caption text-osrs-muted italic">
-          No profitable upgrades found within budget. Your bank is already
-          optimal at this price point — try Sell-to-fund mode if you have items
+          No upgrades worth buying in this budget. Your bank is already as good
+          as it gets at this price! Try Sell-to-fund mode if you have items
           you&apos;d be willing to part with.
         </p>
       )}

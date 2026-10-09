@@ -223,7 +223,7 @@ export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, o
         </ul>
         {filtered.length > 200 && (
           <p className="label-eyebrow text-osrs-muted mt-1">
-            Showing top 200 — refine search to narrow.
+            Showing the top 200. Type more to narrow it down.
           </p>
         )}
       </div>

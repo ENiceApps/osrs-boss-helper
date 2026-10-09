@@ -65,8 +65,8 @@ export function OwnedUntradeablesPanel({
       }
     >
       <p className="text-caption text-osrs-muted mb-2">
-        Check the non-tradeable items you own. The builder uses your best owned
-        item per slot, and a buyable item wherever you own none.
+        Tick the untradeables you own. You&apos;ll get your best one in each slot,
+        and something you can buy wherever you have none.
       </p>
 
       <div className="flex gap-2 text-caption mb-2">

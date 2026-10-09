@@ -32,7 +32,7 @@ const MODE_OPTIONS: Array<{ mode: BudgetMode; label: string; caption: string }> 
   {
     mode: "sell-to-fund",
     label: "Sell to fund",
-    caption: "Sell chosen bank items to bankroll bigger upgrades.",
+    caption: "Sell stuff from my bank to pay for bigger upgrades.",
   },
   {
     mode: "budget",
@@ -109,7 +109,7 @@ export function SetupPanel({
       {children && <div className="space-y-1">{children}</div>}
 
       <p className="text-caption text-osrs-muted italic">
-        Changes apply instantly — no save button needed.
+        Changes apply instantly. No need to save.
       </p>
     </div>
   );

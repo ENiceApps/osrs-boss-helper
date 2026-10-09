@@ -131,8 +131,8 @@ export function EquipmentGrid({
           ? hasBank
             ? `${piece.itemName} (${owned ? "owned" : "missing"})`
             : piece.itemName
-          : `${slot} — empty`;
-        const label = clickable ? `${labelBase} — click to change` : labelBase;
+          : `${slot} (empty)`;
+        const label = clickable ? `${labelBase}. Click to change` : labelBase;
         const className = [
           "osrs-slot flex items-center justify-center",
           piece ? "" : "osrs-slot-empty",

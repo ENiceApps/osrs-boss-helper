@@ -32,8 +32,7 @@ const BANK_STEPS = [
       <>
         In RuneLite, open the <span className="text-osrs-brown">Plugin Hub</span>{" "}
         and add <span className="text-osrs-brown font-semibold">Boss Helper Bank Sync</span>,
-        then enable it. It only <em>reads</em> your game data and makes no network
-        requests.
+        then turn it on.
       </>
     ),
   },
@@ -41,9 +40,8 @@ const BANK_STEPS = [
     title: "Open your bank in-game",
     body: (
       <>
-        Log in and open your bank once. The plugin saves a small{" "}
-        <code className="text-osrs-brown">bank.json</code> file on your own
-        computer — nothing is uploaded.
+        Log in and open your bank once. The plugin saves it as a{" "}
+        <code className="text-osrs-brown">bank.json</code> file.
       </>
     ),
   },
@@ -51,11 +49,11 @@ const BANK_STEPS = [
     title: "Connect or upload it here",
     body: (
       <>
-        On any boss page, click{" "}
+        On any boss page, hit{" "}
         <span className="text-osrs-brown font-semibold">Connect bank file</span>{" "}
-        for live updates (Chrome/Edge/Brave), or{" "}
+        so it stays up to date (Chrome/Edge/Brave), or{" "}
         <span className="text-osrs-brown font-semibold">Upload bank.json</span>{" "}
-        once on any browser. Your data never leaves your machine.
+        once on any browser.
       </>
     ),
   },
@@ -76,8 +74,8 @@ export default function HomePage() {
         OSRS Boss Helper
       </h1>
       <p className="text-parchment-dark mt-3 max-w-lg">
-        Pick a boss and get a DPS-optimised loadout built from your own bank,
-        plus the mechanics and spec weapons that matter for the fight.
+        Pick a boss and get the best DPS setup from what&apos;s actually in your bank!
+        Plus the mechanics and spec weapons that matter for that fight.
       </p>
 
       <div className="w-full mt-8">
@@ -111,11 +109,11 @@ export default function HomePage() {
           your bank. Kept simple and numbered so a newcomer can follow it. */}
       <section className="osrs-panel rounded-lg mt-14 w-full max-w-xl p-5 sm:p-6 text-left">
         <h2 className="section-title font-display text-lg font-semibold text-osrs-gold">
-          Load your own bank — in 3 steps
+          Load your bank in 3 steps
         </h2>
         <p className="text-caption text-osrs-muted mt-1">
-          Optional, but it lets the optimiser build setups from the gear you
-          really have. Free, private, and nothing leaves your computer.
+          You don&apos;t have to, but this is where it gets good. Your setups get built
+          from gear you actually own!
         </p>
 
         <ol className="mt-4 space-y-3">
@@ -136,8 +134,8 @@ export default function HomePage() {
         </ol>
 
         <p className="text-caption text-osrs-muted mt-4 border-t border-osrs-gold/15 pt-3">
-          No RuneLite? Pick any boss and use <span className="text-osrs-brown">Budget mode</span>{" "}
-          to plan the best setup for a GP budget — no bank needed.
+          No RuneLite? No problem! Pick any boss and use <span className="text-osrs-brown">Budget mode</span>{" "}
+          to plan the best setup for however much GP you have. No bank needed.
         </p>
       </section>
 
@@ -147,7 +145,7 @@ export default function HomePage() {
           Updates
         </Link>
         <br />
-        fan-made, not affiliated with Jagex
+        Fan-made, not affiliated with Jagex
       </p>
     </div>
   );

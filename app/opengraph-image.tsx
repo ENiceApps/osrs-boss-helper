@@ -70,7 +70,7 @@ export default function OpengraphImage() {
         </div>
 
         <div style={{ display: "flex", fontSize: 27, color: MUTED, marginTop: "56px" }}>
-          osrsbosshelper.com · free &amp; open-source · nothing leaves your computer
+          osrsbosshelper.com · free &amp; open-source
         </div>
       </div>
     ),

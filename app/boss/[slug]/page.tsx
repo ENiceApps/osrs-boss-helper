@@ -24,15 +24,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const name = m.version ? `${m.name} (${m.version})` : m.name;
   return {
     // The root layout's template appends "· OSRS Boss Helper".
-    title: `${name} — gear setup & DPS loadout`,
+    title: `${name} gear setup & DPS loadout`,
     description:
-      `The best ${name} gear setup built from your own OSRS bank — ` +
-      `DPS-optimised melee, ranged & magic loadouts, budget builds, upgrade ` +
-      `paths, and fight mechanics. Combat level ${m.combatLevel}, ${m.hp} HP.`,
+      `The best ${name} gear setup from your own OSRS bank. Melee, ranged & ` +
+      `magic setups ranked by DPS, budget builds, upgrade paths, and fight ` +
+      `mechanics. Combat level ${m.combatLevel}, ${m.hp} HP.`,
     alternates: { canonical: `/boss/${slug}` },
     openGraph: {
-      title: `${name} — OSRS gear setup & DPS loadout`,
-      description: `DPS-optimised ${name} loadouts built from your own bank.`,
+      title: `${name} OSRS gear setup & DPS loadout`,
+      description: `The best DPS setup for ${name} from your own bank.`,
       url: `/boss/${slug}`,
       // Defining `openGraph` here REPLACES the inherited object wholesale,
       // which drops the root file-convention og:image — re-point at it.

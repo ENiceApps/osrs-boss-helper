@@ -37,9 +37,9 @@ export function PlayerStatsPanel({ skills, isLive, fromCache = false }: Props) {
           ? fromCache
             ? // Real levels, but from the last visit — calling that "live" would
               // be a lie the moment the player trains a skill.
-              "Your levels from your last visit — reconnect the file for live updates."
+              "Your levels from your last visit. Reconnect for live updates."
             : "Live from the RuneLite plugin."
-          : "Assuming 99s — connect the RuneLite plugin to use your real levels."}
+          : "Assuming 99s. Connect the RuneLite plugin to use your real levels."}
       </p>
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-osrs-brown">
         {SKILL_KEYS.map((skill) => (

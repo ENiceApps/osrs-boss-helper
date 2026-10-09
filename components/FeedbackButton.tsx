@@ -102,7 +102,7 @@ export function FeedbackButton() {
 
             {status === "sent" ? (
               <div className="text-sm text-osrs-brown">
-                <p className="mb-3">Thanks — your feedback was sent. 🎉</p>
+                <p className="mb-3">Thanks! Your feedback was sent. 🎉</p>
                 <button
                   type="button"
                   onClick={close}
@@ -114,7 +114,7 @@ export function FeedbackButton() {
             ) : (
               <>
                 <p className="text-caption text-osrs-muted mb-2">
-                  Found a bug or have an idea? It goes straight to the developer.
+                  Found a bug or have an idea? It comes straight to me.
                 </p>
                 <textarea
                   autoFocus
@@ -129,7 +129,7 @@ export function FeedbackButton() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email (optional — for a reply)"
+                  placeholder="Your email (optional, if you want a reply)"
                   className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown mb-3"
                 />
 

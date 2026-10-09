@@ -12,4 +12,4 @@ export const SITE_URL = (
 export const SITE_NAME = "OSRS Boss Helper";
 
 export const SITE_DESCRIPTION =
-  "Pick any Old School RuneScape boss and get a DPS-optimised gear loadout built from your own bank, plus the mechanics and spec weapons that matter for the fight.";
+  "Pick any Old School RuneScape boss and get the best DPS setup from what's actually in your bank. Plus the mechanics and spec weapons that matter for that fight.";

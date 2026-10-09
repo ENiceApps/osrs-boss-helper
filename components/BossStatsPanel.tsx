@@ -87,17 +87,17 @@ export function BossStatsPanel({ monster }: Props) {
             <BonusStat
               label="Light"
               value={b.rangedLight}
-              title="Light ranged defence — vs thrown weapons (darts, knives, blowpipe)"
+              title="Light ranged defence vs thrown weapons (darts, knives, blowpipe)"
             />
             <BonusStat
               label="Std"
               value={b.rangedStandard}
-              title="Standard ranged defence — vs bows (arrows) and chinchompas"
+              title="Standard ranged defence vs bows (arrows) and chinchompas"
             />
             <BonusStat
               label="Heavy"
               value={b.rangedHeavy}
-              title="Heavy ranged defence — vs crossbows (bolts) and javelins"
+              title="Heavy ranged defence vs crossbows (bolts) and javelins"
             />
           </div>
         </div>

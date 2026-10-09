@@ -28,7 +28,7 @@ const cinzel = Cinzel({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — DPS-optimised loadouts from your own bank`,
+    default: `${SITE_NAME}: the best DPS setup from your own bank`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,

@@ -162,7 +162,7 @@ export function SpellPickerModal({
         >
           <span className="font-semibold text-osrs-brown">Auto (best)</span>
           <span className="label-eyebrow text-osrs-muted ml-2">
-            let the optimizer pick the highest-DPS spell
+            picks whichever spell does the most DPS
           </span>
         </button>
 

@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Item browser",
   description:
-    "Every OSRS equipment item in one sortable table — attack and defence " +
+    "Every OSRS equipment item in one sortable table. Attack and defence " +
     "bonuses, strength, prayer, speed, and live Grand Exchange prices.",
   alternates: { canonical: "/items" },
 };

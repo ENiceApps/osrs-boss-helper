@@ -65,7 +65,7 @@ export function PrayerPickerModal({
           </button>
         </div>
         <p className="label-eyebrow text-osrs-muted mb-3">
-          offensive {STYLE_LABEL[style]} prayer — changes DPS and prayer-pot cost
+          offensive {STYLE_LABEL[style]} prayer, changes your DPS and prayer pot cost
         </p>
 
         <ul className="overflow-y-auto flex-1 space-y-0.5">

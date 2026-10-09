@@ -250,8 +250,8 @@ export default function BossesPage() {
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-osrs-gold">All bosses</h1>
         <p className="text-sm text-parchment-dark mt-1">
-          {MONSTER_CATALOG.length} monsters. Pick one for a DPS-optimised loadout
-          built from your bank, plus mechanics and spec-weapon advice.
+          {MONSTER_CATALOG.length} monsters. Pick one for the best DPS setup from
+          your bank, plus mechanics and spec weapon tips.
         </p>
       </header>
 
@@ -377,7 +377,7 @@ export default function BossesPage() {
           ) : (
             <>
               <span className="text-osrs-brown font-semibold">Notable bosses</span>{" "}
-              — search or pick a type above to browse all{" "}
+              · search or pick a type above to browse all{" "}
               {MONSTER_CATALOG.length}.
             </>
           )}

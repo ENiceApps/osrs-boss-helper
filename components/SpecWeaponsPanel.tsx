@@ -38,7 +38,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: 
   ) {
     recs.unshift({
       specWeaponId: asItemId(CRYSTAL_HALBERD_ID),
-      note: "With a halberd equipped, the Crystal halberd spec is your burst option — its reach hits multiple targets in a line and double-hits large monsters.",
+      note: "With a halberd equipped, the Crystal halberd spec is your burst option. Its reach hits multiple targets in a line and double-hits large monsters.",
     });
   }
 
@@ -47,8 +47,7 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: 
   return (
     <CollapsibleSection title="Recommended spec weapons">
       <p className="text-caption text-osrs-muted mb-3">
-        Special-attack weapons that pay off on this fight. Click to learn the
-        spec mechanics.
+        Spec weapons that are worth bringing to this fight.
       </p>
       <ul className="space-y-2">
         {recs.map((rec) => {

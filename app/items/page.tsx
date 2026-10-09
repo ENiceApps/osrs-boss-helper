@@ -148,10 +148,10 @@ export default function ItemsPage() {
       <header className="mb-4">
         <h1 className="text-3xl font-bold text-osrs-gold">Item browser</h1>
         <p className="text-sm text-parchment-dark mt-1">
-          All {ITEM_CATALOG.length} equippable items from the OSRS DPS dataset.
-          Sort by any combat bonus to find the best item for a slot. Live GE
-          prices from the wiki API. <strong>Tip:</strong> Magic dmg column is
-          tenths of a percent (50 = +5%).
+          All {ITEM_CATALOG.length} equippable items. Sort by any combat bonus to
+          find the best item for a slot. GE prices are live from the wiki.{" "}
+          <strong>Tip:</strong> the Magic dmg column is in tenths of a percent
+          (50 = +5%).
         </p>
       </header>
 
@@ -210,7 +210,7 @@ export default function ItemsPage() {
 
       <p className="text-xs text-parchment-dark mb-2">
         {sorted.length} match{sorted.length === 1 ? "" : "es"}
-        {truncated && ` — showing top ${MAX_ROWS}, refine filters to see more`}
+        {truncated && `, showing the top ${MAX_ROWS}. Narrow the filters to see more`}
         {" · "}
         sorted by {SORT_FIELDS.find((f) => f.key === sortKey)?.label} ({sortDir})
       </p>

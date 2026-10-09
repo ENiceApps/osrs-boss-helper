@@ -99,7 +99,7 @@ export function DittoEditorPanel({ monster, onChange }: Props) {
     <div className="osrs-panel p-4 rounded space-y-3">
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="section-title font-semibold text-osrs-brown">Custom boss (Ditto)</h3>
-        <span className="text-caption text-osrs-muted">edits recompute live</span>
+        <span className="text-caption text-osrs-muted">updates as you edit</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -179,7 +179,7 @@ export function DittoEditorPanel({ monster, onChange }: Props) {
           onChange={(e) => patch({ isSlayerMonster: e.target.checked })}
           className="h-4 w-4 accent-osrs-gold"
         />
-        <span>Assignable as a Slayer task (enables the on-task bonus)</span>
+        <span>Can be a Slayer task (turns on the on-task bonus)</span>
       </label>
     </div>
   );
