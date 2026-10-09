@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm.cmd run *)",
+      "Bash(npm test*)",
+      "Bash(npm ci)",
+      "Bash(npx vitest run*)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx next build*)",
+      "PowerShell(npm run *)",
+      "PowerShell(npm.cmd run *)",
+      "PowerShell(npx.cmd vitest run*)",
+      "PowerShell(npx.cmd tsc --noEmit*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch)",
+      "PowerShell(git status*)",
+      "PowerShell(git diff*)",
+      "PowerShell(git log*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh run view*)",
+      "Bash(gh run list*)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(curl -sf http://localhost:*)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:*)",
+      "PowerShell(.\\plugin\\build-and-sideload.ps1*)",
+      "PowerShell(.\\plugin\\check-plugin-log.ps1*)",
+      "PowerShell(./plugin/build-and-sideload.ps1*)",
+      "PowerShell(./plugin/check-plugin-log.ps1*)",
+      "WebFetch(domain:oldschool.runescape.wiki)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:secure.runescape.com)"
+    ]
+  }
+}
