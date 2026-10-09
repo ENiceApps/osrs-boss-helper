@@ -53,7 +53,7 @@ export default function UpdatesPage() {
 
           {r.note && (
             <div className="osrs-well rounded p-3 sm:p-4 mt-4">
-              <p className="label-eyebrow">From Eli</p>
+              <p className="label-eyebrow">From ENice</p>
               {r.note.map((para, i) => (
                 <p key={i} className="text-sm text-parchment-dark leading-relaxed mt-2">
                   {para}

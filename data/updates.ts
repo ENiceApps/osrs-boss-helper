@@ -64,7 +64,7 @@ export const RELEASES: Release[] = [
       "So I bought the domain and open-sourced the code. It's free, there's no account, and your bank never leaves your computer.",
       "Where I want to take it is teaching. Other tools already turn your bank into a best setup, and some do it really well. What I care about is everything around that number: which phase of the fight you're in, how that changes your DPS, and why one item beats another for this boss. If you come away understanding your gear a little better, it's doing its job.",
       "It's a one-person hobby project, so expect rough edges. If something looks off, hit the Feedback button. I'd like to hear about it.",
-      "— Eli",
+      "— ENice",
     ],
     changes: [
       { kind: "new", lead: "Every boss", text: "over 700 bosses and high-HP monsters, each with a page showing stats, defences and weaknesses." },
