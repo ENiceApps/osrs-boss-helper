@@ -77,7 +77,7 @@ export function BankConnect() {
         </div>
         {bankAgo && (
           <p className="text-osrs-muted">
-            Bank last read {bankAgo} — open your bank in-game to refresh it.
+            Bank last read {bankAgo}. Open your bank in-game to refresh it.
           </p>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -143,9 +143,9 @@ export function BankConnect() {
   return (
     <div className="osrs-panel p-3 rounded text-caption text-osrs-brown leading-snug space-y-2">
       <p>
-        Connect the bank file the <strong>Boss Helper Bank Sync</strong> RuneLite
-        plugin writes to load your real gear — or use <strong>Budget</strong> mode
-        below to plan without it.
+        Connect your bank from the <strong>Boss Helper Bank Sync</strong> RuneLite
+        plugin to use your real gear. Or use <strong>Budget</strong> mode below to
+        plan without it.
       </p>
       {supported ? (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -174,7 +174,7 @@ export function BankConnect() {
             Upload bank.json →
           </button>
           <p className="text-osrs-muted">
-            Your browser can&apos;t auto-refresh — re-import after you bank in-game.
+            Your browser can&apos;t auto-refresh, so upload it again after you bank in-game.
           </p>
         </>
       )}

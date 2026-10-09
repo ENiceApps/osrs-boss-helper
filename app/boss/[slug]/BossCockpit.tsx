@@ -495,7 +495,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           : style === "melee" && meleeNote
             ? meleeNote
             : fromScratchMode
-              ? `No ${style} setup fits this budget — raise it to see one.`
+              ? `No ${style} setup fits this budget. Raise it to see one.`
               : `Your bank has no ${style} weapon. Switch to Budget mode to preview a ${style} setup, or sync one.`,
       });
     }
@@ -849,11 +849,11 @@ export function BossCockpit({ slug }: { slug: string }) {
     activeTab !== "best"
       ? `best ${activeTab} from your bank`
       : mode === "wildy-risk"
-        ? "built within your risk cap — for the Wilderness"
+        ? "built within your risk cap for the Wilderness"
         : mode === "budget"
-          ? "built for your budget — ignoring your bank"
+          ? "built for your budget, ignoring your bank"
           : mode !== "own-only" && (budgetResult?.upgradePath.length ?? 0) > 0
-            ? "after upgrades — see results"
+            ? "after upgrades (see results)"
             : "best from your bank";
 
   return (
@@ -1014,8 +1014,8 @@ export function BossCockpit({ slug }: { slug: string }) {
                 On slayer task{" "}
                 <span className={monster.isSlayerMonster ? "text-osrs-brown/60" : ""}>
                   {monster.isSlayerMonster
-                    ? "— black mask / slayer helm (i)"
-                    : "— not a slayer assignment"}
+                    ? "· black mask / slayer helm (i)"
+                    : "· not a slayer assignment"}
                 </span>
               </span>
             </label>
@@ -1029,7 +1029,7 @@ export function BossCockpit({ slug }: { slug: string }) {
                   className="h-4 w-4 accent-osrs-gold"
                 />
                 <span>
-                  Soulreaper axe — max stacks{" "}
+                  Soulreaper axe at max stacks{" "}
                   <span className="text-osrs-brown/60">+30% Str level</span>
                 </span>
               </label>
@@ -1047,8 +1047,8 @@ export function BossCockpit({ slug }: { slug: string }) {
                   Ruby bolt special{" "}
                   <span className="text-osrs-brown/60">
                     {rubyProcEnabled
-                      ? "— 20%-of-HP proc counted in DPS & rankings"
-                      : "— off: bolts ranked on raw stats only"}
+                      ? "· the 20%-of-HP proc counts in DPS & rankings"
+                      : "· off, so bolts are ranked on raw stats only"}
                   </span>
                 </span>
               </label>
@@ -1065,7 +1065,7 @@ export function BossCockpit({ slug }: { slug: string }) {
                 <span>
                   Mark of Darkness{" "}
                   <span className="text-osrs-brown/60">
-                    — demonbane spells +40% acc, +25% dmg (Purging staff doubles)
+                    · demonbane spells +40% acc, +25% dmg (Purging staff doubles)
                   </span>
                 </span>
               </label>
@@ -1075,7 +1075,7 @@ export function BossCockpit({ slug }: { slug: string }) {
               <div className="mt-3 space-y-1">
                 <label className="block text-sm text-osrs-brown select-none">
                   <span>
-                    Dharok&apos;s — current HP{" "}
+                    Dharok&apos;s current HP{" "}
                     <span className="text-osrs-brown/60">
                       {dharokCurrentHp !== undefined ? `${dharokCurrentHp} HP` : "full HP (no bonus)"}
                     </span>
@@ -1269,7 +1269,7 @@ export function BossCockpit({ slug }: { slug: string }) {
       )}
 
       <footer className="mt-8 text-xs text-parchment-dark">
-        DPS numbers calibrated against{" "}
+        DPS numbers are checked against{" "}
         <a
           className="underline hover:text-osrs-gold"
           href="https://tools.runescape.wiki/osrs-dps/"
@@ -1278,8 +1278,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         >
           tools.runescape.wiki/osrs-dps
         </a>
-        . Stats and item data from the same dataset (vendored at
-        data/vendor/wgloop/).
+        . Stats and item data come from the same source.
       </footer>
     </div>
   );
