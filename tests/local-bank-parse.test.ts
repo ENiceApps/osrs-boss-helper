@@ -79,7 +79,7 @@ describe("parseBankJson", () => {
     expect(parsed).not.toBeNull();
     expect(parsed!.rsn).toBe("Tester");
     expect(parsed!.gp).toBe(1_000_000);
-    expect(parsed!.skills.prayer).toBe(77);
+    expect(parsed!.skills!.prayer).toBe(77);
     expect(parsed!.items).toEqual([
       { id: 4151, qty: 1 },
       { id: 11840, qty: 2 },
@@ -112,8 +112,8 @@ describe("parseBankJson", () => {
     const good = parseBankJson(
       JSON.stringify({ skills: { ...SKILLS, attack: 130, prayer: 0 }, items: [] }),
     );
-    expect(good!.skills.attack).toBe(99);
-    expect(good!.skills.prayer).toBe(1);
+    expect(good!.skills!.attack).toBe(99);
+    expect(good!.skills!.prayer).toBe(1);
 
     const { prayer: _prayer, ...missingOne } = SKILLS;
     const bad = parseBankJson(JSON.stringify({ skills: missingOne, items: [] }));

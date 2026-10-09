@@ -25,6 +25,11 @@
 
 import { useSyncExternalStore } from "react";
 import type { Skills } from "@/types/osrs";
+import {
+  BankMemoryParseError,
+  parseBankMemoryTsv,
+  type BankMemoryBank,
+} from "@/lib/parseBankMemoryTsv";
 
 // --- Minimal File System Access API types ------------------------------------
 // `showOpenFilePicker` is in recent lib.dom, but the per-handle permission
@@ -62,7 +67,12 @@ export function localBankSupported(): boolean {
 export interface ParsedBank {
   rsn: string;
   gp: number;
-  skills: Skills;
+  /** Null for a Bank Memory paste, which carries items only — the app falls
+   *  back to its default stats until the player sets them. */
+  skills: Skills | null;
+  /** Where the bank came from. Absent = the plugin's bank.json (also every
+   *  bank cached before pastes existed). */
+  source?: "bankMemory";
   items: Array<{ id: number; qty: number }>;
   /** When the plugin last read the BANK container itself (v2 files), or null.
    *  Differs from the file's mtime: the file is rewritten on every inventory
@@ -308,6 +318,46 @@ export async function importLocalBankFile(file: File): Promise<void> {
   } catch {
     emit({ error: "Couldn't parse that file as JSON." });
   }
+}
+
+/** Load a bank pasted from the Bank Memory plugin's "Copy item data to
+ *  clipboard". Returns an error message for the paste box, or null on success.
+ *  A paste replaces any connected file — including the saved handle, or the
+ *  next reload would silently swap the plugin's bank back in over it. */
+export function importBankMemoryText(text: string): string | null {
+  let pasted: BankMemoryBank;
+  try {
+    pasted = parseBankMemoryTsv(text);
+  } catch (e) {
+    return e instanceof BankMemoryParseError ? e.message : "Couldn't read that paste.";
+  }
+  stopPolling();
+  handle = null;
+  lastModified = -1;
+  void idbDelete(IDB_KEY).catch(() => {});
+  const bank: ParsedBank = {
+    rsn: "Your bank",
+    gp: pasted.gp,
+    // Bank Memory has no levels. Keep the ones a previous plugin file gave us
+    // rather than dropping the player back to assumed 99s.
+    skills: state.bank?.skills ?? null,
+    source: "bankMemory",
+    items: pasted.items,
+    bankUpdatedAt: null,
+    bankCached: false,
+  };
+  const now = Date.now();
+  emit({
+    connected: true,
+    fromCache: false,
+    needsPermission: false,
+    bank,
+    fileName: null,
+    updatedAt: now,
+    error: null,
+  });
+  void cacheBank(bank, null, now);
+  return null;
 }
 
 /** Forget the connected file AND the cached bank — "disconnect" has to mean the

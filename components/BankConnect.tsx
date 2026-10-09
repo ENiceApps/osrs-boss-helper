@@ -2,17 +2,19 @@
 
 // Left-rail control for connecting the local bank file the RuneLite plugin
 // writes. On Chromium it uses the File System Access API for live auto-updates;
-// everywhere else it falls back to a one-shot "Import bank.json". It owns no
+// everywhere else it falls back to a one-shot "Import bank.json". Players on the
+// Bank Memory plugin instead can paste its clipboard export. It owns no
 // player data of its own — everything flows through lib/localBank.ts, which keeps
 // the data in the browser.
 
-import { useRef, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import {
   useLocalBank,
   localBankSupported,
   connectLocalBank,
   reconnectLocalBank,
   importLocalBankFile,
+  importBankMemoryText,
   disconnectLocalBank,
 } from "@/lib/localBank";
 import { formatAgo, secondsSince } from "@/lib/liveBank";
@@ -47,6 +49,8 @@ export function BankConnect() {
   if (s.connected && s.bank) {
     const ago = secondsSince(s.updatedAt);
     const live = !s.fromCache;
+    // A paste is a snapshot: nothing to reconnect, just paste a newer one.
+    const pasted = s.bank.source === "bankMemory";
     // The plugin refreshes the file's bank section only when a bank is actually
     // opened in-game, so a live file can still carry a days-old bank. Say so
     // rather than letting "updated 3s ago" imply the bank was just read.
@@ -64,7 +68,11 @@ export function BankConnect() {
           <span className="font-semibold text-foreground">{s.bank.rsn}</span>
           <span className="text-parchment-dark">
             {s.bank.items.length} items
-            {live ? (ago != null ? ` · updated ${ago}s ago` : "") : " · from your last visit"}
+            {pasted
+              ? ` · pasted from Bank Memory ${formatAgo(s.updatedAt) ?? ""}`
+              : live
+                ? ago != null ? ` · updated ${ago}s ago` : ""
+                : " · from your last visit"}
           </span>
         </div>
         {bankAgo && (
@@ -73,7 +81,8 @@ export function BankConnect() {
           </p>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {!live &&
+          {pasted && <BankMemoryPaste label="Paste a newer one" />}
+          {!live && !pasted &&
             (supported ? (
               <button
                 type="button"
@@ -179,7 +188,75 @@ export function BankConnect() {
       <p className="text-osrs-muted">
         File: <code>{FILE_PATH}</code>
       </p>
+      <BankMemoryPaste label="Use Bank Memory? Paste its export instead" />
       {s.error && <p className="text-status-missing">{s.error}</p>}
+    </div>
+  );
+}
+
+// Paste box for the Bank Memory plugin's export (right-click a saved bank →
+// "Copy item data to clipboard"). Collapsed to a link until asked for, so the
+// plugin flow stays the obvious one.
+function BankMemoryPaste({ label }: { label: string }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-osrs-brown hover:text-osrs-gold hover:underline text-left"
+      >
+        {label}
+      </button>
+    );
+  }
+
+  function load() {
+    const err = importBankMemoryText(text);
+    setError(err);
+    if (!err) {
+      setText("");
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className="w-full space-y-1">
+      <p className="text-osrs-muted">
+        In RuneLite, open the Bank Memory panel, right-click your bank and pick
+        &quot;Copy item data to clipboard&quot;. Then paste it here!
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={4}
+        placeholder={"Item id    Item name    Item quantity\n4151    Abyssal whip    1"}
+        aria-label="Bank Memory export"
+        className="w-full p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm font-mono"
+      />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <button
+          type="button"
+          onClick={load}
+          className="text-osrs-gold font-semibold hover:underline"
+        >
+          Load bank →
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            setError(null);
+          }}
+          className="text-osrs-brown hover:text-osrs-gold hover:underline"
+        >
+          Cancel
+        </button>
+      </div>
+      {error && <p className="text-status-missing">{error}</p>}
     </div>
   );
 }
