@@ -60,10 +60,13 @@ export const RELEASES: Release[] = [
     date: "2026-10-09",
     title: "Initial public launch",
     note: [
-      "I built OSRS Boss Helper for myself: pick a boss, point it at my actual bank, and see what I should be wearing and, more importantly, why. I've been using it for my own bossing for a while now, and figured other players might get something out of it too.",
-      "So I bought the domain and open-sourced the code. It's free, there's no account, and your bank never leaves your computer.",
-      "Where I want to take it is teaching. Other tools already turn your bank into a best setup, and some do it really well. What I care about is everything around that number: which phase of the fight you're in, how that changes your DPS, and why one item beats another for this boss. If you come away understanding your gear a little better, it's doing its job.",
-      "It's a one-person hobby project, so expect rough edges. If something looks off, hit the Feedback button. I'd like to hear about it.",
+      "Hello World!!",
+      "Thank you for finding OSRSBossHelper.com! I built OSRS Boss Helper for myself, to quickly give me the best DPS possible with what I own in my bank.",
+      "You pick a boss and import your bank from the RuneLite plugin “Boss Helper Bank Sync”. And that's it! You'll get the best DPS for that boss in all three combat styles, and you can compare it with the Wiki DPS calculator at the touch of a button. If you scroll down, you can also calculate the best hybrid armour for however many armour switches (button clicks) you want.",
+      "I've been using this for bossing (and Slayer) for a few months now and thought, I bet other people would find this useful too. So I bought the domain and open-sourced the code to share with the RS community! It's free, there's no account, and I'm still actively working on updates and changes. Next on my mind are phone support and raid builds, as well as the other updates you'll find below.",
+      "So please enjoy!",
+      "This is a one-person, dad-scaper hobby project, so expect rough edges. If something looks off or you want something added, hit the Feedback button. I'd like to keep building this with you.",
+      "Thank you,",
       "— ENice",
     ],
     changes: [
@@ -88,6 +91,8 @@ export const RELEASES: Release[] = [
 ];
 
 export const PLANNED: PlannedItem[] = [
+  { status: "planned", text: "Better phone support." },
+  { status: "planned", text: "Raid builds: best setups for raid bosses." },
   { status: "planned", text: "More \"why this gear\": short plain-English notes on why an item wins for this boss, not just the DPS number." },
   { status: "planned", text: "Upgrade suggestions across combat styles, e.g. telling a melee-only player that a first ranged weapon is the best buy." },
   { status: "planned", text: "Selectable phases for more multi-phase bosses." },
