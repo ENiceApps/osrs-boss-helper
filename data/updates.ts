@@ -93,9 +93,6 @@ export const RELEASES: Release[] = [
 export const PLANNED: PlannedItem[] = [
   { status: "planned", text: "Better phone support." },
   { status: "planned", text: "Raid builds: best setups for raid bosses." },
-  { status: "planned", text: "More \"why this gear\": short plain-English notes on why an item wins for this boss, not just the DPS number." },
-  { status: "planned", text: "Upgrade suggestions across combat styles, e.g. telling a melee-only player that a first ranged weapon is the best buy." },
-  { status: "planned", text: "Selectable phases for more multi-phase bosses." },
   { status: "planned", text: "Fight mechanics and spec weapon picks for more bosses, starting with raids bosses and the Nightmare." },
   { status: "planned", text: "New gear and bosses added after each game update." },
   { status: "considering", text: "A dream setup view: the best possible gear for a boss, ignoring what you own or can afford." },
