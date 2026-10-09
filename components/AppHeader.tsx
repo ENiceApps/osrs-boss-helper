@@ -18,9 +18,14 @@ export function AppHeader() {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 flex items-center gap-3 sm:gap-5">
         <Link
           href="/"
-          className="font-display text-osrs-gold font-bold text-base sm:text-lg tracking-wide whitespace-nowrap"
+          aria-label="OSRS Boss Helper home"
+          className="flex-none font-display text-osrs-gold font-bold text-base sm:text-lg tracking-wide whitespace-nowrap"
         >
-          OSRS Boss Helper
+          {/* Phones get the icon: the full name plus three nav links and the
+              accent swatches don't fit in 375px. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.png" alt="" width={28} height={28} className="sm:hidden rounded" />
+          <span className="hidden sm:inline">OSRS Boss Helper</span>
         </Link>
         <nav className="flex items-center gap-3 sm:gap-4 text-sm">
           {/* /boss/[slug] detail pages also belong to the "Bosses" section. */}
@@ -29,6 +34,9 @@ export function AppHeader() {
           </NavLink>
           <NavLink href="/items" active={pathname.startsWith("/items")}>
             Items
+          </NavLink>
+          <NavLink href="/updates" active={pathname.startsWith("/updates")}>
+            Updates
           </NavLink>
         </nav>
         <div className="ml-auto flex items-center gap-2 sm:gap-4">

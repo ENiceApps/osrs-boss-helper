@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MONSTER_CATALOG, MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { BossSearch } from "@/components/BossSearch";
+import { CURRENT_VERSION } from "@/data/updates";
 
 // A few well-known targets for one-click access. Filtered against the catalog
 // so a renamed/missing slug simply drops out rather than 404-ing.
@@ -141,7 +142,12 @@ export default function HomePage() {
       </section>
 
       <p className="text-caption text-osrs-muted mt-6">
-        Free &amp; open-source · fan-made, not affiliated with Jagex
+        Free &amp; open-source · v{CURRENT_VERSION} ·{" "}
+        <Link href="/updates" className="text-osrs-gold hover:underline">
+          Updates
+        </Link>
+        <br />
+        fan-made, not affiliated with Jagex
       </p>
     </div>
   );
