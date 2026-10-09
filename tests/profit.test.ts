@@ -3,7 +3,7 @@
 // generated drop table as a real fixture.
 
 import { describe, expect, it } from "vitest";
-import { expectedGpPerKill, profitPerHour } from "@/lib/profit";
+import { expectedGpPerKill, perKillOnlyReason, profitPerHour } from "@/lib/profit";
 import { DROPS_BY_SLUG } from "@/data/bosses/drops";
 
 describe("expectedGpPerKill", () => {
@@ -47,5 +47,17 @@ describe("profitPerHour", () => {
 
   it("can go negative when supplies outweigh loot", () => {
     expect(profitPerHour(100, 10, 5_000)).toBe(-4_000);
+  });
+});
+
+describe("perKillOnlyReason", () => {
+  it("flags the Mimic (one per clue casket) and its slug has a drop table", () => {
+    expect(perKillOnlyReason("the-mimic")).toBe("one per clue casket");
+    expect(DROPS_BY_SLUG["the-mimic"]?.length).toBeGreaterThan(0);
+  });
+
+  it("leaves farmable bosses on profit/hr", () => {
+    expect(perKillOnlyReason("vorkath")).toBeUndefined();
+    expect(perKillOnlyReason("zulrah")).toBeUndefined();
   });
 });

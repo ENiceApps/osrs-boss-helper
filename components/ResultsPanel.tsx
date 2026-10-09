@@ -12,7 +12,7 @@ import { useState } from "react";
 import { ItemIcon } from "@/components/ItemIcon";
 import { StatCard } from "@/components/ui";
 import { estimatePrayerSupplies } from "@/data/prayer-drain";
-import { expectedGpPerKill, profitPerHour, type PriceLookup } from "@/lib/profit";
+import { expectedGpPerKill, perKillOnlyReason, profitPerHour, type PriceLookup } from "@/lib/profit";
 import { fmtDpsPerM, fmtGp, formatKph, formatSeconds } from "@/lib/format";
 import { specMaxHitDisplay } from "@/lib/dps/spec-max-hit";
 import { twistedBowBonusPct, twistedBowMagic } from "@/lib/dps/twisted-bow";
@@ -286,6 +286,8 @@ export function ResultsPanel({
   const supplyGpPerHour = (supply?.gpPerHour ?? 0) + foodGpPerHour;
   const profit = expectedGpPerKill(bossSlug, priceLookup);
   const profitHr = profitPerHour(profit.gpPerKill, killsPerHour, supplyGpPerHour);
+  // Bosses you can't farm (the Mimic) get their loot per kill, not an hourly rate.
+  const perKillOnly = perKillOnlyReason(bossSlug);
 
   const upgradePath = result?.upgradePath ?? [];
   const showUpgrades =
@@ -388,9 +390,17 @@ export function ResultsPanel({
             />
           )}
           <StatRow
-            label="Profit / hr"
+            label={perKillOnly ? "Loot / kill" : "Profit / hr"}
             value={
-              profit.hasData ? (
+              profit.hasData && perKillOnly ? (
+                <span className="text-status-owned">
+                  {fmtGp(Math.round(profit.gpPerKill))} gp
+                  <span className="text-caption font-normal text-osrs-muted">
+                    {" "}
+                    · {perKillOnly}
+                  </span>
+                </span>
+              ) : profit.hasData ? (
                 <span className={profitHr >= 0 ? "text-status-owned" : "text-status-missing"}>
                   {profitHr >= 0 ? "" : "−"}
                   {fmtGp(Math.abs(Math.round(profitHr)))} gp

@@ -47,6 +47,20 @@ export function expectedGpPerKill(slug: string, priceLookup: PriceLookup): Profi
 }
 
 /**
+ * Bosses you can't fight back to back, so loot × kills/hr isn't a rate anyone
+ * earns — the results panel shows their loot per kill only, with this reason.
+ * The Mimic: each one comes from an elite or master clue casket.
+ */
+const PER_KILL_ONLY_REASONS: Readonly<Record<string, string>> = {
+  "the-mimic": "one per clue casket",
+};
+
+/** Why this boss shows loot per kill instead of profit/hr, or undefined if it doesn't. */
+export function perKillOnlyReason(slug: string): string | undefined {
+  return PER_KILL_ONLY_REASONS[slug];
+}
+
+/**
  * Net profit per hour: loot value per kill × kills/hr, minus any supply cost
  * per hour (prayer potions etc.). Returns gp/hr (can be negative if supplies
  * outweigh loot — rare, but honest).
