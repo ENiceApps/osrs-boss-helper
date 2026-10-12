@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -49,7 +50,9 @@ import net.runelite.client.util.LinkBrowser;
  * JSON file that the OSRS Boss Helper web app reads in the browser. This plugin
  * only READS game state — it never modifies the bank or any other interface — and
  * it makes NO network requests: nothing leaves this machine. The file lives at
- * {@code <RuneLite dir>/osrs-boss-helper/bank.json}.
+ * {@code <RuneLite dir>/osrs-boss-helper/bank.json}. The sidebar panel can also
+ * copy the same data as text, for players who'd rather paste it into the app
+ * than deal with a file.
  *
  * Architecture:
  *   - @Subscribe on ItemContainerChanged fires whenever bank/inventory/
@@ -90,7 +93,7 @@ import net.runelite.client.util.LinkBrowser;
 @Slf4j
 @PluginDescriptor(
     name = "Boss Helper Bank Sync",
-    description = "Writes your bank + skills + GP to a local file for the OSRS Boss Helper web app (no network)",
+    description = "Saves or copies your bank + skills + GP for the OSRS Boss Helper web app (no network)",
     tags = {"bank", "dps", "gear", "boss", "helper"}
 )
 public class BankSyncPlugin extends Plugin {
@@ -126,6 +129,8 @@ public class BankSyncPlugin extends Plugin {
     // guards it so an active banking session doesn't spam the chat box.
     private volatile boolean announcedSave = false;
     private NavigationButton navButton;
+    // Only touched on the Swing thread (built in startUp, updated via invokeLater).
+    private BankSyncPanel panel;
     // Disk writes happen here, off the client thread.
     private ExecutorService fileWriter;
 
@@ -185,13 +190,15 @@ public class BankSyncPlugin extends Plugin {
         announcedSave = false;
         announcedCache = false;
 
-        // Sidebar link to the web app. Purely a convenience button — it opens the
-        // app in a browser and never touches the in-game bank or any interface.
+        // Sidebar panel: copy the bank as text to paste into the web app (the
+        // no-file way in), plus a button that opens the app. Neither touches the
+        // in-game bank or any interface.
+        panel = new BankSyncPanel(this::copyBankForWebsite, () -> LinkBrowser.browse(APP_URL));
         navButton = NavigationButton.builder()
-            .tooltip("Open OSRS Boss Helper")
+            .tooltip("Boss Helper Bank Sync")
             .icon(createIcon())
             .priority(10)
-            .onClick(() -> LinkBrowser.browse(APP_URL))
+            .panel(panel)
             .build();
         clientToolbar.addNavigation(navButton);
 
@@ -217,6 +224,7 @@ public class BankSyncPlugin extends Plugin {
             clientToolbar.removeNavigation(navButton);
             navButton = null;
         }
+        panel = null;
         // Cancel any pending trailing write — the executor is RuneLite's shared
         // one, so cancel the task rather than touching the executor itself.
         if (pendingSync != null) {
@@ -266,7 +274,90 @@ public class BankSyncPlugin extends Plugin {
     }
 
     private void collectAndWrite() {
-        if (client.getLocalPlayer() == null) return;
+        final Snapshot snap = collect();
+        if (snap == null) return;
+
+        // Every account's remembered bank, so logging into an alt doesn't wipe the
+        // main's out of the file. The top-level fields stay the current account's,
+        // since that's what the web app reads.
+        Map<String, Object> payload = new LinkedHashMap<>(snap.payload);
+        payload.put("accounts", accountsPayload());
+        payload.put("updatedAt", System.currentTimeMillis());
+
+        // Serialize + write off the client thread.
+        final String json = gson.toJson(payload);
+        if (fileWriter != null && !fileWriter.isShutdown()) {
+            fileWriter.execute(() -> writeBankFile(json, snap.itemCount, snap.bankFromCache));
+        }
+    }
+
+    /**
+     * The panel's "Copy my bank" button: the same payload bank.json gets, put on
+     * the clipboard so the player can paste it into the web app instead of using
+     * the file at all. Works whether or not the file toggle is on.
+     *
+     * Leaves out the `accounts` section on purpose: the paste is for the account
+     * that's logged in, and an alt's bank has no business going wherever the
+     * player pastes this.
+     */
+    void copyBankForWebsite() {
+        clientThread.invoke(() -> {
+            if (client.getLocalPlayer() == null) {
+                showInPanel(null, "Log in first, then hit Copy again!");
+                return;
+            }
+            Snapshot snap = collect();
+            if (snap == null) {
+                showInPanel(null, "Still starting up. Try again in a sec!");
+                return;
+            }
+            Map<String, Object> payload = new LinkedHashMap<>(snap.payload);
+            payload.put("updatedAt", System.currentTimeMillis());
+            final String json = gson.toJson(payload);
+
+            final String status;
+            if (!snap.hasBank) {
+                status = "Copied, but your bank isn't in it yet. Open your bank in-game and copy again!";
+            } else if (snap.bankFromCache) {
+                status = "Copied! This is your bank from last time. Open your bank and copy again to refresh it.";
+            } else {
+                status = "Copied " + snap.itemCount + " items! Now paste it on the Bank page at osrsbosshelper.com.";
+            }
+            showInPanel(json, status);
+        });
+    }
+
+    /** Hop to the Swing thread to update the panel (and the clipboard). */
+    private void showInPanel(String text, String status) {
+        SwingUtilities.invokeLater(() -> {
+            if (panel != null) panel.show(text, status);
+        });
+    }
+
+    /** One read of the game state, shaped as the bank file's payload minus the
+     *  `accounts` section and the timestamp, which each caller adds. */
+    private static final class Snapshot {
+        final Map<String, Object> payload;
+        final int itemCount;
+        final boolean bankFromCache;
+        /** Whether there's any bank in it at all, live or remembered. */
+        final boolean hasBank;
+
+        Snapshot(Map<String, Object> payload, int itemCount, boolean bankFromCache, boolean hasBank) {
+            this.payload = payload;
+            this.itemCount = itemCount;
+            this.bankFromCache = bankFromCache;
+            this.hasBank = hasBank;
+        }
+    }
+
+    /**
+     * Read the bank, gear, inventory, skills and GP. Client thread only. Returns
+     * null when logged out, or when there's no live bank and the previous file
+     * hasn't been read back yet (see below).
+     */
+    private Snapshot collect() {
+        if (client.getLocalPlayer() == null) return null;
 
         final String name = client.getLocalPlayer().getName();
         final String rsn = name == null ? "" : name;
@@ -294,7 +385,7 @@ public class BankSyncPlugin extends Plugin {
             // and the previous file being read back. Writing now would persist an
             // empty bank over a good one, so skip this write — the next change (or
             // the deferred first write in startUp) covers it.
-            if (!cacheLoaded) return;
+            if (!cacheLoaded) return null;
             CachedBank known = bankCaches.get(accountKey(rsn));
             bankItems = known == null ? Collections.emptyMap() : known.items;
             bankGp = known == null ? 0 : known.gp;
@@ -351,18 +442,8 @@ public class BankSyncPlugin extends Plugin {
         // read. Together they let the app say how stale the bank is.
         payload.put("bankUpdatedAt", bankAt);
         payload.put("bankCached", bankFromCache);
-        // Every account's remembered bank, so logging into an alt doesn't wipe the
-        // main's out of the file. The top-level fields above stay the current
-        // account's — that's what the web app reads.
-        payload.put("accounts", accountsPayload());
-        payload.put("updatedAt", System.currentTimeMillis());
 
-        // Serialize + write off the client thread.
-        final String json = gson.toJson(payload);
-        final int itemCount = merged.size();
-        if (fileWriter != null && !fileWriter.isShutdown()) {
-            fileWriter.execute(() -> writeBankFile(json, itemCount, bankFromCache));
-        }
+        return new Snapshot(payload, merged.size(), bankFromCache, !bankItems.isEmpty());
     }
 
     /** Item id → quantity for one container, excluding coins (tracked separately as

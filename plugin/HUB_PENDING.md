@@ -10,7 +10,20 @@ on 2026-09-03).
 
 ## Unreleased changes
 
-_None — the Hub is in sync with `plugin/`._
+- **Copy my bank as text** (2026-10-12) — the sidebar icon now opens a panel
+  instead of going straight to the website. Its **Copy my bank** button puts
+  the same payload bank.json holds (minus the `accounts` section, so alts'
+  banks don't tag along) on the clipboard and shows it in a read-only text box,
+  so players can paste it on the site's Bank page with no file at all. Works
+  with the file toggle off. Falls back to the remembered bank when the bank
+  isn't open this session, and says so. An **Open OSRS Boss Helper** button
+  keeps the old one-click link. `collectAndWrite` was split into `collect()`
+  (shared) + the file write.
+- **Version bumped to 1.2** and the descriptions now say "saves or copies".
+- Website side (same commit): the paste box tells plugin JSON
+  from a Bank Memory TSV by the leading `{`. **The /bank page and boss-page
+  copy mention the Copy button, so ship this Hub release before (or close to)
+  deploying that copy.**
 
 _Add future plugin changes above this line as they land._
 

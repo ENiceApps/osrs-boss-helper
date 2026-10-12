@@ -1,12 +1,12 @@
 // /bank: everything about getting your bank into the app. Shows what's loaded
 // now, then the two ways in: the Boss Helper Bank Sync plugin's bank.json file
-// (live updates on Chromium) and a paste of the Bank Memory plugin's "Copy item
-// data" export. Server component; the status card, file buttons and paste box
+// (live updates on Chromium) or its "Copy my bank" text, and a paste of the Bank
+// Memory plugin's "Copy item data" export. Server component; the status card, file buttons and paste box
 // are client-side.
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BankFileButtons, BankMemoryPaste, FILE_PATH } from "@/components/BankConnect";
+import { BankFileButtons, BankPaste, FILE_PATH } from "@/components/BankConnect";
 import { BankStatus } from "./BankStatus";
 
 export const metadata: Metadata = {
@@ -39,6 +39,10 @@ const SYNC_STEPS = [
     Hit <span className={em}>Connect bank file</span> below and pick that file. On
     Chrome, Edge or Brave it keeps itself up to date every time you bank. Other browsers
     can <span className={em}>upload</span> it, just do it again after you bank.
+  </>,
+  <>
+    Rather skip the file? Open the Boss Helper panel in the RuneLite sidebar, hit{" "}
+    <span className={em}>Copy my bank</span> and paste it below!
   </>,
 ];
 
@@ -83,6 +87,7 @@ export default function BankPage() {
             <br />
             On Windows that&apos;s <code>C:\Users\&lt;you&gt;\.runelite\osrs-boss-helper</code>.
           </p>
+          <BankPaste label="Paste from the plugin instead" />
         </div>
       </Method>
 
@@ -93,7 +98,7 @@ export default function BankPage() {
         steps={MEMORY_STEPS}
       >
         <div className="text-caption text-osrs-brown leading-snug">
-          <BankMemoryPaste inline />
+          <BankPaste inline />
         </div>
       </Method>
 

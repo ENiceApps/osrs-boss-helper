@@ -71,8 +71,8 @@ export interface ParsedBank {
    *  back to its default stats until the player sets them. */
   skills: Skills | null;
   /** Where the bank came from. Absent = the plugin's bank.json (also every
-   *  bank cached before pastes existed). */
-  source?: "bankMemory";
+   *  bank cached before pastes existed). Both pastes are one-off snapshots. */
+  source?: "bankMemory" | "pluginPaste";
   items: Array<{ id: number; qty: number }>;
   /** When the plugin last read the BANK container itself (v2 files), or null.
    *  Differs from the file's mtime: the file is rewritten on every inventory
@@ -320,14 +320,42 @@ export async function importLocalBankFile(file: File): Promise<void> {
   }
 }
 
-/** Load a bank pasted from the Bank Memory plugin's "Copy item data to
- *  clipboard". Returns an error message for the paste box, or null on success.
- *  A paste replaces any connected file — including the saved handle, or the
- *  next reload would silently swap the plugin's bank back in over it. */
-export function importBankMemoryText(text: string): string | null {
-  let pasted: BankMemoryBank;
+/** Turn pasted text into a bank. Two things can be pasted: our own plugin's
+ *  "Copy my bank" (the bank.json payload as text, so it starts with `{`) and
+ *  Bank Memory's "Copy item data to clipboard" (tab-separated rows). Throws
+ *  BankMemoryParseError with a player-facing message when neither fits. */
+export function parsePastedBank(text: string, keepSkills: Skills | null): ParsedBank {
+  if (text.trim().startsWith("{")) {
+    const parsed = parseBankJson(text);
+    if (!parsed) {
+      throw new BankMemoryParseError(
+        "That paste got cut off or isn't from Boss Helper Bank Sync. Hit Copy in the plugin again!",
+      );
+    }
+    return { ...parsed, source: "pluginPaste" };
+  }
+  const pasted: BankMemoryBank = parseBankMemoryTsv(text);
+  return {
+    rsn: "Your bank",
+    gp: pasted.gp,
+    // Bank Memory has no levels. Keep the ones a previous plugin file gave us
+    // rather than dropping the player back to assumed 99s.
+    skills: keepSkills,
+    source: "bankMemory",
+    items: pasted.items,
+    bankUpdatedAt: null,
+    bankCached: false,
+  };
+}
+
+/** Load a pasted bank (see parsePastedBank). Returns an error message for the
+ *  paste box, or null on success. A paste replaces any connected file —
+ *  including the saved handle, or the next reload would silently swap the
+ *  file's bank back in over it. */
+export function importBankText(text: string): string | null {
+  let bank: ParsedBank;
   try {
-    pasted = parseBankMemoryTsv(text);
+    bank = parsePastedBank(text, state.bank?.skills ?? null);
   } catch (e) {
     return e instanceof BankMemoryParseError ? e.message : "Couldn't read that paste.";
   }
@@ -335,17 +363,6 @@ export function importBankMemoryText(text: string): string | null {
   handle = null;
   lastModified = -1;
   void idbDelete(IDB_KEY).catch(() => {});
-  const bank: ParsedBank = {
-    rsn: "Your bank",
-    gp: pasted.gp,
-    // Bank Memory has no levels. Keep the ones a previous plugin file gave us
-    // rather than dropping the player back to assumed 99s.
-    skills: state.bank?.skills ?? null,
-    source: "bankMemory",
-    items: pasted.items,
-    bankUpdatedAt: null,
-    bankCached: false,
-  };
   const now = Date.now();
   emit({
     connected: true,
