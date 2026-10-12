@@ -45,7 +45,7 @@ export function AccentPicker() {
 
   return (
     <div
-      className="flex items-center gap-1"
+      className="flex items-center gap-0.5 sm:gap-1"
       role="radiogroup"
       aria-label="Highlight color"
     >

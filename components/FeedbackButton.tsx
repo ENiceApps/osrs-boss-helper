@@ -1,70 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type Status = "idle" | "sending" | "sent" | "error";
+import { useEffect, useRef, useState } from "react";
+import { FeedbackForm, useFeedback } from "@/components/FeedbackForm";
 
 /**
  * Floating "Feedback" button pinned to the top-right corner, just below the
  * sticky header, on every page (mounted in app/layout.tsx). Opens a small
- * modal with a message box and an optional reply email, then POSTs to
- * /api/feedback which emails the maintainer. No sign-in required.
+ * modal with FeedbackForm, which POSTs to /api/feedback and emails the
+ * maintainer. No sign-in required. /about has the same form inline.
  */
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState("");
-
-  // Close on Escape (matches the app's other modals).
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  const feedback = useFeedback();
 
   function close() {
     setOpen(false);
     // Reset after the modal is dismissed so a re-open starts clean, unless the
     // last send failed (keep the text so the user doesn't lose it).
-    if (status !== "error") {
-      setMessage("");
-      setEmail("");
-      setStatus("idle");
-      setError("");
-    }
+    if (feedback.status !== "error") feedback.reset();
   }
 
-  async function submit() {
-    if (!message.trim() || status === "sending") return;
-    setStatus("sending");
-    setError("");
-    try {
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message,
-          email,
-          page: typeof window !== "undefined" ? window.location.pathname : "",
-        }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(data?.error ?? "Something went wrong");
-      }
-      setStatus("sent");
-      setMessage("");
-      setEmail("");
-    } catch (e) {
-      setStatus("error");
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+  // Close on Escape (matches the app's other modals). Via a ref so the
+  // listener always calls the latest close() without re-subscribing per keystroke.
+  const closeRef = useRef(close);
+  useEffect(() => {
+    closeRef.current = close;
+  });
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <>
@@ -100,62 +69,12 @@ export function FeedbackButton() {
               </button>
             </div>
 
-            {status === "sent" ? (
-              <div className="text-sm text-osrs-brown">
-                <p className="mb-3">Thanks! Your feedback was sent. 🎉</p>
-                <button
-                  type="button"
-                  onClick={close}
-                  className="osrs-panel rounded px-3 py-1.5 text-sm font-semibold text-osrs-gold hover:bg-osrs-gold/15"
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className="text-caption text-osrs-muted mb-2">
-                  Found a bug or have an idea? It comes straight to me.
-                </p>
-                <textarea
-                  autoFocus
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={5}
-                  maxLength={4000}
-                  placeholder="What's on your mind?"
-                  className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-2 text-sm text-osrs-brown mb-2 resize-y"
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email (optional, if you want a reply)"
-                  className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown mb-3"
-                />
-
-                {status === "error" && (
-                  <p className="text-caption text-status-missing mb-2">{error}</p>
-                )}
-
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={close}
-                    className="px-3 py-1.5 text-sm text-osrs-brown hover:text-osrs-gold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={submit}
-                    disabled={!message.trim() || status === "sending"}
-                    className="osrs-panel rounded px-3 py-1.5 text-sm font-semibold text-osrs-gold hover:bg-osrs-gold/15 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {status === "sending" ? "Sending…" : "Send"}
-                  </button>
-                </div>
-              </>
+            {feedback.status !== "sent" && (
+              <p className="text-caption text-osrs-muted mb-2">
+                Found a bug or have an idea? It comes straight to me.
+              </p>
             )}
+            <FeedbackForm feedback={feedback} onClose={close} autoFocus />
           </div>
         </div>
       )}

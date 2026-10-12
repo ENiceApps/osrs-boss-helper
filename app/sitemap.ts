@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    { url: `${SITE_URL}/about`, lastModified, changeFrequency: "monthly", priority: 0.4 },
   ];
 
   const bossPages: MetadataRoute.Sitemap = MONSTER_CATALOG.map((m) => ({
