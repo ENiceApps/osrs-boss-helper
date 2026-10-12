@@ -40,7 +40,7 @@ const BANK_STEPS = [
     title: "Open your bank in-game",
     body: (
       <>
-        Log in and open your bank once. The plugin saves it as a{" "}
+        Log in-game and open your bank once. The plugin saves it as a{" "}
         <code className="text-osrs-brown">bank.json</code> file.
       </>
     ),
