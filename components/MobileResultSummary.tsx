@@ -25,7 +25,7 @@ export function MobileResultSummary({ bossHp, dps, loading, resultsId }: Props) 
   return (
     <a
       href={`#${resultsId}`}
-      className="lg:hidden osrs-panel rounded px-3 py-2 flex items-center justify-between gap-3 hover:border-osrs-gold/60"
+      className="lg:hidden osrs-panel rounded px-3 py-2 flex items-center justify-between gap-3 hover:ring-1 hover:ring-osrs-gold/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-osrs-gold"
     >
       {dps ? (
         <span className="flex items-baseline gap-x-3 gap-y-0.5 flex-wrap min-w-0">
@@ -35,16 +35,22 @@ export function MobileResultSummary({ bossHp, dps, loading, resultsId }: Props) 
             </span>{" "}
             <span className="label-eyebrow">dps</span>
           </span>
-          <span className="text-sm text-osrs-brown tabular-nums">
-            ~{formatSeconds(dps.dps > 0 ? bossHp / dps.dps : Infinity)} a kill
-          </span>
+          {dps.dps > 0 && (
+            <span className="text-sm text-osrs-brown tabular-nums">
+              ~{formatSeconds(bossHp / dps.dps)} a kill
+            </span>
+          )}
         </span>
       ) : (
-        <span className="text-sm text-osrs-brown animate-pulse" role="status">
+        // No role="status" here: the Loadout panel's copy of this line
+        // already announces it.
+        <span className="text-sm text-osrs-brown motion-safe:animate-pulse">
           Working out your best setup...
         </span>
       )}
-      <span className="text-sm text-osrs-gold shrink-0">Full results ↓</span>
+      <span className="text-sm text-osrs-gold shrink-0">
+        Full results <span aria-hidden="true">↓</span>
+      </span>
     </a>
   );
 }

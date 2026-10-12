@@ -236,19 +236,19 @@ export function LoadoutPanel<TabId extends string>({
         </p>
       )}
       {connected && !set && emptyReason === "loading" && (
-        <p className="text-sm text-osrs-brown mb-3 animate-pulse" role="status">
+        <p className="text-sm text-osrs-brown mb-3 motion-safe:animate-pulse" role="status">
           Working out your best setup...
         </p>
       )}
       {connected && !set && emptyReason === "prices-failed" && (
         <p className="text-sm text-osrs-brown mb-3">
-          Couldn&apos;t grab GE prices right now, so Budget mode can&apos;t build
-          a setup. Try a refresh!
+          Couldn&apos;t grab GE prices right now, so I can&apos;t build a setup.
+          Try a refresh!
         </p>
       )}
       {connected && !set && emptyReason === "budget" && (
         <p className="text-sm text-osrs-brown mb-3">
-          Nothing you can equip fits that budget yet. Try bumping it up!
+          Nothing you can equip fits under that yet. Try bumping it up!
         </p>
       )}
       {connected && !set && emptyReason === "no-weapon" && (

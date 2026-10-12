@@ -961,12 +961,27 @@ export function BossCockpit({ slug }: { slug: string }) {
               {/* On a phone the full stat block is a screen's worth of
                   scrolling before the setup, so fold it away there. */}
               <details className="sm:hidden group space-y-1">
-                <summary className="osrs-panel rounded px-3 py-2 text-sm text-osrs-brown cursor-pointer select-none flex items-center justify-between [&::-webkit-details-marker]:hidden">
+                <summary className="osrs-panel rounded list-none px-3 py-2 text-sm text-osrs-brown cursor-pointer select-none flex items-center justify-between [&::-webkit-details-marker]:hidden">
                   <span>
                     <span className="label-eyebrow">Boss stats</span>{" "}
-                    <span className="text-osrs-muted">defences &amp; max hit</span>
+                    <span className="text-osrs-muted">
+                      {monster.maxHitText ? "defences & max hit" : "defences"}
+                    </span>
                   </span>
-                  <span className="text-osrs-gold transition-transform group-open:rotate-90">›</span>
+                  <svg
+                    viewBox="0 0 16 16"
+                    aria-hidden="true"
+                    className="h-4 w-4 shrink-0 text-osrs-muted transition-transform group-open:rotate-90"
+                  >
+                    <path
+                      d="M6 4l4 4-4 4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </summary>
                 <BossStatsPanel monster={monster} />
               </details>
