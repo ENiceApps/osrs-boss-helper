@@ -29,6 +29,8 @@ export interface LoadoutTab<Id extends string = string> {
   unavailableReason?: string;
 }
 
+export type LoadoutEmptyReason = "loading" | "prices-failed" | "budget" | "no-weapon";
+
 interface Props<TabId extends string> {
   /** Comparison tabs: the optimizer's best plus one per attack style. */
   tabs?: Array<LoadoutTab<TabId>>;
@@ -39,6 +41,9 @@ interface Props<TabId extends string> {
   dps?: DpsResult;
   /** False until the RuneLite plugin has pushed a bank. */
   connected: boolean;
+  /** Why there's no loadout yet, when connected but `set` is empty. Budget
+   *  mode builds from GE prices, so it has nothing to show until they load. */
+  emptyReason?: LoadoutEmptyReason;
   /** Where this loadout came from, e.g. "after upgrades" / "from your bank". */
   sourceLabel?: string;
   ownedItemIds: Set<number>;
@@ -92,6 +97,7 @@ export function LoadoutPanel<TabId extends string>({
   set,
   dps,
   connected,
+  emptyReason = "no-weapon",
   sourceLabel,
   ownedItemIds,
   mapping,
@@ -229,7 +235,23 @@ export function LoadoutPanel<TabId extends string>({
           skills, and you&apos;ll get the best loadout you can equip for this boss.
         </p>
       )}
-      {connected && !set && (
+      {connected && !set && emptyReason === "loading" && (
+        <p className="text-sm text-osrs-brown mb-3 animate-pulse" role="status">
+          Working out your best setup...
+        </p>
+      )}
+      {connected && !set && emptyReason === "prices-failed" && (
+        <p className="text-sm text-osrs-brown mb-3">
+          Couldn&apos;t grab GE prices right now, so Budget mode can&apos;t build
+          a setup. Try a refresh!
+        </p>
+      )}
+      {connected && !set && emptyReason === "budget" && (
+        <p className="text-sm text-osrs-brown mb-3">
+          Nothing you can equip fits that budget yet. Try bumping it up!
+        </p>
+      )}
+      {connected && !set && emptyReason === "no-weapon" && (
         <p className="text-sm text-osrs-brown mb-3">
           Your bank can&apos;t make a loadout yet. You need at least one weapon
           you can equip, so grab a starter weapon first.

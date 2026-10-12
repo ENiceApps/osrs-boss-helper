@@ -39,6 +39,7 @@ import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/
 import { PlayerStatsPanel } from "@/components/PlayerStatsPanel";
 import { LoadoutPanel, type LoadoutTab } from "@/components/LoadoutPanel";
 import { ResultsPanel } from "@/components/ResultsPanel";
+import { MobileResultSummary } from "@/components/MobileResultSummary";
 import { PRAYER_POTION_4_ID, SARADOMIN_BREW_4_ID } from "@/data/prayer-drain";
 import { MechanicsPanel } from "@/components/MechanicsPanel";
 import { HybridPanel } from "@/components/HybridPanel";
@@ -67,6 +68,9 @@ import type { BankContents, CombatStyle, ItemId } from "@/types/osrs";
 // Comparison-tab ids: the budget-mode best, or the best build per style.
 type LoadoutTabId = "best" | CombatStyle;
 const STYLE_TABS: CombatStyle[] = ["melee", "ranged", "magic"];
+
+// Anchor the phone-only result summary links down to.
+const RESULTS_ID = "results";
 
 /** Share-link helper: only encode prayer picks that differ from the default. */
 function encodeNonDefaultPrayers(
@@ -215,7 +219,7 @@ export function BossCockpit({ slug }: { slug: string }) {
   const [prayerPickerOpen, setPrayerPickerOpen] = useState(false);
 
   const { data: mapping } = useMapping();
-  const { data: prices } = usePrices();
+  const { data: prices, error: pricesError } = usePrices();
 
   // GE id keyed by item NAME — lets Budget mode price a catalog entry whose own
   // (degraded/variant) id has no GE price via its same-named tradeable base.
@@ -268,6 +272,10 @@ export function BossCockpit({ slug }: { slug: string }) {
   // derived (not stored) so we never set state in an effect, mirroring activeTab.
   const mode: BudgetMode = modeRaw === "wildy-risk" && !wilderness ? "budget" : modeRaw;
   const fromScratchMode = mode === "budget" || mode === "wildy-risk";
+  // Budget mode prices every item, so until the GE prices arrive it can't
+  // build anything — show that as loading, not as "your bank can't make a
+  // loadout" (the first thing a new visitor saw on a slow phone).
+  const loadoutLoading = fromScratchMode && !prices && !pricesError;
 
   // The single optimizer run feeding the whole cockpit: best buildable
   // loadout, plus the budget-mode upgrade path / sell list. (Previously the
@@ -949,7 +957,23 @@ export function BossCockpit({ slug }: { slug: string }) {
           {isDitto ? (
             <DittoEditorPanel monster={monster} onChange={setDittoMonster} />
           ) : (
-            <BossStatsPanel monster={monster} />
+            <>
+              {/* On a phone the full stat block is a screen's worth of
+                  scrolling before the setup, so fold it away there. */}
+              <details className="sm:hidden group space-y-1">
+                <summary className="osrs-panel rounded px-3 py-2 text-sm text-osrs-brown cursor-pointer select-none flex items-center justify-between [&::-webkit-details-marker]:hidden">
+                  <span>
+                    <span className="label-eyebrow">Boss stats</span>{" "}
+                    <span className="text-osrs-muted">defences &amp; max hit</span>
+                  </span>
+                  <span className="text-osrs-gold transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <BossStatsPanel monster={monster} />
+              </details>
+              <div className="hidden sm:block">
+                <BossStatsPanel monster={monster} />
+              </div>
+            </>
           )}
         </div>
 
@@ -1115,6 +1139,12 @@ export function BossCockpit({ slug }: { slug: string }) {
         </aside>
 
         <section className="order-1 lg:order-2 lg:col-span-5 space-y-3">
+          <MobileResultSummary
+            bossHp={monster.hp}
+            dps={selectedDps}
+            loading={loadoutLoading}
+            resultsId={RESULTS_ID}
+          />
           {/* Budget / wallet-GP control sits directly above the gear doll it
               changes — drag the slider and watch the loadout rebuild in place. */}
           <BudgetControl
@@ -1132,6 +1162,15 @@ export function BossCockpit({ slug }: { slug: string }) {
             set={selectedSet}
             dps={selectedDps}
             connected={bank !== null || fromScratchMode}
+            emptyReason={
+              !fromScratchMode
+                ? "no-weapon"
+                : loadoutLoading
+                  ? "loading"
+                  : !prices
+                    ? "prices-failed"
+                    : "budget"
+            }
             sourceLabel={sourceLabel}
             ownedItemIds={ownedItemIds}
             mapping={mapping}
@@ -1153,7 +1192,10 @@ export function BossCockpit({ slug }: { slug: string }) {
           />
         </section>
 
-        <section className="order-2 lg:order-3 lg:col-span-4 space-y-4">
+        <section
+          id={RESULTS_ID}
+          className="order-2 lg:order-3 lg:col-span-4 space-y-4 scroll-mt-16"
+        >
           <ResultsPanel
             bossName={monster.name}
             bossHp={monster.hp}
@@ -1181,6 +1223,7 @@ export function BossCockpit({ slug }: { slug: string }) {
               if (patch.brewsPerHour !== undefined) setBrewsPerHour(patch.brewsPerHour);
             }}
             brewPriceGp={priceForItem(prices, SARADOMIN_BREW_4_ID)}
+            loading={loadoutLoading}
           />
           {fromScratchMode && untradeableOptionsBySlot.length > 0 && (
             <OwnedUntradeablesPanel

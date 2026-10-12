@@ -66,6 +66,8 @@ interface Props {
   onTripChange: (patch: Partial<TripAssumptions>) => void;
   /** Live GE price of a Saradomin brew(4), or null when unavailable. */
   brewPriceGp: number | null;
+  /** The loadout is still being worked out (Budget mode waiting on prices). */
+  loading?: boolean;
 }
 
 export interface TripAssumptions {
@@ -258,6 +260,7 @@ export function ResultsPanel({
   trip,
   onTripChange,
   brewPriceGp,
+  loading = false,
 }: Props) {
   const [showDrops, setShowDrops] = useState(false);
   const [showTrip, setShowTrip] = useState(false);
@@ -302,7 +305,7 @@ export function ResultsPanel({
       <StatCard
         hero
         label={`DPS vs ${bossName}`}
-        value={dps ? dps.dps.toFixed(2) : "—"}
+        value={dps ? dps.dps.toFixed(2) : loading ? "…" : "—"}
         size="md"
       />
 
