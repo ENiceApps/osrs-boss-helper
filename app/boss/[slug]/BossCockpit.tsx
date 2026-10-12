@@ -148,10 +148,12 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Budget mode + sell threshold drive the optimizer; they live here (not in
   // a panel) because the setup rail sets them and the loadout/results columns
   // consume the output. Every change recomputes immediately — no apply button.
-  // Default to "budget" so a first-time visitor (no bank synced yet) lands with
-  // the budget slider to play with from the start — they can switch to a
-  // bank-aware mode once they connect their bank file.
-  const [modeRaw, setMode] = useState<BudgetMode>("budget");
+  // null = the player hasn't picked a mode yet, so follow the bank: "own-only"
+  // once a bank is connected, "budget" until then (a first-time visitor gets the
+  // budget slider to play with). The bank loads async, so this has to be derived
+  // rather than seeded once. An explicit pick (or a share link) wins from then on.
+  const [modePicked, setMode] = useState<BudgetMode | null>(null);
+  const modeRaw: BudgetMode = modePicked ?? (bank ? "own-only" : "budget");
   // Sell-to-fund: ids of bank items the player has chosen to liquidate. Seeded
   // from the optimizer's recommendation (see the reseed effect below).
   const [sellSelections, setSellSelections] = useState<Set<number>>(new Set());
