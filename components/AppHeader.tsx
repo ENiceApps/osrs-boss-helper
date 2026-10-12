@@ -35,10 +35,24 @@ export function AppHeader() {
           <NavLink href="/items" active={pathname.startsWith("/items")}>
             Items
           </NavLink>
+          {/* Icon on phones, like About: another word won't fit at 375px. */}
+          <NavLink href="/bank" active={pathname.startsWith("/bank")} label="Bank">
+            <svg
+              aria-hidden
+              viewBox="0 0 20 20"
+              width={18}
+              height={18}
+              fill="currentColor"
+              className="sm:hidden block"
+            >
+              <path d="M10 2 2 6v2h16V6l-8-4ZM4 9h2v6H4V9Zm5 0h2v6H9V9Zm5 0h2v6h-2V9ZM2 16h16v2H2v-2Z" />
+            </svg>
+            <span className="hidden sm:inline">Bank</span>
+          </NavLink>
           <NavLink href="/updates" active={pathname.startsWith("/updates")}>
             Updates
           </NavLink>
-          {/* Phones get an info icon: a fourth word pushes the accent swatches
+          {/* Phones get an info icon: another word pushes the accent swatches
               off a 375px screen. */}
           <NavLink href="/about" active={pathname.startsWith("/about")} label="About">
             <svg

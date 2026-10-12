@@ -49,7 +49,11 @@ const BANK_STEPS = [
     title: "Connect or upload it here",
     body: (
       <>
-        On any boss page, hit{" "}
+        On the{" "}
+        <Link href="/bank" className="text-osrs-gold hover:underline">
+          Bank page
+        </Link>{" "}
+        (or any boss page), hit{" "}
         <span className="text-osrs-brown font-semibold">Connect bank file</span>{" "}
         so it stays up to date (Chrome/Edge/Brave), or{" "}
         <span className="text-osrs-brown font-semibold">Upload bank.json</span>{" "}
@@ -134,6 +138,11 @@ export default function HomePage() {
         </ol>
 
         <p className="text-caption text-osrs-muted mt-4 border-t border-osrs-gold/15 pt-3">
+          Use Bank Memory instead?{" "}
+          <Link href="/bank#paste-heading" className="text-osrs-gold hover:underline">
+            Paste your bank here
+          </Link>
+          .<br />
           No RuneLite? No problem! Pick any boss and use <span className="text-osrs-brown">Budget mode</span>{" "}
           to plan the best setup for however much GP you have. No bank needed.
         </p>

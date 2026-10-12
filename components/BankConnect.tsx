@@ -7,6 +7,7 @@
 // player data of its own — everything flows through lib/localBank.ts, which keeps
 // the data in the browser.
 
+import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 import {
   useLocalBank,
@@ -20,22 +21,12 @@ import {
 import { formatAgo, secondsSince } from "@/lib/liveBank";
 
 // Where the plugin writes the file (shown so users can find it in the picker).
-const FILE_PATH = "…/.runelite/osrs-boss-helper/bank.json";
+export const FILE_PATH = "…/.runelite/osrs-boss-helper/bank.json";
 
 export function BankConnect() {
   const s = useLocalBank();
   const fileInput = useRef<HTMLInputElement>(null);
-  // File System Access support is a window check, so it can't be read during
-  // the server prerender (no window → fallback branch) without the Chromium
-  // client hydrating a DIFFERENT branch — a hydration mismatch that made React
-  // throw the whole server-rendered tree away. useSyncExternalStore hydrates
-  // with the server snapshot (false) and re-renders with the real value after
-  // mount; the value never changes, so subscribe is a no-op.
-  const supported = useSyncExternalStore(
-    () => () => {},
-    () => localBankSupported(),
-    () => false,
-  );
+  const supported = useFsaSupported();
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -147,6 +138,33 @@ export function BankConnect() {
         plugin to use your real gear. Or use <strong>Budget</strong> mode below to
         plan without it.
       </p>
+      <BankFileButtons />
+      <p className="text-osrs-muted">
+        File: <code>{FILE_PATH}</code>
+      </p>
+      <BankMemoryPaste label="Use Bank Memory? Paste its export instead" />
+      <Link href="/bank" className="block text-osrs-brown hover:text-osrs-gold hover:underline">
+        How does this work?
+      </Link>
+      {s.error && <p className="text-status-missing">{s.error}</p>}
+    </div>
+  );
+}
+
+/** Connect (live, Chromium) or upload (one-shot) buttons for the plugin's
+ *  bank.json. Shared by the boss-page rail and the /bank page. */
+export function BankFileButtons() {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const supported = useFsaSupported();
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) void importLocalBankFile(f);
+    e.target.value = ""; // allow re-importing the same filename
+  }
+
+  return (
+    <>
       {supported ? (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <button
@@ -185,22 +203,34 @@ export function BankConnect() {
         className="hidden"
         onChange={onPickFile}
       />
-      <p className="text-osrs-muted">
-        File: <code>{FILE_PATH}</code>
-      </p>
-      <BankMemoryPaste label="Use Bank Memory? Paste its export instead" />
-      {s.error && <p className="text-status-missing">{s.error}</p>}
-    </div>
+    </>
+  );
+}
+
+// File System Access support is a window check, so it can't be read during
+// the server prerender (no window → fallback branch) without the Chromium
+// client hydrating a DIFFERENT branch — a hydration mismatch that made React
+// throw the whole server-rendered tree away. useSyncExternalStore hydrates
+// with the server snapshot (false) and re-renders with the real value after
+// mount; the value never changes, so subscribe is a no-op.
+function useFsaSupported(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => localBankSupported(),
+    () => false,
   );
 }
 
 // Paste box for the Bank Memory plugin's export (right-click a saved bank →
-// "Copy item data to clipboard"). Collapsed to a link until asked for, so the
-// plugin flow stays the obvious one.
-function BankMemoryPaste({ label }: { label: string }) {
-  const [open, setOpen] = useState(false);
+// "Copy item data to clipboard"). On the boss page it's collapsed to a link
+// until asked for, so the plugin flow stays the obvious one; the /bank page
+// shows it open (`inline`) under its own step-by-step instructions.
+export function BankMemoryPaste({ label, inline = false }: { label?: string; inline?: boolean }) {
+  const [open, setOpen] = useState(inline);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const bank = useLocalBank().bank;
 
   if (!open) {
     return (
@@ -219,20 +249,26 @@ function BankMemoryPaste({ label }: { label: string }) {
     setError(err);
     if (!err) {
       setText("");
-      setOpen(false);
+      if (inline) setLoaded(true);
+      else setOpen(false);
     }
   }
 
   return (
     <div className="w-full space-y-1">
-      <p className="text-osrs-muted">
-        In RuneLite, open the Bank Memory panel, right-click your bank and pick
-        &quot;Copy item data to clipboard&quot;. Then paste it here!
-      </p>
+      {!inline && (
+        <p className="text-osrs-muted">
+          In RuneLite, open the Bank Memory panel, right-click your bank and pick
+          &quot;Copy item data to clipboard&quot;. Then paste it here!
+        </p>
+      )}
       <textarea
         value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={4}
+        onChange={(e) => {
+          setText(e.target.value);
+          setLoaded(false);
+        }}
+        rows={inline ? 6 : 4}
         placeholder={"Item id    Item name    Item quantity\n4151    Abyssal whip    1"}
         aria-label="Bank Memory export"
         className="w-full p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm font-mono"
@@ -241,21 +277,29 @@ function BankMemoryPaste({ label }: { label: string }) {
         <button
           type="button"
           onClick={load}
-          className="text-osrs-gold font-semibold hover:underline"
+          disabled={!text.trim()}
+          className="text-osrs-gold font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
         >
           Load bank →
         </button>
-        <button
-          type="button"
-          onClick={() => {
-            setOpen(false);
-            setError(null);
-          }}
-          className="text-osrs-brown hover:text-osrs-gold hover:underline"
-        >
-          Cancel
-        </button>
+        {!inline && (
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setError(null);
+            }}
+            className="text-osrs-brown hover:text-osrs-gold hover:underline"
+          >
+            Cancel
+          </button>
+        )}
       </div>
+      {loaded && bank && (
+        <p className="text-status-owned">
+          Got it! {bank.items.length} items loaded. Pick a boss and go!
+        </p>
+      )}
       {error && <p className="text-status-missing">{error}</p>}
     </div>
   );
