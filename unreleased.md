@@ -1,7 +1,7 @@
 # Unreleased pushes
 
-Logged automatically on every push to main. The Thursday release routine
-empties this file once it has drafted the release.
+Logged automatically on every push to main. Append-only: the Thursday release
+routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers.
 
 ## Backfill · everything pushed since the v1.0.0 launch (2026-10-09 to 2026-10-13)
 
