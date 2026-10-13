@@ -22,9 +22,6 @@ export default function UpdatesPage() {
   return (
     <div className="p-6 max-w-2xl mx-auto pb-16">
       <h1 className="font-display text-3xl font-bold text-osrs-gold">Updates</h1>
-      <p className="text-sm text-parchment-dark mt-1">
-        What&apos;s changed in OSRS Boss Helper, newest first.
-      </p>
 
       {COMMUNITY_NOTE && (
         <section className="osrs-panel rounded-lg p-4 sm:p-6 mt-6" aria-label="A note from ENice">
