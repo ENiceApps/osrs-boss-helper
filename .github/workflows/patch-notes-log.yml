@@ -1,6 +1,6 @@
 name: Patch notes log
 
-# Every push to main gets logged to unreleased.md on the `patch-notes` branch.
+# Every push to main gets appended to unreleased.md on the `patch-notes` branch.
 # The Thursday release routine turns that log into the week's player-facing
 # patch notes (see patch-notes/README.md). The log lives on its own branch so
 # logging never adds commits to main: no extra Vercel deploys, and no
@@ -64,7 +64,7 @@ jobs:
             git add vercel.json
           fi
           if [ ! -f unreleased.md ]; then
-            printf '# Unreleased pushes\n\nLogged automatically on every push to main. The Thursday release routine\nempties this file once it has drafted the release.\n' > unreleased.md
+            printf '# Unreleased pushes\n\nLogged automatically on every push to main. Append-only: the Thursday release\nroutine works out what is new from the commits each patch-notes/vX.Y.Z.md covers.\n' > unreleased.md
           fi
           {
             printf '\n## %s · pushed by %s\n\n' "$(date -u +'%Y-%m-%d %H:%M UTC')" "$ACTOR"

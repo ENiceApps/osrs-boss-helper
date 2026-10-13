@@ -12,8 +12,9 @@ on them before they go out.
 2. **Thursday 9am ET, a cloud Claude routine drafts the release.** It reads
    the log and the commits, writes player-facing notes, and bumps the version
    using the rules in `data/updates.ts`. It also archives the week here as
-   `vX.Y.Z.md`, all on a `release/vX.Y.Z` branch. Then it empties the log and
-   emails ENice the notes for review. Vercel builds a preview of the release
+   `vX.Y.Z.md`, all on a `release/vX.Y.Z` branch, and emails ENice the notes
+   for review. The log is never edited: each archive lists the commits it
+   covers, and that's how the next week knows where to pick up. Vercel builds a preview of the release
    branch, so the Updates tab can be checked before anything goes live.
 3. **Nothing reaches `main` until ENice approves.** To ship, tell any
    osrs-boss-helper Claude session "ship release vX.Y.Z" (it merges the branch
