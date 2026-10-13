@@ -31,6 +31,10 @@ const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: "npc", label: CATEGORY_LABELS.npc },
 ];
 
+// Baseline tools, pinned first so they're easy to find: a no-defence dummy for
+// raw-DPS checks, and Ditto — a fully editable "theoretical boss" sandbox.
+const PINNED_SLUGS = ["combat-dummy", "ditto"];
+
 // Attribute facets. `match` lets one chip cover several raw tags (the catalog
 // splits vampyres into vampyre1/vampyre3). Counts are computed once below.
 const ATTR_FACETS: { key: string; label: string; match: (a: string) => boolean }[] = [
@@ -149,7 +153,9 @@ export default function BossesPage() {
     } else {
       list = [...list].sort((a, b) => b.hp - a.hp);
     }
-    return list;
+    // Baseline tools stay on top whenever they match, in PINNED_SLUGS order.
+    const pinned = PINNED_SLUGS.flatMap((s) => list.filter((m) => m.slug === s));
+    return [...pinned, ...list.filter((m) => !PINNED_SLUGS.includes(m.slug))];
   }, [query, activeAttrs, activeWeak, wildOnly, category, sort]);
 
   const shown = results;
