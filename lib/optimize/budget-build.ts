@@ -29,6 +29,7 @@ import {
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
 import { IMBUED_SLAYER_HELM_IDS } from "@/data/items/slayer-helm";
 import { isHalberdWeapon } from "@/data/items/halberd-weapons";
+import { GUARDIAN_IDS } from "@/data/monsters/melee-reach";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
@@ -351,6 +352,11 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
   // them — yet they're frequent budget BIS once priced at the uncharged value.
   for (const w of weapons) {
     if (UNCHARGED_PRICE_ID.has(w.id)) keptWeaponIds.add(w.id);
+  }
+  // CoX Guardians: only a pickaxe in melee damages them, and a pickaxe's raw
+  // bonuses never make the top-K cap, so keep every affordable one.
+  if (GUARDIAN_IDS.has(input.target.wikiId)) {
+    for (const w of weapons) if (w.category === "Pickaxe") keptWeaponIds.add(w.id);
   }
 
   let anchors = enumerateWeaponStyles(weapons.filter((w) => keptWeaponIds.has(w.id)));

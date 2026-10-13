@@ -123,6 +123,11 @@ export function buildActiveFlags(
   if (activeBonuses?.flyingMeleeImmune) flags.push("Flying: melee can't reach it without a halberd or salamander");
   if (activeBonuses?.npcMeleeImmune === "all") flags.push("Immune to melee: only ranged or magic can damage it");
   if (activeBonuses?.npcMeleeImmune === "halberd") flags.push("Zulrah: melee can't reach it without a halberd");
+  if (activeBonuses?.guardianImmune) flags.push("Guardian: only a pickaxe in melee damages it");
+  if (activeBonuses?.guardianPickaxeFactor) {
+    const [n, d] = activeBonuses.guardianPickaxeFactor;
+    flags.push(`Guardian pickaxe +${(((n - d) * 100) / d).toFixed(1)}% dmg (Mining 99)`);
+  }
   if (activeBonuses?.tomeOfFireEquipped)  flags.push("Tome of Fire +10% dmg");
   if (activeBonuses?.tomeOfWaterEquipped) flags.push("Tome of Water +20% acc / +10% dmg");
   if (activeBonuses?.tomeOfEarthEquipped) flags.push("Tome of Earth +10% dmg");

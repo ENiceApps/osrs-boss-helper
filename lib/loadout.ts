@@ -4,7 +4,12 @@
 
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
-import { isFlyingImmuneToMelee, npcMeleeImmunity } from "@/data/monsters/melee-reach";
+import {
+  guardianPickaxeFactor,
+  isFlyingImmuneToMelee,
+  isGuardianImmune,
+  npcMeleeImmunity,
+} from "@/data/monsters/melee-reach";
 import type { LoadoutSet } from "@/types/loadout";
 import type { ConditionalBonusFlags } from "@/types/osrs";
 import {
@@ -63,6 +68,17 @@ export interface TargetActiveBonuses {
    * otherwise (and for every ranged / magic loadout).
    */
   npcMeleeImmune: "all" | "halberd" | null;
+  /**
+   * The target is a CoX Guardian and this loadout isn't a pickaxe swung in
+   * melee — it deals no damage at all (see `isGuardianImmune`).
+   */
+  guardianImmune: boolean;
+  /**
+   * A pickaxe melee swing at a CoX Guardian: every hitsplat scales by
+   * [50 + Mining + pick bonus, 150] at Mining 99 (see `guardianPickaxeFactor`).
+   * Undefined otherwise.
+   */
+  guardianPickaxeFactor?: [number, number];
 }
 
 /**
@@ -177,6 +193,13 @@ export function activeBonusesForTarget(
     leafyImmune: isLeafy && !canDamageLeafy(set),
     flyingMeleeImmune: set.style === "melee" && isFlyingImmuneToMelee(target, set.weaponCategory),
     npcMeleeImmune: set.style === "melee" ? npcMeleeImmunity(target, set.weaponCategory) : null,
+    guardianImmune: isGuardianImmune(target, set.style, set.weaponCategory),
+    guardianPickaxeFactor: guardianPickaxeFactor(
+      target,
+      set.style,
+      set.weaponCategory,
+      set.slots.weapon?.itemName,
+    ),
   };
 }
 

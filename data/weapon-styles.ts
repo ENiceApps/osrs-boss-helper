@@ -174,8 +174,8 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
 
   // ----- Other weapon categories (stances per wgloop getCombatStylesForCategory) -----
   Pickaxe: [
-    // Dragon / crystal / infernal pickaxe. NOTE: the CoX Guardians' pickaxe-only
-    // rule and Mining-scaled damage are not modelled by our engine yet.
+    // Dragon / crystal / infernal pickaxe. The only weapons that damage the CoX
+    // Guardians, with Mining-scaled damage (data/monsters/melee-reach.ts).
     { name: "Spike", attackType: "stab", choice: "accurate", defensive: false },
     { name: "Impale", attackType: "stab", choice: "aggressive", defensive: false },
     { name: "Smash", attackType: "crush", choice: "aggressive", defensive: false },

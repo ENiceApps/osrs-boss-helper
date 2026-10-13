@@ -237,6 +237,14 @@ export interface DpsScenario {
    */
   dharok?: { maxHp: number; currentHp: number };
   /**
+   * Melee-only: a pickaxe swung at a CoX Guardian — every rolled hitsplat
+   * scales by trunc(h × n/d), [50 + Mining + pick bonus, 150] (wgloop's
+   * GUARDIANS_DMG_BONUS, just before Dharok's in its getAttackerDist). Resolved
+   * upstream (see guardianPickaxeFactor); the Guardians' immunity to anything
+   * else arrives as `targetImmune`.
+   */
+  guardianDamageFactor?: [number, number];
+  /**
    * Blood moon "Bloodrager" set effect — full Blood moon armour (helm + chest +
    * tassets) worn with the Dual macuahuitl. Each successful hit has a 33% chance
    * to make the next attack land a tick sooner (3 ticks instead of 4). The
@@ -771,6 +779,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     scenario.dharok && scenario.style === "melee" && scenario.dharok.currentHp < scenario.dharok.maxHp
       ? [10000 + (scenario.dharok.maxHp - scenario.dharok.currentHp) * scenario.dharok.maxHp, 10000]
       : undefined;
+  // A pickaxe vs a CoX Guardian scales each rolled hitsplat the same way, just
+  // before Dharok's upstream (the two never meet: Dharok's is a greataxe).
+  // At our assumed 99 Mining the factor is >= 1, so only a roll of 0 lands 0
+  // and the accurate-zero raise still sees exactly the 0s it lifts.
+  const guardianFactor = scenario.style === "melee" ? scenario.guardianDamageFactor : undefined;
 
   if (scenario.style === "magic") {
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
@@ -816,6 +829,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // `attackerMax` is the max between the two — upstream's attacker-side
   // getMax(), which a Mad Angel floor reads before any NPC transform.
   const preCorpMax = maxHit;
+  if (guardianFactor) maxHit = Math.trunc((maxHit * guardianFactor[0]) / guardianFactor[1]);
   if (dharokFactor) maxHit = Math.trunc((maxHit * dharokFactor[0]) / dharokFactor[1]);
   const npcT: NpcHitTransforms = {
     damageCap: scenario.targetDamageCap,
@@ -929,7 +943,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   const npcHit = (h: number, accurate = true): number =>
     npcHitMean(h, npcT, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
   const afterRaise = (h: number, minimum = 0): number => {
-    const dharoked = dharokFactor ? Math.trunc((h * dharokFactor[0]) / dharokFactor[1]) : h;
+    const mined = guardianFactor ? Math.trunc((h * guardianFactor[0]) / guardianFactor[1]) : h;
+    const dharoked = dharokFactor ? Math.trunc((mined * dharokFactor[0]) / dharokFactor[1]) : mined;
     const punished = punishSingle
       ? Math.trunc((dharoked * firstHitFactor[0]) / firstHitFactor[1])
       : dharoked;
@@ -950,7 +965,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // the closed forms on the transformed max. A Twinflame double cast does its
   // own hitsplats (twinflameDamage).
   const perHitsplat =
-    (scenario.corpDamageHalved === true || npcTransforms || punishSingle || dharokFactor !== undefined) &&
+    (scenario.corpDamageHalved === true || npcTransforms || punishSingle || dharokFactor !== undefined ||
+      guardianFactor !== undefined) &&
     !twinflame;
   const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
     meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));

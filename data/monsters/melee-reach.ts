@@ -129,10 +129,90 @@ export function meleeImmunityNote(monster: {
   const immunity = npcMeleeImmunity(monster, undefined);
   if (immunity === "all") return `${monster.name} is immune to melee — use ranged or magic.`;
   if (immunity === "halberd") return `${monster.name} only takes melee damage from a halberd.`;
+  if (GUARDIAN_IDS.has(monster.wikiId)) return `${monster.name} only takes damage from a pickaxe in melee.`;
   if (monster.attributes.includes("flying")) {
     return VESPULA_WIKI_IDS.has(monster.wikiId)
       ? `${monster.name} is immune to melee — use ranged or magic.`
       : `${monster.name} flies: only a halberd or salamander can melee it.`;
   }
   return undefined;
+}
+
+// ---- CoX Guardians: pickaxe-only ------------------------------------------------
+//
+// Mirrors weirdgloop/osrs-dps-calc @ 89c3e25: constants.ts GUARDIAN_IDS, read
+// by PlayerVsNPCCalc.isImmune —
+//
+//   if (GUARDIAN_IDS.includes(monsterId) && (!this.isUsingMeleeStyle()
+//       || weapon?.category !== EquipmentCategory.PICKAXE)) return true;
+//
+// — and by getAttackerDist, which scales every hitsplat of a pickaxe swing by
+// (50 + Mining level + pick bonus) / 150 (Jagex Ash: "50 + mining level + pick
+// bonus, divided by 150"). The pick bonus is the pickaxe's wield level; every
+// pickaxe upstream doesn't list (dragon / crystal / infernal / 3rd age and
+// their variants) counts as 61. Ranged and magic deal nothing at all.
+
+/** Guardians, Chambers of Xeric: 7569 / 7571 regular, 7570 / 7572 Challenge Mode. */
+export const GUARDIAN_IDS: ReadonlySet<number> = new Set([7569, 7571, 7570, 7572]);
+
+/** Mining level the Guardians' damage scales with — we assume 99, as the wiki calc defaults. */
+export const GUARDIAN_MINING_LEVEL = 99;
+
+/** Pick bonus (the wield level) of pickaxes below dragon; everything else is 61. */
+const GUARDIAN_PICK_BONUS: Readonly<Record<string, number>> = {
+  "Bronze pickaxe": 1,
+  "Iron pickaxe": 1,
+  "Steel pickaxe": 6,
+  "Black pickaxe": 11,
+  "Mithril pickaxe": 21,
+  "Adamant pickaxe": 31,
+  "Rune pickaxe": 41,
+  "Gilded pickaxe": 41,
+};
+
+/**
+ * True iff this attack deals no damage to a CoX Guardian: anything but a MELEE
+ * swing with a Pickaxe-category weapon. False for every other monster.
+ */
+export function isGuardianImmune(
+  monster: { wikiId: number },
+  style: "melee" | "ranged" | "magic",
+  weaponCategory: string | undefined,
+): boolean {
+  if (!GUARDIAN_IDS.has(monster.wikiId)) return false;
+  return style !== "melee" || weaponCategory !== "Pickaxe";
+}
+
+/**
+ * The per-hitsplat damage scale a pickaxe melee swing gets against a Guardian,
+ * [50 + Mining + pick bonus, 150] (×210/150 for a dragon pickaxe at 99 Mining),
+ * or undefined when it doesn't apply (another monster, style or weapon).
+ */
+export function guardianPickaxeFactor(
+  monster: { wikiId: number },
+  style: "melee" | "ranged" | "magic",
+  weaponCategory: string | undefined,
+  weaponName: string | undefined,
+  miningLevel: number = GUARDIAN_MINING_LEVEL,
+): [number, number] | undefined {
+  if (!GUARDIAN_IDS.has(monster.wikiId) || style !== "melee" || weaponCategory !== "Pickaxe") {
+    return undefined;
+  }
+  const pickBonus = GUARDIAN_PICK_BONUS[weaponName ?? ""] ?? 61;
+  return [50 + miningLevel + pickBonus, 150];
+}
+
+/**
+ * Why a style's tab is empty because the monster takes no damage from it, or
+ * undefined. Melee defers to `meleeImmunityNote`; ranged / magic only to the
+ * Guardians, which nothing but a pickaxe damages.
+ */
+export function styleImmunityNote(
+  monster: { name: string; wikiId: number; attributes: readonly string[] },
+  style: "melee" | "ranged" | "magic",
+): string | undefined {
+  if (style === "melee") return meleeImmunityNote(monster);
+  return GUARDIAN_IDS.has(monster.wikiId)
+    ? `${monster.name} only takes damage from a pickaxe in melee.`
+    : undefined;
 }

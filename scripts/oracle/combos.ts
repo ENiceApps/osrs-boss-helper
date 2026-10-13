@@ -71,6 +71,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...krakenRangedCombos(),
     ...maggotKingPunishCombos(),
     ...weaponCategoryCombos(),
+    ...guardianCombos(),
   ];
 }
 
@@ -627,6 +628,29 @@ export function weaponCategoryCombos(): CanonicalCombo[] {
       [TOXIC_STAFF_OF_THE_DEAD, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
     orderingCombo("cat-hallowed-flail-slash", graardor, melee(HALLOWED_FLAIL), "slash", "aggressive"),
     orderingCombo("cat-black-chinchompa", zilyana, ranged(BLACK_CHINCHOMPA), "ranged", "rapid"),
+  ];
+}
+
+const RUNE_PICKAXE = 1275;
+
+/**
+ * The CoX Guardians (upstream GUARDIAN_IDS @ 89c3e25): isImmune zeroes every
+ * attack but a MELEE swing with a Pickaxe-category weapon, and getAttackerDist
+ * scales each pickaxe hitsplat by (50 + Mining + pick bonus) / 150 — 210/150
+ * for a dragon pickaxe (bonus 61) at the default 99 Mining, 190/150 for a Rune
+ * pickaxe (41). Dragon pickaxe on both stances, a Rune pickaxe, and
+ * non-pickaxe controls in melee and ranged (0 DPS).
+ */
+export function guardianCombos(): CanonicalCombo[] {
+  const guardian = "guardian-chambers-of-xeric";
+  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
+  return [
+    orderingCombo("guardian-dragon-pickaxe-stab", guardian, melee(DRAGON_PICKAXE), "stab", "aggressive"),
+    orderingCombo("guardian-dragon-pickaxe-crush", guardian, melee(DRAGON_PICKAXE), "crush", "aggressive"),
+    orderingCombo("guardian-rune-pickaxe-crush", guardian, melee(RUNE_PICKAXE), "crush", "aggressive"),
+    orderingCombo("guardian-whip-control", guardian, melee(4151), "slash", "controlled"),
+    orderingCombo("guardian-tbow-control", guardian,
+      [TWISTED_BOW, DRAGON_ARROW, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "rapid"),
   ];
 }
 
