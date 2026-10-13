@@ -62,3 +62,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 
 - a5a6f3a fix(optimizer): map Pickaxe, Polestaff, Bladed Staff, Flail, Chinchompas styles
 - 98f9d89 fix(dps): model the CoX Guardians' pickaxe-only rule and Mining scale
+
+## 2026-10-13 19:24 UTC · pushed by ENiceApps
+
+- 1ad3f93 copy(updates): take the Planned roadmap off the page; it stays internal
