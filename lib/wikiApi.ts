@@ -3,14 +3,15 @@
 // and include contact info. See:
 //   https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices
 
+import { SITE_URL } from "@/lib/site";
+
 const WIKI_BASE = "https://prices.runescape.wiki/api/v1/osrs";
 
-function buildUserAgent(): string {
-  const contact = process.env.WIKI_USER_AGENT_CONTACT?.trim();
-  if (!contact) {
-    return "OSRS-Boss-Helper/0.1 (dev; set WIKI_USER_AGENT_CONTACT before deploying)";
-  }
-  return `OSRS-Boss-Helper/0.1 (contact: ${contact})`;
+// Always carries the site URL, so the wiki team can find us (About page,
+// feedback button) even when no contact is configured.
+export function buildUserAgent(contact = process.env.WIKI_USER_AGENT_CONTACT): string {
+  const c = contact?.trim();
+  return c ? `OSRS-Boss-Helper/0.1 (${SITE_URL}; ${c})` : `OSRS-Boss-Helper/0.1 (${SITE_URL})`;
 }
 
 export async function fetchWiki(path: string, init?: RequestInit): Promise<Response> {

@@ -20,10 +20,11 @@ import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MONSTER_CATALOG } from "../data/monsters/catalog";
+import { SITE_URL } from "../lib/site";
 import { DROP_QUANTITY_OVERRIDES, DROP_VERSION_OVERRIDES, extractDrops, type BossDrop } from "./drop-table-parser";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const UA = "osrs-boss-helper drop-table codegen (https://osrs-boss-helper-2026.vercel.app)";
+const UA = `osrs-boss-helper drop-table codegen (${SITE_URL})`;
 const WIKI_API = "https://oldschool.runescape.wiki/api.php";
 const MAPPING_API = "https://prices.runescape.wiki/api/v1/osrs/mapping";
 
