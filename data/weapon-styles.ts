@@ -201,11 +201,18 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     // exactly without a distance model.
     { name: "Medium fuse", attackType: "ranged", choice: "rapid", defensive: false },
   ],
-  // Deliberately unmapped (never recommended): Salamander (each one needs its
-  // own tar in the AMMO slot, which supplies its ranged strength, and deals 0
-  // without it — upstream ammoForRangedWeapons; Flare also rolls against the
-  // mean of the three ranged defences and Blaze has its own magic-level max-hit
-  // formula; none of that is modelled yet), Bulwark (Dinh's: its strength
+  Salamander: [
+    // wgloop getCombatStylesForCategory. All three need the salamander's own
+    // tar in the AMMO slot (data/ammo-compatibility.ts) or they deal 0. Flare
+    // rolls against the mean of the three ranged defences (rangedDefenceBonusFor);
+    // Blaze's max hit is its own magic-level formula (POWERED_STAFF_FORMULA),
+    // and its Defensive stance adds no magic accuracy. `defensive: false` on
+    // Blaze because it's the only magic option, not a Block-style tab.
+    { name: "Scorch", attackType: "slash", choice: "aggressive", defensive: false },
+    { name: "Flare", attackType: "ranged", choice: "rapid", defensive: false },
+    { name: "Blaze", attackType: "magic", choice: "defensive", defensive: false },
+  ],
+  // Deliberately unmapped (never recommended): Bulwark (Dinh's: its strength
   // bonus is derived from total defence, not modelled; a tank weapon anyway),
   // Multi-Melee (Infernal tecpatl, a Leagues item in excluded-items.ts),
   // Banner / Gun / Blaster / Unarmed / "" / "blunt" (cosmetic, quest, broken

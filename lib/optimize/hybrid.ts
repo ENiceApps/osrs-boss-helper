@@ -38,6 +38,7 @@ import { findCatalogItem } from "@/lib/loadout-edit";
 import { availableHybridSets, type ResolvedHybridSet } from "@/data/hybrid-sets";
 import { autoPickSpell, optimizeForBoss } from "@/lib/optimize/bank";
 import { scoreScenario, type ScoredScenario } from "@/lib/optimize/scenario";
+import { AMMO_FOR_EVERY_STYLE_CATEGORIES } from "@/data/ammo-compatibility";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { BoostResolver } from "@/lib/dps/boost";
 import type { CombatStyle, Skills, SpellElement } from "@/types/osrs";
@@ -464,7 +465,11 @@ function solveHybrid(
     // Pin every style's ammo slot to the shared ammo so it's never shown as a swap
     // (display-only — the ammo slot doesn't affect melee/magic DPS, and the ranged
     // style already fired its real ammo when its DPS was computed).
-    if (sharedAmmoSlot) s.scored.loadout.slots.ammo = sharedAmmoSlot;
+    // A salamander keeps its own tar: it burns it on every style, so swapping
+    // it out would zero the style's DPS (lib/loadout salamanderMissingTar).
+    if (AMMO_FOR_EVERY_STYLE_CATEGORIES.has(s.scored.loadout.weaponCategory ?? "")) {
+      // leave the tar in place
+    } else if (sharedAmmoSlot) s.scored.loadout.slots.ammo = sharedAmmoSlot;
     else delete s.scored.loadout.slots.ammo;
     // The switched (per-style) slots this style equips an item in. A 2H style has
     // no shield, so its empty shield isn't listed even though the slot is unlocked.

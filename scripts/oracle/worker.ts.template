@@ -116,7 +116,8 @@ function resolveStyle(styles: PlayerCombatStyle[], attackType: AttackType, choic
       const want = choice === 'defensive' ? 'Defensive Autocast' : 'Autocast';
       return styles.find((s) => s.stance === want);
     }
-    const want = choice === 'longrange' ? 'Longrange' : 'Accurate';
+    // A salamander's Blaze is the magic style with a plain 'Defensive' stance.
+    const want = choice === 'longrange' ? 'Longrange' : choice === 'defensive' ? 'Defensive' : 'Accurate';
     return styles.find((s) => s.stance === want && s.type === 'magic');
   }
   const stance = STANCE_BY_CHOICE[choice];

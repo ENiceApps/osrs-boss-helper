@@ -26,7 +26,12 @@ import {
   availableArmorSetsInBank,
   piecesToEquipForSet,
 } from "@/data/armor-sets";
-import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES, AMMO_TYPES } from "@/data/ammo-compatibility";
+import {
+  AMMO_FOR_EVERY_STYLE_CATEGORIES,
+  AMMO_TYPES,
+  checkAmmoCompatWithCategory,
+  SELF_AMMO_WEAPON_CATEGORIES,
+} from "@/data/ammo-compatibility";
 import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs";
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
@@ -277,12 +282,18 @@ function greedyBuild(
     // projectile from it. That covers:
     //   • Melee and magic weapons (combatStyle !== "ranged")
     //   • Self-ammo ranged weapons: blowpipes load darts internally, thrown
-    //     weapons ARE the weapon, chinchompas and salamanders use inventory
-    //     consumables — none of them occupy the ammo slot in-game.
+    //     weapons ARE the weapon, chinchompas are the ammunition — none of
+    //     them occupy the ammo slot in-game.
     // In all these cases fill the slot with the highest-prayer item in the
     // bank (Rada's blessing 4 > god blessings > Rada's 2/3 etc.) at zero DPS
     // cost. Leave the slot empty only if nothing in the bank has prayer > 0.
-    if (slot === "ammo" && (SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category) || ws.combatStyle !== "ranged")) {
+    // A salamander is the exception: it burns its own tar on EVERY style, so
+    // its ammo slot always takes that tar (the compat filter below).
+    if (
+      slot === "ammo" &&
+      !AMMO_FOR_EVERY_STYLE_CATEGORIES.has(ws.weapon.category) &&
+      (SELF_AMMO_WEAPON_CATEGORIES.has(ws.weapon.category) || ws.combatStyle !== "ranged")
+    ) {
       const prayerPool = (bySlot.get("ammo") ?? []).filter((a) => a.prayer > 0);
       if (prayerPool.length > 0) {
         const bestPrayer = prayerPool.reduce((b, a) => (a.prayer > b.prayer ? a : b));

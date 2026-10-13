@@ -674,6 +674,10 @@ const DRAGON_CANE = 12373;
 const TOXIC_STAFF_OF_THE_DEAD = 12904; // Charged
 const HALLOWED_FLAIL = 33718;
 const BLACK_CHINCHOMPA = 11959;
+const BLACK_SALAMANDER = 10148;
+const HARRALANDER_TAR = 10145;
+const TECU_SALAMANDER = 28834;
+const IRIT_TAR = 28837;
 
 /**
  * Weapon categories that had no style mapping (so the optimizer skipped them):
@@ -698,6 +702,17 @@ export function weaponCategoryCombos(): CanonicalCombo[] {
       [TOXIC_STAFF_OF_THE_DEAD, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
     orderingCombo("cat-hallowed-flail-slash", graardor, melee(HALLOWED_FLAIL), "slash", "aggressive"),
     orderingCombo("cat-black-chinchompa", zilyana, ranged(BLACK_CHINCHOMPA), "ranged", "rapid"),
+    // Salamanders: the tar rides in the ammo slot on EVERY style. Scorch reaches
+    // a flying boss; Flare rolls vs the mixed (mean) ranged defence; Blaze uses
+    // its own magic-level max hit with no spell.
+    orderingCombo("cat-black-salamander-scorch-kreearra", "kreearra",
+      [...melee(BLACK_SALAMANDER), HARRALANDER_TAR], "slash", "aggressive"),
+    orderingCombo("cat-black-salamander-flare", zilyana,
+      [...ranged(BLACK_SALAMANDER), HARRALANDER_TAR], "ranged", "rapid"),
+    orderingCombo("cat-black-salamander-blaze", zilyana,
+      [BLACK_SALAMANDER, HARRALANDER_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
+    orderingCombo("cat-tecu-salamander-blaze", zilyana,
+      [TECU_SALAMANDER, IRIT_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
   ];
 }
 

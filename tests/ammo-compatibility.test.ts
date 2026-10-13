@@ -141,15 +141,16 @@ describe("checkAmmoCompatWithCategory — category fallback", () => {
 });
 
 describe("SELF_AMMO_WEAPON_CATEGORIES", () => {
-  it("includes Thrown, Chinchompas, Salamander, and Gun", () => {
+  it("includes Thrown, Chinchompas, and Gun", () => {
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Thrown")).toBe(true);
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Chinchompas")).toBe(true);
-    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Salamander")).toBe(true);
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Gun")).toBe(true);
   });
 
   it("does not include ammo-using weapon categories", () => {
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Crossbow")).toBe(false);
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Bow")).toBe(false);
+    // Salamanders wear their tar in the ammo slot (tests/salamander.test.ts).
+    expect(SELF_AMMO_WEAPON_CATEGORIES.has("Salamander")).toBe(false);
   });
 });

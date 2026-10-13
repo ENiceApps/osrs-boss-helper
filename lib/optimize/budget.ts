@@ -24,7 +24,11 @@
 //     bootstrapping from catalog.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { checkAmmoCompatWithCategory, SELF_AMMO_WEAPON_CATEGORIES } from "@/data/ammo-compatibility";
+import {
+  AMMO_FOR_EVERY_STYLE_CATEGORIES,
+  checkAmmoCompatWithCategory,
+  SELF_AMMO_WEAPON_CATEGORIES,
+} from "@/data/ammo-compatibility";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type {
@@ -162,6 +166,7 @@ function loadoutSlotFor(item: ItemCatalogEntry): LoadoutSlotKey {
 function buildSwappedItemIds(
   activeLoadout: LoadoutSet,
   candidate: ItemCatalogEntry,
+  bank: ReadonlySet<number>,
 ): number[] | null {
   const candidateSlot = loadoutSlotFor(candidate);
   const slots: Partial<Record<LoadoutSlotKey, number>> = {};
@@ -183,6 +188,17 @@ function buildSwappedItemIds(
     if (candidate.isTwoHanded) delete slots.shield;
     if (SELF_AMMO_WEAPON_CATEGORIES.has(candidate.category)) {
       delete slots.ammo;
+    } else if (AMMO_FOR_EVERY_STYLE_CATEGORIES.has(candidate.category)) {
+      // A salamander needs its own tar on every style: load it from the bank
+      // (a salamander without it deals 0, so scoreScenario rejects the swap).
+      delete slots.ammo;
+      for (const id of bank) {
+        const it = ITEM_BY_ID.get(id);
+        if (it && loadoutSlotFor(it) === "ammo" && checkAmmoCompatWithCategory(candidate.name, candidate.category, it.name).ok) {
+          slots.ammo = id;
+          break;
+        }
+      }
     } else if (slots.ammo !== undefined) {
       const ammoItem = ITEM_BY_ID.get(slots.ammo);
       if (ammoItem) {
@@ -260,7 +276,7 @@ function findCandidates(
       if (!checkAmmoCompatWithCategory(wi.name, wi.category, item.name).ok) continue;
     }
 
-    const itemIdsAfter = buildSwappedItemIds(activeLoadout, item);
+    const itemIdsAfter = buildSwappedItemIds(activeLoadout, item, effectiveBank);
     if (!itemIdsAfter) continue;
 
     // A weapon candidate brings its OWN legal attack styles — forcing the

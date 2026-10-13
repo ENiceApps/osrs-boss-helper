@@ -7,6 +7,10 @@
 
 export type PoweredStaffFormula = (magicLevel: number) => number;
 
+function salamanderBlaze(blaze: number): PoweredStaffFormula {
+  return (lvl) => Math.trunc((lvl * (blaze + 64) + 320) / 640);
+}
+
 // Item ID → base-max-hit formula. Keys MUST be ids that exist in
 // data/items/catalog.ts (generated from vendor equipment.json), since the bank
 // optimizer and autocast classifier look these weapons up by their catalog id.
@@ -66,4 +70,15 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Accursed sceptre: max(1, trunc(magic / 3 - 6))  (27 at 99)
   [27665, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Charged
   [27662, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 6))], // Uncharged
+
+  // Salamanders' Blaze (magic) style — not staves, but the same shape: a
+  // built-in attack with no spell or element whose max hit scales off Magic.
+  // Upstream getPlayerMaxMagicHit: trunc((magic * (blaze + 64) + 320) / 640),
+  // blaze = 56 / 59 / 77 / 92 / 104. Their magic needs the tar too (lib/loadout
+  // salamanderMissingTar), and they attack at their own 5-tick speed.
+  [10149, salamanderBlaze(56)], // Swamp lizard (19 at 99)
+  [10146, salamanderBlaze(59)], // Orange salamander (19 at 99)
+  [10147, salamanderBlaze(77)], // Red salamander (22 at 99)
+  [10148, salamanderBlaze(92)], // Black salamander (24 at 99)
+  [28834, salamanderBlaze(104)], // Tecu salamander (26 at 99)
 ]);

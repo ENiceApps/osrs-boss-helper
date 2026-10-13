@@ -409,8 +409,10 @@ export function computeSetDps(
     // a monster immune to it (the Kraken, TzKal-Zuk, the Leviathan, …; Zulrah
     // bar a halberd), or a phase that zeroes damage (Doom's shield) — wgloop
     // isImmune. A ×0 phase is immunity, not a scale: it must also zero bolt
-    // procs.
+    // procs. A salamander without its own tar deals 0 on every style too
+    // (upstream isAmmoInvalid zeroes the roll and max hit).
     targetImmune:
+      activeBonuses.salamanderMissingTar ||
       activeBonuses.leafyImmune ||
       activeBonuses.flyingMeleeImmune ||
       activeBonuses.npcMeleeImmune !== null ||
