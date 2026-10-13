@@ -22,22 +22,22 @@ const MODE_OPTIONS: Array<{ mode: BudgetMode; label: string; caption: string }> 
   {
     mode: "own-only",
     label: "Own only",
-    caption: "Best loadout from items already in my bank.",
+    caption: "Only gear I already have.",
   },
   {
     mode: "gp-only",
     label: "With GP",
-    caption: "What should I buy with my wallet GP?",
+    caption: "What to buy with my GP.",
   },
   {
     mode: "sell-to-fund",
     label: "Sell to fund",
-    caption: "Sell stuff from my bank to pay for bigger upgrades.",
+    caption: "Sell spares to pay for upgrades.",
   },
   {
     mode: "budget",
     label: "Budget",
-    caption: "Best loadout for a set amount, ignoring my bank.",
+    caption: "Best setup for a GP amount, no bank.",
   },
 ];
 
@@ -45,7 +45,7 @@ const MODE_OPTIONS: Array<{ mode: BudgetMode; label: string; caption: string }> 
 const WILDY_RISK_OPTION: { mode: BudgetMode; label: string; caption: string } = {
   mode: "wildy-risk",
   label: "Risk it (Wilderness)",
-  caption: "Best loadout worth no more than the GP I'll risk to PKers.",
+  caption: "Best setup worth no more than I'll risk.",
 };
 
 /**
@@ -108,9 +108,6 @@ export function SetupPanel({
 
       {children && <div className="space-y-1">{children}</div>}
 
-      <p className="text-caption text-osrs-muted italic">
-        Changes apply instantly. No need to save.
-      </p>
     </div>
   );
 }

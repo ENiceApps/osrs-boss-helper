@@ -97,9 +97,8 @@ export function HybridPanel({
   return (
     <CollapsibleSection title="Hybrid armour">
       <p className="text-caption text-osrs-muted mb-3 max-w-2xl">
-        For multi-style bosses. Pick the styles you&apos;ll use and how many gear slots
-        you&apos;re willing to switch. Fewer switches share more armour and are easier to play.
-        More switches get each style closer to its best gear. The weapon always switches.
+        For multi-style bosses. Pick your styles and how many slots you&apos;ll switch.
+        The weapon always switches.
       </p>
 
       {/* Controls */}
@@ -228,7 +227,7 @@ function HybridResult({
         </span>
         {result.switchCount < result.switchBudget && (
           <span className="text-caption text-osrs-muted">
-            (only {result.switchCount} needed, more wouldn&apos;t help)
+            ({result.switchCount} is enough)
           </span>
         )}
       </div>

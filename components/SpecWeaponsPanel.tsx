@@ -46,9 +46,6 @@ export function SpecWeaponsPanel({ slug, mapping, ownedItemIds, weaponItemId }: 
 
   return (
     <CollapsibleSection title="Recommended spec weapons">
-      <p className="text-caption text-osrs-muted mb-3">
-        Spec weapons that are worth bringing to this fight.
-      </p>
       <ul className="space-y-2">
         {recs.map((rec) => {
           const weapon = findSpecWeapon(rec.specWeaponId);

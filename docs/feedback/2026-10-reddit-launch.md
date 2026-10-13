@@ -24,7 +24,7 @@ It said "just google OSRS Boss Helper" instead of linking. It was framed as a da
 
 1. **DPS accuracy claim.** newstarburst (top comment, +51): "actually calcs all of its DPS wrong". No specific case given. Park_BADger: "looks to be pulling wrong data sometimes". → An oracle check against the wiki engine was run in response (see the end of this file).
 2. **Bug: Wilderness champion amulet** showed up in a recommendation (ltsMeSam). ENice replied that he'd fix it.
-3. **Too much AI explainer text / visual bloat** (Copius, constructive). Do a cleanup pass.
+3. **Too much AI explainer text / visual bloat** (Copius, constructive). Do a cleanup pass. **Done 2026-10-13:** the boss page helper lines were cut or shortened (setup mode captions, "changes apply instantly", the gear-list and spec-weapon blurbs, hybrid and trip notes). The About and Bank pages were left as they are (ENice's own voice, and a step-by-step how-to).
 4. **Security and API-call checks** (Copius). Don't hammer the wiki or price APIs. "Claude, hammer the wiki APIs a little more" (Pretentious-Fuck).
 5. **Bank import:** people expect the Bank Memory plugin's text export (Beretot: GearScape already accepts it, "cleaner than a dedicated plugin"). This has since shipped as a Bank Memory paste box.
 6. **Unanswered question** (Imallskillzy): where do the DPS numbers come from (wiki calc, an Orion fork, the DPS spreadsheet)? State this clearly on the site.

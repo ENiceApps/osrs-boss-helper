@@ -259,8 +259,7 @@ export function LoadoutPanel<TabId extends string>({
       )}
       {connected && set && (
         <p className="text-caption text-osrs-muted mb-3">
-          Hover a slot to see why it was picked and your next best options.
-          Click to swap items.
+          Hover a slot to see why. Click to swap.
         </p>
       )}
 
