@@ -6,9 +6,10 @@ Cross-project rules and lessons live in **`..\MEMORY.md`** (the Projects root �
 sessions started anywhere under `Projects\` load it automatically via the root
 `CLAUDE.md`'s `@MEMORY.md` import). It holds the hard rules that apply here too:
 verify prior art before building or affirming a "new" feature (the rule this
-project taught — see GearScape/Bank Memory in that file), **push = Vercel deploy
-so never push without ENice's go-ahead** (and the RuneLite plugin release goes
-even further — see `plugin/HUB_PENDING.md`), nothing ships until verified on
+project taught — see GearScape/Bank Memory in that file), **push = Vercel
+deploy: push on your own once work is done, verified and committed — don't wait
+for ENice to say "push it"** (the RuneLite plugin release is separate and still
+needs his go-ahead — see `plugin/HUB_PENDING.md`), nothing ships until verified on
 ENice's phone, and money decisions are ENice's alone. It also carries machine-wide
 dev gotchas (the Turbopack `.next\dev` panic fix lives there now) and each
 project's current status. **When a lesson learned in this project applies
