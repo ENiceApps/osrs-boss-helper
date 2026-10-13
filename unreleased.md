@@ -135,3 +135,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:52 UTC · pushed by ENiceApps
 
 - cdb2c29 docs(plugin): Hub PR #18481 repointed to b071f3a (panel polish)
+
+## 2026-10-13 22:47 UTC · pushed by ENiceApps
+
+- 3e1ad8a docs(plugin): record 1.2 as shipped to the Hub (PR #18481, b071f3a)
