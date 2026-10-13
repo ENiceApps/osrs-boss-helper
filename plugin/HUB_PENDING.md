@@ -11,8 +11,18 @@ on 2026-09-03).
 ## Unreleased changes
 
 **In flight (2026-10-13):** submitted as [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481),
-pinning standalone commit `d23567dbfdf705763b5e9db36565187a6ac6c9fe` (plugin 1.2).
+now pinning standalone commit `6878eb906e40fc00c6f975f27a135470ae4bebc7` (plugin 1.2;
+repointed the same day from `d23567d` to pick up the README rewrite below).
 Awaiting review/merge.
+
+- **Player-facing README + description** (2026-10-13) — the Hub page
+  (`runelite.net/plugin-hub/show/boss-helper-bank-sync`) renders the standalone
+  repo's README at the pinned commit, so this ships with the Hub PR. Rewritten
+  in ENice's voice: one-line opener, panel screenshot, 4 setup steps, the file
+  option, a short "good to know" list, dev notes last. Screenshots live in
+  `plugin/docs/` (PNG only: the Hub turns `.gif` images into plain links).
+  `docs/panel.png` is an offscreen Swing render of `BankSyncPanel` using
+  RuneLite's look and feel; re-render it if the panel's buttons change.
 
 - **Copy my bank as text** (2026-10-12) — the sidebar icon now opens a panel
   instead of going straight to the website. Its **Copy my bank** button puts
