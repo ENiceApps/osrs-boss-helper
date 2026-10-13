@@ -745,6 +745,17 @@ const BLACK_SALAMANDER = 10148;
 const HARRALANDER_TAR = 10145;
 const TECU_SALAMANDER = 28834;
 const IRIT_TAR = 28837;
+const DINHS_BULWARK = 21015;
+const DINHS_BLAZING_BULWARK = 28682;
+
+/**
+ * Tank shell for the bulwark: Justiciar faceguard / chestguard / legguards,
+ * Infernal cape, Amulet of fury, Barrows gloves, Guardian boots, Ring of
+ * suffering (i).
+ */
+function bulwarkTank(weapon: number): number[] {
+  return [weapon, 22326, 22327, 22328, 21295, FURY, 7462, 21733, 19710];
+}
 
 /**
  * Weapon categories that had no style mapping (so the optimizer skipped them):
@@ -780,6 +791,15 @@ export function weaponCategoryCombos(): CanonicalCombo[] {
       [BLACK_SALAMANDER, HARRALANDER_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
     orderingCombo("cat-tecu-salamander-blaze", zilyana,
       [TECU_SALAMANDER, IRIT_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
+    // Dinh's bulwark: strength += max(0, trunc((stab+slash+crush+ranged def
+    // - 800) / 12) - 38). Bare (472 def → +0), the melee shell (1458 → +16)
+    // and a Justiciar tank set (1980 → +60), on both bulwark ids.
+    orderingCombo("cat-dinhs-bulwark-bare", graardor,
+      [DINHS_BULWARK, TORTURE, 22981], "crush", "accurate"),
+    orderingCombo("cat-dinhs-bulwark-melee-shell", graardor, melee(DINHS_BULWARK), "crush", "accurate"),
+    orderingCombo("cat-dinhs-bulwark-justiciar", graardor, bulwarkTank(DINHS_BULWARK), "crush", "accurate"),
+    orderingCombo("cat-dinhs-blazing-bulwark-justiciar", graardor,
+      bulwarkTank(DINHS_BLAZING_BULWARK), "crush", "accurate"),
   ];
 }
 

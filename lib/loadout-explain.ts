@@ -8,7 +8,12 @@ import { computeSetDps } from "@/lib/recommend";
 import { applyCombatBoost } from "@/lib/dps/boost";
 import { describeBoltProc, resolveBoltProc } from "@/lib/dps/bolts";
 import { twistedBowBonusPct, twistedBowMagic } from "@/lib/dps/twisted-bow";
-import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import {
+  bulwarkDefence,
+  bulwarkStrengthBonus,
+  rangedDamageUsesMeleeStrength,
+  strengthScalesWithDefence,
+} from "@/data/items/special-strength";
 import type { TargetActiveBonuses } from "@/lib/loadout";
 import { BROAD_AMMO_IDS } from "@/data/items/leaf-bladed";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -95,6 +100,10 @@ function buildBonusLine(item: ItemCatalogEntry, set: LoadoutSet): string {
   switch (set.style) {
     case "melee":
       if (item.str !== 0) parts.push(`${fmtSigned(item.str)} str`);
+      // Dinh's bulwark turns defence into strength (every 12 past 800 → +1 str).
+      if (strengthScalesWithDefence(set.slots.weapon?.itemId) && bulwarkDefence(item) !== 0) {
+        parts.push(`${fmtSigned(bulwarkDefence(item))} defence (bulwark str)`);
+      }
       break;
     case "ranged":
       // Eclipse atlatl scales ranged damage off MELEE strength.
@@ -132,6 +141,17 @@ function buildReasons(
     reasons.push(
       `${set.attackSpeedTicks}-tick ${set.style} weapon — every other slot is picked around it`,
     );
+    const weaponId = set.slots.weapon?.itemId;
+    if (set.style === "melee" && strengthScalesWithDefence(weaponId)) {
+      let defenceSum = 0;
+      for (const ref of Object.values(set.slots)) {
+        const it = ref ? findCatalogItem(ref.itemId) : undefined;
+        if (it) defenceSum += bulwarkDefence(it);
+      }
+      reasons.push(
+        `+${bulwarkStrengthBonus(weaponId, defenceSum)} str from your ${defenceSum} total defence (stab + slash + crush + ranged)`,
+      );
+    }
     if (cb?.dragonHunterCrossbow) reasons.push("+30% accuracy / +25% damage vs this dragon");
     if (cb?.dragonHunterLance) reasons.push("+20% accuracy & damage vs this dragon");
     if (cb?.dragonHunterWand) reasons.push("+75% accuracy / +40% damage vs this dragon");

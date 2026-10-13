@@ -6,7 +6,11 @@
 
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
-import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import {
+  bulwarkDefence,
+  bulwarkStrengthBonus,
+  rangedDamageUsesMeleeStrength,
+} from "@/data/items/special-strength";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { AMMO_FOR_EVERY_STYLE_CATEGORIES, checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
@@ -305,6 +309,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   let rngStr = 0;
   let magStr = 0;
   let prayerBonus = 0;
+  let defenceSum = 0; // Dinh's bulwark scales its strength off this
   let attackSpeedTicks = 0;
   const computedSlots: LoadoutSet["slots"] = {};
   for (const { item, slot } of resolved) {
@@ -319,8 +324,11 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     rngStr += item.rangedStr;
     magStr += item.magicStr;
     prayerBonus += item.prayer;
+    defenceSum += bulwarkDefence(item);
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
+  // Dinh's bulwark: melee strength from total defence (0 for other weapons).
+  melStr += bulwarkStrengthBonus(weapon.id, defenceSum);
 
   // Weapon-internal ammo (blowpipe dart). The dart lives inside the weapon
   // and is NOT in the slot list — add its rangedStr separately so DPS reflects

@@ -13,7 +13,7 @@
 // GP, and we keep the best-scoring loadout whose total cost ≤ budget.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import { rangedDamageUsesMeleeStrength, strengthScalesWithDefence } from "@/data/items/special-strength";
 import {
   BONUS_TRIGGER_VARIANTS,
   ELEMENTAL_AMULET_KEYS,
@@ -213,7 +213,9 @@ function budgetGreedyFill(
 ): { ids: number[]; internalAmmoId?: number } {
   const priceOf = (it: ItemCatalogEntry) => priceLookup(it.id) ?? Infinity;
   const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
-  const score = (it: ItemCatalogEntry) => itemScore(it, ws.attackType, ws.combatStyle, meleeStrForRanged);
+  const strFromDefence = strengthScalesWithDefence(ws.weapon.id);
+  const score = (it: ItemCatalogEntry) =>
+    itemScore(it, ws.attackType, ws.combatStyle, meleeStrForRanged, strFromDefence);
   const ids: number[] = [ws.weapon.id];
   let remaining = budget;
 
@@ -549,6 +551,14 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     for (const style of STYLES) {
       const at = attackTypeForStyle(style);
       const ranked = [...pool].sort((a, b) => itemScore(b, at, style) - itemScore(a, at, style));
+      for (const it of ranked.slice(0, PER_SLOT)) pseudoBank.add(it.id);
+    }
+    // A kept Dinh's bulwark wants tank gear (defence → strength), which the
+    // plain melee ranking above never reaches.
+    if ([...keptWeaponIds].some(strengthScalesWithDefence)) {
+      const ranked = [...pool].sort(
+        (a, b) => itemScore(b, "crush", "melee", false, true) - itemScore(a, "crush", "melee", false, true),
+      );
       for (const it of ranked.slice(0, PER_SLOT)) pseudoBank.add(it.id);
     }
   }

@@ -4,7 +4,11 @@
 // a set came from codegen or live-edit — it gets a normal LoadoutSet shape.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import {
+  bulwarkDefence,
+  bulwarkStrengthBonus,
+  rangedDamageUsesMeleeStrength,
+} from "@/data/items/special-strength";
 import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
@@ -130,6 +134,7 @@ export function applyOverrides(
   let rngStr = 0;
   let magStr = 0;
   let prayerBonus = 0;
+  let defenceSum = 0; // Dinh's bulwark scales its strength off this
   let attackSpeedTicks = 0;
   const slotKeys: LoadoutSlotKey[] = [
     "head", "cape", "neck", "ammo", "weapon", "body",
@@ -151,8 +156,11 @@ export function applyOverrides(
     rngStr += item.rangedStr;
     magStr += item.magicStr;
     prayerBonus += item.prayer;
+    defenceSum += bulwarkDefence(item);
     if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
   }
+  // Dinh's bulwark: melee strength from total defence (0 for other weapons).
+  melStr += bulwarkStrengthBonus(resolved.weapon?.itemId, defenceSum);
 
   // Weapon-internal ammo (blowpipe dart). Not in any slot, so the loop above
   // won't have picked it up — add its rangedStr back here so the totals stay

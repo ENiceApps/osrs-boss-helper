@@ -212,11 +212,15 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Flare", attackType: "ranged", choice: "rapid", defensive: false },
     { name: "Blaze", attackType: "magic", choice: "defensive", defensive: false },
   ],
-  // Deliberately unmapped (never recommended): Bulwark (Dinh's: its strength
-  // bonus is derived from total defence, not modelled; a tank weapon anyway),
-  // Multi-Melee (Infernal tecpatl, a Leagues item in excluded-items.ts),
-  // Banner / Gun / Blaster / Unarmed / "" / "blunt" (cosmetic, quest, broken
-  // or non-weapon items).
+  Bulwark: [
+    // Dinh's bulwark (wgloop getCombatStylesForCategory). Pummel is its only
+    // attack; Block has no attack type (it can't attack), so it's left out.
+    // Its strength bonus grows with total defence (bulwarkStrengthBonus).
+    { name: "Pummel", attackType: "crush", choice: "accurate", defensive: false },
+  ],
+  // Deliberately unmapped (never recommended): Multi-Melee (Infernal tecpatl,
+  // a Leagues item in excluded-items.ts), Banner / Gun / Blaster / Unarmed /
+  // "" / "blunt" (cosmetic, quest, broken or non-weapon items).
 };
 
 /**

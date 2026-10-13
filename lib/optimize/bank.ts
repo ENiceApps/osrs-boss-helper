@@ -13,7 +13,11 @@
 // few dozen candidates per boss, scored in <100ms.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
-import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import {
+  bulwarkDefence,
+  rangedDamageUsesMeleeStrength,
+  strengthScalesWithDefence,
+} from "@/data/items/special-strength";
 import {
   BONUS_TRIGGER_VARIANTS,
   ELEMENTAL_AMULET_KEYS,
@@ -155,10 +159,17 @@ export function itemScore(
   attackType: WeaponAttackType,
   style: CombatStyle,
   meleeStrForRanged = false,
+  /**
+   * The weapon is Dinh's bulwark: every 12 points of (non-magic) defence is
+   * +1 strength once the total passes 800 (special-strength.ts). The proxy
+   * takes that marginal rate everywhere; scoreScenario applies the threshold.
+   */
+  strengthFromDefence = false,
 ): number {
-  const str = style === "ranged" && meleeStrForRanged
+  let str = style === "ranged" && meleeStrForRanged
     ? item.str
     : strengthFor(item, style);
+  if (style === "melee" && strengthFromDefence) str += bulwarkDefence(item) / 12;
   return 2 * str + offensiveFor(item, attackType);
 }
 
@@ -258,6 +269,7 @@ function greedyBuild(
 ): { ids: number[]; internalAmmoId?: number } {
   const ids: number[] = [ws.weapon.id];
   const meleeStrForRanged = rangedDamageUsesMeleeStrength(ws.weapon.id);
+  const strFromDefence = strengthScalesWithDefence(ws.weapon.id);
 
   // Blowpipe — find the best dart in the bank, capped at the blowpipe's dart
   // tier (Hunter's Guild pipes can't load every dart). Darts have
@@ -310,11 +322,11 @@ function greedyBuild(
     // exact tie, prefer higher defence — a strictly-better, deterministic pick
     // that costs no DPS (see defensiveSum).
     let best = pool[0];
-    let bestScore = itemScore(best, ws.attackType, ws.combatStyle, meleeStrForRanged);
+    let bestScore = itemScore(best, ws.attackType, ws.combatStyle, meleeStrForRanged, strFromDefence);
     let bestDef = defensiveSum(best);
     for (let i = 1; i < pool.length; i++) {
       const it = pool[i];
-      const s = itemScore(it, ws.attackType, ws.combatStyle, meleeStrForRanged);
+      const s = itemScore(it, ws.attackType, ws.combatStyle, meleeStrForRanged, strFromDefence);
       if (s > bestScore) {
         best = it; bestScore = s; bestDef = defensiveSum(it);
       } else if (s === bestScore) {
