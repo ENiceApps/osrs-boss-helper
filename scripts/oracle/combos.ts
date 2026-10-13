@@ -605,6 +605,13 @@ const OSMUMTENS_FANG = 26219;
 const ABYSSAL_WHIP = 4151;
 const DIAMOND_DRAGON_BOLTS_E = 21946;
 const DARK_BOW = 11235;
+const ELDER_MAUL = 21003;
+const TZHAAR_KET_OM = 6528;
+const BERSERKER_NECKLACE = 11128;
+const HEAVY_BALLISTA = 19481;
+const DRAGON_JAVELIN = 19484;
+const KODAI_WAND = 21006;
+const TWINFLAME_STAFF = 30634;
 
 /**
  * The phase damage modifiers (MechanicPhase.damageModifier): the Tormented
@@ -622,6 +629,9 @@ const DARK_BOW = 11235;
 export function phaseDamageCombos(): CanonicalCombo[] {
   const phase = (mechanicId: string, wikiPhase: string) => ({ bossPhase: { mechanicId, wikiPhase } });
   const shielded = phase("shielded", "Shielded");
+  const unshielded = { ...phase("unshielded", "Unshielded"), exactRoll: false };
+  const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
+  const fireWave = { baseSpellMaxHit: 20, spellElement: "fire" as const, spellName: "Fire Wave" };
   const transition = phase("transition", "Transition");
   const pillar = phase("with-pillar", "With Pillar");
   const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
@@ -647,6 +657,37 @@ export function phaseDamageCombos(): CanonicalCombo[] {
     orderingCombo("td-shielded-tumekens-shadow", td, shadow, "magic", "accurate", shielded),
     orderingCombo("td-shielded-emberlight", td, melee(EMBERLIGHT), "slash", "aggressive", shielded),
     orderingCombo("td-shielded-abyssal-whip", td, melee(ABYSSAL_WHIP), "slash", "controlled", shielded),
+
+    // ── Tormented Demon: Unshielded — always hits; crush / a cast spell /
+    // heavy ranged add max(0, speed² − 16) per accurate hitsplat and attack a
+    // tick sooner. Accuracy is 1, so no attack roll to recover (exactRoll off).
+    // Fast (4-tick: +0, one tick sooner) and slow (5-7 ticks: +9 / +20 / +33)
+    // weapons per style, the bolt / multi-hit / Twinflame / Berserker branches,
+    // and a stab, a bow and a powered staff that only get the accuracy.
+    // (No chinchompa: the app has no Chinchompas style mapping yet.)
+    orderingCombo("td-unshielded-rapier", td, melee(GHRAZI_RAPIER), "stab", "aggressive", unshielded),
+    orderingCombo("td-unshielded-bludgeon", td, melee(ABYSSAL_BLUDGEON), "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-elder-maul", td, melee(ELDER_MAUL), "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-dharoks", td,
+      [...DHAROKS_SET, FURY, INFERNAL_CAPE, 22981, 13239, 11773], "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-ket-om-berserker", td,
+      meleeGear(TZHAAR_KET_OM, FACEGUARD, BERSERKER_NECKLACE), "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-torags-hammers", td, melee(TORAGS_HAMMERS), "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-scythe-crush", td, melee(SCYTHE_OF_VITUR), "crush", "aggressive", unshielded),
+    orderingCombo("td-unshielded-tbow", td, ranged(TWISTED_BOW, DRAGON_ARROW), "ranged", "rapid", unshielded),
+    orderingCombo("td-unshielded-zcb-diamond-rapid", td,
+      ranged(ZARYTE_CROSSBOW, DIAMOND_DRAGON_BOLTS_E), "ranged", "rapid", { ...unshielded, ...bolts }),
+    orderingCombo("td-unshielded-zcb-diamond-accurate", td,
+      ranged(ZARYTE_CROSSBOW, DIAMOND_DRAGON_BOLTS_E), "ranged", "accurate", { ...unshielded, ...bolts }),
+    orderingCombo("td-unshielded-zcb-ruby-accurate", td,
+      ranged(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "accurate", { ...unshielded, ...bolts }),
+    orderingCombo("td-unshielded-heavy-ballista", td,
+      ranged(HEAVY_BALLISTA, DRAGON_JAVELIN), "ranged", "rapid", unshielded),
+    orderingCombo("td-unshielded-tumekens-shadow", td, shadow, "magic", "accurate", unshielded),
+    orderingCombo("td-unshielded-kodai-fire-surge", td,
+      [KODAI_WAND, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", { ...unshielded, ...fireSurge }),
+    orderingCombo("td-unshielded-twinflame-fire-wave", td,
+      [TWINFLAME_STAFF, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", { ...unshielded, ...fireWave }),
 
     // ── Abyssal Sire: transition ×1/2 ──
     orderingCombo("sire-transition-rapier", sire, melee(GHRAZI_RAPIER), "stab", "aggressive", transition),

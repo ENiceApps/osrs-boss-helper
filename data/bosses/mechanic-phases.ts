@@ -57,6 +57,14 @@ export interface MechanicPhase {
   /** Player attacks cannot miss during this phase (Doom burrowing/shielded). */
   alwaysHits?: boolean;
   /**
+   * The Tormented Demon with its shield down (wgloop tdUnshieldedBonusApplies):
+   * crush melee, a cast spell or heavy ranged (crossbows, chinchompas) adds
+   * max(0, speed² − 16) to every accurate hitsplat and attacks a tick sooner.
+   * The style gate is resolved in computeSetDps; the engine side is
+   * `DpsScenario.speedScaledHitBonus`.
+   */
+  speedScaledHitBonus?: boolean;
+  /**
    * Raised minimum hit as a fraction of the player's max hit (Mad Angel's
    * reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1] i.e.
    * every hit is the max). Pair with alwaysHits — wgloop's
@@ -115,7 +123,11 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
     {
       id: "unshielded",
       label: "Unshielded",
-      note: "Shield down (after its bombardment): full damage from everything.",
+      note: "Shield down (after its bombardment): every attack hits, full damage, and slow crush, spell or heavy ranged attacks hit harder and a tick sooner.",
+      // wgloop: accuracy forced to 1 for any style (PLAYER_ACCURACY_TD), plus
+      // tdUnshieldedBonusApplies (BaseCalc L683 @ 89c3e25).
+      alwaysHits: true,
+      speedScaledHitBonus: true,
       wikiPhase: "Unshielded",
     },
   ],

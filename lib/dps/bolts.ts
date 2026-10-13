@@ -204,6 +204,12 @@ export interface BoltHitsplatTransforms {
    * later transform (an opal / pearl / dragonstone bonus shifts the range).
    */
   meanRoll: (lo: number, hi: number) => number;
+  /**
+   * The same for a diamond / onyx proc's fresh roll over 0..effectMax, when
+   * it differs from `meanRoll`: the unshielded Tormented Demon's flat bonus
+   * rides on the normal hit only. Defaults to `meanRoll`.
+   */
+  meanProcRoll?: (lo: number, hi: number) => number;
   /** An INACCURATE hitsplat of `damage`: an opal / pearl bonus on a miss. */
   miss: (damage: number) => number;
   /** Ruby's proc hitsplat, which upstream adds after the Corp halving. */
@@ -241,7 +247,7 @@ export function transformedBoltDamagePerAttack(
     }
     case "scaledMax": {
       const effectMax = Math.trunc((rollMax * spec.effectMaxPercent) / 100);
-      const proc = t.meanRoll(0, effectMax);
+      const proc = (t.meanProcRoll ?? t.meanRoll)(0, effectMax);
       if (spec.accurateOnly) {
         return accuracy * (spec.chance * proc + (1 - spec.chance) * hit);
       }
@@ -263,13 +269,18 @@ export function transformedBoltDamagePerAttack(
  *   diamond                      c·E0 + (1−c)·acc·P0   (proc hits are accurate rolls)
  *   onyx                         acc·(c·E0 + (1−c)·P0)
  *   ruby                         (1−c)·acc·P0   (fires after the raise, replacing it)
+ *
+ * `procsOnly`: no normal hit lands on 0 (the unshielded Tormented Demon's flat
+ * bonus lifts every one first), so only a diamond / onyx proc's own roll is
+ * left: P0 = 0 above.
  */
 export function boltAccurateZeroes(
   accuracy: number,
   rollMax: number,
   spec: BoltProcSpec,
+  procsOnly = false,
 ): number {
-  const p0 = 1 / (rollMax + 1);
+  const p0 = procsOnly ? 0 : 1 / (rollMax + 1);
   switch (spec.kind) {
     case "flatBonus":
       return accuracy * (spec.bonusDamage > 0 ? 1 - spec.chance : 1) * p0;
