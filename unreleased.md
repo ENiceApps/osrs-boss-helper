@@ -90,3 +90,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:34 UTC · pushed by ENiceApps
 
 - 70979d8 copy(updates): show when each of ENice's notes was posted
+
+## 2026-10-13 19:35 UTC · pushed by ENiceApps
+
+- e152323 feat(bosses): add a default Bosses category; All shows every monster
