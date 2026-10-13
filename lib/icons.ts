@@ -7,6 +7,13 @@ export function wikiIconUrl(iconFilename: string): string {
   return `https://oldschool.runescape.wiki/images/${encoded}`;
 }
 
+// Self-hosted equipment icon, copied from weirdgloop/osrs-dps-calc by
+// `npm run refresh-vendor-icons`. Exists for every ITEM_CATALOG entry with an
+// upstream image, so the browser never has to ask the wiki for it.
+export function localItemIconUrl(itemId: number): string {
+  return `/icons/items/${itemId}.png`;
+}
+
 // RuneLite's static cache icon for an item id. Keyed by id rather than a
 // filename, so it never goes stale when the wiki renames an image.
 export function runeliteIconUrl(itemId: number): string {

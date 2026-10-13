@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { runeliteIconUrl, wikiIconUrl } from "@/lib/icons";
+import { localItemIconUrl, runeliteIconUrl, wikiIconUrl } from "@/lib/icons";
 import { findCatalogItem } from "@/lib/loadout-edit";
 import type { MappingEntry } from "@/types/osrs";
 
@@ -14,7 +14,7 @@ interface ItemIconProps {
   title?: string;
   /**
    * Set false to suppress the native browser tooltip — `title` still feeds
-   * the fallback icon URL and alt text. Use when a parent renders its own
+   * the alt text. Use when a parent renders its own
    * rich tooltip so the two don't stack.
    */
   nativeTooltip?: boolean;
@@ -27,17 +27,16 @@ interface ItemIconProps {
  *
  * URL sources, tried in order — each one that fails to load falls through
  * to the next:
- *  1. The equipment catalog's `image` — the wiki filename recorded for that
- *     item id, including versioned variants whose file isn't `<name>.png`
- *     (Ahrim's robetop 0, Crystal body (inactive), Calamity chest (l)…).
- *  2. The wiki's GE mapping payload (has .icon = exact filename for every
- *     GE-tradeable item) — covers non-equipment items.
- *  3. The filename constructed from the item's display name (`<name>.png`).
- *     Also handles the brief window before the mapping API call resolves.
- *  4. RuneLite's cache icon, keyed by item id. Always matches the id, so it
- *     catches items whose wiki file was renamed since the catalog was built
- *     (Blue moon chestplate, Karil's leathertop 100…). Last because its
- *     sprites carry inventory padding and look smaller than the wiki's.
+ *  1. Our own copy (public/icons/items/<id>.png), for every equipment-catalog
+ *     item. Vendored from osrs-dps-calc so equipment never touches the wiki.
+ *  2. The wiki's GE mapping payload (.icon = exact filename for every
+ *     GE-tradeable item) — covers non-equipment items like drops. An exact
+ *     /images/ URL is served from the wiki's CDN cache.
+ *  3. RuneLite's cache icon, keyed by item id. Catches anything else.
+ *     Last because its sprites carry inventory padding and look smaller.
+ *
+ * No guessing `<name>.png` on the wiki: a wrong guess is a miss that reaches
+ * the wiki's servers, multiplied by every visitor.
  *
  * Uses plain <img> (not next/image) so object-fit: contain works without
  * a position-relative parent. Pixelated rendering keeps the sharp OSRS
@@ -54,9 +53,8 @@ export function ItemIcon({
   const entry = mapping?.find((m) => m.id === itemId);
   const catalogImage = findCatalogItem(itemId)?.image;
   const candidates = [
-    catalogImage && wikiIconUrl(catalogImage),
+    catalogImage && localItemIconUrl(itemId),
     entry?.icon && wikiIconUrl(entry.icon),
-    title && wikiIconUrl(`${title}.png`),
     runeliteIconUrl(itemId),
   ].filter((u): u is string => !!u);
   // URLs that already errored. A new itemId brings new URLs, so this never

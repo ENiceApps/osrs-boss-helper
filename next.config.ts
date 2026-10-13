@@ -24,7 +24,15 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Vendored item sprites (scripts/refresh-vendor-icons.ts). Not immutable:
+      // a refresh can rewrite <id>.png in place, so cap at a week.
+      {
+        source: "/icons/items/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
+    ];
   },
 };
 

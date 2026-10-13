@@ -10,3 +10,8 @@ fetched from the same repository. Use of this data in any redistribution
 should preserve attribution to the upstream maintainers.
 
 To refresh these files, run `npm run refresh-vendor` from the project root.
+
+The item icons in public/icons/items/ are copied from the same repository's
+cdn/equipment/ folder (renamed to <itemId>.png) by `npm run refresh-vendor-icons`,
+which `npm run refresh-vendor` also runs. The sprites themselves are Jagex game
+assets, as published by the Old School RuneScape Wiki.
