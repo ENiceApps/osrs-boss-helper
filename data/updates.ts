@@ -1,14 +1,20 @@
 // Updates tab data (/updates): dated release notes + the undated roadmap.
 // SINGLE SOURCE OF TRUTH for the app version: CURRENT_VERSION = RELEASES[0].
 //
+// The app is in ALPHA (0.x) — rolled back from 1.0.0 to 0.0.1 on 2026-10-13
+// after the Reddit launch feedback. 1.0.0 is saved for when it's ready.
+//
+// Releases are WEEKLY: every push to main is logged to patch-notes/unreleased.md
+// on the `patch-notes` branch (.github/workflows/patch-notes-log.yml). Thursday
+// mornings a cloud routine drafts the release on a `release/v*` branch and emails
+// ENice; it reaches main only after he approves. See patch-notes/README.md.
+//
 // To release:
-//   1. Pick the bump (highest that applies wins):
-//      - Patch 1.0.x: fixes and small wording/UI tweaks only.
-//      - Minor 1.x.0: anything new a player can use (feature, panel, new
+//   1. Pick the bump (highest that applies wins). While in alpha:
+//      - Patch 0.x.y: fixes and small wording/UI tweaks only.
+//      - Minor 0.x.0: anything new a player can use (feature, panel, new
 //        bosses/gear from a game update, new plugin capability). Reset patch.
-//      - Major x.0.0: players must relearn something or lose something
-//        (removed feature, incompatible share-link/bank-file format,
-//        redesigned main flow). Reset minor + patch.
+//      - 1.0.0 only on ENice's say-so.
 //   2. Add a block at the TOP of RELEASES (version, ISO deploy date, one-line
 //      title, changes). Say what changed for the player, never how.
 //   3. Prune shipped items from PLANNED (keep 4–8, undated).
@@ -56,9 +62,9 @@ export interface PlannedItem {
 
 export const RELEASES: Release[] = [
   {
-    version: "1.0.0",
+    version: "0.0.1",
     date: "2026-10-09",
-    title: "Initial public launch",
+    title: "Alpha release",
     note: [
       "Hello World!!",
       "Thank you for finding OSRSBossHelper.com! I built OSRS Boss Helper for myself, to quickly give me the best DPS possible with what I own in my bank.",
