@@ -118,3 +118,8 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:33 UTC · pushed by ENiceApps
 
 - bbef04e docs(plugin): record in-flight Hub release (PR #18481, standalone d23567d)
+
+## 2026-10-13 20:47 UTC · pushed by ENiceApps
+
+- 593b368 docs(plugin): rewrite the Hub README and description for players
+- 47b76c4 docs(plugin): Hub PR #18481 repointed to 6878eb9 (README rewrite)
