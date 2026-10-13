@@ -4,17 +4,15 @@ Changes to the plugin that are merged here in the monorepo but **not yet
 shipped to the RuneLite Plugin Hub**. We batch these into one Hub PR rather
 than sending the maintainers a PR per tweak.
 
-**Hub currently serves:** standalone-repo commit `e275b7d5a7e42ab8511424c72a74809d17619d23`
-(plugin 1.1, merged via [plugin-hub PR #15936](https://github.com/runelite/plugin-hub/pull/15936)
-on 2026-09-03).
+**Hub currently serves:** standalone-repo commit `b071f3a0d9d9c0e22cfe93df3c81d88d90ecdfac`
+(plugin 1.2, merged via [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481)
+on 2026-10-13).
 
 ## Unreleased changes
 
-**In flight (2026-10-13):** submitted as [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481),
-now pinning standalone commit `b071f3a0d9d9c0e22cfe93df3c81d88d90ecdfac`
-(plugin 1.2; started at `d23567d`, repointed the same day for the README rewrite
-and then the panel polish below).
-Awaiting review/merge.
+_Add future plugin changes above this line as they land._
+
+## Shipped 2026-10-13 (PR #18481, standalone `b071f3a`, plugin 1.2)
 
 - **Panel polish** (2026-10-13, after ENice tested 1.2 in the dev client) — a
   **Copy all** button under the text box re-copies whatever's in it without
@@ -46,9 +44,7 @@ Awaiting review/merge.
 - Website side (same commit): the paste box tells plugin JSON
   from a Bank Memory TSV by the leading `{`. **The /bank page and boss-page
   copy mention the Copy button, so ship this Hub release before (or close to)
-  deploying that copy.**
-
-_Add future plugin changes above this line as they land._
+  deploying that copy.** (Shipped same day, so the two are back in sync.)
 
 ## Shipped 2026-09-03 (PR #15936, standalone `e275b7d`, plugin 1.1)
 
