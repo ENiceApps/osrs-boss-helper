@@ -30783,7 +30783,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "version": "Post-quest",
     "combatLevel": 784,
     "hp": 700,
-    "defenceLevel": 200,
+    "defenceLevel": 215,
     "magicLevel": 215,
     "defenceBonuses": {
       "stab": 215,
@@ -30809,7 +30809,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 12223,
         "combatLevel": 784,
         "hp": 700,
-        "defenceLevel": 200,
+        "defenceLevel": 215,
         "magicLevel": 215,
         "defenceBonuses": {
           "stab": 215,
@@ -30834,7 +30834,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 12223,
         "combatLevel": 1136,
         "hp": 1400,
-        "defenceLevel": 200,
+        "defenceLevel": 268,
         "magicLevel": 215,
         "defenceBonuses": {
           "stab": 215,
@@ -30859,7 +30859,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 12224,
         "combatLevel": 572,
         "hp": 500,
-        "defenceLevel": 200,
+        "defenceLevel": 180,
         "magicLevel": 180,
         "defenceBonuses": {
           "stab": 150,

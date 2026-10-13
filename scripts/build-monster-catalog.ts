@@ -144,11 +144,14 @@ function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMo
 // Always cite the OSRS Wiki as source so future maintainers can verify.
 // ---------------------------------------------------------------------------
 const STAT_OVERRIDES: Record<string, Partial<{ def: number; magic: number }>> = {
-  // Weirdgloop exports def=0 for all Vardorvis versions.
-  // Wiki: https://oldschool.runescape.wiki/w/Vardorvis (Post-quest defence level = 200)
-  "Vardorvis|Post-quest": { def: 200 },
-  "Vardorvis|Awakened":   { def: 200 },
-  "Vardorvis|Quest":      { def: 200 },
+  // Weirdgloop exports def=0 for all Vardorvis versions: his Defence scales
+  // linearly with his HP, from the full-HP value down to 145/181/130 at 0 HP
+  // (wgloop src/lib/scaling/Vardorvis.ts). We use the full-HP value, which is
+  // what the wiki DPS calc shows by default — so "Check my math" agrees.
+  // https://oldschool.runescape.wiki/w/Vardorvis
+  "Vardorvis|Post-quest": { def: 215 },
+  "Vardorvis|Awakened":   { def: 268 },
+  "Vardorvis|Quest":      { def: 180 },
 };
 
 // Fold in hand-authored monsters (brand-new releases not yet in the vendored

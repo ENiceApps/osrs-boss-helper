@@ -16,6 +16,7 @@ import {
   dpsFromHitChance,
   effectiveLevel,
   fangHitChance,
+  conflictionHitChance,
   hitChance,
   landedFloorLift,
   meanTransformedRoll,
@@ -184,6 +185,11 @@ export interface DpsScenario {
    */
   fangEquipped?: boolean;
   /**
+   * Magic-only: Confliction gauntlets with a one-handed weapon. After a miss
+   * the next attack rolls accuracy twice (see `conflictionHitChance`).
+   */
+  conflictionGauntlets?: boolean;
+  /**
    * Osmumten's fang is the weapon (any style): its normal hits roll uniformly
    * over lo..max−lo, lo = trunc(max × 3/20) (wgloop getPlayerMaxMeleeHit). The
    * trim is mean-neutral on its own, but positive flat armour clips that range
@@ -277,8 +283,10 @@ export interface DpsScenario {
    * Per-monster/per-phase damage scale as a [numerator, denominator] factor:
    * [4, 5] for the Tormented Demon's shield, [1, 2] for the Abyssal Sire's
    * transition, [13, 10] for the Hueycoatl's pillar buff, [0, 1] for Doom's
-   * immunity. Applied to the final max hit after every other multiplier,
-   * mirroring wgloop's applyNpcTransforms order. Resolved upstream
+   * immunity. Applied to EACH hitsplat after every other multiplier, the
+   * accurate-zero raise, the damage cap and the style scale, before flat
+   * armour — wgloop's multiplyTransformer in applyNpcTransforms — so every
+   * mean branch takes it per roll (`perHitsplat`). Resolved upstream
    * (computeSetDps) where the target's phase, style gates, and any bypassing
    * weapons (demonbane/abyssal) are known.
    */
@@ -835,22 +843,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     damageCap: scenario.targetDamageCap,
     styleScale: scenario.targetStyleDamageScale,
   };
+  //
+  // The per-phase damage scale (TD shield, Sire transition, Hueycoatl pillar,
+  // Doom immunity) is an NPC transform too — upstream's multiplyTransformer,
+  // after the cap and style scale — so it scales each half of a split weapon
+  // on its own (the Dual macuahuitl's 41 vs the Sire's transition: 20 + 21 →
+  // 10 + 10 = 20, not trunc(41/2)), and the mean branches take it per roll.
   const npcTransforms = hasNpcHitTransforms(npcT);
+  const phaseFactor = scenario.targetDamageFactor;
+  const phaseHit = (h: number): number =>
+    phaseFactor ? scaleHitsplat(h, phaseFactor, scenario.targetDamageMinimum) : h;
   let attackerMax = maxHit;
-  if (scenario.corpDamageHalved || npcTransforms) {
+  if (scenario.corpDamageHalved || npcTransforms || phaseFactor) {
     const halve = (m: number): number => (scenario.corpDamageHalved ? Math.trunc(m / 2) : m);
     const profile = scenario.hitProfile;
     const splats = profile && isSplitProfile(profile) ? hitsplatMaxima(profile, maxHit) : [maxHit];
     attackerMax = splats.reduce((sum, m) => sum + halve(m), 0);
-    maxHit = splats.reduce((sum, m) => sum + npcHitMax(halve(m), npcT), 0);
-  }
-
-  // Per-monster/per-phase damage scale (TD shield, Sire transition, Hueycoatl
-  // pillar, Doom immunity). Applied after every damage multiplier so it scales
-  // the final mean, and before the bolt/multi-hit expected-damage calc.
-  if (scenario.targetDamageFactor) {
-    const [n, d] = scenario.targetDamageFactor;
-    maxHit = Math.trunc((maxHit * n) / d);
+    maxHit = splats.reduce((sum, m) => sum + phaseHit(npcHitMax(halve(m), npcT)), 0);
   }
 
   // First-hitsplat scale (the Maggot King's melee punish). A single hit
@@ -900,7 +909,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       ? 1
       : scenario.fangEquipped
         ? fangHitChance(attackRoll, def)
-        : hitChance(attackRoll, def);
+        : scenario.conflictionGauntlets
+          ? conflictionHitChance(attackRoll, def)
+          : hitChance(attackRoll, def);
   // `accuracy` is the first hitsplat's (and a single hit's) chance to land;
   // `laterHitAccuracy` the rest of a multi-hit weapon's — they differ only in
   // the Maggot King's crush punish (see firstHitDefenceRollFactor), where
@@ -936,10 +947,6 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // scale (the Kraken's ranged ÷7), the phase damage factor and, last, flat
   // armour (accurate hitsplats only). The cap rerolls a big hit, so `npcHit`
   // is the MEAN of what lands.
-  const phaseHit = (h: number): number =>
-    scenario.targetDamageFactor
-      ? scaleHitsplat(h, scenario.targetDamageFactor, scenario.targetDamageMinimum)
-      : h;
   const npcHit = (h: number, accurate = true): number =>
     npcHitMean(h, npcT, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
   const afterRaise = (h: number, minimum = 0): number => {
@@ -959,13 +966,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // 10 lands trunc(19/2) = 9, not 5 + 9). The NPC transforms likewise work
   // per roll: Zulrah turns each roll over 50 into 47.5 on average, the Kraken
   // takes max(1, trunc(d/7)) of each ranged roll — no closed form on the
-  // transformed max (50, or 4 for a blowpipe's 29) gives either. So vs any of
-  // them, every mean branch below rolls from the pre-transform max and takes
-  // each landed hitsplat through `afterRaise` (`transformedMean`), in place of
-  // the closed forms on the transformed max. A Twinflame double cast does its
-  // own hitsplats (twinflameDamage).
+  // transformed max (50, or 4 for a blowpipe's 29) gives either. A phase
+  // factor scales each roll too: the mean of trunc(r × 4/5) over 0..60 is
+  // ~23.6, not trunc(60 × 4/5)/2 = 24, and a ruby proc meets the TD shield
+  // and the Sire's transition like any hitsplat. So vs any of them, every
+  // mean branch below rolls from the pre-transform max and takes each landed
+  // hitsplat through `afterRaise` (`transformedMean`), in place of the closed
+  // forms on the transformed max. A Twinflame double cast does its own
+  // hitsplats (twinflameDamage).
   const perHitsplat =
-    (scenario.corpDamageHalved === true || npcTransforms || punishSingle || dharokFactor !== undefined ||
+    (scenario.corpDamageHalved === true ||
+      npcTransforms ||
+      phaseFactor !== undefined ||
+      punishSingle ||
+      dharokFactor !== undefined ||
       guardianFactor !== undefined) &&
     !twinflame;
   const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>

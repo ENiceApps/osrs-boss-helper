@@ -1,5 +1,6 @@
 // Items excluded from the generated catalog because they are NOT obtainable in
-// the main game — they exist only inside a time-limited Leagues game mode.
+// the main game — mostly ones that exist only inside a time-limited Leagues
+// game mode, plus one-off event items.
 // `build-item-catalog.ts` drops every equipment entry whose name appears here
 // (all version/durability variants of the name are removed).
 //
@@ -40,6 +41,18 @@ export const EXCLUDED_ITEM_NAMES: ReadonlySet<string> = new Set<string>([
   "Echo ahrim's robetop",
   "Echo ahrim's robeskirt",
   "Echo ahrim's staff",
+  // One-off event item, not obtainable: worn by the team champions in the 2017
+  // Wilderness Wars event. +100 every attack/defence, +50 str, +50 prayer, so it
+  // topped every neck slot (reported on Reddit, 2026-10).
+  // https://oldschool.runescape.wiki/w/Wilderness_champion_amulet
+  "Wilderness champion amulet",
+  // Barbarian Assault Attacker arrows: handed out by the in-game machine and
+  // only usable inside BA (Bullet arrow is +125 ranged strength).
+  // https://oldschool.runescape.wiki/w/Bullet_arrow
+  "Barbed arrow",
+  "Blunt arrow",
+  "Bullet arrow",
+  "Field arrow",
 ]);
 
 // Name PATTERNS excluded from the catalog (in addition to EXCLUDED_ITEM_NAMES).
@@ -73,4 +86,11 @@ export const EXCLUDED_NAME_PATTERNS: readonly RegExp[] = [
   /\(deadman mode\)/i,
   /\(bh\)/i,
   /\b(?:morrigan's|statius's|vesta's|zuriel's)\b/i,
+  // Emir's Arena (PvP Arena) hospital gear: taken from the equipment chests
+  // for a match only. The Calamity set (Koriff's coif: +18 ranged, above a
+  // Masori mask (f)) and the "(wrapped)" gloves.
+  // https://oldschool.runescape.wiki/w/Koriff%27s_coif
+  /\bcalamity\b/i,
+  /^Koriff's /i,
+  /\(wrapped\)/i,
 ];

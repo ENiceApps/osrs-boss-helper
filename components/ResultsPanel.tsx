@@ -152,6 +152,7 @@ export function buildActiveFlags(
     );
   }
   if (activeBonuses?.fangEquipped) flags.push("Fang 2× accuracy roll");
+  if (activeBonuses?.conflictionGauntlets) flags.push("Confliction 2× roll after a miss");
   return flags;
 }
 

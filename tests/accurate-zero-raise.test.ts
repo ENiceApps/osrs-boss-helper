@@ -100,21 +100,25 @@ describe("calculateDps — single hit", () => {
     expect(r.dps).toBeCloseTo((r.accuracy * 25) / 11 / SECONDS, 12);
   });
 
-  it("TD shield (×4/5, minimum 1) keeps the raised 1: M = 10 → 8/2 + 1/11", () => {
+  // The phase factors scale each roll: Σ over r = 0..10 of the factor
+  // applied to max(r, 1), over 11.
+  it("TD shield (×4/5, minimum 1) keeps the raised 1: M = 10 → 42/11", () => {
+    // 1 1 1 2 3 4 4 5 6 7 8: a rolled 1 keeps its minimum, the raised 0 too.
     const r = calculateDps(cast(10, { targetDamageFactor: [4, 5], targetDamageMinimum: 1 }));
     expect(r.maxHit).toBe(8);
-    expect(r.dps).toBeCloseTo((r.accuracy * (4 + 1 / 11)) / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((r.accuracy * 42) / 11 / SECONDS, 12);
   });
 
-  it("Sire transition (÷2, no minimum) zeroes it: M = 10 → 5/2", () => {
+  it("Sire transition (÷2, no minimum) zeroes it: M = 10 → 25/11", () => {
     const r = calculateDps(cast(10, { targetDamageFactor: [1, 2] }));
-    expect(r.dps).toBeCloseTo((r.accuracy * 5) / 2 / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((r.accuracy * 25) / 11 / SECONDS, 12);
   });
 
-  it("Hueycoatl pillar (×13/10) keeps it: M = 10 → 13/2 + 1/11", () => {
+  it("Hueycoatl pillar (×13/10) keeps it: M = 10 → 68/11", () => {
+    // 1 1 2 3 5 6 7 9 10 11 13
     const r = calculateDps(cast(10, { targetDamageFactor: [13, 10] }));
     expect(r.maxHit).toBe(13);
-    expect(r.dps).toBeCloseTo((r.accuracy * (6.5 + 1 / 11)) / SECONDS, 12);
+    expect(r.dps).toBeCloseTo((r.accuracy * 68) / 11 / SECONDS, 12);
   });
 
   it("a Mad Angel Sword Cleave floor of 5 absorbs it: M = 10 → (5·6 + 10·11)/22", () => {
@@ -402,10 +406,10 @@ describe("computeSetDps — resolves the raise's inputs", () => {
     const shielded = computeSetDps(sword, TD, SKILLS_AT_99);
     const m0 = open.maxHit;
     expect(shielded.maxHit).toBe(Math.trunc((m0 * 4) / 5));
-    // The raised 1 survives the shield: + 1/(M0+1), where trunc(4/5) would drop it.
-    expect(shielded.dps).toBeCloseTo(
-      (shielded.accuracy * (shielded.maxHit / 2 + 1 / (m0 + 1))) / (4 * 0.6),
-      12,
-    );
+    // Each roll is shielded on its own, and the raised 1 survives the shield
+    // (its minimum 1), where trunc(4/5) would drop it.
+    let landed = 0;
+    for (let r = 0; r <= m0; r++) landed += scaleHitsplat(Math.max(r, 1), [4, 5], 1);
+    expect(shielded.dps).toBeCloseTo((shielded.accuracy * landed) / (m0 + 1) / (4 * 0.6), 12);
   });
 });

@@ -40,6 +40,8 @@ export interface TargetActiveBonuses {
   twistedBowEquipped: boolean;
   /** True iff Osmumten's fang is the weapon AND it's swung on a stab style. */
   fangEquipped: boolean;
+  /** Confliction gauntlets + a one-handed weapon on a magic style (double roll after a miss). */
+  conflictionGauntlets: boolean;
   /** Target's Magic level — a Tbow scaling input. */
   targetMonsterMagicLevel: number;
   /**
@@ -185,6 +187,7 @@ export function activeBonusesForTarget(
     // Fang's double accuracy roll only fires on stab styles (Stab/Lunge/Block);
     // its slash style is a vanilla swing. Target-independent — works on any NPC.
     fangEquipped: set.itemBonusFlags.fang && set.attackType === "stab",
+    conflictionGauntlets: (set.itemBonusFlags.conflictionGauntlets ?? false) && set.style === "magic",
     // Tbow inputs: upstream scales off min(cap, max(skills.magic,
     // offensive.magic)); the engine takes the max and applies the cap.
     targetMonsterMagicLevel: target.magicLevel,

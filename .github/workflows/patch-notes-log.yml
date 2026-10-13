@@ -1,0 +1,82 @@
+name: Patch notes log
+
+# Every push to main gets appended to unreleased.md on the `patch-notes` branch.
+# The Thursday release routine turns that log into the week's player-facing
+# patch notes (see patch-notes/README.md). The log lives on its own branch so
+# logging never adds commits to main: no extra Vercel deploys, and no
+# "fetch first" rejections for the next session that pushes.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+# Queue, never cancel: two quick pushes must both be logged.
+concurrency:
+  group: patch-notes-log
+  cancel-in-progress: false
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Append this push to the log
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            RANGE="$AFTER -1"
+          else
+            RANGE="$BEFORE..$AFTER"
+          fi
+          # Release commits are the notes themselves; merges add nothing.
+          ENTRIES=$(git log --no-merges --reverse --format='- %h %s' $RANGE | grep -v -E '^- [0-9a-f]+ release: ' || true)
+          if [ -z "$ENTRIES" ]; then
+            echo "Nothing to log for this push."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --heads origin patch-notes >/dev/null; then
+            git fetch -q origin patch-notes
+            git worktree add -q ../log origin/patch-notes
+            git -C ../log switch -q -c patch-notes
+          else
+            git worktree add -q --orphan -b patch-notes ../log
+          fi
+
+          cd ../log
+          # This branch holds no app, so tell Vercel not to try deploying it.
+          if [ ! -f vercel.json ]; then
+            printf '{ "git": { "deploymentEnabled": false } }\n' > vercel.json
+            git add vercel.json
+          fi
+          if [ ! -f unreleased.md ]; then
+            printf '# Unreleased pushes\n\nLogged automatically on every push to main. Append-only: the Thursday release\nroutine works out what is new from the commits each patch-notes/vX.Y.Z.md covers.\n' > unreleased.md
+          fi
+          {
+            printf '\n## %s · pushed by %s\n\n' "$(date -u +'%Y-%m-%d %H:%M UTC')" "$ACTOR"
+            printf '%s\n' "$ENTRIES"
+          } >> unreleased.md
+          git add unreleased.md
+          git commit -q -m "log: push $(git -C "$GITHUB_WORKSPACE" rev-parse --short "$AFTER")"
+
+          # Another log run or the release routine may have moved the branch.
+          for i in 1 2 3; do
+            git push -q origin patch-notes && exit 0
+            git pull -q --rebase origin patch-notes
+          done
+          echo "Could not push the log after 3 tries." >&2
+          exit 1

@@ -26,6 +26,7 @@ export const BONUS_TRIGGER_ITEM_IDS = {
   TOME_OF_EARTH_CHARGED: 30064,
   TWISTED_BOW: 20997,
   OSMUMTEN_FANG: 26219, // double accuracy roll on stab styles
+  CONFLICTION_GAUNTLETS: 31106, // one-handed magic: a miss re-rolls accuracy once
   WILDERNESS_WEAPON: 22550, // Craw's bow — canonical; ×3/2 acc+dmg vs NPCs in the Wilderness
   // Summer Sweep-Up Miscellaneous (2026-09-02): +2 max hit on spells of the
   // matching element (the Elemental amulet covers all four). Neck slot.
@@ -78,6 +79,7 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   TWISTED_BOW: [20997],
   OSMUMTEN_FANG: [26219, 27246], // base + (or) ornament kit — same Stab Sword
   // Both charged + uncharged ids per weapon (player charges them with ether).
+  CONFLICTION_GAUNTLETS: [31106],
   WILDERNESS_WEAPON: [
     22550, 22547, // Craw's bow
     27655, 27652, // Webweaver bow

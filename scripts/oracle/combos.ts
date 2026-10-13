@@ -72,6 +72,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...maggotKingPunishCombos(),
     ...weaponCategoryCombos(),
     ...guardianCombos(),
+    ...phaseDamageCombos(),
   ];
 }
 
@@ -651,6 +652,76 @@ export function guardianCombos(): CanonicalCombo[] {
     orderingCombo("guardian-whip-control", guardian, melee(4151), "slash", "controlled"),
     orderingCombo("guardian-tbow-control", guardian,
       [TWISTED_BOW, DRAGON_ARROW, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "rapid"),
+  ];
+}
+
+const EMBERLIGHT = 29589;
+const GHRAZI_RAPIER = 22324;
+const OSMUMTENS_FANG = 26219;
+const ABYSSAL_WHIP = 4151;
+const DIAMOND_DRAGON_BOLTS_E = 21946;
+const DARK_BOW = 11235;
+
+/**
+ * The phase damage modifiers (MechanicPhase.damageModifier): the Tormented
+ * Demon's shield (×4/5, minimum 1; demonbane and abyssal weapons pierce it),
+ * the Abyssal Sire's transition (×1/2) and the Hueycoatl's pillar (×13/10).
+ * Upstream's multiplyTransformer scales EACH hitsplat, trunc(d × n/d), after
+ * the accurate-zero raise, so every mean branch gets a combo: a plain single
+ * hit, the fang's trimmed roll, a multi-hit Scythe / Dark bow, the split
+ * weapons (Torag's, Dual macuahuitl), ruby and diamond bolt procs, and magic.
+ * The pierce weapons are controls. (Unshielded is not: upstream's TD then
+ * always hits, adds a speed-based flat bonus and attacks a tick faster —
+ * unmodelled, see scripts/oracle/README.md, Known gaps.) Their numbers are
+ * locked in tests/mechanic-phases.test.ts.
+ */
+export function phaseDamageCombos(): CanonicalCombo[] {
+  const phase = (mechanicId: string, wikiPhase: string) => ({ bossPhase: { mechanicId, wikiPhase } });
+  const shielded = phase("shielded", "Shielded");
+  const transition = phase("transition", "Transition");
+  const pillar = phase("with-pillar", "With Pillar");
+  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
+  const ranged = (weapon: number, ammo: number): number[] =>
+    [weapon, ammo, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const shadow = [TUMEKENS_SHADOW, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST];
+  const bolts = { knownMaxHitResidual: BOLT_MAX };
+  const td = "tormented-demon";
+  const sire = "abyssal-sire";
+  const huey = "the-hueycoatl";
+  return [
+    // ── Tormented Demon: shield ×4/5 (min 1) unless demonbane / abyssal ──
+    orderingCombo("td-shielded-rapier", td, melee(GHRAZI_RAPIER), "stab", "aggressive", shielded),
+    orderingCombo("td-shielded-fang", td, melee(OSMUMTENS_FANG), "stab", "aggressive",
+      { ...shielded, exactRoll: false, knownMaxHitResidual: FANG }),
+    orderingCombo("td-shielded-scythe", td, melee(SCYTHE_OF_VITUR), "slash", "aggressive", shielded),
+    orderingCombo("td-shielded-torags-hammers", td, melee(TORAGS_HAMMERS), "crush", "aggressive", shielded),
+    orderingCombo("td-shielded-tbow", td, ranged(TWISTED_BOW, DRAGON_ARROW), "ranged", "rapid", shielded),
+    orderingCombo("td-shielded-zcb-ruby-bolts", td,
+      ranged(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "rapid", { ...shielded, ...bolts }),
+    orderingCombo("td-shielded-zcb-diamond-bolts", td,
+      ranged(ZARYTE_CROSSBOW, DIAMOND_DRAGON_BOLTS_E), "ranged", "rapid", { ...shielded, ...bolts }),
+    orderingCombo("td-shielded-tumekens-shadow", td, shadow, "magic", "accurate", shielded),
+    orderingCombo("td-shielded-emberlight", td, melee(EMBERLIGHT), "slash", "aggressive", shielded),
+    orderingCombo("td-shielded-abyssal-whip", td, melee(ABYSSAL_WHIP), "slash", "controlled", shielded),
+
+    // ── Abyssal Sire: transition ×1/2 ──
+    orderingCombo("sire-transition-rapier", sire, melee(GHRAZI_RAPIER), "stab", "aggressive", transition),
+    orderingCombo("sire-transition-scythe", sire, melee(SCYTHE_OF_VITUR), "slash", "aggressive", transition),
+    orderingCombo("sire-transition-dual-macuahuitl", sire,
+      melee(DUAL_MACUAHUITL), "crush", "aggressive", transition),
+    orderingCombo("sire-transition-zcb-ruby-bolts", sire,
+      ranged(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "rapid", { ...transition, ...bolts }),
+    orderingCombo("sire-transition-tumekens-shadow", sire, shadow, "magic", "accurate", transition),
+
+    // ── Hueycoatl: pillar ×13/10 ──
+    orderingCombo("huey-pillar-rapier", huey, melee(GHRAZI_RAPIER), "stab", "aggressive", pillar),
+    orderingCombo("huey-pillar-scythe", huey, melee(SCYTHE_OF_VITUR), "slash", "aggressive", pillar),
+    orderingCombo("huey-pillar-torags-hammers", huey, melee(TORAGS_HAMMERS), "crush", "aggressive", pillar),
+    orderingCombo("huey-pillar-tbow", huey, ranged(TWISTED_BOW, DRAGON_ARROW), "ranged", "rapid", pillar),
+    orderingCombo("huey-pillar-dark-bow", huey, ranged(DARK_BOW, DRAGON_ARROW), "ranged", "rapid", pillar),
+    orderingCombo("huey-pillar-zcb-diamond-bolts", huey,
+      ranged(ZARYTE_CROSSBOW, DIAMOND_DRAGON_BOLTS_E), "ranged", "rapid", { ...pillar, ...bolts }),
+    orderingCombo("huey-pillar-tumekens-shadow", huey, shadow, "magic", "accurate", pillar),
   ];
 }
 

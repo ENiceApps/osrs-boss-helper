@@ -75,6 +75,11 @@ export function itemBonusFlagsFor(slotItemIds: ReadonlySet<number>): ItemBonusFl
     tomeOfEarth: hasTrigger(slotItemIds, "TOME_OF_EARTH_CHARGED"),
     twistedBow: hasTrigger(slotItemIds, "TWISTED_BOW"),
     fang: hasTrigger(slotItemIds, "OSMUMTEN_FANG"),
+    // Upstream gates the gauntlets on !weapon.isTwoHanded (Tumeken's shadow,
+    // the Nightmare staves' two-handed variants get nothing).
+    conflictionGauntlets:
+      hasTrigger(slotItemIds, "CONFLICTION_GAUNTLETS") &&
+      ![...slotItemIds].some((id) => ITEM_BY_ID.get(id)?.isTwoHanded),
     slayerHelmImbued: hasImbuedSlayerHelm(slotItemIds),
     wildernessWeapon: hasTrigger(slotItemIds, "WILDERNESS_WEAPON"),
     elementalAmulet: elementalAmuletKind(slotItemIds),

@@ -43,6 +43,12 @@ npm run oracle -- --optimize --limit=20              # oracle-check the APP's ow
                                                      # recommended loadout per boss
 ```
 
+`--optimize --bosses=zulrah,vorkath,…` checks the app's best pick of EACH
+combat style for the named bosses (with each boss's default mechanic phase
+pinned on both engines — wgloop with no phase input treats Doom of Mokhaiotl
+as never-miss). Set `ORACLE_IO_DIR=<dir>` to keep combos/results private when
+another session may be running the oracle.
+
 `--optimize` is the highest-value sweep: it runs `optimizeForBoss` (owns-everything
 bank) per boss and oracle-checks the loadout the app actually recommends — so it
 validates real user-facing gear, not a fixed reference set. (First catch: the
@@ -121,6 +127,21 @@ damage. They run with `strictDps`; their wgloop numbers are locked in
 `tests/corp-halving.test.ts`. The fang's halved trimmed roll (slash) has no
 combo: upstream's Stab Sword "Slash" is Aggressive, ours Controlled, so the
 worker can't match the stance — the unit tests cover it.
+
+## Phase damage combos
+
+`phaseDamageCombos()` in `combos.ts` checks the mechanic phases with a
+`damageModifier`: the Tormented Demon's shield (×4/5, minimum 1; demonbane and
+abyssal weapons pierce it), the Abyssal Sire's transition (÷2) and the
+Hueycoatl's pillar (×13/10). Upstream applies each as an NPC transform
+(`multiplyTransformer` / `divisionTransformer` in applyNpcTransforms), so it
+scales EACH hitsplat after the accurate-zero raise: one `td-shielded-` /
+`sire-transition-` / `huey-pillar-` combo per mean branch (single hit, fang,
+Scythe, Dark bow, Torag's, Dual macuahuitl, ruby / diamond bolts, magic), plus
+Emberlight and the Abyssal whip as pierce controls. Scaling the max hit and
+halving it ran 1-4% high, and ruby procs skipped the factor entirely (Zaryte
+crossbow vs the Sire's transition +39%); fixed 2026-10-13. Their wgloop numbers
+are locked in `tests/mechanic-phases.test.ts`.
 
 ## Twisted bow combos
 
@@ -276,9 +297,16 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   (`transformedBoltDamagePerAttack` in `lib/dps/bolts.ts`). Was, on the
   `corp-acb-` combos: opal +20.4%, dragonstone +8.8%, pearl +6.0%, diamond
   +2.0%, ruby +0.8%, onyx −0.3%.
-- **Harness: Tormented Demon** — the worker's TD instance reports accuracy
-  1.0000 (max hits match ours), so TD rows can't be oracle-checked yet. The
-  shield's ×4/5 minimum-1 transform is covered by the unit tests instead.
+- ~~**Harness: Tormented Demon** — the worker's TD instance reports accuracy
+  1.0000 (max hits match ours), so TD rows can't be oracle-checked yet.~~
+  **FIXED** 2026-10-13 — that was upstream's Unshielded branch (any phase but
+  `Shielded`); combos now carry `bossPhase`, and the `td-shielded-` combos
+  match (see Phase damage combos).
+- **Tormented Demon, Unshielded** — upstream's TD with its shield down always
+  hits (`PLAYER_ACCURACY_TD`), adds max(0, speed² − 16) to every accurate
+  hitsplat and attacks a tick faster (`tdUnshieldedBonusApplies`). Our
+  Unshielded phase only drops the ×4/5, so it runs well low (Ghrazi rapier:
+  5.172 vs 9.176 dps, accuracy 0.56 vs 1). No combo until it's modelled.
 - ~~**Twisted bow scaling** — no 140% / 250% clamp (141% accuracy at magic
   250, 150% at a Xerician 350), and only the Magic level read, never the magic
   attack bonus (Araxxor 190 instead of 260 → 250: max 57 vs 66).~~ **FIXED**
@@ -320,12 +348,18 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   Kraken's pick is magic again (Harmonised staff + Earth Surge, 10.812 here,
   10.817 upstream — the gap is the Confliction gauntlets, below). See the
   Kraken ranged combos.
-- **Confliction gauntlets** — upstream models the one-handed magic attack
+- ~~**Confliction gauntlets** — upstream models the one-handed magic attack
   after a miss rolling accuracy twice (BaseCalc
   getConflictionGauntletsAccuracyRoll: hit chance d/(1 + d − s), d the
   double-roll chance, s the single); we don't, so magic picks wearing them
   run a little low (Harmonised staff + Fire Surge vs Zulrah:
-  accuracy 0.9350 vs 0.9386, 10.233 vs 10.273 dps; vs the Kraken 0.04%).
+  accuracy 0.9350 vs 0.9386, 10.233 vs 10.273 dps; vs the Kraken 0.04%).~~
+  **FIXED** 2026-10-13 (`conflictionHitChance` in `lib/dps/common.ts`, gated
+  on a one-handed weapon); locked in `tests/confliction-and-vardorvis.test.ts`.
+- ~~**Vardorvis defence** — flat 200 in our catalog; upstream lerps 215 → 145
+  with his HP and shows full HP by default (2–4% dps high).~~ **FIXED**
+  2026-10-13 — the catalog uses the full-HP value per version (215 / 268 /
+  180, `scripts/build-monster-catalog.ts`).
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).
