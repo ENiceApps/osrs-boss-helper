@@ -82,3 +82,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:31 UTC · pushed by ENiceApps
 
 - beed04b feat(bosses): show the full roster A to Z by default
+
+## 2026-10-13 19:32 UTC · pushed by ENiceApps
+
+- 092249c feat(bosses): pin Combat dummy and Ditto to the top of the roster
