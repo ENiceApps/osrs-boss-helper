@@ -11,7 +11,7 @@ on 2026-09-03).
 ## Unreleased changes
 
 **In flight (2026-10-13):** submitted as [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481),
-pinning the standalone commit recorded in the latest "Hub PR #18481 repointed" commit here
+now pinning standalone commit `b071f3a0d9d9c0e22cfe93df3c81d88d90ecdfac`
 (plugin 1.2; started at `d23567d`, repointed the same day for the README rewrite
 and then the panel polish below).
 Awaiting review/merge.
