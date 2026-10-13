@@ -10,6 +10,10 @@ on 2026-09-03).
 
 ## Unreleased changes
 
+**In flight (2026-10-13):** submitted as [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481),
+pinning standalone commit `d23567dbfdf705763b5e9db36565187a6ac6c9fe` (plugin 1.2).
+Awaiting review/merge.
+
 - **Copy my bank as text** (2026-10-12) — the sidebar icon now opens a panel
   instead of going straight to the website. Its **Copy my bank** button puts
   the same payload bank.json holds (minus the `accounts` section, so alts'
