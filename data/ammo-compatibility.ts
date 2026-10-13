@@ -259,8 +259,10 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
  * - "Thrown": darts, knives, throwing axes, and all blowpipe variants (the
  *   blowpipe loads darts internally; no separate ammo slot in-game).
  * - "Chinchompas": the chinchompa IS the ammunition.
- * - "Salamander": burns tar (Guam tar, etc.) consumed from the inventory, not
- *   the ammo slot. A hybrid weapon with no ammo-slot ammunition.
+ * - "Salamander": NOT actually self-ammo — its tar (Guam tar, etc.) is
+ *   equipped in the ammo slot (upstream ammoForRangedWeapons). Harmless here
+ *   only because Salamander has no WEAPON_STYLES entry yet, so the optimizer
+ *   never builds one; drop it from this set when salamanders are modelled.
  * - "Gun": the only catalog "Gun" item ("Fixed device") is a 0-stat novelty
  *   with no modelled ammunition.
  */

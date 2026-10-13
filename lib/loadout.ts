@@ -192,9 +192,11 @@ export function rangedDefenceBonusFor(
   switch (weaponCategory) {
     case "Crossbow":
       return target.defenceBonuses.rangedHeavy;
+    case "Chinchompas": // upstream getRangedDamageType: heavy
+      return target.defenceBonuses.rangedHeavy;
     case "Thrown": // includes blowpipe, darts, knives
       return target.defenceBonuses.rangedLight;
-    default: // Bow, Chinchompas, etc.
+    default: // Bow, etc.
       return target.defenceBonuses.rangedStandard;
   }
 }

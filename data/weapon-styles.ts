@@ -153,6 +153,17 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Spell", attackType: "magic", choice: "longrange", defensive: false },
     { name: "Defensive Cast", attackType: "magic", choice: "defensive", defensive: true },
   ],
+  "Bladed Staff": [
+    // Staff of the dead / Toxic SotD, Staff of light, Staff of balance, Blue
+    // moon spear. Melee stances per wgloop getCombatStylesForCategory; spell
+    // casting is modelled exactly like a regular Staff (see
+    // SPELLCASTING_STAFF_CATEGORIES).
+    { name: "Jab", attackType: "stab", choice: "accurate", defensive: false },
+    { name: "Swipe", attackType: "slash", choice: "aggressive", defensive: false },
+    { name: "Fend", attackType: "crush", choice: "defensive", defensive: true },
+    { name: "Spell", attackType: "magic", choice: "longrange", defensive: false },
+    { name: "Defensive Cast", attackType: "magic", choice: "defensive", defensive: true },
+  ],
   "Powered Staff": [
     // Trident of seas/swamp, Sanguinesti staff. The staff auto-casts its
     // signature spell — there's no separate spellbook involved, so the
@@ -160,7 +171,52 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Accurate", attackType: "magic", choice: "accurate", defensive: false },
     { name: "Longrange", attackType: "magic", choice: "longrange", defensive: true },
   ],
+
+  // ----- Other weapon categories (stances per wgloop getCombatStylesForCategory) -----
+  Pickaxe: [
+    // Dragon / crystal / infernal pickaxe. NOTE: the CoX Guardians' pickaxe-only
+    // rule and Mining-scaled damage are not modelled by our engine yet.
+    { name: "Spike", attackType: "stab", choice: "accurate", defensive: false },
+    { name: "Impale", attackType: "stab", choice: "aggressive", defensive: false },
+    { name: "Smash", attackType: "crush", choice: "aggressive", defensive: false },
+    { name: "Block", attackType: "stab", choice: "defensive", defensive: true },
+  ],
+  Polestaff: [
+    // Dragon cane, god mjolnirs, sceptres.
+    { name: "Bash", attackType: "crush", choice: "accurate", defensive: false },
+    { name: "Pound", attackType: "crush", choice: "aggressive", defensive: false },
+    { name: "Block", attackType: "crush", choice: "defensive", defensive: true },
+  ],
+  Flail: [
+    // Hallowed flail. (Blisterwood / Ivandis flails are category "Staff".)
+    { name: "Chop", attackType: "slash", choice: "accurate", defensive: false },
+    { name: "Slash", attackType: "slash", choice: "aggressive", defensive: false },
+    { name: "Block", attackType: "slash", choice: "defensive", defensive: true },
+  ],
+  Chinchompas: [
+    // Chinchompa accuracy depends on fuse and target distance (upstream
+    // PLAYER_ACCURACY_CHINCHOMPA). We assume the wiki calc's default 4 tiles,
+    // where only Medium fuse keeps full accuracy (Short / Long fuse are ×3/4),
+    // so it's the one style worth offering — and the one our engine scores
+    // exactly without a distance model.
+    { name: "Medium fuse", attackType: "ranged", choice: "rapid", defensive: false },
+  ],
+  // Deliberately unmapped (never recommended): Salamander (each one needs its
+  // own tar in the AMMO slot, which supplies its ranged strength, and deals 0
+  // without it — upstream ammoForRangedWeapons; Flare also rolls against the
+  // mean of the three ranged defences and Blaze has its own magic-level max-hit
+  // formula; none of that is modelled yet), Bulwark (Dinh's: its strength
+  // bonus is derived from total defence, not modelled; a tank weapon anyway),
+  // Multi-Melee (Infernal tecpatl, a Leagues item in excluded-items.ts),
+  // Banner / Gun / Blaster / Unarmed / "" / "blunt" (cosmetic, quest, broken
+  // or non-weapon items).
 };
+
+/**
+ * Categories that cast spellbook spells (autocast at the spell's cast speed,
+ * not the weapon's melee speed), as opposed to powered staves.
+ */
+export const SPELLCASTING_STAFF_CATEGORIES: ReadonlySet<string> = new Set(["Staff", "Bladed Staff"]);
 
 export interface StyleLookupResult {
   category: string;

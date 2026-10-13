@@ -11,6 +11,7 @@ import { detectArmorSetBonus } from "@/data/armor-sets";
 import { checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
 import {
+  SPELLCASTING_STAFF_CATEGORIES,
   WEAPON_STYLES,
   type WeaponStyleOption,
 } from "@/data/weapon-styles";
@@ -126,7 +127,7 @@ function defaultStyleFor(
   }
 
   // Regular staff casting spells: longrange (gives +0 atk / +0 str, matching curated magic sets).
-  if (weapon.category === "Staff") {
+  if (SPELLCASTING_STAFF_CATEGORIES.has(weapon.category)) {
     const spell = offensive.find((o) => o.attackType === "magic" && o.choice === "longrange");
     if (spell) return { attackType: spell.attackType, choice: spell.choice };
   }
