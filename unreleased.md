@@ -66,3 +66,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:24 UTC · pushed by ENiceApps
 
 - 1ad3f93 copy(updates): take the Planned roadmap off the page; it stays internal
+
+## 2026-10-13 19:27 UTC · pushed by ENiceApps
+
+- e0a9977 feat(optimizer): model Dinh's bulwark (defence-derived strength)
