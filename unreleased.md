@@ -94,3 +94,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:35 UTC · pushed by ENiceApps
 
 - e152323 feat(bosses): add a default Bosses category; All shows every monster
+
+## 2026-10-13 19:38 UTC · pushed by ENiceApps
+
+- 0d1102b copy(updates): drop the version-number explainer
