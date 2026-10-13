@@ -39,3 +39,8 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 18:56 UTC · pushed by ENiceApps
 
 - cf48ff0 fix(dps): model Confliction gauntlets' double roll and Vardorvis' full-HP defence
+
+## 2026-10-13 19:11 UTC · pushed by ENiceApps
+
+- c6885bb fix(optimizer): map Pickaxe, Polestaff, Bladed Staff, Flail, Chinchompas styles
+- ced50f1 feat(optimizer): model salamanders (Scorch / Flare / Blaze)
