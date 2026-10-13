@@ -1,21 +1,20 @@
-// /updates — dated release notes (newest first) plus the undated roadmap.
+// /updates — ENice's pinned note plus dated release notes (newest first).
+// The roadmap (PLANNED) is internal and deliberately not shown here.
 // Server component over static data in data/updates.ts; no client JS.
 
 import type { Metadata } from "next";
 import {
   COMMUNITY_NOTE,
   RELEASES,
-  PLANNED,
   CHANGE_KIND_ORDER,
   CHANGE_KIND_LABEL,
-  PLAN_STATUS_LABEL,
   formatReleaseDate,
 } from "@/data/updates";
 
 export const metadata: Metadata = {
   title: "Updates",
   description:
-    "What's changed in OSRS Boss Helper, version by version, plus what's planned next.",
+    "What's changed in OSRS Boss Helper, version by version.",
   alternates: { canonical: "/updates" },
 };
 
@@ -24,15 +23,12 @@ export default function UpdatesPage() {
     <div className="p-6 max-w-2xl mx-auto pb-16">
       <h1 className="font-display text-3xl font-bold text-osrs-gold">Updates</h1>
       <p className="text-sm text-parchment-dark mt-1">
-        What&apos;s changed in OSRS Boss Helper, newest first, and what&apos;s planned next.
+        What&apos;s changed in OSRS Boss Helper, newest first.
       </p>
       <p className="text-caption text-osrs-muted mt-2">
         Version numbers: the first number changes when something big changes how the app works, the
         middle one for new features, the last one for fixes.
       </p>
-      <a href="#planned" className="inline-block mt-2 text-sm text-osrs-gold hover:underline">
-        What&apos;s planned ↓
-      </a>
 
       {COMMUNITY_NOTE && (
         <section className="osrs-panel rounded-lg p-4 sm:p-6 mt-6" aria-label="A note from ENice">
@@ -114,46 +110,6 @@ export default function UpdatesPage() {
           })}
         </article>
       ))}
-
-      <section id="planned" className="mt-10 scroll-mt-16" aria-labelledby="planned-heading">
-        <h2
-          id="planned-heading"
-          className="section-title font-display text-lg font-semibold text-osrs-gold"
-        >
-          Planned
-        </h2>
-        <p className="text-caption text-osrs-muted mt-1">
-          Planned: I intend to do it. Considering: I might, and I&apos;d like to hear if you want it.
-        </p>
-        <ul className="osrs-panel rounded-lg p-4 sm:p-6 mt-3 space-y-2.5">
-          {PLANNED.map((p, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-2.5 text-sm leading-snug text-parchment-dark"
-            >
-              {/* No label-eyebrow here: its unlayered color would beat the Tailwind text color. */}
-              <span className="flex-none mt-0.5 rounded border border-osrs-gold/30 bg-osrs-gold/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-osrs-gold">
-                {PLAN_STATUS_LABEL[p.status]}
-              </span>
-              <span>{p.text}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="text-caption text-osrs-muted mt-3">
-          This is a hobby project and it&apos;s just me, so the order and scope will change and
-          nothing here is a promise. Want something? Use the Feedback button (top right), or open
-          an issue on{" "}
-          <a
-            href="https://github.com/ENiceApps/osrs-boss-helper"
-            className="text-osrs-gold hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
-          .
-        </p>
-      </section>
     </div>
   );
 }

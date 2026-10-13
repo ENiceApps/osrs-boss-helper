@@ -1,4 +1,5 @@
-// Updates tab data (/updates): dated release notes + the undated roadmap.
+// Updates tab data (/updates): dated release notes, plus the undated roadmap
+// (PLANNED), which is INTERNAL only: ENice keeps it off the site (2026-10-13).
 // SINGLE SOURCE OF TRUTH for the app version: CURRENT_VERSION = RELEASES[0].
 //
 // The app is in ALPHA (0.x) — rolled back from 1.0.0 to 0.0.1 on 2026-10-13
