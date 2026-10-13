@@ -31,3 +31,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 18:46 UTC · pushed by ENiceApps
 
 - 815dff0 docs: push automatically once work is verified (matches global rule)
+
+## 2026-10-13 18:47 UTC · pushed by ENiceApps
+
+- 37f49e0 fix(dps): scale phase damage modifiers per hitsplat, as the wiki calc does
