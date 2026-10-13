@@ -35,7 +35,7 @@ export default function UpdatesPage() {
           <div className="flex flex-wrap items-baseline justify-between gap-x-3">
             <p className="label-eyebrow">From ENice</p>
             <time dateTime={COMMUNITY_NOTE.date} className="text-caption text-osrs-muted">
-              {formatReleaseDate(COMMUNITY_NOTE.date)}
+              Posted {formatReleaseDate(COMMUNITY_NOTE.date)}
             </time>
           </div>
           {COMMUNITY_NOTE.blocks.map((block, i) =>
@@ -77,7 +77,12 @@ export default function UpdatesPage() {
 
           {r.note && (
             <div className="osrs-well rounded p-3 sm:p-4 mt-4">
-              <p className="label-eyebrow">From ENice</p>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <p className="label-eyebrow">From ENice</p>
+                <time dateTime={r.date} className="text-caption text-osrs-muted">
+                  Posted {formatReleaseDate(r.date)}
+                </time>
+              </div>
               {r.note.map((para, i) => (
                 <p key={i} className="text-sm text-parchment-dark leading-relaxed mt-2">
                   {para}
