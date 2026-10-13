@@ -43,6 +43,12 @@ npm run oracle -- --optimize --limit=20              # oracle-check the APP's ow
                                                      # recommended loadout per boss
 ```
 
+`--optimize --bosses=zulrah,vorkath,…` checks the app's best pick of EACH
+combat style for the named bosses (with each boss's default mechanic phase
+pinned on both engines — wgloop with no phase input treats Doom of Mokhaiotl
+as never-miss). Set `ORACLE_IO_DIR=<dir>` to keep combos/results private when
+another session may be running the oracle.
+
 `--optimize` is the highest-value sweep: it runs `optimizeForBoss` (owns-everything
 bank) per boss and oracle-checks the loadout the app actually recommends — so it
 validates real user-facing gear, not a fixed reference set. (First catch: the

@@ -19,3 +19,9 @@ it over the GearScape discovery, ENice chose to announce anyway, positioned as
 the teaching app (phases, phase-aware DPS, "why this gear"). GearScape owns
 pure bank→best-setup optimisation: acknowledge it openly, never claim novelty
 for the bank→DPS loop.
+
+**Update (2026-10-13): the r/2007scape launch post was removed by the mods**
+(rule 9: no AI-generated content). The comments, actionable feedback and the
+accuracy check run in response are recorded in
+`docs/feedback/2026-10-reddit-launch.md`. Read it before planning any public post
+or prioritising feedback work.
