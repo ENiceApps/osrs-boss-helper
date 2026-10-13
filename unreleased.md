@@ -110,3 +110,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:21 UTC · pushed by ENiceApps
 
 - b947b54 copy(updates): one date per release; plainer Bank Sync line
+
+## 2026-10-13 20:29 UTC · pushed by ENiceApps
+
+- 1dc8fc5 fix(wiki): always put the site URL in the wiki User-Agent
