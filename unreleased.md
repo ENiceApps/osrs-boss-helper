@@ -53,3 +53,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 
 - d0d754b fix(dps): model the Tormented Demon's Unshielded phase as the wiki calc does
 - fd7cee2 fix(dps): TD Unshielded bonus for Bladed Staff spells; add a chinchompa combo
+
+## 2026-10-13 19:19 UTC · pushed by ENiceApps
+
+- 85ae0ee copy(updates): pin ENice's alpha note to the community at the top
