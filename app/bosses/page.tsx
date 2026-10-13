@@ -18,8 +18,9 @@ import { MetaChip, WeaknessBadge, AttributePill } from "@/components/ui";
 
 // "slayer" is a cross-cutting filter (a Slayer boss also has a primary tier),
 // the rest are mutually-exclusive primary categories.
-type CategoryFilter = MonsterCategory | "all" | "slayer";
+type CategoryFilter = MonsterCategory | "bosses" | "all" | "slayer";
 const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
+  { key: "bosses", label: "Bosses" },
   { key: "all", label: "All" },
   { key: "early", label: CATEGORY_LABELS.early },
   { key: "mid", label: CATEGORY_LABELS.mid },
@@ -34,6 +35,59 @@ const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
 // Baseline tools, pinned first so they're easy to find: a no-defence dummy for
 // raw-DPS checks, and Ditto — a fully editable "theoretical boss" sandbox.
 const PINNED_SLUGS = ["combat-dummy", "ditto"];
+
+// Headline / commonly-farmed bosses: the "Bosses" category, which is the
+// default view so the page doesn't open onto a wall of 600+ slayer monsters.
+// Matched against the catalog, so a renamed/missing slug simply drops out.
+const BOSS_SLUGS = new Set([
+  ...PINNED_SLUGS,
+  // Solo staples
+  "vorkath",
+  "zulrah",
+  "scurrius",
+  "giant-mole",
+  "araxxor",
+  "phantom-muspah",
+  "amoxliatl",
+  "the-hueycoatl",
+  "yama",
+  "maggot-king",
+  "mad-angel",
+  // Slayer bosses
+  "alchemical-hydra",
+  "abyssal-sire",
+  "cerberus",
+  "kraken",
+  "thermonuclear-smoke-devil",
+  "kalphite-queen",
+  "sarachnis",
+  // Dagannoth Kings
+  "dagannoth-rex",
+  "dagannoth-prime",
+  "dagannoth-supreme",
+  // God Wars
+  "general-graardor",
+  "kril-tsutsaroth",
+  "commander-zilyana",
+  "kreearra",
+  "nex",
+  // Desert Treasure II
+  "vardorvis",
+  "duke-sucellus",
+  "the-leviathan",
+  "the-whisperer",
+  // Wilderness
+  "callisto",
+  "venenatis",
+  "vetion",
+  // Other high-end / raids
+  "corporeal-beast",
+  "the-nightmare",
+  "great-olm",
+  "verzik-vitur",
+  "tztok-jad",
+  "tzkal-zuk",
+]);
 
 // Attribute facets. `match` lets one chip cover several raw tags (the catalog
 // splits vampyres into vampyre1/vampyre3). Counts are computed once below.
@@ -63,7 +117,7 @@ export default function BossesPage() {
   const [activeAttrs, setActiveAttrs] = useState<Set<string>>(new Set());
   const [activeWeak, setActiveWeak] = useState<Set<string>>(new Set());
   const [wildOnly, setWildOnly] = useState(false);
-  const [category, setCategory] = useState<CategoryFilter>("all");
+  const [category, setCategory] = useState<CategoryFilter>("bosses");
   const [sort, setSort] = useState<SortKey>("name");
 
   // Any active facet/search or non-default sort: offer "Clear filters".
@@ -72,7 +126,7 @@ export default function BossesPage() {
     activeAttrs.size > 0 ||
     activeWeak.size > 0 ||
     wildOnly ||
-    category !== "all" ||
+    category !== "bosses" ||
     sort !== "name";
 
   const attrCounts = useMemo(() => {
@@ -113,6 +167,8 @@ export default function BossesPage() {
     // Union of the catalog's per-monster Slayer flag (every assignable creature)
     // with the curated slayer-boss set (catches bosses like Vorkath that count
     // toward another creature's task but aren't flagged in the vendor data).
+    counts.bosses = MONSTER_CATALOG.filter((m) => BOSS_SLUGS.has(m.slug)).length;
+    counts.all = MONSTER_CATALOG.length;
     counts.slayer = MONSTER_CATALOG.filter(
       (m) => m.isSlayerMonster || isSlayerBoss(m.slug),
     ).length;
@@ -124,7 +180,9 @@ export default function BossesPage() {
     const facets = ATTR_FACETS.filter((f) => activeAttrs.has(f.key));
 
     let list = MONSTER_CATALOG.filter((m) => {
-      if (category === "slayer") {
+      if (category === "bosses") {
+        if (!BOSS_SLUGS.has(m.slug)) return false;
+      } else if (category === "slayer") {
         if (!(m.isSlayerMonster || isSlayerBoss(m.slug))) return false;
       } else if (category !== "all" && categoryForMonster(m.slug) !== category) {
         return false;
@@ -183,7 +241,7 @@ export default function BossesPage() {
     setActiveAttrs(new Set());
     setActiveWeak(new Set());
     setWildOnly(false);
-    setCategory("all");
+    setCategory("bosses");
     setSort("name");
   }
 
@@ -243,9 +301,7 @@ export default function BossesPage() {
                 }`}
               >
                 {c.label}
-                {c.key !== "all" && (
-                  <span className="ml-1 text-osrs-muted">{categoryCounts[c.key]}</span>
-                )}
+                <span className="ml-1 text-osrs-muted">{categoryCounts[c.key]}</span>
               </button>
             );
           })}
@@ -317,7 +373,10 @@ export default function BossesPage() {
               {shown.length} match{shown.length === 1 ? "" : "es"}
             </>
           ) : (
-            <>Showing all {shown.length}, A to Z.</>
+            <>
+              <span className="text-osrs-brown font-semibold">Bosses</span> · pick
+              All to browse every monster ({MONSTER_CATALOG.length}).
+            </>
           )}
         </p>
         {isFiltered && (
