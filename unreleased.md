@@ -57,3 +57,8 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:19 UTC · pushed by ENiceApps
 
 - 85ae0ee copy(updates): pin ENice's alpha note to the community at the top
+
+## 2026-10-13 19:24 UTC · pushed by ENiceApps
+
+- a5a6f3a fix(optimizer): map Pickaxe, Polestaff, Bladed Staff, Flail, Chinchompas styles
+- 98f9d89 fix(dps): model the CoX Guardians' pickaxe-only rule and Mining scale
