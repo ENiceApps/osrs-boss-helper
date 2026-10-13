@@ -123,3 +123,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 
 - 593b368 docs(plugin): rewrite the Hub README and description for players
 - 47b76c4 docs(plugin): Hub PR #18481 repointed to 6878eb9 (README rewrite)
+
+## 2026-10-13 20:47 UTC · pushed by ENiceApps
+
+- 6a490a7 chore(plugin): keep the offscreen panel renderer behind docs/panel.png
