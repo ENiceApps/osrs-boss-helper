@@ -324,6 +324,20 @@ export interface DpsScenario {
   /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
   targetAlwaysHit?: boolean;
   /**
+   * The Tormented Demon with its shield down, for crush melee, a cast spell or
+   * heavy ranged (wgloop tdUnshieldedBonusApplies, BaseCalc L683 @ 89c3e25):
+   *   • every ACCURATE hitsplat gains max(0, speed² − 16), speed being the
+   *     stance-adjusted attack speed (4 ticks: +0, 5: +9, 6: +20, 7: +33), in
+   *     the attacker distribution (PlayerVsNPCCalc L1732) — after a Keris
+   *     triple and the Sanguinesti leech, before Dharok's, the Berserker
+   *     scale, bolt effects and the accurate-zero raise (which it makes moot);
+   *   • the attack lands a tick sooner: speed − 1 (getExpectedAttackSpeed
+   *     L2125), unless Bloodrager already set the speed.
+   * Resolved upstream (computeSetDps); the phase's `targetAlwaysHit` comes
+   * with it.
+   */
+  speedScaledHitBonus?: boolean;
+  /**
    * The target takes NO damage from this loadout — a leafy monster without a
    * leaf-bladed source, or a zero damage-modifier phase (Doom's shield).
    * wgloop's isImmune turns the whole hit distribution into a 0, so procs and
@@ -793,6 +807,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // and the accurate-zero raise still sees exactly the 0s it lifts.
   const guardianFactor = scenario.style === "melee" ? scenario.guardianDamageFactor : undefined;
 
+  // The unshielded Tormented Demon's flat bonus on every accurate hitsplat
+  // (see speedScaledHitBonus), off the stance-adjusted speed as upstream's
+  // getAttackSpeed reads it.
+  const speedBonus = scenario.speedScaledHitBonus ? Math.max(0, effectiveAttackSpeed ** 2 - 16) : 0;
+
   if (scenario.style === "magic") {
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
     // the very end of the pipeline; applied here to the max hit (additive),
@@ -819,8 +838,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // Berserker necklace + TzHaar/obsidian melee weapon: ×6/5 damage, applied last
   // (after the obsidian armour set's ×11/10), matching wgloop's final damage
-  // scale. e.g. obsidian set base 36 → trunc(36 × 6/5) = 43.
-  if (scenario.berserkerObsidian && scenario.style === "melee") {
+  // scale. e.g. obsidian set base 36 → trunc(36 × 6/5) = 43. With the
+  // unshielded TD's flat bonus in play it scales h + bonus, per hitsplat
+  // (`attackerHit`), since upstream adds the bonus first.
+  const berserker = scenario.berserkerObsidian === true && scenario.style === "melee";
+  const berserkerPerHit = berserker && speedBonus > 0;
+  if (berserker && !berserkerPerHit) {
     maxHit = Math.trunc((maxHit * 6) / 5);
   }
 
@@ -837,8 +860,21 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // `attackerMax` is the max between the two — upstream's attacker-side
   // getMax(), which a Mad Angel floor reads before any NPC transform.
   const preCorpMax = maxHit;
-  if (guardianFactor) maxHit = Math.trunc((maxHit * guardianFactor[0]) / guardianFactor[1]);
-  if (dharokFactor) maxHit = Math.trunc((maxHit * dharokFactor[0]) / dharokFactor[1]);
+  // The attacker-side steps a rolled ACCURATE hitsplat still takes: a
+  // pickaxe's Guardian scale, the unshielded TD's flat bonus, Dharok's scale, then (only alongside that
+  // bonus, see above) the Berserker ×6/5 — upstream's order. Each half of a
+  // split weapon takes them on its own (Torag's 2 × (m + 9) at 5 ticks).
+  const attackerHit = (h: number, bonus = speedBonus): number => {
+    const mined = guardianFactor ? Math.trunc((h * guardianFactor[0]) / guardianFactor[1]) : h;
+    const bonused = mined + bonus;
+    const dharoked = dharokFactor ? Math.trunc((bonused * dharokFactor[0]) / dharokFactor[1]) : bonused;
+    return berserkerPerHit ? Math.trunc((dharoked * 6) / 5) : dharoked;
+  };
+  if (speedBonus > 0 || dharokFactor || guardianFactor) {
+    const profile = scenario.hitProfile;
+    const splats = profile && isSplitProfile(profile) ? hitsplatMaxima(profile, maxHit) : [maxHit];
+    maxHit = splats.reduce((sum, m) => sum + attackerHit(m), 0);
+  }
   const npcT: NpcHitTransforms = {
     damageCap: scenario.targetDamageCap,
     styleScale: scenario.targetStyleDamageScale,
@@ -894,6 +930,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
           npcHit: npcT,
           damageFactor: scenario.targetDamageFactor,
           damageMinimum: scenario.targetDamageMinimum,
+          flatBonus: speedBonus,
         });
   if (twinflame) maxHit = twinflame.maxHit;
 
@@ -930,9 +967,13 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // accuracy: hit 1 lands w.p. a, hit 2 only if hit 1 did, so w.p. a²). The
   // long-run effective interval drops by P ticks. Accuracy-dependent, so it's
   // resolved here rather than in the up-front styleBonuses speed adjust.
+  // Otherwise the unshielded TD's bonus lands every attack a tick sooner, as
+  // upstream's getExpectedAttackSpeed checks Bloodrager first.
   const bloodragerSpeed = scenario.bloodrager
     ? Math.max(1, effectiveAttackSpeed - 0.33 * accuracy * (1 + 0.67 * accuracy))
-    : effectiveAttackSpeed;
+    : scenario.speedScaledHitBonus
+      ? Math.max(1, effectiveAttackSpeed - 1)
+      : effectiveAttackSpeed;
 
   // Flat armour shifts every accurate melee/ranged hitsplat, after everything
   // above (wgloop's last NPC transform). A 0 max hit stays 0: upstream returns
@@ -949,9 +990,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // is the MEAN of what lands.
   const npcHit = (h: number, accurate = true): number =>
     npcHitMean(h, npcT, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
-  const afterRaise = (h: number, minimum = 0): number => {
-    const mined = guardianFactor ? Math.trunc((h * guardianFactor[0]) / guardianFactor[1]) : h;
-    const dharoked = dharokFactor ? Math.trunc((mined * dharokFactor[0]) / dharokFactor[1]) : mined;
+  // `afterRaise` also takes the attacker-side steps ahead of the raise
+  // (`attackerHit`): they commute with it, except the TD's flat bonus, which
+  // leaves no accurate 0 to raise (see the raise below). `bonus` = 0 for a
+  // hitsplat the bonus never reached: a diamond / onyx proc's fresh roll.
+  const afterRaise = (h: number, minimum = 0, bonus = speedBonus): number => {
+    const dharoked = attackerHit(h, bonus);
     const punished = punishSingle
       ? Math.trunc((dharoked * firstHitFactor[0]) / firstHitFactor[1])
       : dharoked;
@@ -972,18 +1016,20 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // and the Sire's transition like any hitsplat. So vs any of them, every
   // mean branch below rolls from the pre-transform max and takes each landed
   // hitsplat through `afterRaise` (`transformedMean`), in place of the closed
-  // forms on the transformed max. A Twinflame double cast does its own
-  // hitsplats (twinflameDamage).
+  // forms on the transformed max. The unshielded TD's flat bonus (and the
+  // per-hit Berserker scale it brings) is per hitsplat too. A Twinflame double
+  // cast does its own hitsplats (twinflameDamage).
   const perHitsplat =
     (scenario.corpDamageHalved === true ||
       npcTransforms ||
       phaseFactor !== undefined ||
       punishSingle ||
       dharokFactor !== undefined ||
+      speedBonus > 0 ||
       guardianFactor !== undefined) &&
     !twinflame;
-  const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
-    meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));
+  const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1, bonus = speedBonus): number =>
+    meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum, bonus));
 
   // Osmumten's fang rolls lo..max−lo (see fangHitTrim) — same mean as 0..max
   // until positive armour clips the low rolls or Corp halves each one. Vs Corp
@@ -1045,6 +1091,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     const expected = perHitsplat
       ? transformedBoltDamagePerAttack(accuracy, preCorpMax, boltProc, {
           meanRoll: (lo, hi) => transformedMean(lo, hi),
+          // A diamond / onyx proc replaces the hit with a fresh roll, which
+          // the unshielded TD's flat bonus (added before the bolts) never saw.
+          meanProcRoll: (lo, hi) => transformedMean(lo, hi, 0, 1, 0),
           // A missed opal / pearl bonus is halved, capped and scaled too
           // (the Kraken: max(1, trunc(bonus/7))), but never armoured (an
           // inaccurate hitsplat).
@@ -1126,11 +1175,19 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // the rest (worth nothing against +1, an accurate 0 deals 3 against −2). A
   // Twinflame double cast already raised its first cast before the split
   // (twinflameDamage). A max of 0 (Bind) returns before upstream's raise.
+  // The unshielded TD's flat bonus (> 0) already lifted every landed hitsplat
+  // off 0, so only a diamond / onyx proc's fresh roll, which it never reached,
+  // is left to raise.
   if (rollMax > 0 && !twinflame) {
     const floor = scenario.seekingArrows ? 3 : 1;
     let raised = 0;
     if (boltProc) {
-      raised = boltAccurateZeroes(accuracy, rollMax, boltProc) * (afterRaise(1) - afterRaise(0));
+      raised =
+        speedBonus > 0
+          ? boltAccurateZeroes(accuracy, rollMax, boltProc, true) * (afterRaise(1, 0, 0) - afterRaise(0, 0, 0))
+          : boltAccurateZeroes(accuracy, rollMax, boltProc) * (afterRaise(1) - afterRaise(0));
+    } else if (speedBonus > 0) {
+      raised = 0;
     } else if (hitProfile) {
       for (const splat of hitsplatRolls(hitProfile, accuracy, rollMax, firstHitFactor, laterHitAccuracy)) {
         raised += splat.landChance * landedFloorLift(0, splat.maxHit, floor, afterRaise);

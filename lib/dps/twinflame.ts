@@ -58,6 +58,12 @@ export interface TwinflameTransforms {
   damageFactor?: [number, number];
   /** Its minimum (`DpsScenario.targetDamageMinimum`: the TD shield keeps a 1 at 1). */
   damageMinimum?: number;
+  /**
+   * The unshielded Tormented Demon's flat bonus (`DpsScenario.speedScaledHitBonus`),
+   * added to every landed first cast before the raise and the split, so the
+   * second cast is trunc((h + bonus) × 4/10).
+   */
+  flatBonus?: number;
 }
 
 export interface TwinflameDamage {
@@ -82,12 +88,12 @@ export function twinflameDamage(
   transforms: TwinflameTransforms = {},
 ): TwinflameDamage {
   if (firstMax <= 0) return { maxHit: 0, meanLanded: 0 };
-  const { halved, minHitFactor, npcHit = {}, damageFactor, damageMinimum } = transforms;
+  const { halved, minHitFactor, npcHit = {}, damageFactor, damageMinimum, flatBonus = 0 } = transforms;
 
   // Attacker side: the split, then the corp halving (each hitsplat).
   const halve = (s: number): number => (halved ? Math.trunc(s / 2) : s);
-  const top1 = halve(firstMax);
-  const top2 = halve(twinflameSecondHit(firstMax));
+  const top1 = halve(firstMax + flatBonus);
+  const top2 = halve(twinflameSecondHit(firstMax + flatBonus));
 
   // Mad Angel buffs read the attacker distribution's max (the pair's total).
   let pinFirst = false;
@@ -107,8 +113,8 @@ export function twinflameDamage(
   let total = 0;
   let maxHit = 0;
   for (let roll = 0; roll <= firstMax; roll++) {
-    // The accurate-zero raise, before the split.
-    const h = Math.max(roll, 1);
+    // The flat bonus and the accurate-zero raise, before the split.
+    const h = Math.max(roll + flatBonus, 1);
     const s1 = Math.max(pinFirst ? top1 : halve(h), floor);
     const s2 = Math.max(halve(twinflameSecondHit(h)), floor);
     total += npc(s1) + npc(s2);

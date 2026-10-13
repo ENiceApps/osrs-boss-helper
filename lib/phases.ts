@@ -30,6 +30,9 @@ export type PhasedMonster = MonsterCatalogEntry & {
   damageModifier?: PhaseDamageModifier | null;
   /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
   alwaysHits?: boolean;
+  /** The unshielded Tormented Demon's speed-scaled flat bonus and one tick
+   *  faster attacks — see MechanicPhase.speedScaledHitBonus. */
+  speedScaledHitBonus?: boolean;
   /** Attack-roll scale for the listed styles (Royal Titans at range). */
   accuracyModifier?: MechanicPhase["accuracyModifier"];
   /** Raised minimum hit as a fraction of max hit (Mad Angel reaction buffs):
@@ -93,6 +96,7 @@ export function applyPhase(
     // when the phase has none, so the engine's default-phase fallback stays off.
     out.damageModifier = mech.damageModifier ?? null;
     if (mech.alwaysHits) out.alwaysHits = true;
+    if (mech.speedScaledHitBonus) out.speedScaledHitBonus = true;
     if (mech.accuracyModifier) out.accuracyModifier = mech.accuracyModifier;
     if (mech.minHitFactor) out.minHitFactor = mech.minHitFactor;
     if (mech.meleePunish) out.meleePunish = mech.meleePunish;

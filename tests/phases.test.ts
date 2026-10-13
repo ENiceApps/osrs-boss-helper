@@ -84,7 +84,10 @@ describe("phases through the DPS pipeline", () => {
     expect(rawDefault.maxHit).toBe(shieldedDps.maxHit);
     expect(shieldedDps.maxHit).toBe(Math.trunc((unshieldedDps.maxHit * 4) / 5));
     expect(unshieldedDps.dps).toBeGreaterThan(shieldedDps.dps);
-    expect(unshieldedDps.accuracy).toBe(shieldedDps.accuracy);
+    // With the shield down every attack lands (wgloop PLAYER_ACCURACY_TD); a
+    // slash weapon gets no speed-scaled bonus, so the max hit is unchanged.
+    expect(shieldedDps.accuracy).toBeLessThan(1);
+    expect(unshieldedDps.accuracy).toBe(1);
   });
 
   it("Zulrah: form selection changes ranged defence and therefore DPS", () => {

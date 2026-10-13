@@ -244,6 +244,17 @@ export function computeSetDps(
   const targetAccuracyFactor =
     acc && (!acc.styles || acc.styles.includes(set.style)) ? acc.factor : undefined;
   const targetAlwaysHit = target.alwaysHits === true;
+  // The unshielded Tormented Demon's speed-scaled bonus, for crush melee, a
+  // cast spell (not a powered staff's or salamander's own attack) or heavy
+  // ranged: crossbows, ballistas included, and chinchompas — wgloop
+  // tdUnshieldedBonusApplies / getRangedDamageType 'heavy'.
+  const speedScaledHitBonus =
+    target.speedScaledHitBonus === true &&
+    (set.style === "melee"
+      ? set.attackType === "crush"
+      : set.style === "ranged"
+        ? set.weaponCategory === "Crossbow" || set.weaponCategory === "Chinchompas"
+        : SPELLCASTING_STAFF_CATEGORIES.has(set.weaponCategory ?? "") || set.autoSpellName !== undefined);
   const targetMinHitFactor = target.minHitFactor;
   // The Maggot King's melee punish window: ×3/2 on the first melee hitsplat,
   // and crush attacks roll against trunc(def × 15/100).
@@ -406,6 +417,7 @@ export function computeSetDps(
     firstHitDefenceRollFactor,
     firstHitDamageFactor,
     targetAlwaysHit,
+    speedScaledHitBonus,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
     // Dart, melee vs a flying target without a halberd / salamander, melee vs
     // a monster immune to it (the Kraken, TzKal-Zuk, the Leviathan, …; Zulrah

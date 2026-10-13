@@ -223,9 +223,6 @@ function LoadoutExport({
           {copied ? "Copied!" : `Copy gear list (${names.length})`}
         </button>
       </div>
-      <p className="text-caption text-osrs-muted mt-1.5">
-        Handy as a checklist while you pull gear from the bank.
-      </p>
     </div>
   );
 }
@@ -481,8 +478,8 @@ export function ResultsPanel({
               </label>
               <p className="text-osrs-muted italic">
                 Per-hour numbers assume you keep{" "}
-                {trip.protectionPrayer ? "offensive + protection" : "offensive"} prayer up while
-                fighting. Everyone&apos;s different, so set these to match your own trips.
+                {trip.protectionPrayer ? "offensive + protection" : "offensive"} prayer up.
+                Tweak these to match your trips.
               </p>
             </div>
           )}
@@ -570,9 +567,6 @@ export function ResultsPanel({
               </li>
             ))}
           </ul>
-          <p className="text-caption text-osrs-muted mt-1.5">
-            The best setup you can buy with this budget, not counting your bank.
-          </p>
         </div>
       )}
 
@@ -689,9 +683,7 @@ export function ResultsPanel({
 
       {!edited && result !== null && result.currentBest && upgradePath.length === 0 && excludedUpgrades.length === 0 && (
         <p className="text-caption text-osrs-muted italic">
-          No upgrades worth buying in this budget. Your bank is already as good
-          as it gets at this price! Try Sell-to-fund mode if you have items
-          you&apos;d be willing to part with.
+          Nothing worth buying at this budget. Try Sell to fund!
         </p>
       )}
 

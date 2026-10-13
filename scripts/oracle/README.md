@@ -143,6 +143,17 @@ halving it ran 1-4% high, and ruby procs skipped the factor entirely (Zaryte
 crossbow vs the Sire's transition +39%); fixed 2026-10-13. Their wgloop numbers
 are locked in `tests/mechanic-phases.test.ts`.
 
+The `td-unshielded-` combos check the TD with its shield down
+(`tdUnshieldedBonusApplies`): accuracy 1 for everything, and for crush melee,
+a cast spell or heavy ranged (crossbow / ballista / chinchompa) + max(0, speed² − 16) per accurate
+hitsplat and one tick off the speed. Fast (4-tick: bonus 0) and slow (5-7
+ticks: +9 / +20 / +33) weapons per style: Abyssal bludgeon, Elder maul,
+Dharok's, Tzhaar-ket-om + Berserker necklace, Torag's, the Scythe on crush,
+Zaryte crossbow (rapid / accurate, diamond and ruby), Heavy ballista, Black
+chinchompa, Kodai Fire Surge, Twinflame Fire Wave, with the Ghrazi rapier, Twisted bow and
+Tumeken's shadow as accuracy-only controls. No `exactRoll`: at accuracy 1
+there is no attack roll to recover.
+
 ## Twisted bow combos
 
 `twistedBowCombos()` in `combos.ts` checks the Twisted bow's scaling (upstream
@@ -302,11 +313,18 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   **FIXED** 2026-10-13 — that was upstream's Unshielded branch (any phase but
   `Shielded`); combos now carry `bossPhase`, and the `td-shielded-` combos
   match (see Phase damage combos).
-- **Tormented Demon, Unshielded** — upstream's TD with its shield down always
+- ~~**Tormented Demon, Unshielded** — upstream's TD with its shield down always
   hits (`PLAYER_ACCURACY_TD`), adds max(0, speed² − 16) to every accurate
   hitsplat and attacks a tick faster (`tdUnshieldedBonusApplies`). Our
   Unshielded phase only drops the ×4/5, so it runs well low (Ghrazi rapier:
-  5.172 vs 9.176 dps, accuracy 0.56 vs 1). No combo until it's modelled.
+  5.172 vs 9.176 dps, accuracy 0.56 vs 1). No combo until it's modelled.~~
+  **FIXED** 2026-10-13 — the phase sets `alwaysHits` + `speedScaledHitBonus`;
+  for crush melee, a cast spell or heavy ranged the engine adds the
+  bonus per hitsplat ahead of Dharok's, Berserker, bolts and the zero raise
+  (a diamond / onyx proc's fresh roll goes without it) and drops a tick off
+  the speed. 16 `td-unshielded-` combos match. Dharok's below full HP (the
+  harness runs at full HP) matches upstream's HitDist to 1e-14 at 1 / 50 HP
+  in a scratch check.
 - ~~**Twisted bow scaling** — no 140% / 250% clamp (141% accuracy at magic
   250, 150% at a Xerician 350), and only the Magic level read, never the magic
   attack bonus (Araxxor 190 instead of 260 → 250: max 57 vs 66).~~ **FIXED**

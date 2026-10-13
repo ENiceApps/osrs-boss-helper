@@ -65,8 +65,7 @@ export function OwnedUntradeablesPanel({
       }
     >
       <p className="text-caption text-osrs-muted mb-2">
-        Tick the untradeables you own. You&apos;ll get your best one in each slot,
-        and something you can buy wherever you have none.
+        Tick the untradeables you own.
       </p>
 
       <div className="flex gap-2 text-caption mb-2">

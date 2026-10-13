@@ -213,6 +213,8 @@ describe("Maggot King melee punish vs wgloop", () => {
 
 // The phase damage modifiers, locked to wgloop @ 89c3e25 for every
 // phaseDamageCombos() combo (npm run oracle -- --only=td- / sire- / huey-).
+// The TD's Unshielded rows also check upstream's tdUnshieldedBonusApplies:
+// always hits, a speed-scaled flat bonus and one tick faster.
 // Upstream's multiplyTransformer scales EACH hitsplat after the accurate-zero
 // raise: the mean of trunc(r × n/d), each half of a split weapon on its own,
 // and ruby / diamond procs too — scaling the max and halving it ran 1-4% high
@@ -229,6 +231,24 @@ describe("phase damage modifiers vs wgloop", () => {
     "td-shielded-tumekens-shadow": { maxHit: 40, accuracy: 0.8559819127575139, dps: 5.717520212136728 },
     "td-shielded-emberlight": { maxHit: 47, accuracy: 0.4819220041050471, dps: 4.723002974258664 },
     "td-shielded-abyssal-whip": { maxHit: 41, accuracy: 0.3057865375506552, dps: 2.6149602715145317 },
+    // Unshielded: accuracy 1; crush / a cast spell / heavy ranged add
+    // max(0, speed² − 16) per accurate hitsplat and attack a tick sooner.
+    "td-unshielded-rapier": { maxHit: 44, accuracy: 1, dps: 9.175925925925927 },
+    "td-unshielded-bludgeon": { maxHit: 42, accuracy: 1, dps: 11.679586563307495 },
+    "td-unshielded-elder-maul": { maxHit: 75, accuracy: 1, dps: 15.833333333333337 },
+    "td-unshielded-dharoks": { maxHit: 77, accuracy: 1, dps: 15.277777777777775 },
+    "td-unshielded-ket-om-berserker": { maxHit: 90, accuracy: 1, dps: 17.887596899224803 },
+    "td-unshielded-torags-hammers": { maxHit: 58, accuracy: 1, dps: 15.833333333333329 },
+    "td-unshielded-scythe-crush": { maxHit: 97, accuracy: 1, dps: 25.833333333333336 },
+    "td-unshielded-tbow": { maxHit: 66, accuracy: 1, dps: 11.004975124378111 },
+    "td-unshielded-zcb-diamond-rapid": { maxHit: 50, accuracy: 1, dps: 11.900898692810465 },
+    "td-unshielded-zcb-diamond-accurate": { maxHit: 60, accuracy: 1, dps: 12.784052287581707 },
+    "td-unshielded-zcb-ruby-accurate": { maxHit: 110, accuracy: 1, dps: 14.873333333333338 },
+    "td-unshielded-heavy-ballista": { maxHit: 68, accuracy: 1, dps: 14.666666666666663 },
+    "td-unshielded-black-chinchompa": { maxHit: 21, accuracy: 1, dps: 8.787878787878787 },
+    "td-unshielded-tumekens-shadow": { maxHit: 51, accuracy: 1, dps: 8.506410256410257 },
+    "td-unshielded-kodai-fire-surge": { maxHit: 41, accuracy: 1, dps: 10.416666666666668 },
+    "td-unshielded-twinflame-fire-wave": { maxHit: 63, accuracy: 1, dps: 15.038461538461542 },
     "sire-transition-rapier": { maxHit: 22, accuracy: 0.4700968927497494, dps: 2.106730519359988 },
     "sire-transition-scythe": { maxHit: 35, accuracy: 0.44331662359498086, dps: 2.4812031840070334 },
     "sire-transition-dual-macuahuitl": { maxHit: 20, accuracy: 0.4736681681173164, dps: 1.4542285450102725 },
@@ -257,6 +277,9 @@ describe("phase damage modifiers vs wgloop", () => {
         target: applyPhase(boss, mech(combo.bossSlug, combo.bossPhase!.mechanicId)),
         skills: SKILLS_AT_99,
         attackStyle: { attackType: combo.attackType, choice: combo.choice },
+        baseSpellMaxHit: combo.baseSpellMaxHit,
+        spellElement: combo.spellElement,
+        autoSpellName: combo.spellName,
         onTask: false,
       });
       if (!r.valid) throw new Error(r.reasons.join("; "));
