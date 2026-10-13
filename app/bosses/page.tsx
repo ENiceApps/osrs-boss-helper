@@ -31,62 +31,6 @@ const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: "npc", label: CATEGORY_LABELS.npc },
 ];
 
-// Headline / commonly-farmed bosses. Shown as the default "calm" view so the
-// page doesn't open onto a wall of 235 slayer monsters. Filtered against the
-// catalog, so a renamed/missing slug simply drops out rather than 404-ing.
-const NOTABLE_SLUGS = [
-  // Baseline tools, pinned first so they're easy to find: a no-defence dummy for
-  // raw-DPS checks, and Ditto — a fully editable "theoretical boss" sandbox.
-  "combat-dummy",
-  "ditto",
-  // Solo staples
-  "vorkath",
-  "zulrah",
-  "scurrius",
-  "giant-mole",
-  "araxxor",
-  "phantom-muspah",
-  "amoxliatl",
-  "the-hueycoatl",
-  "yama",
-  "maggot-king",
-  "mad-angel",
-  // Slayer bosses
-  "alchemical-hydra",
-  "abyssal-sire",
-  "cerberus",
-  "kraken",
-  "thermonuclear-smoke-devil",
-  "kalphite-queen",
-  "sarachnis",
-  // Dagannoth Kings
-  "dagannoth-rex",
-  "dagannoth-prime",
-  "dagannoth-supreme",
-  // God Wars
-  "general-graardor",
-  "kril-tsutsaroth",
-  "commander-zilyana",
-  "kreearra",
-  "nex",
-  // Desert Treasure II
-  "vardorvis",
-  "duke-sucellus",
-  "the-leviathan",
-  "the-whisperer",
-  // Wilderness
-  "callisto",
-  "venenatis",
-  "vetion",
-  // Other high-end / raids
-  "corporeal-beast",
-  "the-nightmare",
-  "great-olm",
-  "verzik-vitur",
-  "tztok-jad",
-  "tzkal-zuk",
-];
-
 // Attribute facets. `match` lets one chip cover several raw tags (the catalog
 // splits vampyres into vampyre1/vampyre3). Counts are computed once below.
 const ATTR_FACETS: { key: string; label: string; match: (a: string) => boolean }[] = [
@@ -118,9 +62,8 @@ export default function BossesPage() {
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [sort, setSort] = useState<SortKey>("name");
 
-  // Any active facet/search means the user is exploring — show the full roster.
-  // Otherwise we show the curated notable list.
-  const isExploring =
+  // Any active facet/search or non-default sort: offer "Clear filters".
+  const isFiltered =
     query.trim() !== "" ||
     activeAttrs.size > 0 ||
     activeWeak.size > 0 ||
@@ -209,14 +152,7 @@ export default function BossesPage() {
     return list;
   }, [query, activeAttrs, activeWeak, wildOnly, category, sort]);
 
-  const notable = useMemo(() => {
-    const bySlug = new Map(MONSTER_CATALOG.map((m) => [m.slug, m]));
-    return NOTABLE_SLUGS.map((s) => bySlug.get(s))
-      .filter((m): m is NonNullable<typeof m> => Boolean(m))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, []);
-
-  const shown = isExploring ? results : notable;
+  const shown = results;
 
   function toggleAttr(key: string) {
     setActiveAttrs((prev) => {
@@ -370,19 +306,15 @@ export default function BossesPage() {
       {/* Result heading */}
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <p className="text-sm text-parchment-dark">
-          {isExploring ? (
+          {isFiltered ? (
             <>
               {shown.length} match{shown.length === 1 ? "" : "es"}
             </>
           ) : (
-            <>
-              <span className="text-osrs-brown font-semibold">Notable bosses</span>{" "}
-              · search or pick a type above to browse all{" "}
-              {MONSTER_CATALOG.length}.
-            </>
+            <>Showing all {shown.length}, A to Z.</>
           )}
         </p>
-        {isExploring && (
+        {isFiltered && (
           <button
             type="button"
             onClick={reset}
