@@ -25,10 +25,6 @@ export default function UpdatesPage() {
       <p className="text-sm text-parchment-dark mt-1">
         What&apos;s changed in OSRS Boss Helper, newest first.
       </p>
-      <p className="text-caption text-osrs-muted mt-2">
-        Version numbers: the first number changes when something big changes how the app works, the
-        middle one for new features, the last one for fixes.
-      </p>
 
       {COMMUNITY_NOTE && (
         <section className="osrs-panel rounded-lg p-4 sm:p-6 mt-6" aria-label="A note from ENice">
