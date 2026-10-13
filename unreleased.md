@@ -23,3 +23,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 - 4c9900d fix(boss): open on Own only when a bank is connected
 - b362679 fix(dps): match the wiki calc's Maggot King melee punish, Dharok's, bludgeon
 - c5e1dc1 fix(items): drop unobtainable event/minigame gear from the catalog
+
+## 2026-10-13 18:45 UTC · pushed by ENiceApps
+
+- e1d0d76 docs(patch-notes): the push log is append-only
