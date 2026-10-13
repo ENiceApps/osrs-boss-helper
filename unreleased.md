@@ -74,3 +74,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:27 UTC · pushed by ENiceApps
 
 - 4e5406e feat(bosses): sort the notable list alphabetically on landing
+
+## 2026-10-13 19:28 UTC · pushed by ENiceApps
+
+- 71accaa copy(boss): describe the TD Unshielded phase as the wiki strategy page does
