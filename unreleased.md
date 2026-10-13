@@ -44,3 +44,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 
 - c6885bb fix(optimizer): map Pickaxe, Polestaff, Bladed Staff, Flail, Chinchompas styles
 - ced50f1 feat(optimizer): model salamanders (Scorch / Flare / Blaze)
+
+## 2026-10-13 19:14 UTC · pushed by ENiceApps
+
+- 38c7ae6 copy(boss): trim the helper text on the boss page
