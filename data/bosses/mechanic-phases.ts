@@ -123,7 +123,7 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
     {
       id: "unshielded",
       label: "Unshielded",
-      note: "Shield down (after its bombardment): every attack hits, full damage, and slow crush, spell or heavy ranged attacks hit harder and a tick sooner.",
+      note: "Shield down (after its bombardment): every attack hits for full damage, and your next slow crush, spell or heavy ranged hit gets bonus damage.",
       // wgloop: accuracy forced to 1 for any style (PLAYER_ACCURACY_TD), plus
       // tdUnshieldedBonusApplies (BaseCalc L683 @ 89c3e25).
       alwaysHits: true,
