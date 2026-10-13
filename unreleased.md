@@ -106,3 +106,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:21 UTC · pushed by ENiceApps
 
 - a8abfb2 perf(icons): self-host item icons instead of hotlinking the wiki
+
+## 2026-10-13 20:21 UTC · pushed by ENiceApps
+
+- b947b54 copy(updates): one date per release; plainer Bank Sync line
