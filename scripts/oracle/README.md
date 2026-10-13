@@ -348,12 +348,18 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   Kraken's pick is magic again (Harmonised staff + Earth Surge, 10.812 here,
   10.817 upstream — the gap is the Confliction gauntlets, below). See the
   Kraken ranged combos.
-- **Confliction gauntlets** — upstream models the one-handed magic attack
+- ~~**Confliction gauntlets** — upstream models the one-handed magic attack
   after a miss rolling accuracy twice (BaseCalc
   getConflictionGauntletsAccuracyRoll: hit chance d/(1 + d − s), d the
   double-roll chance, s the single); we don't, so magic picks wearing them
   run a little low (Harmonised staff + Fire Surge vs Zulrah:
-  accuracy 0.9350 vs 0.9386, 10.233 vs 10.273 dps; vs the Kraken 0.04%).
+  accuracy 0.9350 vs 0.9386, 10.233 vs 10.273 dps; vs the Kraken 0.04%).~~
+  **FIXED** 2026-10-13 (`conflictionHitChance` in `lib/dps/common.ts`, gated
+  on a one-handed weapon); locked in `tests/confliction-and-vardorvis.test.ts`.
+- ~~**Vardorvis defence** — flat 200 in our catalog; upstream lerps 215 → 145
+  with his HP and shows full HP by default (2–4% dps high).~~ **FIXED**
+  2026-10-13 — the catalog uses the full-HP value per version (215 / 268 /
+  180, `scripts/build-monster-catalog.ts`).
 - ~~**Keris partisan** — no style mapping; ×4/3 instead of ×133/100.~~
   **FIXED** 2026-10-03 (Partisan styles, ×133/100 / ×115/100, the amascut
   partisan's out-of-ToA stats, and the Keris dagger's passive).

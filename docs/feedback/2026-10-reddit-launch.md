@@ -94,6 +94,10 @@ Harness fix: Tormented Demon and Doom of Mokhaiotl came back at 100% accuracy at
 - the Barbarian Assault arrows (Bullet / Blunt / Barbed / Field)
 - Emir's Arena hospital gear (the Calamity set incl. Koriff's coif, and the "(wrapped)" gloves)
 
-**Still to do:** model the Confliction gauntlets' second accuracy roll, and Vardorvis's HP-scaled defence.
+**Fixed (2026-10-13), second pass:**
+- Confliction gauntlets' double roll after a miss is now modelled.
+- Vardorvis uses his full-HP Defence, like the wiki calc.
+
+**After both fixes:** 122/131 boss rows match exactly. The other 9 differ only in the max hit shown (bolt specials and the fang's trimmed max); their DPS and accuracy are identical. Validation set: still 120/121.
 
 **Conclusion:** the claim that the site "calcs all of its DPS wrong" doesn't hold up. The real problem was the fake items getting into recommendations.

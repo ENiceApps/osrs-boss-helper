@@ -170,6 +170,9 @@ function buildReasons(
   ) {
     reasons.push("broad ammo — the only ranged ammo that can hurt this leafy target");
   }
+  if (slot === "hands" && activeBonuses?.conflictionGauntlets) {
+    reasons.push("after a miss, your next cast rolls accuracy twice");
+  }
   if (slot === "shield") {
     if (activeBonuses?.tomeOfFireEquipped)  reasons.push("+10% fire spell damage");
     if (activeBonuses?.tomeOfWaterEquipped) reasons.push("+20% water spell accuracy, +10% damage");

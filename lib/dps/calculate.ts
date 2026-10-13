@@ -16,6 +16,7 @@ import {
   dpsFromHitChance,
   effectiveLevel,
   fangHitChance,
+  conflictionHitChance,
   hitChance,
   landedFloorLift,
   meanTransformedRoll,
@@ -183,6 +184,11 @@ export interface DpsScenario {
    * fang's damage trim is mean-preserving, so only accuracy changes here.
    */
   fangEquipped?: boolean;
+  /**
+   * Magic-only: Confliction gauntlets with a one-handed weapon. After a miss
+   * the next attack rolls accuracy twice (see `conflictionHitChance`).
+   */
+  conflictionGauntlets?: boolean;
   /**
    * Osmumten's fang is the weapon (any style): its normal hits roll uniformly
    * over lo..max−lo, lo = trunc(max × 3/20) (wgloop getPlayerMaxMeleeHit). The
@@ -889,7 +895,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       ? 1
       : scenario.fangEquipped
         ? fangHitChance(attackRoll, def)
-        : hitChance(attackRoll, def);
+        : scenario.conflictionGauntlets
+          ? conflictionHitChance(attackRoll, def)
+          : hitChance(attackRoll, def);
   // `accuracy` is the first hitsplat's (and a single hit's) chance to land;
   // `laterHitAccuracy` the rest of a multi-hit weapon's — they differ only in
   // the Maggot King's crush punish (see firstHitDefenceRollFactor), where

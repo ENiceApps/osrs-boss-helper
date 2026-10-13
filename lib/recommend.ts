@@ -383,6 +383,7 @@ export function computeSetDps(
     twinflameDoubleCast,
     twistedBowEquipped: activeBonuses.twistedBowEquipped,
     fangEquipped: activeBonuses.fangEquipped,
+    conflictionGauntlets: activeBonuses.conflictionGauntlets,
     // The fang's damage trim applies on every melee style, not just stab.
     fangHitTrim: set.style === "melee" && set.itemBonusFlags.fang === true,
     seekingArrows,

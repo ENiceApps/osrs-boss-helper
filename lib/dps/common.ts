@@ -38,6 +38,20 @@ export function fangHitChance(attackRoll: number, defenceRoll: number): number {
 }
 
 /**
+ * Confliction gauntlets (one-handed magic): an attack that follows a miss rolls
+ * accuracy twice, like the fang. Hits and misses form a two-state chain —
+ * after a hit the chance is s (single roll), after a miss d (double roll) — so
+ * the long-run hit rate is its stationary value d / (1 + d − s). Matches
+ * wgloop BaseCalc.getConflictionGauntletsAccuracyRoll.
+ * https://oldschool.runescape.wiki/w/Confliction_gauntlets
+ */
+export function conflictionHitChance(attackRoll: number, defenceRoll: number): number {
+  const single = hitChance(attackRoll, defenceRoll);
+  const double = fangHitChance(attackRoll, defenceRoll);
+  return double / (1 + double - single);
+}
+
+/**
  * DPS of a hit that lands with `chance` and rolls uniformly over 0..maxHit:
  * the plain uniform mean maxHit/2. The accurate-zero raise (and the seeking
  * arrow floor) are added on top by calculateDps — see `landedFloorLift`.

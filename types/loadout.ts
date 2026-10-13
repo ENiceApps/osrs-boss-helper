@@ -77,6 +77,12 @@ export interface ItemBonusFlags {
   twistedBow: boolean;
   /** Osmumten's fang — double accuracy roll; only fires on a stab attack style. */
   fang: boolean;
+  /**
+   * Confliction gauntlets worn with a ONE-handed weapon: a missed magic attack
+   * re-rolls accuracy for the next one (style-gated by activeBonusesForTarget).
+   * Optional for back-compat with existing flag literals; absent = false.
+   */
+  conflictionGauntlets?: boolean;
   /** Imbued black mask / slayer helmet — on-task acc+dmg bonus (gated by the UI on-task toggle). */
   slayerHelmImbued: boolean;
   /**
