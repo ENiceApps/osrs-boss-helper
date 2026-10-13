@@ -23,7 +23,8 @@ export type AmmoClass =
   | "throwing-axe"
   | "bolt-rack" // Karil's crossbow only
   | "atlatl-dart" // Eclipse atlatl only
-  | "antler-bolt"; // Hunters' sunlight crossbow only
+  | "antler-bolt" // Hunters' sunlight crossbow only
+  | "tar"; // salamanders: each one burns only its own herb tar
 
 // Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
 // but we model the dart in the ammo slot so its strength bonus participates
@@ -33,6 +34,12 @@ export type AmmoClass =
 export interface WeaponAmmoSpec {
   class: AmmoClass;
   maxTier: number;
+  /**
+   * Lowest tier the weapon accepts (default: any). Salamanders set
+   * minTier === maxTier: each burns exactly one tar, never a weaker one
+   * (upstream ammoForRangedWeapons lists a single tar per salamander).
+   */
+  minTier?: number;
 }
 
 export interface AmmoSpec {
@@ -141,6 +148,16 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   "Camphor blowpipe": { class: "dart", maxTier: 4 },
   "Ironwood blowpipe": { class: "dart", maxTier: 5 },
   "Rosewood blowpipe": { class: "dart", maxTier: 6 },
+
+  // Salamanders — the tar is worn in the AMMO slot and each salamander takes
+  // only its own (wgloop ammoForRangedWeapons @ 89c3e25). The tar supplies
+  // the ranged strength, and without it EVERY style (Scorch / Flare / Blaze)
+  // deals 0 — see salamanderMissingTar in lib/loadout.ts.
+  "Swamp lizard": { class: "tar", maxTier: 1, minTier: 1 }, // Guam tar
+  "Orange salamander": { class: "tar", maxTier: 2, minTier: 2 }, // Marrentill tar
+  "Red salamander": { class: "tar", maxTier: 3, minTier: 3 }, // Tarromin tar
+  "Black salamander": { class: "tar", maxTier: 4, minTier: 4 }, // Harralander tar
+  "Tecu salamander": { class: "tar", maxTier: 5, minTier: 5 }, // Irit tar
 };
 
 /**
@@ -249,6 +266,13 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Rune javelin": { class: "javelin", tier: 6 },
   "Amethyst javelin": { class: "javelin", tier: 6 },
   "Dragon javelin": { class: "javelin", tier: 7 },
+
+  // Herb tars — for salamanders, one tar per salamander (exact tier match).
+  "Guam tar": { class: "tar", tier: 1 },
+  "Marrentill tar": { class: "tar", tier: 2 },
+  "Tarromin tar": { class: "tar", tier: 3 },
+  "Harralander tar": { class: "tar", tier: 4 },
+  "Irit tar": { class: "tar", tier: 5 },
 };
 
 /**
@@ -259,19 +283,23 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
  * - "Thrown": darts, knives, throwing axes, and all blowpipe variants (the
  *   blowpipe loads darts internally; no separate ammo slot in-game).
  * - "Chinchompas": the chinchompa IS the ammunition.
- * - "Salamander": NOT actually self-ammo — its tar (Guam tar, etc.) is
- *   equipped in the ammo slot (upstream ammoForRangedWeapons). Harmless here
- *   only because Salamander has no WEAPON_STYLES entry yet, so the optimizer
- *   never builds one; drop it from this set when salamanders are modelled.
  * - "Gun": the only catalog "Gun" item ("Fixed device") is a 0-stat novelty
  *   with no modelled ammunition.
  */
 export const SELF_AMMO_WEAPON_CATEGORIES: ReadonlySet<string> = new Set([
   "Thrown",
   "Chinchompas",
-  "Salamander",
   "Gun",
 ]);
+
+/**
+ * Weapon categories that need their ammo in the ammo slot for EVERY style,
+ * not just the ranged one. A salamander burns its tar for Scorch (melee),
+ * Flare (ranged) and Blaze (magic) alike — upstream zeroes all three without
+ * it (BaseCalc isAmmoInvalid) — so the optimizer must load the tar even on a
+ * melee or magic build instead of a prayer blessing.
+ */
+export const AMMO_FOR_EVERY_STYLE_CATEGORIES: ReadonlySet<string> = new Set(["Salamander"]);
 
 export type AmmoCompatResult =
   | { ok: true }
@@ -308,6 +336,12 @@ export function checkAmmoCompat(weaponName: string, ammoName: string): AmmoCompa
     return {
       ok: false,
       reason: `"${ammoName}" (tier ${ammo.tier}) exceeds "${weaponName}" max ammo tier ${weapon.maxTier}.`,
+    };
+  }
+  if (weapon.minTier !== undefined && ammo.tier < weapon.minTier) {
+    return {
+      ok: false,
+      reason: `"${weaponName}" only takes tier-${weapon.minTier} ${weapon.class}, not "${ammoName}" (tier ${ammo.tier}).`,
     };
   }
   return { ok: true };

@@ -48,8 +48,9 @@ type WikiStance =
   | "Autocast"
   | "Defensive Autocast";
 
-function toWikiStance(choice: AttackStyleChoice, style: string): WikiStance {
-  if (style === "magic") {
+function toWikiStance(choice: AttackStyleChoice, style: string, weaponCategory?: string): WikiStance {
+  // A salamander's Blaze is a plain "Defensive" stance upstream, not autocast.
+  if (style === "magic" && weaponCategory !== "Salamander") {
     if (choice === "defensive") return "Defensive Autocast";
     return "Autocast";
   }
@@ -73,7 +74,7 @@ export function buildWikiPayload(
   onTask: boolean,
   boost: CombatBoost | undefined,
 ): object {
-  const stance = toWikiStance(set.attackStyleChoice, set.style);
+  const stance = toWikiStance(set.attackStyleChoice, set.style, set.weaponCategory);
   const prayer = WIKI_PRAYER_FOR_STYLE[set.style];
   const potionVal = boost ? (WIKI_POTION_FOR_BOOST[boost.id] ?? null) : null;
   const potions = potionVal !== null ? [potionVal] : [];

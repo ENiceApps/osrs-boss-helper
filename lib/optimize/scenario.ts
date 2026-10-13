@@ -8,7 +8,7 @@ import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
 import { detectArmorSetBonus } from "@/data/armor-sets";
-import { checkAmmoCompat } from "@/data/ammo-compatibility";
+import { AMMO_FOR_EVERY_STYLE_CATEGORIES, checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
 import {
   SPELLCASTING_STAFF_CATEGORIES,
@@ -260,6 +260,11 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
       else ammoIsIncluded = true;
     }
   }
+  // A salamander burns its own tar on every style and deals 0 without it
+  // (upstream isAmmoInvalid) — never a build worth scoring.
+  if (weapon && AMMO_FOR_EVERY_STYLE_CATEGORIES.has(weapon.category) && !ammoIsIncluded) {
+    reasons.push(`"${weapon.name}" needs its own tar in the ammo slot.`);
+  }
 
   // Step 7: weapon style. Honour caller override if legal; else default.
   let style: { attackType: WeaponAttackType; choice: AttackStyleChoice } | null = null;
@@ -395,11 +400,12 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     attackSpeedTicks,
     internalAmmo,
     baseSpellMaxHit: combatStyle === "magic" ? resolvedBaseSpellMaxHit : undefined,
-    // Powered staves (Trident / Sanguinesti / Tumeken's shadow) fire their own
-    // attack with NO spell element — they must NOT inherit a spellElement, or the
-    // engine would wrongly apply elemental-weakness / tome bonuses to them.
+    // Powered staves (Trident / Sanguinesti / Tumeken's shadow) and a
+    // salamander's Blaze fire their own attack with NO spell element — they
+    // must NOT inherit a spellElement, or the engine would wrongly apply
+    // elemental-weakness / tome bonuses to them.
     spellElement:
-      combatStyle === "magic" && weapon.category !== "Powered Staff"
+      combatStyle === "magic" && !poweredStaffFormula
         ? input.spellElement
         : undefined,
     autoSpellName: combatStyle === "magic" ? input.autoSpellName : undefined,

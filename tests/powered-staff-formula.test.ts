@@ -19,10 +19,10 @@ describe("POWERED_STAFF_FORMULA — catalog reconciliation", () => {
     expect(orphans).toEqual([]);
   });
 
-  it("every powered-staff key is a Powered Staff in the catalog", () => {
+  it("every powered-staff key is a Powered Staff (or a salamander's Blaze) in the catalog", () => {
     const byId = new Map(ITEM_CATALOG.map((i) => [i.id, i]));
     for (const id of POWERED_STAFF_FORMULA.keys()) {
-      expect(byId.get(id)?.category).toBe("Powered Staff");
+      expect(["Powered Staff", "Salamander"]).toContain(byId.get(id)?.category);
     }
   });
 
@@ -44,6 +44,13 @@ describe("POWERED_STAFF_FORMULA — base max hits", () => {
 
   it("Trident of the Seas stays 3 under the Swamp: 28 at 99", () => {
     expect(POWERED_STAFF_FORMULA.get(11905)!(99)).toBe(28);
+  });
+
+  // Upstream getPlayerMaxMagicHit: trunc((magic * (blaze + 64) + 320) / 640).
+  it("salamander Blaze: 19 / 19 / 22 / 24 / 26 at 99 (Swamp lizard → Tecu)", () => {
+    const at99 = [10149, 10146, 10147, 10148, 28834].map((id) => POWERED_STAFF_FORMULA.get(id)!(99));
+    expect(at99).toEqual([19, 19, 22, 24, 26]);
+    expect(POWERED_STAFF_FORMULA.get(10148)!(70)).toBe(17); // Black salamander at its 70 req
   });
 });
 

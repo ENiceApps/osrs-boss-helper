@@ -81,6 +81,12 @@ export interface TargetActiveBonuses {
    * Undefined otherwise.
    */
   guardianPickaxeFactor?: [number, number];
+  /**
+   * A salamander without its own tar in the ammo slot — every style (Scorch,
+   * Flare, Blaze) deals 0, like upstream's isAmmoInvalid zeroing the attack
+   * roll and max hit (see `salamanderMissingTar`). Target-independent.
+   */
+  salamanderMissingTar: boolean;
 }
 
 /**
@@ -114,6 +120,19 @@ export function firesAmmo(set: LoadoutSet): boolean {
   const category = set.weaponCategory ?? "";
   if (category !== "Bow" && category !== "Crossbow") return false;
   return checkAmmoCompatWithCategory(weapon.itemName, category, ammo.itemName).ok;
+}
+
+/**
+ * True iff the set's weapon is a salamander and its ammo slot does NOT hold
+ * that salamander's own tar (Swamp lizard ↔ Guam tar, …, Tecu ↔ Irit). Upstream
+ * (wgloop ammoApplicability === INVALID) then zeroes every style, melee and
+ * magic included, since the salamander burns the tar for all three.
+ */
+export function salamanderMissingTar(set: LoadoutSet): boolean {
+  if (set.weaponCategory !== "Salamander") return false;
+  const { weapon, ammo } = set.slots;
+  if (!weapon || !ammo) return true;
+  return !checkAmmoCompatWithCategory(weapon.itemName, "Salamander", ammo.itemName).ok;
 }
 
 /**
@@ -203,6 +222,7 @@ export function activeBonusesForTarget(
       set.weaponCategory,
       set.slots.weapon?.itemName,
     ),
+    salamanderMissingTar: salamanderMissingTar(set),
   };
 }
 
@@ -219,6 +239,12 @@ export function rangedDefenceBonusFor(
       return target.defenceBonuses.rangedHeavy;
     case "Thrown": // includes blowpipe, darts, knives
       return target.defenceBonuses.rangedLight;
+    case "Salamander": {
+      // Flare rolls against the "mixed" bucket: the truncated mean of all three
+      // (upstream getRangedDamageType 'mixed').
+      const d = target.defenceBonuses;
+      return Math.trunc((d.rangedLight + d.rangedStandard + d.rangedHeavy) / 3);
+    }
     default: // Bow, etc.
       return target.defenceBonuses.rangedStandard;
   }

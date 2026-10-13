@@ -119,6 +119,7 @@ export function buildActiveFlags(
   if (activeBonuses?.conditionalBonuses.leafBladedBattleaxe) flags.push("Leaf-bladed battleaxe +17.5% dmg");
   // Not a bonus but the reason this loadout shows 0 DPS — say so where the
   // target-specific effects are listed.
+  if (activeBonuses?.salamanderMissingTar) flags.push("Salamander: no damage without its own tar in the ammo slot");
   if (activeBonuses?.leafyImmune) flags.push("Leafy: no damage without a leaf-bladed weapon, broad ammo or Magic Dart");
   if (activeBonuses?.flyingMeleeImmune) flags.push("Flying: melee can't reach it without a halberd or salamander");
   if (activeBonuses?.npcMeleeImmune === "all") flags.push("Immune to melee: only ranged or magic can damage it");

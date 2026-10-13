@@ -600,38 +600,6 @@ export function maggotKingPunishCombos(): CanonicalCombo[] {
   ];
 }
 
-const DRAGON_PICKAXE = 11920;
-const DRAGON_CANE = 12373;
-const TOXIC_STAFF_OF_THE_DEAD = 12904; // Charged
-const HALLOWED_FLAIL = 33718;
-const BLACK_CHINCHOMPA = 11959;
-
-/**
- * Weapon categories that had no style mapping (so the optimizer skipped them):
- * Pickaxe, Polestaff, Bladed Staff (melee + spell casting), Flail and
- * Chinchompas (heavy ranged defence, Medium fuse at the wiki calc's default 4
- * tiles). Zilyana's ranged defences differ per bucket (light/standard 100,
- * heavy 75), so the wrong bucket would show.
- */
-export function weaponCategoryCombos(): CanonicalCombo[] {
-  const graardor = "general-graardor";
-  const zilyana = "commander-zilyana";
-  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
-  const ranged = (weapon: number): number[] => [weapon, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
-  const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
-  return [
-    orderingCombo("cat-dragon-pickaxe-stab", graardor, melee(DRAGON_PICKAXE), "stab", "aggressive"),
-    orderingCombo("cat-dragon-pickaxe-crush", graardor, melee(DRAGON_PICKAXE), "crush", "aggressive"),
-    orderingCombo("cat-dragon-cane-crush", graardor, melee(DRAGON_CANE), "crush", "aggressive"),
-    orderingCombo("cat-toxic-sotd-stab", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "stab", "accurate"),
-    orderingCombo("cat-toxic-sotd-slash", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "slash", "aggressive"),
-    orderingCombo("cat-toxic-sotd-fire-surge", zilyana,
-      [TOXIC_STAFF_OF_THE_DEAD, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
-    orderingCombo("cat-hallowed-flail-slash", graardor, melee(HALLOWED_FLAIL), "slash", "aggressive"),
-    orderingCombo("cat-black-chinchompa", zilyana, ranged(BLACK_CHINCHOMPA), "ranged", "rapid"),
-  ];
-}
-
 const RUNE_PICKAXE = 1275;
 
 /**
@@ -722,6 +690,53 @@ export function phaseDamageCombos(): CanonicalCombo[] {
     orderingCombo("huey-pillar-zcb-diamond-bolts", huey,
       ranged(ZARYTE_CROSSBOW, DIAMOND_DRAGON_BOLTS_E), "ranged", "rapid", { ...pillar, ...bolts }),
     orderingCombo("huey-pillar-tumekens-shadow", huey, shadow, "magic", "accurate", pillar),
+  ];
+}
+
+const DRAGON_PICKAXE = 11920;
+const DRAGON_CANE = 12373;
+const TOXIC_STAFF_OF_THE_DEAD = 12904; // Charged
+const HALLOWED_FLAIL = 33718;
+const BLACK_CHINCHOMPA = 11959;
+const BLACK_SALAMANDER = 10148;
+const HARRALANDER_TAR = 10145;
+const TECU_SALAMANDER = 28834;
+const IRIT_TAR = 28837;
+
+/**
+ * Weapon categories that had no style mapping (so the optimizer skipped them):
+ * Pickaxe, Polestaff, Bladed Staff (melee + spell casting), Flail and
+ * Chinchompas (heavy ranged defence, Medium fuse at the wiki calc's default 4
+ * tiles). Zilyana's ranged defences differ per bucket (light/standard 100,
+ * heavy 75), so the wrong bucket would show.
+ */
+export function weaponCategoryCombos(): CanonicalCombo[] {
+  const graardor = "general-graardor";
+  const zilyana = "commander-zilyana";
+  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
+  const ranged = (weapon: number): number[] => [weapon, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
+  return [
+    orderingCombo("cat-dragon-pickaxe-stab", graardor, melee(DRAGON_PICKAXE), "stab", "aggressive"),
+    orderingCombo("cat-dragon-pickaxe-crush", graardor, melee(DRAGON_PICKAXE), "crush", "aggressive"),
+    orderingCombo("cat-dragon-cane-crush", graardor, melee(DRAGON_CANE), "crush", "aggressive"),
+    orderingCombo("cat-toxic-sotd-stab", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "stab", "accurate"),
+    orderingCombo("cat-toxic-sotd-slash", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "slash", "aggressive"),
+    orderingCombo("cat-toxic-sotd-fire-surge", zilyana,
+      [TOXIC_STAFF_OF_THE_DEAD, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
+    orderingCombo("cat-hallowed-flail-slash", graardor, melee(HALLOWED_FLAIL), "slash", "aggressive"),
+    orderingCombo("cat-black-chinchompa", zilyana, ranged(BLACK_CHINCHOMPA), "ranged", "rapid"),
+    // Salamanders: the tar rides in the ammo slot on EVERY style. Scorch reaches
+    // a flying boss; Flare rolls vs the mixed (mean) ranged defence; Blaze uses
+    // its own magic-level max hit with no spell.
+    orderingCombo("cat-black-salamander-scorch-kreearra", "kreearra",
+      [...melee(BLACK_SALAMANDER), HARRALANDER_TAR], "slash", "aggressive"),
+    orderingCombo("cat-black-salamander-flare", zilyana,
+      [...ranged(BLACK_SALAMANDER), HARRALANDER_TAR], "ranged", "rapid"),
+    orderingCombo("cat-black-salamander-blaze", zilyana,
+      [BLACK_SALAMANDER, HARRALANDER_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
+    orderingCombo("cat-tecu-salamander-blaze", zilyana,
+      [TECU_SALAMANDER, IRIT_TAR, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "defensive"),
   ];
 }
 

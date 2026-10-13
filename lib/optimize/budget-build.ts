@@ -22,6 +22,7 @@ import {
   type ElementalAmuletKind,
 } from "@/data/bonus-trigger-items";
 import {
+  AMMO_FOR_EVERY_STYLE_CATEGORIES,
   checkAmmoCompatWithCategory,
   SELF_AMMO_WEAPON_CATEGORIES,
   AMMO_TYPES,
@@ -238,6 +239,20 @@ function budgetGreedyFill(
 
   for (const slot of NON_WEAPON_SLOTS) {
     if (slot === "shield" && ws.weapon.isTwoHanded) continue;
+    // A salamander burns its own tar on every style (0 damage without it), so
+    // buy that tar first whatever the style — mirrors bank.ts.
+    if (slot === "ammo" && AMMO_FOR_EVERY_STYLE_CATEGORIES.has(ws.weapon.category)) {
+      const tar = (bySlot.get("ammo") ?? []).find(
+        (a) =>
+          checkAmmoCompatWithCategory(ws.weapon.name, ws.weapon.category, a.name).ok &&
+          priceOf(a) <= remaining,
+      );
+      if (tar) {
+        chosen.ammo = tar;
+        remaining -= priceOf(tar);
+      }
+      continue;
+    }
     // Free prayer-ammo slot: melee/magic weapons and self-ammo ranged weapons
     // don't fire a separate projectile, so fill the ammo slot with the best
     // affordable prayer item (blessing) at zero DPS cost — mirrors bank.ts.
@@ -538,11 +553,19 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
     }
   }
   for (const id of forcedNonWeaponIds(affordableIds, input.target)) pseudoBank.add(id);
+  const keptTarWeapons = weapons.filter(
+    (w) => keptWeaponIds.has(w.id) && AMMO_FOR_EVERY_STYLE_CATEGORIES.has(w.category),
+  );
   for (const a of bySlot.get("ammo") ?? []) {
     if (BOLT_EFFECT_BY_ITEM_ID.has(a.id)) pseudoBank.add(a.id);
     // Broad ammo rarely survives the per-slot top-K, but vs a leafy target it's
     // the only ranged option that deals damage (optimizeForBoss branches on it).
     if (BROAD_AMMO_IDS.has(a.id) && input.target.attributes.includes("leafy")) pseudoBank.add(a.id);
+    // A kept salamander's tar: weak raw ranged strength drops it from the
+    // top-K, but the salamander deals nothing on any style without it.
+    if (keptTarWeapons.some((w) => checkAmmoCompatWithCategory(w.name, w.category, a.name).ok)) {
+      pseudoBank.add(a.id);
+    }
   }
   // On task, make sure any affordable imbued slayer helm reaches optimizeForBoss
   // so its on-task force-include branch can weigh the helm against head-slot
