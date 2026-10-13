@@ -35,3 +35,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 18:47 UTC · pushed by ENiceApps
 
 - 37f49e0 fix(dps): scale phase damage modifiers per hitsplat, as the wiki calc does
+
+## 2026-10-13 18:56 UTC · pushed by ENiceApps
+
+- cf48ff0 fix(dps): model Confliction gauntlets' double roll and Vardorvis' full-HP defence
