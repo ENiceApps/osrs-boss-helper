@@ -11,9 +11,18 @@ on 2026-09-03).
 ## Unreleased changes
 
 **In flight (2026-10-13):** submitted as [plugin-hub PR #18481](https://github.com/runelite/plugin-hub/pull/18481),
-now pinning standalone commit `6878eb906e40fc00c6f975f27a135470ae4bebc7` (plugin 1.2;
-repointed the same day from `d23567d` to pick up the README rewrite below).
+pinning the standalone commit recorded in the latest "Hub PR #18481 repointed" commit here
+(plugin 1.2; started at `d23567d`, repointed the same day for the README rewrite
+and then the panel polish below).
 Awaiting review/merge.
+
+- **Panel polish** (2026-10-13, after ENice tested 1.2 in the dev client) — a
+  **Copy all** button under the text box re-copies whatever's in it without
+  re-reading the game (disabled until the first Copy). The link button is now
+  **Open the Bank page** and opens `osrsbosshelper.com/bank` instead of the
+  homepage. The sidebar icon is the website's godsword icon (16px crop of
+  `app/icon.png` without the frame, `panel_icon.png` in resources) instead of
+  the drawn orange "BH" box. `docs/panel.png` re-rendered to match.
 
 - **Player-facing README + description** (2026-10-13) — the Hub page
   (`runelite.net/plugin-hub/show/boss-helper-bank-sync`) renders the standalone
@@ -31,7 +40,7 @@ Awaiting review/merge.
   so players can paste it on the site's Bank page with no file at all. Works
   with the file toggle off. Falls back to the remembered bank when the bank
   isn't open this session, and says so. An **Open OSRS Boss Helper** button
-  keeps the old one-click link. `collectAndWrite` was split into `collect()`
+  keeps the old one-click link (now **Open the Bank page**, see above). `collectAndWrite` was split into `collect()`
   (shared) + the file write.
 - **Version bumped to 1.2** and the descriptions now say "saves or copies".
 - Website side (same commit): the paste box tells plugin JSON

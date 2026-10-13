@@ -20,8 +20,9 @@ import net.runelite.client.ui.PluginPanel;
  * Sidebar panel. Its main job is the no-file way into the web app: "Copy my
  * bank" puts the same data bank.json holds on the clipboard, and shows it in a
  * text box too so it can be selected and copied by hand if the clipboard
- * misbehaves. Also has a button that opens the web app, which is what the
- * sidebar icon used to do on its own.
+ * misbehaves, with a "Copy all" button to copy the box again later. Also has a
+ * button that opens the web app's Bank page, which is roughly what the sidebar
+ * icon used to do on its own.
  *
  * Swing thread only. The plugin reads game state on the client thread and hands
  * the result over with {@link #show}.
@@ -30,6 +31,7 @@ class BankSyncPanel extends PluginPanel {
 
     private final JTextArea output = new JTextArea(8, 0);
     private final JLabel status = new JLabel();
+    private final JButton copyAll = new JButton("Copy all");
 
     BankSyncPanel(Runnable onCopy, Runnable onOpenSite) {
         setLayout(new BorderLayout());
@@ -66,9 +68,18 @@ class BankSyncPanel extends PluginPanel {
         JScrollPane scroll = new JScrollPane(output);
         scroll.setPreferredSize(new Dimension(0, 140));
         top.add(fullWidth(scroll));
+        top.add(Box.createVerticalStrut(6));
+
+        // Copies the box as it stands, without re-reading the game. Handy when
+        // something else took over the clipboard since the last Copy.
+        copyAll.setEnabled(false);
+        copyAll.addActionListener(e -> status.setText(html(copyToClipboard(output.getText())
+            ? "Copied it all! Now paste it on the Bank page at osrsbosshelper.com."
+            : CLIPBOARD_BUSY)));
+        top.add(fullWidth(copyAll));
         top.add(Box.createVerticalStrut(10));
 
-        JButton open = new JButton("Open OSRS Boss Helper");
+        JButton open = new JButton("Open the Bank page");
         open.addActionListener(e -> onOpenSite.run());
         top.add(fullWidth(open));
 
@@ -83,16 +94,27 @@ class BankSyncPanel extends PluginPanel {
         if (text != null) {
             output.setText(text);
             output.setCaretPosition(0);
-            try {
-                Toolkit.getDefaultToolkit().getSystemClipboard()
-                    .setContents(new StringSelection(text), null);
-            } catch (IllegalStateException clipboardBusy) {
-                // Another app has the clipboard open. The text is still in the
-                // box, so the player can select it and copy by hand.
-                message = "Couldn't reach your clipboard. Click in the box, press Ctrl+A then Ctrl+C.";
+            copyAll.setEnabled(true);
+            if (!copyToClipboard(text)) {
+                message = CLIPBOARD_BUSY;
             }
         }
         status.setText(html(message));
+    }
+
+    private static final String CLIPBOARD_BUSY =
+        "Couldn't reach your clipboard. Click in the box, press Ctrl+A then Ctrl+C.";
+
+    private static boolean copyToClipboard(String text) {
+        try {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new StringSelection(text), null);
+            return true;
+        } catch (IllegalStateException clipboardBusy) {
+            // Another app has the clipboard open. The text is still in the box,
+            // so the player can select it and copy by hand.
+            return false;
+        }
     }
 
     private static String html(String text) {

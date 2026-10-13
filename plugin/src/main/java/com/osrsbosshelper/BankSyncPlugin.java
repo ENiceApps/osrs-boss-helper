@@ -4,10 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.inject.Provides;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -43,6 +39,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 
 /**
@@ -105,9 +102,9 @@ public class BankSyncPlugin extends Plugin {
     private static final long BANK_FILE_VERSION = 2;
     private static final String OUTPUT_DIR = "osrs-boss-helper";
     private static final String OUTPUT_FILE = "bank.json";
-    // The web app the sidebar button opens. Hardcoded (not a config) so the panel
-    // stays simple — the app lives at one canonical URL.
-    private static final String APP_URL = "https://osrsbosshelper.com";
+    // The web app page the sidebar button opens: the Bank page, where the copied
+    // text gets pasted. Hardcoded (not a config) so the panel stays simple.
+    private static final String APP_URL = "https://osrsbosshelper.com/bank";
     // Minimum gap between writes so a "deposit all" burst doesn't rewrite the file
     // many times in a row. Hardcoded — 2s is the right balance for everyone.
     private static final long MIN_SYNC_INTERVAL_MS = 2000;
@@ -196,7 +193,7 @@ public class BankSyncPlugin extends Plugin {
         panel = new BankSyncPanel(this::copyBankForWebsite, () -> LinkBrowser.browse(APP_URL));
         navButton = NavigationButton.builder()
             .tooltip("Boss Helper Bank Sync")
-            .icon(createIcon())
+            .icon(ImageUtil.loadImageResource(getClass(), "panel_icon.png"))
             .priority(10)
             .panel(panel)
             .build();
@@ -649,18 +646,5 @@ public class BankSyncPlugin extends Plugin {
                     "<col=0066cc>[Boss Helper] Using your bank from last time \u2014 open your bank to refresh it.</col>", null);
             }
         });
-    }
-
-    /** Simple in-code sidebar icon so we don't ship a binary asset. */
-    private static BufferedImage createIcon() {
-        BufferedImage img = new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(new Color(0xEC, 0x9A, 0x29));
-        g.fillRoundRect(1, 1, 22, 22, 6, 6);
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("SansSerif", Font.BOLD, 12));
-        g.drawString("BH", 4, 17);
-        g.dispose();
-        return img;
     }
 }
