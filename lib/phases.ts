@@ -35,6 +35,8 @@ export type PhasedMonster = MonsterCatalogEntry & {
   /** Raised minimum hit as a fraction of max hit (Mad Angel reaction buffs):
    *  the hit rolls 0..max then floors to trunc(max×n/d) — see MechanicPhase. */
   minHitFactor?: [number, number];
+  /** The Maggot King's melee punish window — see MechanicPhase.meleePunish. */
+  meleePunish?: MechanicPhase["meleePunish"];
   /** Active phase option id — carried into share links. */
   phaseId?: string;
   /** The wiki calc's `monster.inputs.phase` string for the active mechanic
@@ -93,6 +95,7 @@ export function applyPhase(
     if (mech.alwaysHits) out.alwaysHits = true;
     if (mech.accuracyModifier) out.accuracyModifier = mech.accuracyModifier;
     if (mech.minHitFactor) out.minHitFactor = mech.minHitFactor;
+    if (mech.meleePunish) out.meleePunish = mech.meleePunish;
     if (mech.wikiPhase !== undefined) out.wikiPhase = mech.wikiPhase;
     const adj = mech.statAdjust;
     if (adj) {

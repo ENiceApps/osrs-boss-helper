@@ -24,6 +24,14 @@ export interface CanonicalCombo {
   bossWikiId: number;
   /** Disambiguates multi-version monsters (e.g. "Whisperer"). */
   bossVersion?: string;
+  /**
+   * A mechanic phase (data/bosses/mechanic-phases.ts) active on both sides:
+   * ours via applyPhase(`mechanicId`), wgloop's via `monster.inputs.phase =
+   * wikiPhase`. Omitted = each engine's default phase. The worker then
+   * reports wgloop's DISPLAYED accuracy (getDisplayHitChance) — the Maggot
+   * King's crush punish shows the reduced first-hit chance there.
+   */
+  bossPhase?: { mechanicId: string; wikiPhase: string };
   bossSlug: string;
   attackType: WeaponAttackType;
   choice: AttackStyleChoice;

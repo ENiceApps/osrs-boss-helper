@@ -28,7 +28,7 @@ export interface PhaseDamageModifier {
    * never scaled below it (the TD shield keeps a 1 at 1).
    */
   minimum?: number;
-  /** Only these combat styles are affected (Maggot King's melee punish). */
+  /** Only these combat styles are affected. */
   styles?: CombatStyle[];
   /** Demonbane weapons/spells ignore the modifier entirely. */
   piercedByDemonbane?: boolean;
@@ -74,6 +74,19 @@ export interface MechanicPhase {
   minHitFactor?: [number, number];
   /** Attack-roll scale during this phase (Royal Titans: ranged ×6 at range). */
   accuracyModifier?: { factor: [number, number]; styles?: CombatStyle[] };
+  /**
+   * The Maggot King's melee punish window (wgloop isMaggotKingMeleePunish,
+   * PlayerVsNPCCalc L1180-1190 / L1606-1615 / L1744-1762 @ 89c3e25). Melee only:
+   *   • `crushDefenceFactor` scales the NPC defence roll for CRUSH attacks —
+   *     trunc(def × 15/100) — for every hit roll (upstream's `acc` is the
+   *     already-reduced getHitChance).
+   *   • `damageFactor` scales the FIRST hitsplat: a single hit per roll,
+   *     trunc(r × 3/2); a Scythe / Dual macuahuitl / two-hit weapon only its
+   *     first hitsplat's max, trunc(m × 3/2), the rest at full.
+   * Not a `damageModifier`: that one scales every hitsplat after the NPC
+   * transforms, and has no accuracy side.
+   */
+  meleePunish?: { damageFactor: [number, number]; crushDefenceFactor: [number, number] };
   /**
    * The wiki DPS calc's `monster.inputs.phase` value for this state — the
    * exact string from their constants.ts phase arrays (e.g. TD_PHASES) — so
@@ -208,9 +221,9 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
     },
   ],
 
-  // The Maggot King's "melee punish" window: melee hits deal ×3/2 damage.
-  // (wgloop additionally boosts the first crush splat; this engine applies the
-  // ×3/2 to the whole melee mean.)
+  // The Maggot King's "melee punish" window: the first melee hitsplat deals
+  // ×3/2 damage, and crush attacks roll against 15% of its defence roll — see
+  // MechanicPhase.meleePunish.
   "maggot-king": [
     {
       id: "standard",
@@ -221,8 +234,8 @@ export const MECHANIC_PHASES: Record<string, MechanicPhase[]> = {
     {
       id: "melee-punish",
       label: "Melee punish",
-      note: "Punish window: melee damage ×1.5.",
-      damageModifier: { factor: [3, 2], styles: ["melee"] },
+      note: "Punish window: melee damage ×1.5, and crush attacks almost always hit.",
+      meleePunish: { damageFactor: [3, 2], crushDefenceFactor: [15, 100] },
       wikiPhase: "Melee Punish",
     },
   ],

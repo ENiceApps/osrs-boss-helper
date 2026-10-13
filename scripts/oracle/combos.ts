@@ -12,6 +12,7 @@ import { ITEM_CATALOG } from "@/data/items/catalog";
 import { ORACLE_MATRIX, type OracleFixture } from "@/tests/fixtures/oracle-matrix";
 import { optimizeForBoss } from "@/lib/optimize/bank";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
+import { MECHANIC_PHASES } from "@/data/bosses/mechanic-phases";
 import { SKILLS_AT_99 } from "@/lib/recommend";
 import type { CombatStyle, SpellElement } from "@/types/osrs";
 import type { CanonicalCombo } from "./contract";
@@ -68,6 +69,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...twistedBowCombos(),
     ...npcImmunityAndCapCombos(),
     ...krakenRangedCombos(),
+    ...maggotKingPunishCombos(),
   ];
 }
 
@@ -553,6 +555,48 @@ export function krakenRangedCombos(): CanonicalCombo[] {
   ];
 }
 
+const ZOMBIE_AXE = 28810;
+const ABYSSAL_BLUDGEON = 13263;
+const DUAL_MACUAHUITL = 28997;
+const TORAGS_HAMMERS = 4747;
+const INFERNAL_CAPE = 21295;
+// Dharok's greataxe, helm, platebody, platelegs (Undamaged).
+const DHAROKS_SET = [4718, 4716, 4720, 4722];
+
+/**
+ * The Maggot King's melee punish (upstream isMaggotKingMeleePunish): crush
+ * attacks roll against trunc(def × 15/100), and the first melee hitsplat is
+ * ×3/2 — per roll on a single hit, on the first hitsplat's max for the
+ * Scythe / Dual macuahuitl / two-hit weapons. One combo per upstream branch:
+ * the default single hit (crush and slash), Dharok's own branch, an abyssal
+ * weapon (no pierce, unlike the TD shield), the Scythe on both its slash and
+ * crush styles, the macuahuitl, Torag's, plus a ranged and a Standard-phase
+ * control. Their numbers are locked in tests/mechanic-phases.test.ts.
+ */
+export function maggotKingPunishCombos(): CanonicalCombo[] {
+  const mk = "maggot-king";
+  const punish = { bossPhase: { mechanicId: "melee-punish", wikiPhase: "Melee Punish" } };
+  // Crush rolls against trunc(def × 15/100), so recovering our attack roll
+  // from wgloop's full defence roll is meaningless: no exact-roll check.
+  const crushPunish = { ...punish, exactRoll: false };
+  const standard = { bossPhase: { mechanicId: "standard", wikiPhase: "Standard" } };
+  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
+  return [
+    orderingCombo("mk-punish-zombie-axe-crush", mk, melee(ZOMBIE_AXE), "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-zombie-axe-slash", mk, melee(ZOMBIE_AXE), "slash", "aggressive", punish),
+    orderingCombo("mk-punish-dharoks-crush", mk,
+      [...DHAROKS_SET, FURY, INFERNAL_CAPE, 22981, 13239, 11773], "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-bludgeon", mk, melee(ABYSSAL_BLUDGEON), "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-scythe-slash", mk, melee(SCYTHE_OF_VITUR), "slash", "aggressive", punish),
+    orderingCombo("mk-punish-scythe-crush", mk, melee(SCYTHE_OF_VITUR), "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-dual-macuahuitl", mk, melee(DUAL_MACUAHUITL), "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-torags-hammers", mk, melee(TORAGS_HAMMERS), "crush", "aggressive", crushPunish),
+    orderingCombo("mk-punish-twisted-bow", mk,
+      [TWISTED_BOW, DRAGON_ARROW, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "rapid", punish),
+    orderingCombo("mk-standard-zombie-axe-crush", mk, melee(ZOMBIE_AXE), "crush", "aggressive", standard),
+  ];
+}
+
 // One self-sufficient base loadout per style (no missing ammo, works vs any
 // boss): a generic gear set the sweep re-targets at many monsters. Picked from
 // the validation fixtures so the equipment is known-valid on both engines.
@@ -605,11 +649,22 @@ export function sweepCombos(opts: { style?: CombatStyle; limit?: number } = {}):
  * gear the app puts in front of users, not a fixed reference set. Magic ranking
  * is seeded with Fire Surge (24, fire); both engines then use that same spell.
  */
-export function optimizedSweepCombos(opts: { limit?: number } = {}): CanonicalCombo[] {
+export function optimizedSweepCombos(
+  opts: { limit?: number; bossSlugs?: string[] } = {},
+): CanonicalCombo[] {
   const realBosses = MONSTER_CATALOG.filter((m) => m.wikiId !== 0);
   const limit = opts.limit ?? 12;
   const step = Math.max(1, Math.floor(realBosses.length / limit));
-  const sampled = realBosses.filter((_, i) => i % step === 0).slice(0, limit);
+  // Named bosses get the best pick of EACH combat style (the boss page shows
+  // all three); the sampled sweep keeps the single overall best.
+  const perStyle = Boolean(opts.bossSlugs);
+  const sampled = opts.bossSlugs
+    ? opts.bossSlugs.map((slug) => {
+        const boss = realBosses.find((m) => m.slug === slug);
+        if (!boss) throw new Error(`--bosses: unknown slug "${slug}"`);
+        return boss;
+      })
+    : realBosses.filter((_, i) => i % step === 0).slice(0, limit);
   // Exclude PvP/minigame-only gear (Deadman Mode, Bounty Hunter "(bh)", LMS
   // "(perfected)"/"(augmented)") from the owns-everything bank — players don't
   // own these in PvM and their inflated/variant stats only add sweep noise.
@@ -624,29 +679,40 @@ export function optimizedSweepCombos(opts: { limit?: number } = {}): CanonicalCo
       skills: SKILLS_AT_99,
       baseSpellMaxHit: 24,
       spellElement: "fire",
-      topN: 1,
+      topN: perStyle ? 500 : 1,
     });
-    const best = result.rankings[0];
-    if (!best) continue;
-    const lo = best.loadout;
-    const itemIds = Object.values(lo.slots)
-      .filter((s): s is NonNullable<typeof s> => Boolean(s))
-      .map((s) => s.itemId);
-    const isMagic = lo.style === "magic";
-    out.push({
-      id: `opt-${boss.slug}`,
-      itemIds,
-      internalAmmoId: lo.internalAmmo?.itemId,
-      bossWikiId: boss.wikiId,
-      bossVersion: boss.version || undefined,
-      bossSlug: boss.slug,
-      inWilderness: isWildernessBoss(boss.slug),
-      attackType: lo.attackType,
-      choice: lo.attackStyleChoice,
-      baseSpellMaxHit: isMagic ? lo.baseSpellMaxHit : undefined,
-      spellElement: isMagic ? lo.spellElement : undefined,
-      spellName: isMagic ? spellNameFor(lo.spellElement, lo.baseSpellMaxHit) : undefined,
-    });
+    const picks = perStyle
+      ? (["melee", "ranged", "magic"] as const)
+          .map((s) => result.rankings.find((r) => r.loadout.style === s))
+          .filter((r): r is NonNullable<typeof r> => Boolean(r))
+      : result.rankings.slice(0, 1);
+    for (const best of picks) {
+      const lo = best.loadout;
+      const itemIds = Object.values(lo.slots)
+        .filter((s): s is NonNullable<typeof s> => Boolean(s))
+        .map((s) => s.itemId);
+      const isMagic = lo.style === "magic";
+      // Pin our default mechanic phase on both sides: with no phase input wgloop
+      // falls into its non-default branches (Doom with no phase never misses).
+      const defaultPhase = perStyle ? MECHANIC_PHASES[boss.slug]?.[0] : undefined;
+      out.push({
+        ...(defaultPhase?.wikiPhase
+          ? { bossPhase: { mechanicId: defaultPhase.id, wikiPhase: defaultPhase.wikiPhase } }
+          : {}),
+        id: perStyle ? `opt-${boss.slug}-${lo.style}` : `opt-${boss.slug}`,
+        itemIds,
+        internalAmmoId: lo.internalAmmo?.itemId,
+        bossWikiId: boss.wikiId,
+        bossVersion: boss.version || undefined,
+        bossSlug: boss.slug,
+        inWilderness: isWildernessBoss(boss.slug),
+        attackType: lo.attackType,
+        choice: lo.attackStyleChoice,
+        baseSpellMaxHit: isMagic ? lo.baseSpellMaxHit : undefined,
+        spellElement: isMagic ? lo.spellElement : undefined,
+        spellName: isMagic ? spellNameFor(lo.spellElement, lo.baseSpellMaxHit) : undefined,
+      });
+    }
   }
   return out;
 }

@@ -230,8 +230,9 @@ export interface DpsScenario {
    */
   hitProfile?: HitProfile;
   /**
-   * Melee-only: Dharok's full set effect — max hit scales with missing HP.
-   * Multiplier: 1 + (maxHp − currentHp) × maxHp / 10000.
+   * Melee-only: Dharok's full set effect — damage scales with missing HP:
+   * trunc(h × (10000 + (maxHp − currentHp) × maxHp) / 10000), per rolled
+   * hitsplat, after every max-hit multiplier (wgloop's dist.scaleDamage).
    * Only active when all four Dharok's pieces are equipped. Resolved upstream.
    */
   dharok?: { maxHp: number; currentHp: number };
@@ -287,6 +288,23 @@ export interface DpsScenario {
    * Style-gated upstream.
    */
   targetAccuracyFactor?: [number, number];
+  /**
+   * Per-phase NPC defence-roll scale for the FIRST hitsplat: trunc(def × n/d).
+   * The Maggot King's melee punish, crush only: [15, 100] (upstream
+   * `firstHitAcc`). A single hit and both halves of a two-hit weapon roll at
+   * it; the Scythe's later hitsplats and the Dual macuahuitl's second half
+   * keep the full defence roll. The reported accuracy is the first hit's,
+   * as the wiki calc displays (getDisplayHitChance). Style-gated upstream.
+   */
+  firstHitDefenceRollFactor?: [number, number];
+  /**
+   * Per-phase scale on the FIRST hitsplat (the Maggot King's melee punish,
+   * [3, 2]; wgloop isMaggotKingMeleePunish). A single hit scales each roll,
+   * trunc(r × n/d); a multi-hit weapon scales only its first hitsplat's max
+   * (see hitsplatMaxima). Applied before the accurate-zero raise and the Corp
+   * halving, as upstream builds it into the attacker distribution.
+   */
+  firstHitDamageFactor?: [number, number];
   /** Player attacks cannot miss (Doom of Mokhaiotl burrowing/shielded). */
   targetAlwaysHit?: boolean;
   /**
@@ -438,6 +456,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   const demonbaneVuln = scenario.demonbaneVulnerability ?? DEFAULT_DEMONBANE_VULNERABILITY;
   const mult = conditionalMultipliers(cbFlags, foldRangedBane, demonbaneVuln);
   const defenceRoll = npcDefenceRoll(scenario.targetDefenceLevel, scenario.targetDefenceBonusForStyle);
+  const firstHitDefenceRoll = scenario.firstHitDefenceRollFactor
+    ? Math.trunc((defenceRoll * scenario.firstHitDefenceRollFactor[0]) / scenario.firstHitDefenceRollFactor[1])
+    : defenceRoll;
 
   let attackRoll: number;
   let maxHit: number;
@@ -480,10 +501,6 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       maxHit = meleeMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
       baseRoll = attackRoll;
       baseMax = maxHit;
-      if (scenario.dharok) {
-        const { maxHp, currentHp } = scenario.dharok;
-        maxHit = Math.trunc(maxHit * (1 + (maxHp - currentHp) * maxHp / 10000));
-      }
       break;
     }
     case "ranged": {
@@ -742,9 +759,18 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   // The max of the damage roll itself (wgloop's getMinAndMax). Everything below
   // rescales the rolled hitsplat in upstream's distribution, so the
-  // accurate-zero raise sees a roll over 0..rollMax. (Dharok's scale is
-  // upstream's too, but this engine folds it into the base max hit above.)
+  // accurate-zero raise sees a roll over 0..rollMax.
   const rollMax = maxHit;
+
+  // Dharok's set: upstream scales each rolled hitsplat, trunc(r × n/10000),
+  // after the slayer helm / Salve / other max-hit multipliers. A roll over
+  // 0..M scaled per roll is not a roll over 0..trunc(M × n/10000), so it takes
+  // the per-hitsplat means below (`perHitsplat`, via `afterRaise`, rolling
+  // over the unscaled `preCorpMax`); the max hit reported is trunc(M × n/10000).
+  const dharokFactor: [number, number] | undefined =
+    scenario.dharok && scenario.style === "melee" && scenario.dharok.currentHp < scenario.dharok.maxHp
+      ? [10000 + (scenario.dharok.maxHp - scenario.dharok.currentHp) * scenario.dharok.maxHp, 10000]
+      : undefined;
 
   if (scenario.style === "magic") {
     // Mark of Darkness demonbane damage — wgloop transforms each hitsplat at
@@ -790,6 +816,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // `attackerMax` is the max between the two — upstream's attacker-side
   // getMax(), which a Mad Angel floor reads before any NPC transform.
   const preCorpMax = maxHit;
+  if (dharokFactor) maxHit = Math.trunc((maxHit * dharokFactor[0]) / dharokFactor[1]);
   const npcT: NpcHitTransforms = {
     damageCap: scenario.targetDamageCap,
     styleScale: scenario.targetStyleDamageScale,
@@ -810,6 +837,25 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   if (scenario.targetDamageFactor) {
     const [n, d] = scenario.targetDamageFactor;
     maxHit = Math.trunc((maxHit * n) / d);
+  }
+
+  // First-hitsplat scale (the Maggot King's melee punish). A single hit
+  // scales each roll — trunc(r × 3/2) over 0..M is not a roll over
+  // 0..trunc(3M/2) — so it takes the per-hitsplat means below (`perHitsplat`,
+  // via `afterRaise`), and the reported max is trunc(M × 3/2). A multi-hit
+  // weapon scales only its first hitsplat's max (hitsplatMaxima), so its roll
+  // max stays M and only the reported max changes (`punishedMultiHitMax`).
+  const firstHitFactor = scenario.firstHitDamageFactor;
+  const punishProfile = scenario.hitProfile?.length ? scenario.hitProfile : undefined;
+  const punishSingle = firstHitFactor !== undefined && !punishProfile;
+  let punishedMultiHitMax: number | undefined;
+  if (firstHitFactor && punishProfile) {
+    const maxima = hitsplatMaxima(punishProfile, maxHit, firstHitFactor);
+    punishedMultiHitMax = isSplitProfile(punishProfile)
+      ? maxima.reduce((sum, m) => sum + m, 0)
+      : Math.max(...maxima);
+  } else if (punishSingle) {
+    maxHit = Math.trunc((maxHit * firstHitFactor[0]) / firstHitFactor[1]);
   }
 
   // Twinflame: upstream applies the corp halving, the Mad Angel floors, the
@@ -835,11 +881,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     attackRoll = Math.trunc((attackRoll * n) / d);
   }
 
-  const accuracy = scenario.targetAlwaysHit
-    ? 1
-    : scenario.fangEquipped
-      ? fangHitChance(attackRoll, defenceRoll)
-      : hitChance(attackRoll, defenceRoll);
+  const rollHitChance = (def: number): number =>
+    scenario.targetAlwaysHit
+      ? 1
+      : scenario.fangEquipped
+        ? fangHitChance(attackRoll, def)
+        : hitChance(attackRoll, def);
+  // `accuracy` is the first hitsplat's (and a single hit's) chance to land;
+  // `laterHitAccuracy` the rest of a multi-hit weapon's — they differ only in
+  // the Maggot King's crush punish (see firstHitDefenceRollFactor), where
+  // upstream rolls both halves of a two-hit weapon at the first hit's chance.
+  const accuracy = rollHitChance(firstHitDefenceRoll);
+  const twoHitWeapon =
+    punishProfile !== undefined &&
+    isSplitProfile(punishProfile) &&
+    !punishProfile.some((h) => h.requiresPrevious);
+  const laterHitAccuracy =
+    firstHitDefenceRoll === defenceRoll || twoHitWeapon ? accuracy : rollHitChance(defenceRoll);
 
   // Blood moon "Bloodrager" set effect: the Dual macuahuitl's two sequential
   // hits each have a 33% chance to accelerate the next attack by one tick. The
@@ -871,7 +929,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   const npcHit = (h: number, accurate = true): number =>
     npcHitMean(h, npcT, (c) => (accurate ? armouredHit(phaseHit(c), armour) : phaseHit(c)));
   const afterRaise = (h: number, minimum = 0): number => {
-    const halved = scenario.corpDamageHalved ? Math.trunc(h / 2) : h;
+    const dharoked = dharokFactor ? Math.trunc((h * dharokFactor[0]) / dharokFactor[1]) : h;
+    const punished = punishSingle
+      ? Math.trunc((dharoked * firstHitFactor[0]) / firstHitFactor[1])
+      : dharoked;
+    const halved = scenario.corpDamageHalved ? Math.trunc(punished / 2) : punished;
     return npcHit(Math.max(halved, minimum));
   };
 
@@ -887,7 +949,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // each landed hitsplat through `afterRaise` (`transformedMean`), in place of
   // the closed forms on the transformed max. A Twinflame double cast does its
   // own hitsplats (twinflameDamage).
-  const perHitsplat = (scenario.corpDamageHalved === true || npcTransforms) && !twinflame;
+  const perHitsplat =
+    (scenario.corpDamageHalved === true || npcTransforms || punishSingle || dharokFactor !== undefined) &&
+    !twinflame;
   const transformedMean = (lo: number, hi: number, minimum = 0, scale = 1): number =>
     meanTransformedRoll(lo, hi, (r) => afterRaise(scale * r, minimum));
 
@@ -968,11 +1032,11 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // halving first said 10 + 10 → 2 × 5. Zulrah caps each one on its own.
     let expected = 0;
     if (perHitsplat) {
-      for (const splat of hitsplatRolls(hitProfile, accuracy, preCorpMax)) {
+      for (const splat of hitsplatRolls(hitProfile, accuracy, preCorpMax, firstHitFactor, laterHitAccuracy)) {
         expected += splat.landChance * transformedMean(0, splat.maxHit);
       }
     } else {
-      expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour);
+      expected = expectedMultiHitDamage(hitProfile, accuracy, maxHit, armour, firstHitFactor, laterHitAccuracy);
     }
     dps = expected / (bloodragerSpeed * 0.6);
   }
@@ -1038,7 +1102,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     if (boltProc) {
       raised = boltAccurateZeroes(accuracy, rollMax, boltProc) * (afterRaise(1) - afterRaise(0));
     } else if (hitProfile) {
-      for (const splat of hitsplatRolls(hitProfile, accuracy, rollMax)) {
+      for (const splat of hitsplatRolls(hitProfile, accuracy, rollMax, firstHitFactor, laterHitAccuracy)) {
         raised += splat.landChance * landedFloorLift(0, splat.maxHit, floor, afterRaise);
       }
     } else {
@@ -1072,8 +1136,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     const profile = scenario.hitProfile;
     const reported =
       profile && isSplitProfile(profile)
-        ? hitsplatMaxima(profile, maxHit).reduce((sum, m) => sum + armouredHit(m, armour), 0)
-        : armouredHit(maxHit, armour);
+        ? hitsplatMaxima(profile, maxHit, firstHitFactor).reduce((sum, m) => sum + armouredHit(m, armour), 0)
+        : armouredHit(punishedMultiHitMax ?? maxHit, armour);
     return {
       dps,
       maxHit: reported,
@@ -1082,5 +1146,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       ...(npcHitTransforms ? { npcHitTransforms } : {}),
     };
   }
-  return { dps, maxHit, accuracy, ...(npcHitTransforms ? { npcHitTransforms } : {}) };
+  return {
+    dps,
+    maxHit: punishedMultiHitMax ?? maxHit,
+    accuracy,
+    ...(npcHitTransforms ? { npcHitTransforms } : {}),
+  };
 }

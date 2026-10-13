@@ -60,7 +60,7 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Block", attackType: "stab", choice: "defensive", defensive: true },
   ],
   Polearm: [
-    // Crystal halberd, Dharok's greataxe, etc.
+    // Crystal halberd, Dragon halberd, etc.
     { name: "Jab", attackType: "stab", choice: "controlled", defensive: false },
     { name: "Swipe", attackType: "slash", choice: "aggressive", defensive: false },
     { name: "Fend", attackType: "stab", choice: "defensive", defensive: true },
@@ -94,6 +94,13 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     { name: "Pound", attackType: "crush", choice: "accurate", defensive: false },
     { name: "Pummel", attackType: "crush", choice: "aggressive", defensive: false },
     { name: "Block", attackType: "crush", choice: "defensive", defensive: true },
+  ],
+  Bludgeon: [
+    // Abyssal bludgeon. In-game Pound / Pummel / Smash are all crush +
+    // aggressive (wgloop getCombatStylesForCategory) and there is no block, so
+    // one entry covers it — three identical options would only triple the
+    // optimizer's work.
+    { name: "Pummel", attackType: "crush", choice: "aggressive", defensive: false },
   ],
   Axe: [
     // Soulreaper axe, dragon axe, etc.

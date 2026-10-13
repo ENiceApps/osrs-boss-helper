@@ -244,6 +244,12 @@ export function computeSetDps(
     acc && (!acc.styles || acc.styles.includes(set.style)) ? acc.factor : undefined;
   const targetAlwaysHit = target.alwaysHits === true;
   const targetMinHitFactor = target.minHitFactor;
+  // The Maggot King's melee punish window: ×3/2 on the first melee hitsplat,
+  // and crush attacks roll against trunc(def × 15/100).
+  const punish = set.style === "melee" ? target.meleePunish : undefined;
+  const firstHitDamageFactor = punish?.damageFactor;
+  const firstHitDefenceRollFactor =
+    punish && set.attackType === "crush" ? punish.crushDefenceFactor : undefined;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
@@ -393,6 +399,8 @@ export function computeSetDps(
     targetDamageFactor,
     targetDamageMinimum,
     targetAccuracyFactor,
+    firstHitDefenceRollFactor,
+    firstHitDamageFactor,
     targetAlwaysHit,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
     // Dart, melee vs a flying target without a halberd / salamander, melee vs

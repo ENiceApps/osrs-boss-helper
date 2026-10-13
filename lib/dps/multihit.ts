@@ -58,12 +58,23 @@ export function isSplitProfile(profile: HitProfile): boolean {
  * Each hitsplat's integer max hit as upstream rolls it: trunc(f·M), except
  * that a split profile's last hitsplat takes the remainder (upstream's
  * M − trunc(M/2)), so the halves add back up to M.
+ *
+ * `firstHitFactor` (the Maggot King's melee punish, [3, 2]) then scales the
+ * FIRST hitsplat's max alone, trunc(m × n/d) — after the remainder is taken,
+ * as upstream scales `firstMax` once `secondMax = max − firstMax` is set.
  */
-export function hitsplatMaxima(profile: HitProfile, maxHit: number): number[] {
+export function hitsplatMaxima(
+  profile: HitProfile,
+  maxHit: number,
+  firstHitFactor?: [number, number],
+): number[] {
   const maxima = profile.map((h) => Math.trunc(h.maxFraction * maxHit));
   if (isSplitProfile(profile)) {
     const others = maxima.slice(0, -1).reduce((sum, m) => sum + m, 0);
     maxima[maxima.length - 1] = maxHit - others;
+  }
+  if (firstHitFactor && maxima.length > 0) {
+    maxima[0] = Math.trunc((maxima[0] * firstHitFactor[0]) / firstHitFactor[1]);
   }
   return maxima;
 }
@@ -76,18 +87,26 @@ export interface HitsplatRoll {
 
 /**
  * The hitsplats of one attack, given the single-roll accuracy and the combined
- * max hit the engine already computed.
+ * max hit the engine already computed. `laterAccuracy` is every hitsplat
+ * after the first's own chance to land (default: the same) — it differs only
+ * in the Maggot King's crush punish, where the first hitsplat rolls against a
+ * reduced defence roll.
  */
 export function hitsplatRolls(
   profile: HitProfile,
   accuracy: number,
   maxHit: number,
+  firstHitFactor?: [number, number],
+  laterAccuracy = accuracy,
 ): HitsplatRoll[] {
-  const maxima = hitsplatMaxima(profile, maxHit);
+  const maxima = hitsplatMaxima(profile, maxHit, firstHitFactor);
   let reach = 1;
+  let previous = accuracy;
   return profile.map((hit, i) => {
-    if (hit.requiresPrevious) reach *= accuracy;
-    return { landChance: reach * accuracy, maxHit: maxima[i] };
+    const own = i === 0 ? accuracy : laterAccuracy;
+    if (hit.requiresPrevious) reach *= previous;
+    previous = own;
+    return { landChance: reach * own, maxHit: maxima[i] };
   });
 }
 
@@ -108,9 +127,11 @@ export function expectedMultiHitDamage(
   accuracy: number,
   maxHit: number,
   flatArmour = 0,
+  firstHitFactor?: [number, number],
+  laterAccuracy = accuracy,
 ): number {
   let expected = 0;
-  for (const splat of hitsplatRolls(profile, accuracy, maxHit)) {
+  for (const splat of hitsplatRolls(profile, accuracy, maxHit, firstHitFactor, laterAccuracy)) {
     expected += splat.landChance * meanArmouredHit(0, splat.maxHit, flatArmour);
   }
   return expected;

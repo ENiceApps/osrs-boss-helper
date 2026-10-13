@@ -12,6 +12,9 @@
 //   npx tsx scripts/oracle/run-oracle.ts --sweep --limit=60    # N bosses per style
 //   npx tsx scripts/oracle/run-oracle.ts --optimize --limit=20 # oracle-check the app's
 //                                                              # recommended loadout per boss
+//   npx tsx scripts/oracle/run-oracle.ts --optimize --bosses=zulrah,vorkath
+//                                                              # named bosses, best pick per style
+//   ORACLE_IO_DIR=<dir> …                                      # private combos/results dir
 //
 // Exit code is non-zero if any combo diverges beyond tolerance — usable as a CI
 // gate once the validation set is green.
@@ -26,13 +29,18 @@ import { scoreScenario } from "@/lib/optimize/scenario";
 import { STAT_OVERRIDES } from "@/data/items/stat-overrides";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { isSplitProfile } from "@/lib/dps/multihit";
+import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
 import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CLONE_DIR = join(ROOT, ".oracle", "wgloop");
-const IO_DIR = join(ROOT, ".oracle", "io");
+// ORACLE_IO_DIR keeps a run's combos/results private — parallel sessions
+// sharing .oracle/io overwrite each other's combos mid-run.
+const IO_DIR = process.env.ORACLE_IO_DIR
+  ? resolve(process.env.ORACLE_IO_DIR)
+  : join(ROOT, ".oracle", "io");
 
 // Tolerances. maxHit must match exactly — any difference is a real modelling
 // gap. accuracy/dps allow small slop for integer-rounding order differences.
@@ -67,8 +75,15 @@ interface OurResult {
 }
 
 function ourEngine(combo: CanonicalCombo): OurResult {
-  const boss = MONSTER_BY_SLUG[combo.bossSlug];
-  if (!boss) return { id: combo.id, ok: false, error: `boss not in catalog: ${combo.bossSlug}` };
+  const catalogBoss = MONSTER_BY_SLUG[combo.bossSlug];
+  if (!catalogBoss) return { id: combo.id, ok: false, error: `boss not in catalog: ${combo.bossSlug}` };
+  const phaseOption = combo.bossPhase
+    ? phaseOptionsFor(catalogBoss).find((o) => o.id === `m:${combo.bossPhase!.mechanicId}`)
+    : undefined;
+  if (combo.bossPhase && !phaseOption) {
+    return { id: combo.id, ok: false, error: `no mechanic phase ${combo.bossPhase.mechanicId} on ${combo.bossSlug}` };
+  }
+  const boss = applyPhase(catalogBoss, phaseOption);
   const scored = scoreScenario({
     itemIds: combo.itemIds,
     internalAmmoId: combo.internalAmmoId,
@@ -246,9 +261,11 @@ function main(): void {
   const only = onlyArg ? onlyArg.slice("--only=".length) : undefined;
   const style = styleArg ? (styleArg.slice("--style=".length) as CombatStyle) : undefined;
   const limit = limitArg ? Number(limitArg.slice("--limit=".length)) : undefined;
+  const bossesArg = args.find((a) => a.startsWith("--bosses="));
+  const bossSlugs = bossesArg ? bossesArg.slice("--bosses=".length).split(",").filter(Boolean) : undefined;
 
   let combos = optimize
-    ? optimizedSweepCombos({ limit })
+    ? optimizedSweepCombos({ limit, bossSlugs })
     : sweep
       ? sweepCombos({ style, limit })
       : validationCombos();

@@ -25,6 +25,7 @@ import { getCombatStylesForCategory } from '@/utils';
 import { Prayer } from '@/enums/Prayer';
 import { PlayerCombatStyle } from '@/types/PlayerCombatStyle';
 import { EquipmentPiece, PlayerEquipment } from '@/types/Player';
+import PlayerVsNPCCalc from '@/lib/PlayerVsNPCCalc';
 
 // Item stat overrides from our catalog (data/items/stat-overrides.ts), replayed
 // onto the clone's equipment so BOTH engines use identical item stats. Without
@@ -72,6 +73,7 @@ interface Combo {
   internalAmmoId?: number;
   bossWikiId: number;
   bossVersion?: string;
+  bossPhase?: { mechanicId: string; wikiPhase: string };
   attackType: AttackType;
   choice: Choice;
   spellName?: string;
@@ -146,6 +148,7 @@ function runOne(combo: Combo): Result {
   // HP at the start of the fight, so set the wgloop monster to full HP to match.
   monster.inputs.monsterCurrentHp = monster.skills.hp;
   monster.monsterCurrentHp = monster.skills.hp;
+  if (combo.bossPhase) monster.inputs.phase = combo.bossPhase.wikiPhase;
 
   const equipment: Partial<PlayerEquipment> = {};
   let weapon: EquipmentPiece | undefined;
@@ -203,11 +206,17 @@ function runOne(combo: Combo): Result {
   });
 
   const r = calculatePlayerVsNpc(monster, player);
+  // A phased combo reports the accuracy the wiki calc DISPLAYS: in the Maggot
+  // King's crush punish getDisplayHitChance rolls against the reduced defence
+  // (the first hit's chance), where getHitChance keeps the full one.
+  const accuracy = combo.bossPhase
+    ? new PlayerVsNPCCalc(player, monster, { loadoutName: 'test' }).getDisplayHitChance()
+    : r.accuracy;
   return {
     id: combo.id,
     ok: true,
     maxHit: r.maxHit,
-    accuracy: r.accuracy,
+    accuracy,
     dps: r.dps,
     maxAttackRoll: r.maxAttackRoll,
     npcDefRoll: r.npcDefRoll,

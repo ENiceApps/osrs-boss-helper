@@ -5,6 +5,10 @@ import { buildWikiPayload } from "@/lib/wiki-export";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { MECHANIC_PHASES } from "@/data/bosses/mechanic-phases";
 import type { LoadoutSet } from "@/types/loadout";
+import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
+import { isSplitProfile } from "@/lib/dps/multihit";
+import { scoreScenario } from "@/lib/optimize/scenario";
+import { maggotKingPunishCombos } from "@/scripts/oracle/combos";
 import type { CombatStyle } from "@/types/osrs";
 
 const NO_FLAGS = {
@@ -142,5 +146,67 @@ describe("wgloop phase bosses", () => {
     const rangedStd = computeSetDps(setFor("ranged"), std, SKILLS_AT_99);
     const rangedPunish = computeSetDps(setFor("ranged"), punish, SKILLS_AT_99);
     expect(rangedPunish.maxHit).toBe(rangedStd.maxHit);
+  });
+});
+
+// The Maggot King's melee punish, locked to wgloop @ 89c3e25 for every
+// maggotKingPunishCombos() combo (npm run oracle -- --only=mk-). Crush rolls
+// against trunc(def × 15/100) (accuracy is the wiki calc's DISPLAYED first-hit
+// chance), the first hitsplat is ×3/2: per roll on a single hit, on the first
+// hitsplat's max for the Scythe / macuahuitl / Torag's.
+describe("Maggot King melee punish vs wgloop", () => {
+  const WGLOOP: Record<string, { maxHit: number; accuracy: number; dps: number }> = {
+    "mk-punish-zombie-axe-crush": { maxHit: 70, accuracy: 0.9289691278514148, dps: 10.844424332765476 },
+    "mk-punish-zombie-axe-slash": { maxHit: 70, accuracy: 0.3786212328966946, dps: 4.419877031245441 },
+    "mk-punish-dharoks-crush": { maxHit: 66, accuracy: 0.9289691278514148, dps: 7.249891341697551 },
+    "mk-punish-bludgeon": { maxHit: 63, accuracy: 0.933167832987998, dps: 12.161925730318384 },
+    "mk-punish-scythe-slash": { maxHit: 90, accuracy: 0.41538057589637367, dps: 6.252159110311378 },
+    "mk-punish-scythe-crush": { maxHit: 90, accuracy: 0.8964378748409766, dps: 10.797303429151455 },
+    "mk-punish-dual-macuahuitl": { maxHit: 52, accuracy: 0.9388874986594216, dps: 8.521287495533388 },
+    "mk-punish-torags-hammers": { maxHit: 50, accuracy: 0.9270597772752486, dps: 7.750181763222214 },
+    "mk-punish-twisted-bow": { maxHit: 59, accuracy: 0.45189551498954716, dps: 4.446149761369379 },
+    "mk-standard-zombie-axe-crush": { maxHit: 47, accuracy: 0.5266755308098225, dps: 4.129282460307568 },
+  };
+  const combos = maggotKingPunishCombos();
+
+  it("every combo has a locked wgloop result", () => {
+    expect(combos.map((c) => c.id).sort()).toEqual(Object.keys(WGLOOP).sort());
+  });
+
+  for (const combo of combos) {
+    it(combo.id, () => {
+      const want = WGLOOP[combo.id];
+      const king = MONSTER_BY_SLUG[combo.bossSlug];
+      const r = scoreScenario({
+        itemIds: combo.itemIds,
+        target: applyPhase(king, mech(combo.bossSlug, combo.bossPhase!.mechanicId)),
+        skills: SKILLS_AT_99,
+        attackStyle: { attackType: combo.attackType, choice: combo.choice },
+        onTask: false,
+      });
+      if (!r.valid) throw new Error(r.reasons.join("; "));
+      // The Scythe reports its largest hitsplat, wgloop the sum of all three.
+      const profile = hitProfileForWeapon(r.loadout.slots.weapon?.itemId, { targetSize: king.size });
+      if (!profile || isSplitProfile(profile)) expect(r.dps.maxHit).toBe(want.maxHit);
+      expect(r.dps.accuracy).toBeCloseTo(want.accuracy, 12);
+      expect(r.dps.dps).toBeCloseTo(want.dps, 9);
+    });
+  }
+
+  it("Dharok's at 1 HP out-damages the zombie axe once crush ignores the defence", () => {
+    const king = applyPhase(MONSTER_BY_SLUG["maggot-king"], mech("maggot-king", "melee-punish"));
+    const score = (id: string, currentHp?: number) => {
+      const combo = combos.find((c) => c.id === id)!;
+      const r = scoreScenario({
+        itemIds: combo.itemIds,
+        target: king,
+        skills: SKILLS_AT_99,
+        attackStyle: { attackType: combo.attackType, choice: combo.choice },
+        onTask: false,
+      });
+      if (!r.valid) throw new Error(r.reasons.join("; "));
+      return computeSetDps(r.loadout, king, SKILLS_AT_99, undefined, false, false, currentHp).dps;
+    };
+    expect(score("mk-punish-dharoks-crush", 1)).toBeGreaterThan(score("mk-punish-zombie-axe-crush"));
   });
 });
