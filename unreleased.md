@@ -114,3 +114,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:29 UTC · pushed by ENiceApps
 
 - 1dc8fc5 fix(wiki): always put the site URL in the wiki User-Agent
+
+## 2026-10-13 20:33 UTC · pushed by ENiceApps
+
+- bbef04e docs(plugin): record in-flight Hub release (PR #18481, standalone d23567d)
