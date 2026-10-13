@@ -211,9 +211,9 @@ export default function BossesPage() {
 
   const notable = useMemo(() => {
     const bySlug = new Map(MONSTER_CATALOG.map((m) => [m.slug, m]));
-    return NOTABLE_SLUGS.map((s) => bySlug.get(s)).filter(
-      (m): m is NonNullable<typeof m> => Boolean(m),
-    );
+    return NOTABLE_SLUGS.map((s) => bySlug.get(s))
+      .filter((m): m is NonNullable<typeof m> => Boolean(m))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
   const shown = isExploring ? results : notable;
