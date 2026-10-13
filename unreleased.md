@@ -131,3 +131,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:51 UTC · pushed by ENiceApps
 
 - 69aa54f feat(plugin): Copy all button, link to the Bank page, site icon in the sidebar
+
+## 2026-10-13 20:52 UTC · pushed by ENiceApps
+
+- cdb2c29 docs(plugin): Hub PR #18481 repointed to b071f3a (panel polish)
