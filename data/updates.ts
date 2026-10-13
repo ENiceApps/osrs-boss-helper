@@ -114,7 +114,7 @@ export const RELEASES: Release[] = [
       { kind: "new", lead: "Wilderness bosses", text: "Risk it mode finds the best setup worth no more than the GP you're willing to risk." },
       { kind: "new", lead: "Share links", text: "send a setup to a friend as a link." },
       { kind: "new", lead: "Item browser", text: "every equippable item, sortable by any bonus, with live Grand Exchange prices." },
-      { kind: "new", lead: "Boss Helper Bank Sync", text: "a RuneLite plugin on the Plugin Hub that saves your bank, gear, inventory and skills to a file on your own computer. The site reads that file locally, and the plugin remembers your bank between sessions for each account." },
+      { kind: "new", lead: "Boss Helper Bank Sync", text: "a RuneLite plugin on the Plugin Hub that brings your bank, gear, inventory and skills into the site. It remembers your bank between sessions for each account." },
       { kind: "new", lead: "Highlight colour", text: "pick your accent colour from the swatches in the header." },
     ],
   },
