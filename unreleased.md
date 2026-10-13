@@ -78,3 +78,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:28 UTC · pushed by ENiceApps
 
 - 71accaa copy(boss): describe the TD Unshielded phase as the wiki strategy page does
+
+## 2026-10-13 19:31 UTC · pushed by ENiceApps
+
+- beed04b feat(bosses): show the full roster A to Z by default
