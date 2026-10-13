@@ -22,3 +22,4 @@ empties this file once it has drafted the release.
 - 75067ab fix(icons): fall back through several icon sources instead of hiding
 - 4c9900d fix(boss): open on Own only when a bank is connected
 - b362679 fix(dps): match the wiki calc's Maggot King melee punish, Dharok's, bludgeon
+- c5e1dc1 fix(items): drop unobtainable event/minigame gear from the catalog
