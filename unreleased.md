@@ -102,3 +102,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:41 UTC · pushed by ENiceApps
 
 - f666d11 copy(updates): drop the subtitle under the heading
+
+## 2026-10-13 20:21 UTC · pushed by ENiceApps
+
+- a8abfb2 perf(icons): self-host item icons instead of hotlinking the wiki
