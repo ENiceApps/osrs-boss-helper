@@ -92,12 +92,12 @@ export function BossStatsPanel({ monster }: Props) {
             <BonusStat
               label="Std"
               value={b.rangedStandard}
-              title="Standard ranged defence vs bows (arrows) and chinchompas"
+              title="Standard ranged defence vs bows (arrows)"
             />
             <BonusStat
               label="Heavy"
               value={b.rangedHeavy}
-              title="Heavy ranged defence vs crossbows (bolts) and javelins"
+              title="Heavy ranged defence vs crossbows (bolts), javelins and chinchompas"
             />
           </div>
         </div>

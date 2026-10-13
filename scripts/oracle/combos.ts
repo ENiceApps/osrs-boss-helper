@@ -70,6 +70,7 @@ export function validationCombos(): CanonicalCombo[] {
     ...npcImmunityAndCapCombos(),
     ...krakenRangedCombos(),
     ...maggotKingPunishCombos(),
+    ...weaponCategoryCombos(),
   ];
 }
 
@@ -594,6 +595,38 @@ export function maggotKingPunishCombos(): CanonicalCombo[] {
     orderingCombo("mk-punish-twisted-bow", mk,
       [TWISTED_BOW, DRAGON_ARROW, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "rapid", punish),
     orderingCombo("mk-standard-zombie-axe-crush", mk, melee(ZOMBIE_AXE), "crush", "aggressive", standard),
+  ];
+}
+
+const DRAGON_PICKAXE = 11920;
+const DRAGON_CANE = 12373;
+const TOXIC_STAFF_OF_THE_DEAD = 12904; // Charged
+const HALLOWED_FLAIL = 33718;
+const BLACK_CHINCHOMPA = 11959;
+
+/**
+ * Weapon categories that had no style mapping (so the optimizer skipped them):
+ * Pickaxe, Polestaff, Bladed Staff (melee + spell casting), Flail and
+ * Chinchompas (heavy ranged defence, Medium fuse at the wiki calc's default 4
+ * tiles). Zilyana's ranged defences differ per bucket (light/standard 100,
+ * heavy 75), so the wrong bucket would show.
+ */
+export function weaponCategoryCombos(): CanonicalCombo[] {
+  const graardor = "general-graardor";
+  const zilyana = "commander-zilyana";
+  const melee = (weapon: number): number[] => meleeGear(weapon, FACEGUARD, TORTURE);
+  const ranged = (weapon: number): number[] => [weapon, ARMADYL_HELM, ANGUISH, ...RANGED_REST];
+  const fireSurge = { baseSpellMaxHit: 24, spellElement: "fire" as const, spellName: "Fire Surge" };
+  return [
+    orderingCombo("cat-dragon-pickaxe-stab", graardor, melee(DRAGON_PICKAXE), "stab", "aggressive"),
+    orderingCombo("cat-dragon-pickaxe-crush", graardor, melee(DRAGON_PICKAXE), "crush", "aggressive"),
+    orderingCombo("cat-dragon-cane-crush", graardor, melee(DRAGON_CANE), "crush", "aggressive"),
+    orderingCombo("cat-toxic-sotd-stab", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "stab", "accurate"),
+    orderingCombo("cat-toxic-sotd-slash", graardor, melee(TOXIC_STAFF_OF_THE_DEAD), "slash", "aggressive"),
+    orderingCombo("cat-toxic-sotd-fire-surge", zilyana,
+      [TOXIC_STAFF_OF_THE_DEAD, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", fireSurge),
+    orderingCombo("cat-hallowed-flail-slash", graardor, melee(HALLOWED_FLAIL), "slash", "aggressive"),
+    orderingCombo("cat-black-chinchompa", zilyana, ranged(BLACK_CHINCHOMPA), "ranged", "rapid"),
   ];
 }
 

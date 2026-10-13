@@ -5,6 +5,7 @@
 // specific target's stats. One curated set serves every boss that matches
 // its predicate — no per-boss preset curation needed.
 
+import { SPELLCASTING_STAFF_CATEGORIES } from "@/data/weapon-styles";
 import type { DpsResult, PrayerSelection, Skills } from "@/types/osrs";
 import { defaultPrayerFor } from "@/data/prayers";
 import { calculateDps } from "@/lib/dps/calculate";
@@ -343,7 +344,7 @@ export function computeSetDps(
     ? castSpell.spellbook === "standard"
     : set.spellElement !== undefined && set.spellElement !== "none";
   const attackSpeedTicks =
-    set.style === "magic" && set.weaponCategory === "Staff"
+    set.style === "magic" && SPELLCASTING_STAFF_CATEGORIES.has(set.weaponCategory ?? "")
       ? magicCastSpeedTicks(weaponId!, set.attackSpeedTicks, isStandardSpell)
       : set.attackSpeedTicks;
 
