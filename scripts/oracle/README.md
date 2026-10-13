@@ -128,6 +128,21 @@ damage. They run with `strictDps`; their wgloop numbers are locked in
 combo: upstream's Stab Sword "Slash" is Aggressive, ours Controlled, so the
 worker can't match the stance — the unit tests cover it.
 
+## Phase damage combos
+
+`phaseDamageCombos()` in `combos.ts` checks the mechanic phases with a
+`damageModifier`: the Tormented Demon's shield (×4/5, minimum 1; demonbane and
+abyssal weapons pierce it), the Abyssal Sire's transition (÷2) and the
+Hueycoatl's pillar (×13/10). Upstream applies each as an NPC transform
+(`multiplyTransformer` / `divisionTransformer` in applyNpcTransforms), so it
+scales EACH hitsplat after the accurate-zero raise: one `td-shielded-` /
+`sire-transition-` / `huey-pillar-` combo per mean branch (single hit, fang,
+Scythe, Dark bow, Torag's, Dual macuahuitl, ruby / diamond bolts, magic), plus
+Emberlight and the Abyssal whip as pierce controls. Scaling the max hit and
+halving it ran 1-4% high, and ruby procs skipped the factor entirely (Zaryte
+crossbow vs the Sire's transition +39%); fixed 2026-10-13. Their wgloop numbers
+are locked in `tests/mechanic-phases.test.ts`.
+
 ## Twisted bow combos
 
 `twistedBowCombos()` in `combos.ts` checks the Twisted bow's scaling (upstream
@@ -282,9 +297,16 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   (`transformedBoltDamagePerAttack` in `lib/dps/bolts.ts`). Was, on the
   `corp-acb-` combos: opal +20.4%, dragonstone +8.8%, pearl +6.0%, diamond
   +2.0%, ruby +0.8%, onyx −0.3%.
-- **Harness: Tormented Demon** — the worker's TD instance reports accuracy
-  1.0000 (max hits match ours), so TD rows can't be oracle-checked yet. The
-  shield's ×4/5 minimum-1 transform is covered by the unit tests instead.
+- ~~**Harness: Tormented Demon** — the worker's TD instance reports accuracy
+  1.0000 (max hits match ours), so TD rows can't be oracle-checked yet.~~
+  **FIXED** 2026-10-13 — that was upstream's Unshielded branch (any phase but
+  `Shielded`); combos now carry `bossPhase`, and the `td-shielded-` combos
+  match (see Phase damage combos).
+- **Tormented Demon, Unshielded** — upstream's TD with its shield down always
+  hits (`PLAYER_ACCURACY_TD`), adds max(0, speed² − 16) to every accurate
+  hitsplat and attacks a tick faster (`tdUnshieldedBonusApplies`). Our
+  Unshielded phase only drops the ×4/5, so it runs well low (Ghrazi rapier:
+  5.172 vs 9.176 dps, accuracy 0.56 vs 1). No combo until it's modelled.
 - ~~**Twisted bow scaling** — no 140% / 250% clamp (141% accuracy at magic
   250, 150% at a Xerician 350), and only the Magic level read, never the magic
   attack bonus (Araxxor 190 instead of 260 → 250: max 57 vs 66).~~ **FIXED**

@@ -8,7 +8,7 @@ import type { LoadoutSet } from "@/types/loadout";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { isSplitProfile } from "@/lib/dps/multihit";
 import { scoreScenario } from "@/lib/optimize/scenario";
-import { maggotKingPunishCombos } from "@/scripts/oracle/combos";
+import { maggotKingPunishCombos, phaseDamageCombos } from "@/scripts/oracle/combos";
 import type { CombatStyle } from "@/types/osrs";
 
 const NO_FLAGS = {
@@ -209,4 +209,64 @@ describe("Maggot King melee punish vs wgloop", () => {
     };
     expect(score("mk-punish-dharoks-crush", 1)).toBeGreaterThan(score("mk-punish-zombie-axe-crush"));
   });
+});
+
+// The phase damage modifiers, locked to wgloop @ 89c3e25 for every
+// phaseDamageCombos() combo (npm run oracle -- --only=td- / sire- / huey-).
+// Upstream's multiplyTransformer scales EACH hitsplat after the accurate-zero
+// raise: the mean of trunc(r × n/d), each half of a split weapon on its own,
+// and ruby / diamond procs too — scaling the max and halving it ran 1-4% high
+// (a ruby proc that skipped the Sire's transition, 39%).
+describe("phase damage modifiers vs wgloop", () => {
+  const WGLOOP: Record<string, { maxHit: number; accuracy: number; dps: number }> = {
+    "td-shielded-rapier": { maxHit: 35, accuracy: 0.5636474908200735, dps: 4.049911600707196 },
+    "td-shielded-fang": { maxHit: 32, accuracy: 0.7583079451983326, dps: 4.549847671189995 },
+    "td-shielded-scythe": { maxHit: 56, accuracy: 0.3746644913425609, dps: 3.395834575633842 },
+    "td-shielded-torags-hammers": { maxHit: 32, accuracy: 0.5522037803473141, dps: 2.8399051560719015 },
+    "td-shielded-tbow": { maxHit: 52, accuracy: 0.6261645280365618, dps: 5.432989735799819 },
+    "td-shielded-zcb-ruby-bolts": { maxHit: 88, accuracy: 0.6739194119683614, dps: 5.221373570404591 },
+    "td-shielded-zcb-diamond-bolts": { maxHit: 40, accuracy: 0.6739194119683614, dps: 3.8509943813382126 },
+    "td-shielded-tumekens-shadow": { maxHit: 40, accuracy: 0.8559819127575139, dps: 5.717520212136728 },
+    "td-shielded-emberlight": { maxHit: 47, accuracy: 0.4819220041050471, dps: 4.723002974258664 },
+    "td-shielded-abyssal-whip": { maxHit: 41, accuracy: 0.3057865375506552, dps: 2.6149602715145317 },
+    "sire-transition-rapier": { maxHit: 22, accuracy: 0.4700968927497494, dps: 2.106730519359988 },
+    "sire-transition-scythe": { maxHit: 35, accuracy: 0.44331662359498086, dps: 2.4812031840070334 },
+    "sire-transition-dual-macuahuitl": { maxHit: 20, accuracy: 0.4736681681173164, dps: 1.4542285450102725 },
+    "sire-transition-zcb-ruby-bolts": { maxHit: 46, accuracy: 0.5723188367200192, dps: 2.7503603040536517 },
+    "sire-transition-tumekens-shadow": { maxHit: 25, accuracy: 0.861199386551566, dps: 3.588330777298192 },
+    "huey-pillar-rapier": { maxHit: 57, accuracy: 0.5661152130137798, dps: 6.646611945384006 },
+    "huey-pillar-scythe": { maxHit: 91, accuracy: 0.6141096323348667, dps: 9.086004134030057 },
+    "huey-pillar-torags-hammers": { maxHit: 52, accuracy: 0.8169987626402697, dps: 6.873164193640363 },
+    "huey-pillar-tbow": { maxHit: 76, accuracy: 0.3779494204805595, dps: 4.776860731073739 },
+    "huey-pillar-dark-bow": { maxHit: 70, accuracy: 0.3213764262667412, dps: 2.295545901905294 },
+    "huey-pillar-zcb-diamond-bolts": { maxHit: 65, accuracy: 0.338410512464625, dps: 3.744854992132478 },
+    "huey-pillar-tumekens-shadow": { maxHit: 66, accuracy: 0.8768518079337223, dps: 9.566678058353816 },
+  };
+  const combos = phaseDamageCombos();
+
+  it("every combo has a locked wgloop result", () => {
+    expect(combos.map((c) => c.id).sort()).toEqual(Object.keys(WGLOOP).sort());
+  });
+
+  for (const combo of combos) {
+    it(combo.id, () => {
+      const want = WGLOOP[combo.id];
+      const boss = MONSTER_BY_SLUG[combo.bossSlug];
+      const r = scoreScenario({
+        itemIds: combo.itemIds,
+        target: applyPhase(boss, mech(combo.bossSlug, combo.bossPhase!.mechanicId)),
+        skills: SKILLS_AT_99,
+        attackStyle: { attackType: combo.attackType, choice: combo.choice },
+        onTask: false,
+      });
+      if (!r.valid) throw new Error(r.reasons.join("; "));
+      // The Scythe / Dark bow report their largest hitsplat (wgloop the sum),
+      // bolts the normal hit (wgloop the proc), the fang its untrimmed max.
+      const profile = hitProfileForWeapon(r.loadout.slots.weapon?.itemId, { targetSize: boss.size });
+      const comparableMax = (!profile || isSplitProfile(profile)) && !combo.knownMaxHitResidual;
+      if (comparableMax) expect(r.dps.maxHit).toBe(want.maxHit);
+      expect(r.dps.accuracy).toBeCloseTo(want.accuracy, 12);
+      expect(r.dps.dps).toBeCloseTo(want.dps, 9);
+    });
+  }
 });
