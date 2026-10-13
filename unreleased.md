@@ -127,3 +127,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 20:47 UTC · pushed by ENiceApps
 
 - 6a490a7 chore(plugin): keep the offscreen panel renderer behind docs/panel.png
+
+## 2026-10-13 20:51 UTC · pushed by ENiceApps
+
+- 69aa54f feat(plugin): Copy all button, link to the Bank page, site icon in the sidebar
