@@ -48,3 +48,8 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 19:14 UTC · pushed by ENiceApps
 
 - 38c7ae6 copy(boss): trim the helper text on the boss page
+
+## 2026-10-13 19:16 UTC · pushed by ENiceApps
+
+- d0d754b fix(dps): model the Tormented Demon's Unshielded phase as the wiki calc does
+- fd7cee2 fix(dps): TD Unshielded bonus for Bladed Staff spells; add a chinchompa combo
