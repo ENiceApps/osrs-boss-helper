@@ -139,3 +139,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 22:47 UTC · pushed by ENiceApps
 
 - 3e1ad8a docs(plugin): record 1.2 as shipped to the Hub (PR #18481, b071f3a)
+
+## 2026-10-13 22:49 UTC · pushed by ENiceApps
+
+- ee3de9f docs: start a roadmap with the whole-fight mode idea for multi-phase bosses
