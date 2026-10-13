@@ -3,6 +3,7 @@
 
 import type { Metadata } from "next";
 import {
+  COMMUNITY_NOTE,
   RELEASES,
   PLANNED,
   CHANGE_KIND_ORDER,
@@ -32,6 +33,33 @@ export default function UpdatesPage() {
       <a href="#planned" className="inline-block mt-2 text-sm text-osrs-gold hover:underline">
         What&apos;s planned ↓
       </a>
+
+      {COMMUNITY_NOTE && (
+        <section className="osrs-panel rounded-lg p-4 sm:p-6 mt-6" aria-label="A note from ENice">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <p className="label-eyebrow">From ENice</p>
+            <time dateTime={COMMUNITY_NOTE.date} className="text-caption text-osrs-muted">
+              {formatReleaseDate(COMMUNITY_NOTE.date)}
+            </time>
+          </div>
+          {COMMUNITY_NOTE.blocks.map((block, i) =>
+            typeof block === "string" ? (
+              <p key={i} className="text-sm text-parchment-dark leading-relaxed mt-2">
+                {block}
+              </p>
+            ) : (
+              <ul
+                key={i}
+                className="mt-2 space-y-1.5 list-disc pl-5 marker:text-osrs-gold/60 text-sm leading-relaxed text-parchment-dark"
+              >
+                {block.map((item, j) => (
+                  <li key={j}>{item}</li>
+                ))}
+              </ul>
+            ),
+          )}
+        </section>
+      )}
 
       {RELEASES.map((r) => (
         <article

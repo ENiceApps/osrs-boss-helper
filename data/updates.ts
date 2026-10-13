@@ -60,6 +60,29 @@ export interface PlannedItem {
   text: string;
 }
 
+/** ENice's pinned letter at the top of /updates. A string is a paragraph, a
+ *  string[] is a bullet list. ENice writes these himself; don't reword them. */
+export interface CommunityNote {
+  date: IsoDate;
+  blocks: (string | string[])[];
+}
+
+export const COMMUNITY_NOTE: CommunityNote | null = {
+  date: "2026-10-13",
+  blocks: [
+    "Hello all,",
+    "Posting on Reddit let me know there is much more polishing and work that's needed before truly calling this a “released” project. Even though it's only a side project for me, it's the first time I've tried releasing anything to the public, and I want to do it right. So I'm calling this an alpha release for now. I've also gotten some really good feedback and reports of obvious bugs from a few of you. So my intentions are the following:",
+    [
+      "To write as much as I can in my own words (like this whole message). I'm not much of a writer, but I'll type it as I'd say it. Maybe that gives it the personal touch.",
+      "I'll be adding weekly patch notes with changes I've made throughout the week. I'm changing the app as I go, and patch notes can just be a list of things that changed. I'll also use this to try and keep up with Jagex updates. (Looking at you, Raids 4.)",
+      "I know the UI leaves a lot to be desired. This is where I personally struggle the most. I can understand functionality and the OSRS game mechanics, but I'm finding it very challenging to make the UI 1. intuitive to use and 2. easy to look at, so I'm open to ideas.",
+    ],
+    "Beyond that, I'm straight up winging it weekly, haha. I'm not even asking for donations. I'm making this for you and me, and I love this game just as much as I'm sure you do too. I hope to hear from more of you as the weeks go on. You'll surely hear from me.",
+    "Thank you,",
+    "— ENice",
+  ],
+};
+
 export const RELEASES: Release[] = [
   {
     version: "0.0.1",
