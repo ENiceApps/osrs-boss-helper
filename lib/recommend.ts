@@ -254,7 +254,7 @@ export function computeSetDps(
       ? set.attackType === "crush"
       : set.style === "ranged"
         ? set.weaponCategory === "Crossbow" || set.weaponCategory === "Chinchompas"
-        : set.weaponCategory === "Staff" || set.autoSpellName !== undefined);
+        : SPELLCASTING_STAFF_CATEGORIES.has(set.weaponCategory ?? "") || set.autoSpellName !== undefined);
   const targetMinHitFactor = target.minHitFactor;
   // The Maggot King's melee punish window: ×3/2 on the first melee hitsplat,
   // and crush attacks roll against trunc(def × 15/100).

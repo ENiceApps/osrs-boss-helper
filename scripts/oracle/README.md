@@ -145,12 +145,12 @@ are locked in `tests/mechanic-phases.test.ts`.
 
 The `td-unshielded-` combos check the TD with its shield down
 (`tdUnshieldedBonusApplies`): accuracy 1 for everything, and for crush melee,
-a cast spell or a crossbow / ballista + max(0, speed² − 16) per accurate
+a cast spell or heavy ranged (crossbow / ballista / chinchompa) + max(0, speed² − 16) per accurate
 hitsplat and one tick off the speed. Fast (4-tick: bonus 0) and slow (5-7
 ticks: +9 / +20 / +33) weapons per style: Abyssal bludgeon, Elder maul,
 Dharok's, Tzhaar-ket-om + Berserker necklace, Torag's, the Scythe on crush,
-Zaryte crossbow (rapid / accurate, diamond and ruby), Heavy ballista, Kodai
-Fire Surge, Twinflame Fire Wave, with the Ghrazi rapier, Twisted bow and
+Zaryte crossbow (rapid / accurate, diamond and ruby), Heavy ballista, Black
+chinchompa, Kodai Fire Surge, Twinflame Fire Wave, with the Ghrazi rapier, Twisted bow and
 Tumeken's shadow as accuracy-only controls. No `exactRoll`: at accuracy 1
 there is no attack roll to recover.
 
@@ -319,12 +319,12 @@ Pre-existing modelling gaps the sweeps surface — not harness errors:
   Unshielded phase only drops the ×4/5, so it runs well low (Ghrazi rapier:
   5.172 vs 9.176 dps, accuracy 0.56 vs 1). No combo until it's modelled.~~
   **FIXED** 2026-10-13 — the phase sets `alwaysHits` + `speedScaledHitBonus`;
-  for crush melee, a cast spell or a crossbow / ballista the engine adds the
+  for crush melee, a cast spell or heavy ranged the engine adds the
   bonus per hitsplat ahead of Dharok's, Berserker, bolts and the zero raise
   (a diamond / onyx proc's fresh roll goes without it) and drops a tick off
-  the speed. 15 `td-unshielded-` combos match. Dharok's below full HP (the
+  the speed. 16 `td-unshielded-` combos match. Dharok's below full HP (the
   harness runs at full HP) matches upstream's HitDist to 1e-14 at 1 / 50 HP
-  in a scratch check; chinchompas are unchecked (no app style mapping).
+  in a scratch check.
 - ~~**Twisted bow scaling** — no 140% / 250% clamp (141% accuracy at magic
   250, 150% at a Xerician 350), and only the Magic level read, never the magic
   attack bonus (Araxxor 190 instead of 260 → 250: max 57 vs 66).~~ **FIXED**

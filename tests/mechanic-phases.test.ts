@@ -245,6 +245,7 @@ describe("phase damage modifiers vs wgloop", () => {
     "td-unshielded-zcb-diamond-accurate": { maxHit: 60, accuracy: 1, dps: 12.784052287581707 },
     "td-unshielded-zcb-ruby-accurate": { maxHit: 110, accuracy: 1, dps: 14.873333333333338 },
     "td-unshielded-heavy-ballista": { maxHit: 68, accuracy: 1, dps: 14.666666666666663 },
+    "td-unshielded-black-chinchompa": { maxHit: 21, accuracy: 1, dps: 8.787878787878787 },
     "td-unshielded-tumekens-shadow": { maxHit: 51, accuracy: 1, dps: 8.506410256410257 },
     "td-unshielded-kodai-fire-surge": { maxHit: 41, accuracy: 1, dps: 10.416666666666668 },
     "td-unshielded-twinflame-fire-wave": { maxHit: 63, accuracy: 1, dps: 15.038461538461542 },

@@ -664,7 +664,6 @@ export function phaseDamageCombos(): CanonicalCombo[] {
     // Fast (4-tick: +0, one tick sooner) and slow (5-7 ticks: +9 / +20 / +33)
     // weapons per style, the bolt / multi-hit / Twinflame / Berserker branches,
     // and a stab, a bow and a powered staff that only get the accuracy.
-    // (No chinchompa: the app has no Chinchompas style mapping yet.)
     orderingCombo("td-unshielded-rapier", td, melee(GHRAZI_RAPIER), "stab", "aggressive", unshielded),
     orderingCombo("td-unshielded-bludgeon", td, melee(ABYSSAL_BLUDGEON), "crush", "aggressive", unshielded),
     orderingCombo("td-unshielded-elder-maul", td, melee(ELDER_MAUL), "crush", "aggressive", unshielded),
@@ -683,6 +682,9 @@ export function phaseDamageCombos(): CanonicalCombo[] {
       ranged(ZARYTE_CROSSBOW, RUBY_DRAGON_BOLTS_E), "ranged", "accurate", { ...unshielded, ...bolts }),
     orderingCombo("td-unshielded-heavy-ballista", td,
       ranged(HEAVY_BALLISTA, DRAGON_JAVELIN), "ranged", "rapid", unshielded),
+    // Chinchompas are heavy ranged, but Medium fuse is 3 ticks: +0, 2-tick.
+    orderingCombo("td-unshielded-black-chinchompa", td,
+      [BLACK_CHINCHOMPA, ARMADYL_HELM, ANGUISH, ...RANGED_REST], "ranged", "rapid", unshielded),
     orderingCombo("td-unshielded-tumekens-shadow", td, shadow, "magic", "accurate", unshielded),
     orderingCombo("td-unshielded-kodai-fire-surge", td,
       [KODAI_WAND, ANCESTRAL_HAT, OCCULT, ...MAGIC_REST], "magic", "longrange", { ...unshielded, ...fireSurge }),
