@@ -27,3 +27,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 18:45 UTC · pushed by ENiceApps
 
 - e1d0d76 docs(patch-notes): the push log is append-only
+
+## 2026-10-13 18:46 UTC · pushed by ENiceApps
+
+- 815dff0 docs: push automatically once work is verified (matches global rule)
