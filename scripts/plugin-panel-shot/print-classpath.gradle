@@ -1,0 +1,7 @@
+allprojects { p ->
+  p.afterEvaluate {
+    if (p.plugins.hasPlugin('java')) {
+      p.tasks.register('printCp') { doLast { println "CP=" + p.sourceSets.main.compileClasspath.asPath } }
+    }
+  }
+}
