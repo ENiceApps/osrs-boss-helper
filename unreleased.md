@@ -143,3 +143,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-13 22:49 UTC · pushed by ENiceApps
 
 - ee3de9f docs: start a roadmap with the whole-fight mode idea for multi-phase bosses
+
+## 2026-10-14 18:44 UTC · pushed by ENiceApps
+
+- 9ea05d0 docs: close the Reddit launch action items
