@@ -1,6 +1,6 @@
-// Landing page (/): the app's front door — a type-ahead boss search, a few
-// popular quick-pick bosses, a link into the full catalog, and a short
-// "load your own bank" guide. Server component.
+// Landing page (/): the app's front door — a type-ahead search over every boss
+// and slayer monster, quick picks for both, links into the full catalog, and a
+// short "load your own bank" guide. Server component.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -24,6 +24,19 @@ const QUICK_PICK_SLUGS = [
   "scurrius",
 ];
 
+// Common Slayer tasks, so a visitor sees at a glance that the catalog isn't
+// bosses only. The search covers all 600+ assignable creatures.
+const SLAYER_PICK_SLUGS = [
+  "nechryael",
+  "abyssal-demon",
+  "gargoyle",
+  "dust-devil",
+  "kurask",
+  "hellhound",
+  "demonic-gorilla",
+  "rune-dragon",
+];
+
 // The three steps to load your real bank, rendered as a numbered guide below.
 const BANK_STEPS = [
   {
@@ -38,26 +51,22 @@ const BANK_STEPS = [
   },
   {
     title: "Open your bank in-game",
-    body: (
-      <>
-        Log in-game and open your bank once. The plugin saves it as a{" "}
-        <code className="text-osrs-brown">bank.json</code> file.
-      </>
-    ),
+    body: <>Log in-game and open your bank once so the plugin can read it (and your levels).</>,
   },
   {
-    title: "Connect or upload it here",
+    title: "Copy and paste it here",
     body: (
       <>
-        On the{" "}
+        In the RuneLite sidebar, open the{" "}
+        <span className="text-osrs-brown font-semibold">Boss Helper</span> panel and hit{" "}
+        <span className="text-osrs-brown font-semibold">Copy my bank</span>, then paste it
+        on the{" "}
         <Link href="/bank" className="text-osrs-gold hover:underline">
           Bank page
         </Link>{" "}
-        (or any boss page), hit{" "}
-        <span className="text-osrs-brown font-semibold">Connect bank file</span>{" "}
-        so it stays up to date (Chrome/Edge/Brave), or{" "}
-        <span className="text-osrs-brown font-semibold">Upload bank.json</span>{" "}
-        once on any browser.
+        or any boss page. Phones too! On Chrome, Edge or Brave you can connect the{" "}
+        <code className="text-osrs-brown">bank.json</code> file instead so it stays up to
+        date on its own.
       </>
     ),
   },
@@ -71,6 +80,10 @@ export default function HomePage() {
   const quickPicks = QUICK_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(
     (m): m is NonNullable<typeof m> => Boolean(m),
   );
+  const slayerPicks = SLAYER_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(
+    (m): m is NonNullable<typeof m> => Boolean(m),
+  );
+  const slayerCount = MONSTER_CATALOG.filter((m) => m.isSlayerMonster).length;
 
   return (
     <div className="p-6 max-w-2xl mx-auto flex flex-col items-center text-center pt-16 sm:pt-24">
@@ -78,12 +91,15 @@ export default function HomePage() {
         OSRS Boss Helper
       </h1>
       <p className="text-parchment-dark mt-3 max-w-lg">
-        Pick a boss and get the best DPS setup from what&apos;s actually in your bank!
-        Plus the mechanics and spec weapons that matter for that fight.
+        Pick a boss or a slayer task and get the best DPS setup from what&apos;s actually
+        in your bank! Plus the mechanics and spec weapons that matter for that fight.
       </p>
 
       <div className="w-full mt-8">
         <BossSearch />
+        <p className="text-caption text-osrs-muted mt-2">
+          Every boss, plus {slayerCount} slayer monsters.
+        </p>
       </div>
 
       {quickPicks.length > 0 && (
@@ -101,12 +117,30 @@ export default function HomePage() {
         </div>
       )}
 
-      <Link
-        href="/bosses"
-        className="mt-8 text-sm text-osrs-gold hover:underline"
-      >
-        Browse all {MONSTER_CATALOG.length} bosses →
-      </Link>
+      {slayerPicks.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <span className="label-eyebrow text-parchment-dark">Slayer</span>
+          {slayerPicks.map((m) => (
+            <Link
+              key={m.slug}
+              href={`/boss/${m.slug}`}
+              className="osrs-panel rounded px-3 py-1 text-sm text-osrs-brown hover:bg-osrs-gold/10 transition-colors"
+            >
+              {m.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <p className="mt-8 text-sm">
+        <Link href="/bosses" className="text-osrs-gold hover:underline">
+          Browse all bosses →
+        </Link>
+        <span className="text-osrs-muted mx-2">·</span>
+        <Link href="/bosses?category=slayer" className="text-osrs-gold hover:underline">
+          All {MONSTER_CATALOG.length} monsters, slayer included →
+        </Link>
+      </p>
 
       {/* "Load your bank" guide — the recommendations are built from the gear you
           actually own, so the most valuable first step is connecting/uploading

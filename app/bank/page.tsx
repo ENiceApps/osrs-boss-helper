@@ -1,8 +1,9 @@
 // /bank: everything about getting your bank into the app. Shows what's loaded
-// now, then the two ways in: the Boss Helper Bank Sync plugin's bank.json file
-// (live updates on Chromium) or its "Copy my bank" text, and a paste of the Bank
-// Memory plugin's "Copy item data" export. Server component; the status card, file buttons and paste box
-// are client-side.
+// now, then the two ways in: the Boss Helper Bank Sync plugin ("Copy my bank"
+// paste first, since it works everywhere including phones; its bank.json file
+// second, for live updates on Chromium), and a paste of the Bank Memory
+// plugin's "Copy item data" export. Server component; the status card, file
+// buttons and paste box are client-side.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -31,18 +32,17 @@ const SYNC_STEPS = [
     </a>
     .
   </>,
+  <>Log in-game and open your bank once so the plugin can read it (plus your levels).</>,
   <>
-    Log in-game and open your bank once. The plugin saves it (plus your levels) to a{" "}
-    <code className="text-osrs-brown">bank.json</code> file.
+    Open the <span className={em}>Boss Helper</span> panel in the RuneLite sidebar, hit{" "}
+    <span className={em}>Copy my bank</span> and paste it below. Works on any browser,
+    phone included.
   </>,
   <>
-    Hit <span className={em}>Connect bank file</span> below and pick that file. On
-    Chrome, Edge or Brave it keeps itself up to date every time you bank. Other browsers
-    can <span className={em}>upload</span> it, just do it again after you bank.
-  </>,
-  <>
-    Rather skip the file? Open the Boss Helper panel in the RuneLite sidebar, hit{" "}
-    <span className={em}>Copy my bank</span> and paste it below!
+    Want it to stay up to date on its own? The plugin also writes a{" "}
+    <code className="text-osrs-brown">bank.json</code> file. On Chrome, Edge or Brave hit{" "}
+    <span className={em}>Connect bank file</span> and pick it; it refreshes every time you
+    bank. Other browsers can <span className={em}>upload</span> it after banking.
   </>,
 ];
 
@@ -77,17 +77,20 @@ export default function BankPage() {
         id="sync"
         title="Boss Helper Bank Sync plugin"
         badge="Best"
-        blurb="My own plugin. It brings your levels too, and stays up to date on its own."
+        blurb="My own plugin. It brings your levels too, and can keep itself up to date."
         steps={SYNC_STEPS}
       >
-        <div className="text-caption text-osrs-brown leading-snug space-y-2">
-          <BankFileButtons />
-          <p className="text-osrs-muted">
-            Where to find it: <code>{FILE_PATH}</code>
-            <br />
-            On Windows that&apos;s <code>C:\Users\&lt;you&gt;\.runelite\osrs-boss-helper</code>.
-          </p>
-          <BankPaste label="Paste from the plugin instead" />
+        <div className="text-caption text-osrs-brown leading-snug space-y-3">
+          <BankPaste inline />
+          <div className="border-t border-osrs-gold/15 pt-3 space-y-1">
+            <p className="text-osrs-muted">Or connect the file for live updates:</p>
+            <BankFileButtons />
+            <p className="text-osrs-muted">
+              Where to find it: <code>{FILE_PATH}</code>
+              <br />
+              On Windows that&apos;s <code>C:\Users\&lt;you&gt;\.runelite\osrs-boss-helper</code>.
+            </p>
+          </div>
         </div>
       </Method>
 
