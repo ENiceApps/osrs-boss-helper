@@ -151,3 +151,9 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-14 18:53 UTC · pushed by ENiceApps
 
 - 3c10f5f docs: drop the whole-fight idea from the roadmap
+
+## 2026-10-14 19:34 UTC · pushed by ENiceApps
+
+- f9bdd86 feat(boss): no-bank banner with inline paste, fold the setup rail on phones
+- 1acfb45 copy(bank,home): lead with "Copy my bank" paste, file sync second
+- 153a58e feat(search): make the 604 slayer monsters discoverable
