@@ -5,12 +5,13 @@
 // links to the shared /boss/[slug] page.
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { MONSTER_CATALOG } from "@/data/monsters/catalog";
 import {
   categoryForMonster,
   isSlayerBoss,
   CATEGORY_LABELS,
+  HEADLINE_BOSS_SLUGS,
   type MonsterCategory,
 } from "@/data/monsters/categories";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
@@ -38,56 +39,22 @@ const PINNED_SLUGS = ["combat-dummy", "ditto"];
 
 // Headline / commonly-farmed bosses: the "Bosses" category, which is the
 // default view so the page doesn't open onto a wall of 600+ slayer monsters.
-// Matched against the catalog, so a renamed/missing slug simply drops out.
-const BOSS_SLUGS = new Set([
-  ...PINNED_SLUGS,
-  // Solo staples
-  "vorkath",
-  "zulrah",
-  "scurrius",
-  "giant-mole",
-  "araxxor",
-  "phantom-muspah",
-  "amoxliatl",
-  "the-hueycoatl",
-  "yama",
-  "maggot-king",
-  "mad-angel",
-  // Slayer bosses
-  "alchemical-hydra",
-  "abyssal-sire",
-  "cerberus",
-  "kraken",
-  "thermonuclear-smoke-devil",
-  "kalphite-queen",
-  "sarachnis",
-  // Dagannoth Kings
-  "dagannoth-rex",
-  "dagannoth-prime",
-  "dagannoth-supreme",
-  // God Wars
-  "general-graardor",
-  "kril-tsutsaroth",
-  "commander-zilyana",
-  "kreearra",
-  "nex",
-  // Desert Treasure II
-  "vardorvis",
-  "duke-sucellus",
-  "the-leviathan",
-  "the-whisperer",
-  // Wilderness
-  "callisto",
-  "venenatis",
-  "vetion",
-  // Other high-end / raids
-  "corporeal-beast",
-  "the-nightmare",
-  "great-olm",
-  "verzik-vitur",
-  "tztok-jad",
-  "tzkal-zuk",
-]);
+// The set lives in data/monsters/categories.ts so the search can use it too.
+const BOSS_SLUGS = HEADLINE_BOSS_SLUGS;
+
+const CATEGORY_KEYS = new Set<string>(CATEGORY_FILTERS.map((c) => c.key));
+
+// Deep links like /bosses?category=slayer (from the home page). The page is
+// statically prerendered, so the param is read as an external store: null on
+// the server and during hydration, the real value right after.
+function subscribeToHistory(cb: () => void) {
+  window.addEventListener("popstate", cb);
+  return () => window.removeEventListener("popstate", cb);
+}
+function readCategoryParam(): CategoryFilter | null {
+  const wanted = new URLSearchParams(window.location.search).get("category");
+  return wanted && CATEGORY_KEYS.has(wanted) ? (wanted as CategoryFilter) : null;
+}
 
 // Attribute facets. `match` lets one chip cover several raw tags (the catalog
 // splits vampyres into vampyre1/vampyre3). Counts are computed once below.
@@ -117,7 +84,10 @@ export default function BossesPage() {
   const [activeAttrs, setActiveAttrs] = useState<Set<string>>(new Set());
   const [activeWeak, setActiveWeak] = useState<Set<string>>(new Set());
   const [wildOnly, setWildOnly] = useState(false);
-  const [category, setCategory] = useState<CategoryFilter>("bosses");
+  // An explicit pick wins; otherwise the ?category= deep link; otherwise Bosses.
+  const [pickedCategory, setCategory] = useState<CategoryFilter | null>(null);
+  const categoryParam = useSyncExternalStore(subscribeToHistory, readCategoryParam, () => null);
+  const category: CategoryFilter = pickedCategory ?? categoryParam ?? "bosses";
   const [sort, setSort] = useState<SortKey>("name");
 
   // Any active facet/search or non-default sort: offer "Clear filters".
@@ -248,10 +218,11 @@ export default function BossesPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-osrs-gold">All bosses</h1>
+        <h1 className="text-3xl font-bold text-osrs-gold">All bosses &amp; slayer monsters</h1>
         <p className="text-sm text-parchment-dark mt-1">
-          {MONSTER_CATALOG.length} monsters. Pick one for the best DPS setup from
-          your bank, plus mechanics and spec weapon tips.
+          {MONSTER_CATALOG.length} monsters, {categoryCounts.slayer} of them slayer tasks.
+          Pick one for the best DPS setup from your bank, plus mechanics and spec weapon
+          tips.
         </p>
       </header>
 
@@ -374,8 +345,15 @@ export default function BossesPage() {
             </>
           ) : (
             <>
-              <span className="text-osrs-brown font-semibold">Bosses</span> · pick
-              All to browse every monster ({MONSTER_CATALOG.length}).
+              <span className="text-osrs-brown font-semibold">Bosses</span> · pick{" "}
+              <button
+                type="button"
+                onClick={() => setCategory("slayer")}
+                className="text-osrs-gold hover:underline"
+              >
+                Slayer
+              </button>{" "}
+              for every task monster, or All to browse everything ({MONSTER_CATALOG.length}).
             </>
           )}
         </p>

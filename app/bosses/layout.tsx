@@ -5,9 +5,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "All bosses",
+  title: "All bosses & slayer monsters",
   description:
-    "Every Old School RuneScape boss and high-HP monster. Filter by " +
+    "Every Old School RuneScape boss and slayer monster. Filter by " +
     "category, Slayer assignment, weakness, and attributes, then get a gear " +
     "setup built from your own bank.",
   alternates: { canonical: "/bosses" },

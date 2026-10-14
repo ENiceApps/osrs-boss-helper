@@ -2,16 +2,29 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MONSTER_CATALOG } from "@/data/monsters/catalog";
+import { MONSTER_CATALOG, type MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { HEADLINE_BOSS_SLUGS } from "@/data/monsters/categories";
 import { WeaknessBadge } from "@/components/ui";
 
 const MAX_RESULTS = 8;
 
+// Lower is better. Names that start with the query beat names that merely
+// contain it, bosses beat same-tier slayer mobs, and attribute hits ("demon",
+// "dragon") come last so typing a name never gets buried under its kin.
+function rank(m: MonsterCatalogEntry, q: string): number {
+  const name = m.name.toLowerCase();
+  const boss = HEADLINE_BOSS_SLUGS.has(m.slug) ? 0 : 1;
+  if (name.startsWith(q)) return 0 + boss;
+  if (name.includes(q) || m.slug.includes(q)) return 2 + boss;
+  return 4 + boss;
+}
+
 /**
- * Type-ahead boss picker for the landing page. The dropdown narrows as you
- * type (name / slug / attribute), with full keyboard support, and navigates
- * to /boss/[slug] on Enter or click. For people who already know what they
- * want to fight — the browsable grid lives at /bosses.
+ * Type-ahead picker for the landing page over every boss and slayer monster.
+ * The dropdown narrows as you type (name / slug / attribute), with full
+ * keyboard support, and navigates to /boss/[slug] on Enter or click. For
+ * people who already know what they want to fight — the browsable grid lives
+ * at /bosses.
  */
 export function BossSearch() {
   const router = useRouter();
@@ -27,7 +40,11 @@ export function BossSearch() {
         m.name.toLowerCase().includes(q) ||
         m.slug.includes(q) ||
         m.attributes.some((a) => a.toLowerCase().includes(q)),
-    ).slice(0, MAX_RESULTS);
+    )
+      .map((m) => ({ m, r: rank(m, q) }))
+      .sort((a, b) => a.r - b.r || a.m.name.localeCompare(b.m.name))
+      .slice(0, MAX_RESULTS)
+      .map((x) => x.m);
   }, [query]);
 
   const showList = open && matches.length > 0;
@@ -73,7 +90,7 @@ export function BossSearch() {
         // Delay close so a click on an option registers first.
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={onKeyDown}
-        placeholder="Which boss are you tackling? (e.g. Zulrah, Araxxor…)"
+        placeholder="Boss or slayer task? (e.g. Zulrah, Nechryael, Araxxor…)"
         className="w-full osrs-panel rounded px-4 py-3 text-lg text-osrs-brown placeholder:text-osrs-muted"
         autoFocus
       />
@@ -108,6 +125,9 @@ export function BossSearch() {
                   )}
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
+                  {m.isSlayerMonster && !HEADLINE_BOSS_SLUGS.has(m.slug) && (
+                    <span className="label-eyebrow text-osrs-muted">slayer</span>
+                  )}
                   <span className="text-caption text-osrs-muted">
                     cb {m.combatLevel}
                   </span>

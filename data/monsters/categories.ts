@@ -152,6 +152,61 @@ const SLAYER_BOSSES = new Set<string>([
   "basilisk-knight", // basilisk
 ]);
 
+// Headline / commonly-farmed bosses: the default "Bosses" view on /bosses and
+// the tie-breaker that floats bosses above same-named slayer mobs in search.
+// Matched against the catalog at use sites, so a renamed slug simply drops out.
+export const HEADLINE_BOSS_SLUGS: ReadonlySet<string> = new Set([
+  // Baseline tools
+  "combat-dummy",
+  "ditto",
+  // Solo staples
+  "vorkath",
+  "zulrah",
+  "scurrius",
+  "giant-mole",
+  "araxxor",
+  "phantom-muspah",
+  "amoxliatl",
+  "the-hueycoatl",
+  "yama",
+  "maggot-king",
+  "mad-angel",
+  // Slayer bosses
+  "alchemical-hydra",
+  "abyssal-sire",
+  "cerberus",
+  "kraken",
+  "thermonuclear-smoke-devil",
+  "kalphite-queen",
+  "sarachnis",
+  // Dagannoth Kings
+  "dagannoth-rex",
+  "dagannoth-prime",
+  "dagannoth-supreme",
+  // God Wars
+  "general-graardor",
+  "kril-tsutsaroth",
+  "commander-zilyana",
+  "kreearra",
+  "nex",
+  // Desert Treasure II
+  "vardorvis",
+  "duke-sucellus",
+  "the-leviathan",
+  "the-whisperer",
+  // Wilderness
+  "callisto",
+  "venenatis",
+  "vetion",
+  // Other high-end / raids
+  "corporeal-beast",
+  "the-nightmare",
+  "great-olm",
+  "verzik-vitur",
+  "tztok-jad",
+  "tzkal-zuk",
+]);
+
 /** Primary (mutually-exclusive) category for a slug; unmapped = non-boss NPC. */
 export function categoryForMonster(slug: string): MonsterCategory {
   return BOSS_CATEGORY[slug] ?? "npc";

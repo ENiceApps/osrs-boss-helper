@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
+import { categoryForMonster } from "@/data/monsters/categories";
 import { BossCockpit } from "./BossCockpit";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -22,13 +23,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const m = MONSTER_BY_SLUG[slug];
   if (!m) return {};
   const name = m.version ? `${m.name} (${m.version})` : m.name;
+  // Slayer creatures (non-boss NPCs that can be assigned) are searched for as
+  // "<name> slayer gear", so say slayer in the title for them.
+  const slayerMob = m.isSlayerMonster && categoryForMonster(slug) === "npc";
   return {
     // The root layout's template appends "· OSRS Boss Helper".
-    title: `${name} gear setup & DPS loadout`,
+    title: slayerMob
+      ? `${name} slayer gear setup & DPS loadout`
+      : `${name} gear setup & DPS loadout`,
     description:
-      `The best ${name} gear setup from your own OSRS bank. Melee, ranged & ` +
-      `magic setups ranked by DPS, budget builds, upgrade paths, and fight ` +
-      `mechanics. Combat level ${m.combatLevel}, ${m.hp} HP.`,
+      `The best ${name} ${slayerMob ? "slayer task " : ""}gear setup from your own OSRS bank. ` +
+      `Melee, ranged & magic setups ranked by DPS, budget builds, upgrade paths` +
+      `${slayerMob ? ", and the on-task slayer helm bonus" : ", and fight mechanics"}. ` +
+      `Combat level ${m.combatLevel}, ${m.hp} HP.`,
     alternates: { canonical: `/boss/${slug}` },
     openGraph: {
       title: `${name} OSRS gear setup & DPS loadout`,
