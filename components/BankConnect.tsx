@@ -131,18 +131,21 @@ export function BankConnect() {
     );
   }
 
-  // Idle: prompt to connect (or import).
+  // Idle: prompt to load a bank. Paste leads (it works on every browser and on
+  // phones); the file connection is the "stays up to date" upgrade.
   return (
     <div className="osrs-panel p-3 rounded text-caption text-osrs-brown leading-snug space-y-2">
       <p>
-        Connect your bank to use your own gear, or plan without it in{" "}
+        Load your bank to build setups from gear you own, or plan without it in{" "}
         <strong>Budget</strong> mode below.
       </p>
-      <BankFileButtons />
-      <p className="text-osrs-muted">
-        File: <code>{FILE_PATH}</code>
-      </p>
-      <BankPaste label="No file? Paste your bank instead" />
+      <BankPaste label="Paste your bank →" primary />
+      <div className="space-y-1">
+        <BankFileButtons secondary />
+        <p className="text-osrs-muted">
+          File: <code>{FILE_PATH}</code>
+        </p>
+      </div>
       <Link href="/bank" className="block text-osrs-brown hover:text-osrs-gold hover:underline">
         How does this work?
       </Link>
@@ -152,10 +155,15 @@ export function BankConnect() {
 }
 
 /** Connect (live, Chromium) or upload (one-shot) buttons for the plugin's
- *  bank.json. Shared by the boss-page rail and the /bank page. */
-export function BankFileButtons() {
+ *  bank.json. Shared by the boss-page rail, the no-bank banner and the /bank
+ *  page. `secondary` tones the buttons down to brown links for places where
+ *  pasting is the primary action. */
+export function BankFileButtons({ secondary = false }: { secondary?: boolean }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const supported = useFsaSupported();
+  const primaryClass = secondary
+    ? "text-osrs-brown hover:text-osrs-gold hover:underline"
+    : "text-osrs-gold font-semibold hover:underline";
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -170,7 +178,7 @@ export function BankFileButtons() {
           <button
             type="button"
             onClick={() => void connectLocalBank()}
-            className="text-osrs-gold font-semibold hover:underline"
+            className={primaryClass}
           >
             Connect bank file →
           </button>
@@ -187,13 +195,15 @@ export function BankFileButtons() {
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="text-osrs-gold font-semibold hover:underline"
+            className={primaryClass}
           >
             Upload bank.json →
           </button>
-          <p className="text-osrs-muted">
-            Upload it again after you bank in-game.
-          </p>
+          {!secondary && (
+            <p className="text-osrs-muted">
+              Upload it again after you bank in-game.
+            </p>
+          )}
         </>
       )}
       <input
@@ -226,7 +236,19 @@ function useFsaSupported(): boolean {
 // clipboard"). lib/localBank tells them apart. On the boss page it's collapsed to a link
 // until asked for, so the plugin flow stays the obvious one; the /bank page
 // shows it open (`inline`) under its own step-by-step instructions.
-export function BankPaste({ label, inline = false }: { label?: string; inline?: boolean }) {
+export function BankPaste({
+  label,
+  inline = false,
+  primary = false,
+  rows,
+}: {
+  label?: string;
+  inline?: boolean;
+  /** Gold, bold link while collapsed: for places where pasting is the lead action. */
+  primary?: boolean;
+  /** Textarea height; defaults to 6 rows inline, 4 when opened from a link. */
+  rows?: number;
+}) {
   const [open, setOpen] = useState(inline);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -238,7 +260,11 @@ export function BankPaste({ label, inline = false }: { label?: string; inline?: 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-osrs-brown hover:text-osrs-gold hover:underline text-left"
+        className={
+          primary
+            ? "text-osrs-gold font-semibold hover:underline text-left"
+            : "text-osrs-brown hover:text-osrs-gold hover:underline text-left"
+        }
       >
         {label}
       </button>
@@ -270,7 +296,7 @@ export function BankPaste({ label, inline = false }: { label?: string; inline?: 
           setText(e.target.value);
           setLoaded(false);
         }}
-        rows={inline ? 6 : 4}
+        rows={rows ?? (inline ? 6 : 4)}
         placeholder="Paste your bank here"
         aria-label="Copied bank"
         className="w-full p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm font-mono"

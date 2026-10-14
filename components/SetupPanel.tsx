@@ -48,6 +48,12 @@ const WILDY_RISK_OPTION: { mode: BudgetMode; label: string; caption: string } = 
   caption: "Best setup worth no more than I'll risk.",
 };
 
+/** Short label for a budget mode, e.g. "Own only": used where the setup rail
+ *  is folded away (phones) so the bar still says what's set. */
+export function budgetModeLabel(mode: BudgetMode): string {
+  return [...MODE_OPTIONS, WILDY_RISK_OPTION].find((o) => o.mode === mode)?.label ?? mode;
+}
+
 /**
  * Left-rail setup card: pick how the optimizer should source gear (mode) plus
  * the fight-setup toggles. Every control applies immediately — there is no

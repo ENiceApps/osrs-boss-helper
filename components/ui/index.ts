@@ -3,6 +3,7 @@
 // from "@/components/ui" rather than reaching into the individual files.
 export { Badge } from "./Badge";
 export { CollapsibleSection } from "./CollapsibleSection";
+export { MobileCollapsible } from "./MobileCollapsible";
 export { AttributePill } from "./AttributePill";
 export { WeaknessBadge } from "./WeaknessBadge";
 export { StatCard } from "./StatCard";

@@ -32,7 +32,8 @@ import { compareSlotsVsReference, type SlotVsBank } from "@/lib/loadout-compare"
 import { useMapping, usePrices, priceForItem } from "@/lib/prices";
 import { useLiveBank } from "@/lib/liveBank";
 import { BankConnect } from "@/components/BankConnect";
-import { SetupPanel } from "@/components/SetupPanel";
+import { NoBankBanner } from "@/components/NoBankBanner";
+import { SetupPanel, budgetModeLabel } from "@/components/SetupPanel";
 import { BudgetControl } from "@/components/BudgetControl";
 import { SellSelectionPanel, type SellableItem } from "@/components/SellSelectionPanel";
 import { OwnedUntradeablesPanel, type UntradeableSlotGroup } from "@/components/OwnedUntradeablesPanel";
@@ -48,7 +49,7 @@ import { SpellPickerModal } from "@/components/SpellPickerModal";
 import { PrayerPickerModal } from "@/components/PrayerPickerModal";
 import { prayerById, DEFAULT_PRAYER_ID } from "@/data/prayers";
 import { SpecWeaponsPanel } from "@/components/SpecWeaponsPanel";
-import { MetaChip, WeaknessBadge, AttributePill, CollapsibleSection } from "@/components/ui";
+import { MetaChip, WeaknessBadge, AttributePill, CollapsibleSection, MobileCollapsible } from "@/components/ui";
 import { BossStatsPanel } from "@/components/BossStatsPanel";
 import { BossPhasePanel } from "@/components/BossPhasePanel";
 import { applyPhase, phaseOptionsFor } from "@/lib/phases";
@@ -1017,6 +1018,11 @@ export function BossCockpit({ slug }: { slug: string }) {
         )}
       </header>
 
+      {/* No bank yet: say so up top, with the paste box right there. The bank
+          card in the setup rail is the last thing on a phone, and the analytics
+          showed most visitors never reached the bank step at all. */}
+      {bank === null && <NoBankBanner mode={mode} budgetGp={budgetGp} />}
+
       {/* The cockpit: setup rail (inputs) → loadout (the editable answer) →
           results (outcome + upgrade path). Inputs sit beside the outputs they
           drive, and everything recomputes on change — no apply button, no
@@ -1026,7 +1032,14 @@ export function BossCockpit({ slug }: { slug: string }) {
           setup last (configuration). Order utilities rearrange without changing
           the DOM order, which keeps tab-focus logical. */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16 space-y-3">
+        <aside className="order-3 lg:order-1 lg:col-span-3 lg:sticky lg:top-16">
+          {/* On a phone the whole rail folds behind one "Your setup" bar: the
+              loadout and results above it are the answer, this is the
+              configuration. From lg up it renders as the plain column. */}
+          <MobileCollapsible
+            title="Bank & setup"
+            summary={`${budgetModeLabel(mode)}${live.playerName ? ` · ${live.playerName}` : ""}`}
+          >
           {/* Player card — identity in one place: who you are (character · GP)
               and the skills the DPS is computed at, tucked behind a disclosure
               since they rarely change (or come live from the plugin). */}
@@ -1149,7 +1162,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           </SetupPanel>
 
           {mode === "sell-to-fund" && bank !== null && (
-            <div className="mt-4">
+            <div>
               <SellSelectionPanel
                 items={sellableItems}
                 selected={sellSelections}
@@ -1162,6 +1175,7 @@ export function BossCockpit({ slug }: { slug: string }) {
               />
             </div>
           )}
+          </MobileCollapsible>
         </aside>
 
         <section className="order-1 lg:order-2 lg:col-span-5 space-y-3">
