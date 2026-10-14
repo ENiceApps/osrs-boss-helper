@@ -24,5 +24,5 @@ for the bank→DPS loop.
 **Update (2026-10-13): the r/2007scape launch post was removed by the mods**
 (rule 9: no AI-generated content). The comments, actionable feedback and the
 accuracy check run in response are recorded in
-`docs/feedback/2026-10-reddit-launch.md`. Read it before planning any public post
-or prioritising feedback work.
+`docs/feedback/2026-10-reddit-launch.md`. Read it before planning any public post.
+Its action items are all closed (2026-10-14); next work lives in `docs/ROADMAP.md`.

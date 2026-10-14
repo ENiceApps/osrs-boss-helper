@@ -22,13 +22,12 @@ It said "just google OSRS Boss Helper" instead of linking. It was framed as a da
 
 ## Actionable feedback
 
-1. **DPS accuracy claim.** newstarburst (top comment, +51): "actually calcs all of its DPS wrong". No specific case given. Park_BADger: "looks to be pulling wrong data sometimes". → An oracle check against the wiki engine was run in response (see the end of this file).
-2. **Bug: Wilderness champion amulet** showed up in a recommendation (ltsMeSam). ENice replied that he'd fix it.
-3. **Too much AI explainer text / visual bloat** (Copius, constructive). Do a cleanup pass. **Done 2026-10-13:** the boss page helper lines were cut or shortened (setup mode captions, "changes apply instantly", the gear-list and spec-weapon blurbs, hybrid and trip notes). The About and Bank pages were left as they are (ENice's own voice, and a step-by-step how-to).
-4. **Security and API-call checks** (Copius). Don't hammer the wiki or price APIs. "Claude, hammer the wiki APIs a little more" (Pretentious-Fuck).
-5. **Bank import:** people expect the Bank Memory plugin's text export (Beretot: GearScape already accepts it, "cleaner than a dedicated plugin"). This has since shipped as a Bank Memory paste box.
-6. **Unanswered question** (Imallskillzy): where do the DPS numbers come from (wiki calc, an Orion fork, the DPS spreadsheet)? State this clearly on the site.
-7. "AI disclaimer where?" (TheRagingBrit). The plugin page does say it was written with Claude Code; the site may need it too.
+**All closed (2026-10-14).** ENice has either done them or chose not to pursue
+them; nothing from this thread is still open. What was raised, for the record:
+DPS accuracy (answered by the oracle check at the end of this file), the
+Wilderness champion amulet bug (fixed, `c5e1dc1`), explainer-text bloat (trimmed
+2026-10-13), API-call politeness, Bank Memory import (shipped), where the DPS
+numbers come from, and an AI disclaimer on the site.
 
 ## Feature requests
 - Slayer and regular monsters, with a melee/range/burst choice (GodsTool)
@@ -67,9 +66,7 @@ Big_Cat_Tongue, RyukzReign, randomjib ("vibe coded", "garbage"), wozzwoz, a_rare
 
 ## Takeaways
 - Don't post to r/2007scape again without checking rule 9. Write any future post by hand.
-- Answer the accuracy claim with evidence: oracle results against the wiki engine.
-- Fix the Wilderness champion amulet recommendation.
-- Trim the explainer text; state where the DPS math comes from.
+- Answer accuracy claims with evidence: oracle results against the wiki engine.
 
 ## Accuracy check results (2026-10-13)
 `npm run oracle` validation set: 120/121 match the wiki engine (weirdgloop osrs-dps-calc). The one miss is the known ~1.3% Obsidian + Berserker necklace gap.
