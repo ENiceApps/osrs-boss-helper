@@ -147,3 +147,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-14 18:44 UTC · pushed by ENiceApps
 
 - 9ea05d0 docs: close the Reddit launch action items
+
+## 2026-10-14 18:53 UTC · pushed by ENiceApps
+
+- 3c10f5f docs: drop the whole-fight idea from the roadmap
