@@ -86,6 +86,27 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.1.0",
+    date: "2026-10-15",
+    title: "Copy my bank, slayer monsters and DPS fixes",
+    changes: [
+      { kind: "new", lead: "Copy my bank", text: "the Bank Sync plugin now has a Copy my bank button. Paste it into the new Bank page, or the box on any boss page, and your bank is in. No file needed, and it works on phones." },
+      { kind: "new", lead: "Bank page", text: "a step-by-step guide for getting your bank onto the site, and what's loaded right now." },
+      { kind: "new", lead: "About page", text: "a note from me, a feedback form, contact details and links to the plugin and the code." },
+      { kind: "new", lead: "Slayer monsters", text: "all 604 slayer monsters can be found in the search and in a new Slayer filter on the Bosses page." },
+      { kind: "new", lead: "Salamanders and Dinh's bulwark", text: "Black salamander and the others now get picked, with the right tar. Dinh's bulwark counts the strength from your defence." },
+      { kind: "improved", lead: "Bosses page", text: "opens on the Bosses list, with All showing every monster A to Z. Combat dummy and Ditto sit at the top." },
+      { kind: "improved", lead: "No bank yet", text: "a banner on the boss page says the setup was built for a budget, with the paste box right there. The page opens on Own once your bank is connected." },
+      { kind: "improved", lead: "Phones", text: "the boss page has a DPS and kill time summary at the top, boss stats fold away, and the bank and setup options sit behind one bar." },
+      { kind: "improved", lead: "Item icons", text: "load faster and gear slots no longer go blank for things like degraded Barrows and moon armour." },
+      { kind: "improved", text: "less explainer text on the boss page." },
+      { kind: "fixed", lead: "Budget mode", text: "shows that it's working while prices load, instead of saying your bank can't make a setup." },
+      { kind: "fixed", lead: "Gear that shouldn't be recommended", text: "the Wilderness champion amulet, Barbarian Assault arrows and the Emir's Arena gear are no longer suggested." },
+      { kind: "fixed", lead: "Weapons that were never picked", text: "Dragon pickaxe, Dragon cane, Toxic staff of the dead, Hallowed flail and chinchompas are now included." },
+      { kind: "fixed", lead: "DPS numbers", text: "closer to the Wiki DPS calculator for Tormented Demon (shielded and unshielded), Abyssal Sire, Hueycoatl, Maggot King, Vardorvis, Dharok's set, Confliction gauntlets and Chambers of Xeric Guardians (pickaxe only)." },
+    ],
+  },
+  {
     version: "0.0.1",
     date: "2026-10-09",
     title: "Alpha release",
@@ -121,7 +142,6 @@ export const RELEASES: Release[] = [
 ];
 
 export const PLANNED: PlannedItem[] = [
-  { status: "planned", text: "Better phone support." },
   { status: "planned", text: "Raid builds: best setups for raid bosses." },
   { status: "planned", text: "Fight mechanics and spec weapon picks for more bosses, starting with raids bosses and the Nightmare." },
   { status: "planned", text: "New gear and bosses added after each game update." },
