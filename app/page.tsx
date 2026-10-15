@@ -172,11 +172,6 @@ export default function HomePage() {
         </ol>
 
         <p className="text-caption text-osrs-muted mt-4 border-t border-osrs-gold/15 pt-3">
-          Use Bank Memory instead?{" "}
-          <Link href="/bank#paste-heading" className="text-osrs-gold hover:underline">
-            Paste your bank here
-          </Link>
-          .<br />
           No RuneLite? No problem! Pick any boss and use <span className="text-osrs-brown">Budget mode</span>{" "}
           to plan the best setup for however much GP you have. No bank needed.
         </p>

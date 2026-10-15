@@ -3,8 +3,8 @@
 // Left-rail control for connecting the local bank file the RuneLite plugin
 // writes. On Chromium it uses the File System Access API for live auto-updates;
 // everywhere else it falls back to a one-shot "Import bank.json". Or skip the
-// file: paste the plugin's "Copy my bank" text, or Bank Memory's clipboard
-// export. It owns no
+// file: paste the plugin's "Copy my bank" text (a Bank Memory export still
+// parses, but isn't advertised). It owns no
 // player data of its own — everything flows through lib/localBank.ts, which keeps
 // the data in the browser.
 
@@ -231,9 +231,8 @@ function useFsaSupported(): boolean {
   );
 }
 
-// Paste box for a copied bank: our plugin's "Copy my bank" button, or the Bank
-// Memory plugin's export (right-click a saved bank → "Copy item data to
-// clipboard"). lib/localBank tells them apart. On the boss page it's collapsed to a link
+// Paste box for a copied bank: our plugin's "Copy my bank" button (a Bank
+// Memory export is still accepted; lib/localBank tells them apart). On the boss page it's collapsed to a link
 // until asked for, so the plugin flow stays the obvious one; the /bank page
 // shows it open (`inline`) under its own step-by-step instructions.
 export function BankPaste({
@@ -285,9 +284,8 @@ export function BankPaste({
     <div className="w-full space-y-1">
       {!inline && (
         <p className="text-osrs-muted">
-          In RuneLite, open the Boss Helper panel and hit <strong>Copy my bank</strong>.
-          Or in Bank Memory, right-click your bank and pick &quot;Copy item data to
-          clipboard&quot;. Then paste it here!
+          In RuneLite, open the Boss Helper panel and hit <strong>Copy my bank</strong>,
+          then paste it here!
         </p>
       )}
       <textarea

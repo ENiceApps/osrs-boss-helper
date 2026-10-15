@@ -1,8 +1,9 @@
 // /bank: everything about getting your bank into the app. Shows what's loaded
-// now, then the two ways in: the Boss Helper Bank Sync plugin ("Copy my bank"
-// paste first, since it works everywhere including phones; its bank.json file
-// second, for live updates on Chromium), and a paste of the Bank Memory
-// plugin's "Copy item data" export. Server component; the status card, file
+// now, then the way in: the Boss Helper Bank Sync plugin, "Copy my bank" paste
+// first (it works everywhere, phones included) and its bank.json file second
+// (live updates on Chromium). A Bank Memory export still parses if someone
+// pastes one (lib/localBank.ts), but it isn't advertised: the plugin does the
+// same job and brings levels too. Server component; the status card, file
 // buttons and paste box are client-side.
 
 import type { Metadata } from "next";
@@ -13,12 +14,11 @@ import { BankStatus } from "./BankStatus";
 export const metadata: Metadata = {
   title: "Your bank",
   description:
-    "Load your OSRS bank into Boss Helper with the Boss Helper Bank Sync RuneLite plugin, or paste it from Bank Memory, so every setup is built from gear you own.",
+    "Load your OSRS bank into Boss Helper with the Boss Helper Bank Sync RuneLite plugin, so every setup is built from gear you own.",
   alternates: { canonical: "/bank" },
 };
 
 const PLUGIN_HUB = "https://runelite.net/plugin-hub/show/boss-helper-bank-sync";
-const BANK_MEMORY_HUB = "https://runelite.net/plugin-hub/show/bank-memory";
 
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 const link = "text-osrs-gold hover:underline";
@@ -46,21 +46,6 @@ const SYNC_STEPS = [
   </>,
 ];
 
-const MEMORY_STEPS = [
-  <>
-    Install{" "}
-    <a href={BANK_MEMORY_HUB} className={link} {...ext}>
-      Bank Memory
-    </a>{" "}
-    from the Plugin Hub and open your bank in-game so it remembers it.
-  </>,
-  <>
-    Open the Bank Memory panel in the RuneLite sidebar, right-click your bank and pick{" "}
-    <span className={em}>Copy item data to clipboard</span>.
-  </>,
-  <>Paste it in the box below and hit <span className={em}>Load bank</span>.</>,
-];
-
 export default function BankPage() {
   return (
     <div className="p-6 max-w-2xl mx-auto pb-16">
@@ -76,7 +61,6 @@ export default function BankPage() {
       <Method
         id="sync"
         title="Boss Helper Bank Sync plugin"
-        badge="Best"
         blurb="My own plugin. It brings your levels too, and can keep itself up to date."
         steps={SYNC_STEPS}
       >
@@ -91,17 +75,6 @@ export default function BankPage() {
               On Windows that&apos;s <code>C:\Users\&lt;you&gt;\.runelite\osrs-boss-helper</code>.
             </p>
           </div>
-        </div>
-      </Method>
-
-      <Method
-        id="paste"
-        title="Paste from Bank Memory"
-        blurb="Already use Bank Memory? No new plugin needed. It doesn't carry your levels, so set those on the boss page."
-        steps={MEMORY_STEPS}
-      >
-        <div className="text-caption text-osrs-brown leading-snug">
-          <BankPaste inline />
         </div>
       </Method>
 

@@ -13,7 +13,7 @@ export function BankStatus() {
   return (
     <div className="osrs-panel p-3 rounded text-caption text-osrs-brown leading-snug flex items-center gap-2">
       <span aria-hidden className="w-2 h-2 rounded-full bg-osrs-muted flex-none" />
-      No bank loaded yet. Pick one of the two ways below!
+      No bank loaded yet. The steps below take about two minutes!
     </div>
   );
 }
