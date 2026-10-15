@@ -157,3 +157,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 - f9bdd86 feat(boss): no-bank banner with inline paste, fold the setup rail on phones
 - 1acfb45 copy(bank,home): lead with "Copy my bank" paste, file sync second
 - 153a58e feat(search): make the 604 slayer monsters discoverable
+
+## 2026-10-15 02:26 UTC · pushed by ENiceApps
+
+- ed7d6e8 copy(bank): drop the Bank Memory section, the plugin covers it
