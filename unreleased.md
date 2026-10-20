@@ -169,3 +169,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-20 22:18 UTC · pushed by ENiceApps
 
 - 5e0aa88 copy(home): announce the Raids 4 bosses with a link to the TFA roster
+
+## 2026-10-20 22:21 UTC · pushed by ENiceApps
+
+- c76912b copy(home): Raids 4 bosses as quick picks, drop the Slayer row
