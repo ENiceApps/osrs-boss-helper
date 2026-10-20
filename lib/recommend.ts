@@ -8,7 +8,8 @@
 import { SPELLCASTING_STAFF_CATEGORIES } from "@/data/weapon-styles";
 import type { DpsResult, PrayerSelection, Skills } from "@/types/osrs";
 import { defaultPrayerFor } from "@/data/prayers";
-import { calculateDps } from "@/lib/dps/calculate";
+import { calculateDps, type DpsScenario } from "@/lib/dps/calculate";
+import { OBLIGATOR_SMASH_TICKS, obligatorThrust } from "@/data/items/obligator";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
 import { SPELLS_BY_NAME } from "@/data/spells/catalog";
@@ -359,7 +360,7 @@ export function computeSetDps(
       ? magicCastSpeedTicks(weaponId!, set.attackSpeedTicks, isStandardSpell)
       : set.attackSpeedTicks;
 
-  return calculateDps({
+  const scenario: DpsScenario = {
     style: set.style,
     attackStyle: set.attackStyleChoice,
     prayers: prayer ?? DEFAULT_PRAYERS[set.style],
@@ -448,7 +449,36 @@ export function computeSetDps(
           severity: target.weakness.severity,
         }
       : undefined,
-  });
+  };
+
+  // The Obligator has two styles the catalog can't both carry: thrust (its 5
+  // ticks, best of 2-4 damage rolls, +20% / +40% vs 2x2 / 3x3+) and smash (3
+  // ticks, a plain hit). Score both and keep the better — smash edges thrust
+  // vs most 1x1 targets, thrust wins vs big ones (data/items/obligator.ts).
+  const thrust = set.style === "melee" ? obligatorThrust(weaponId, target) : undefined;
+  if (thrust) {
+    const thrustDps = calculateDps({
+      ...scenario,
+      damageRolls: thrust.damageRolls,
+      sizeDamageFactor: thrust.sizeDamageFactor,
+    });
+    const smashDps = calculateDps({ ...scenario, attackSpeedTicks: OBLIGATOR_SMASH_TICKS });
+    return smashDps.dps > thrustDps.dps
+      ? {
+          ...smashDps,
+          obligatorStyle: { style: "smash", attackSpeedTicks: OBLIGATOR_SMASH_TICKS, damageRolls: 1 },
+        }
+      : {
+          ...thrustDps,
+          obligatorStyle: {
+            style: "thrust",
+            attackSpeedTicks: scenario.attackSpeedTicks,
+            damageRolls: thrust.damageRolls,
+          },
+        };
+  }
+
+  return calculateDps(scenario);
 }
 
 /** Convenience for pages that just want recommendations at default level-99 skills. */
