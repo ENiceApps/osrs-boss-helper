@@ -86,13 +86,12 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 
 export const RELEASES: Release[] = [
   {
-    // ENice wrote the note and the change lines himself (2026-10-20); only the
-    // raid's name was corrected (it is "The Fractured Archive", singular).
-    version: "0.1.0",
+    // ENice wrote the note and the change lines himself (2026-10-20, final).
+    version: "0.1.1",
     date: "2026-10-20",
     title: "Raids 4 is out!",
     note: [
-      "Raids 4 is out! And we shall tackle the Fractured Archive too. Here's what I've added so far and what is on my plate for the next few days.",
+      "Raids 4 The Fractured Archive is out! Here's what I've added so far and what is on my plate for the next few days.",
       "I hope you enjoy the new raid! I'll be trying it for the first time shortly.",
       "— ENice",
     ],
@@ -100,7 +99,7 @@ export const RELEASES: Release[] = [
       { kind: "new", lead: "All 8 bosses have been added", text: "Each phase of each boss is still being worked out. So, I'll be checking the wiki daily to make sure we can get that added in asap." },
       { kind: "new", lead: "All new items have been added!", text: "The Obligator, Ascension crossbows, Ascension bolts, Zorya's tome, and Rondache (I'll have to think of a way to add the dps on this). I'm also waiting for full detailed mechanics on this to add it to the dps calc properly. Once the wiki dps calc gets it, I should have added it too." },
       { kind: "new", lead: "Zeal, the new prayer is out and added!", text: "84 Prayer, +25% Attack, +28% Strength, it's the new upgrade to Piety. (The site will default to Piety for now assuming you (and I) haven't gotten the Horn of Bran drop)." },
-      { kind: "new", lead: "A few little UI changes", text: "to make finding these new bosses easier: a Raids 4 row on the home page and a TFA filter on the Bosses page." },
+      { kind: "new", text: "I've also added a few little UI changes to make finding these new bosses easier." },
     ],
   },
   {
