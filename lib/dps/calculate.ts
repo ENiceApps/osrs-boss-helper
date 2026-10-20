@@ -19,6 +19,7 @@ import {
   conflictionHitChance,
   hitChance,
   landedFloorLift,
+  meanBestOfRoll,
   meanTransformedRoll,
   npcDefenceRoll,
   scaleHitsplat,
@@ -235,6 +236,25 @@ export interface DpsScenario {
    * size for the Scythe). See lib/dps/multihit.ts.
    */
   hitProfile?: HitProfile;
+  /**
+   * The damage of a single hit is rolled this many times (each uniform over
+   * 0..max) and the BEST kept, after ONE accuracy roll — the Obligator's
+   * thrust passive (2 rolls, 3 or 4 when the target's stab / slash defence
+   * exceeds its crush; data/items/obligator.ts). The kept roll then takes the
+   * accurate-zero raise and every later per-hitsplat transform as a normal
+   * hit does (they are monotone, so they commute with the max). Single-hit
+   * path only: never combined with a hit profile, bolts or a Twinflame. The
+   * max hit is unchanged; see `meanBestOfRoll` in ./common. 1 / undefined =
+   * a plain roll.
+   */
+  damageRolls?: number;
+  /**
+   * A weapon's bonus damage against big targets, as a max-hit multiplier
+   * [n, d] — the Obligator's ×6/5 vs 2x2 / ×7/5 vs 3x3+. Applied right after
+   * the weapon target bonuses (demonbane, keris, …), before Inquisitor's and
+   * the magic / Berserker steps. Resolved upstream from the target's size.
+   */
+  sizeDamageFactor?: [number, number];
   /**
    * Melee-only: Dharok's full set effect — damage scales with missing HP:
    * trunc(h × (10000 + (maxHp − currentHp) × maxHp) / 10000), per rolled
@@ -698,6 +718,14 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   }
   maxHit = applyFactors(maxHit, mult.damage);
 
+  // A weapon's size bonus (the Obligator's +20% / +40% vs 2x2 / 3x3+): a
+  // max-hit multiplier in the weapon-passive slot. No upstream reference yet
+  // (see data/items/obligator.ts) — placed with the other weapon bonuses.
+  if (scenario.sizeDamageFactor) {
+    const [n, d] = scenario.sizeDamageFactor;
+    maxHit = Math.trunc((maxHit * n) / d);
+  }
+
   if (scorchingBowVsDemon && !foldRangedBane) {
     // Off-task the +30% damage stands alone (wgloop's
     // trackAddFactor(demonbaneFactor(30))), so it IS scaled by the target's
@@ -1082,6 +1110,28 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
 
   const boltProc = scenario.style === "ranged" ? scenario.boltProc : undefined;
   const hitProfile = scenario.hitProfile?.length ? scenario.hitProfile : undefined;
+
+  // Best-of-N damage rolls (the Obligator's thrust, `damageRolls`): one
+  // accuracy roll, then the damage is rolled n times over 0..rollMax and the
+  // highest kept, so the landed hitsplat is k with weight ((k+1)^n − k^n) /
+  // (M+1)^n. The kept roll then goes where a plain roll goes: its accurate 0
+  // is raised to 1 (folded in here, so the raise block below skips it; the
+  // unshielded TD's flat bonus leaves no 0 to raise), a Mad Angel floor sits
+  // after the Corp halving as upstream orders it, and `afterRaise` carries it
+  // through the attacker-side steps, the Corp halving, the NPC transforms and
+  // flat armour — each monotone in the roll, so "best, then transform" is
+  // exactly "transform each, then best". Single-hit path only (a hit profile,
+  // bolts or a Twinflame never carry it). The reported max hit is unchanged.
+  const damageRolls = scenario.damageRolls ?? 1;
+  const bestOfRolls = damageRolls > 1 && !twinflame && !hitProfile && !boltProc && rollMax > 0;
+  if (bestOfRolls) {
+    const top = perHitsplat ? preCorpMax : maxHit;
+    const landed = meanBestOfRoll(top, damageRolls, (r) =>
+      afterRaise(speedBonus > 0 ? r : Math.max(r, 1), madAngelMin),
+    );
+    dps = (accuracy * landed) / (bloodragerSpeed * 0.6);
+  }
+
   if (boltProc) {
     // Vs Corp the bolt effect rolls from the pre-halving max (a diamond proc
     // over 0..trunc(M × 115/100)) and is halved with the hit; ruby fires after
@@ -1178,7 +1228,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // The unshielded TD's flat bonus (> 0) already lifted every landed hitsplat
   // off 0, so only a diamond / onyx proc's fresh roll, which it never reached,
   // is left to raise.
-  if (rollMax > 0 && !twinflame) {
+  if (rollMax > 0 && !twinflame && !bestOfRolls) {
     const floor = scenario.seekingArrows ? 3 : 1;
     let raised = 0;
     if (boltProc) {

@@ -43,13 +43,17 @@ export const SUPPLEMENTAL_ITEMS: VendorEquipmentItem[] = [
   // Obligator — the crush megarare, a two-handed mace on a vine (85 Attack).
   // Charged with Ascension shards + nature/death runes; only the uncharged
   // form is tradeable (like Tumeken's shadow), see charged-items.ts.
-  // Its passive is NOT modelled yet: it rolls damage up to four times
-  // (more rolls the more the target's stab/slash defence exceeds crush) and
-  // keeps the best, gains +20% / +40% damage vs 2x2 / 3x3+ targets, and can
-  // trade the re-rolls for a faster 3-tick single-target style. Listed as a
-  // plain 5-tick crush weapon until the engine learns the roll mechanic.
-  // Category "Blunt" (Pound / Pummel / Block, all crush) stands in for the
-  // wiki's "Unarmed" placeholder.
+  // Two styles: THRUST (this 5-tick speed) rolls damage twice, plus once
+  // more for each of the target's stab / slash defence bonuses above its
+  // crush (up to four), keeps the best, and deals +20% / +40% vs 2x2 / 3x3+
+  // targets; SMASH is a plain 3-tick single-target hit with none of that.
+  // Both are modelled (data/items/obligator.ts, engine `damageRolls` /
+  // `sizeDamageFactor`): the optimizer scores both styles per target and
+  // takes the better one (DpsResult.obligatorStyle says which) — smash vs
+  // most 1x1 targets, thrust vs 2x2+ with three or more rolls and vs every
+  // 3x3+. The line hit (several targets) is not modelled. Category "Blunt"
+  // (Pound / Pummel / Block, all crush) stands in for the wiki's "Unarmed"
+  // placeholder.
   // Source: https://oldschool.runescape.wiki/w/Obligator
   {
     id: 34715,
@@ -102,7 +106,8 @@ export const SUPPLEMENTAL_ITEMS: VendorEquipmentItem[] = [
   // Zorya's tome — two-handed 3-tick powered staff (85 Magic) with +15% magic
   // damage; its built-in spell is in powered-staff-spells.ts. The special
   // attack (one spell at +150% accuracy / +60% damage, then three 2-tick
-  // attacks with the same boost) is not modelled. Tradeable uncharged only.
+  // attacks with the same boost) is listed in data/spec-weapons.ts (display
+  // only, like every spec). Tradeable uncharged only.
   // Source: https://oldschool.runescape.wiki/w/Zorya's_tome
   {
     id: 34725,

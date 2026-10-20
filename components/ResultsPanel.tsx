@@ -272,7 +272,11 @@ export function ResultsPanel({
   // mirroring calculate.ts so the displayed cadence matches the engine.
   const rapidRangedAdjust =
     set?.attackStyleChoice === "rapid" && set?.style === "ranged" ? -1 : 0;
-  const effectiveTicks = set ? Math.max(1, set.attackSpeedTicks + rapidRangedAdjust) : 0;
+  // The Obligator's scored style carries its own speed (smash = 3 ticks, the
+  // catalog only knows thrust's 5).
+  const effectiveTicks = set
+    ? dps?.obligatorStyle?.attackSpeedTicks ?? Math.max(1, set.attackSpeedTicks + rapidRangedAdjust)
+    : 0;
   const activeFlags = set ? buildActiveFlags(set, activeBonuses, demonbaneVulnerability) : [];
   if (set && boltProcFlag) activeFlags.push(boltProcFlag);
 

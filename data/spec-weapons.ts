@@ -256,6 +256,19 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
     role: "dps-spike",
   },
   {
+    // Zorya's tome (The Fractured Archive, 2026-10-20; charged 34725). The
+    // wiki hasn't named the spec or published its energy cost yet (the
+    // proposal's Gatekeeper's Cane was 50%) — fill both in when it does.
+    // https://oldschool.runescape.wiki/w/Zorya's_tome
+    itemId: id(34725),
+    name: "Zorya's tome",
+    specName: "Special attack",
+    energyCost: null,
+    effect:
+      "Fires a spell with +150% accuracy and +60% damage; if it lands, the next three casts keep the boost and fire every 2 ticks.",
+    role: "dps-spike",
+  },
+  {
     itemId: id(11838),
     name: "Saradomin sword",
     specName: "Saradomin's Lightning",
@@ -555,6 +568,10 @@ export const SPEC_MAX_HIT: Record<number, SpecMaxHit> = {
   27665: { factor: [3, 2] }, //   Accursed sceptre — Condemn (+50%)
   31113: { factor: [13, 10] }, //  Eye of Ayak — Soul Rend (+30%)
   24424: { varies: "scales with Magic level (max 58)" }, // Volatile Nightmare staff
+  // Zorya's tome: the spec cast and, if it lands, the next three casts all
+  // hit at +60% — four boosted hits per activation. No upstream reference
+  // yet; +60% on the normal max, like the other magic specs.
+  34725: { factor: [8, 5], hits: 4 },
 
   // ---- True-max / variable ----
   26219: { uncapped: true }, //   Osmumten's fang — Eviscerate (rolls true max)

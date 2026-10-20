@@ -21,11 +21,17 @@ says so. Newest first. Player feature requests from the Reddit launch live in
   - Reuses the hybrid / switch-count optimiser (the "how many gear switches"
     control) across rooms rather than within one fight.
   - ToA invocation level, CoX challenge mode and ToB hard mode as inputs.
-- **TFA follow-ups** (2026-10-20): the Obligator's roll-up-to-four-times
-  passive and size bonus, Zorya's tome special attack and real max-hit
-  formula, the Rondache Shield Bash, the elemental fragments (+2 base max hit
-  per element) as a player toggle, and the Dagon'hai Elder / Monks once the
-  wiki publishes their stats. Mechanics checklists for the TFA rooms.
+- **TFA follow-ups** (2026-10-20): the Rondache Shield Bash, the elemental
+  fragments (+2 base max hit per element) as a player toggle, and the
+  Dagon'hai Elder / Monks once the wiki publishes their stats. Mechanics
+  checklists for the TFA rooms. Done the same day: the Obligator's
+  best-of-2-to-4 damage rolls, size bonus and thrust-vs-smash choice
+  (`data/items/obligator.ts`, engine `damageRolls`), and Zorya's tome's
+  special attack in `data/spec-weapons.ts`. Still open on the tome: the wiki
+  gives only a flat base max hit of 18 (no Magic-level scaling) and no spec
+  name or energy cost — re-check the wiki and weirdgloop (neither weapon was
+  in the calc as of 2026-09-02) and mirror their numbers when they land; the
+  Obligator's size-bonus placement and line hit are unverified too.
 - **Phone support** (named at the v1.0.0 launch, 2026-10-09).
 - **Raid builds** (named at the v1.0.0 launch, 2026-10-09). Folded into the
   raid rework above.

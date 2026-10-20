@@ -111,6 +111,38 @@ export function meanTransformedRoll(
 }
 
 /**
+ * Probability that the BEST of `rolls` independent uniform rolls over 0..max
+ * is exactly k: P(all ≤ k) − P(all ≤ k−1) = ((k+1)^n − k^n) / (max+1)^n.
+ * One roll (n = 1) is the plain uniform 1/(max+1).
+ */
+export function bestOfRollWeight(k: number, max: number, rolls: number): number {
+  if (k < 0 || k > max) return 0;
+  const n = Math.max(1, rolls);
+  return ((k + 1) ** n - k ** n) / (max + 1) ** n;
+}
+
+/**
+ * Mean of `after(k)` where k is the best of `rolls` damage rolls, each uniform
+ * over 0..max — the Obligator's passive (lib/dps/calculate.ts `damageRolls`):
+ * one accuracy roll, then the damage is rolled n times and the highest kept.
+ * `after` carries the kept hitsplat through the later per-hitsplat transforms
+ * (the accurate-zero raise, Corp, a cap, a phase factor, flat armour), which
+ * commute with the max since each is monotone in the roll. Closed form of the
+ * untransformed mean: max − Σ_{k=0}^{max−1} ((k+1)/(max+1))^n, ≈ n·max/(n+1)
+ * — two rolls over 0..10 average 825/121 ≈ 6.82, not 5; four, 9.1.
+ */
+export function meanBestOfRoll(
+  max: number,
+  rolls: number,
+  after: (hitsplat: number) => number = (h) => h,
+): number {
+  if (max < 0) return 0;
+  let sum = 0;
+  for (let k = 0; k <= max; k++) sum += bestOfRollWeight(k, max, rolls) * after(k);
+  return sum;
+}
+
+/**
  * One hitsplat through a per-phase damage factor — wgloop's
  * multiplyTransformer(n, d, minimum): trunc(h × n/d), except that with a
  * minimum a hit of at least `minimum` never drops below it, and a smaller one

@@ -231,6 +231,14 @@ export interface DpsResult {
     damageCap?: { limit: number; rerollMin: number; rerollMax: number };
     styleScale?: { factor: [number, number]; minimum?: number };
   };
+  /**
+   * Set when the weapon is the Obligator: the attack style the loadout layer
+   * (computeSetDps) found better vs this target and scored — "thrust" (5
+   * ticks, best of `damageRolls` damage rolls, the size bonus) or "smash" (3
+   * ticks, a plain hit) — with the speed it used, since the catalog carries
+   * only the thrust speed. See data/items/obligator.ts.
+   */
+  obligatorStyle?: { style: "thrust" | "smash"; attackSpeedTicks: number; damageRolls: number };
 }
 
 export interface BankContents {
