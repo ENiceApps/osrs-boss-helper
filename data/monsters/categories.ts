@@ -4,7 +4,7 @@
 //
 // "Primary" category is mutually exclusive — every monster has exactly one:
 //   early / mid / late  = non-raid bosses by rough account progression
-//   cox / tob / toa      = the three raids, grouped by raid (all encounters)
+//   cox / tob / toa / tfa = the four raids, grouped by raid (all encounters)
 //   npc                  = catch-all: Slayer creatures, quest NPCs, Colosseum
 //                          waves, skilling bosses, event/joke entries, etc.
 //
@@ -16,7 +16,7 @@
 //
 // This is pure data — edit the maps freely.
 
-export type MonsterCategory = "early" | "mid" | "late" | "cox" | "tob" | "toa" | "npc";
+export type MonsterCategory = "early" | "mid" | "late" | "cox" | "tob" | "toa" | "tfa" | "npc";
 
 export const CATEGORY_LABELS: Record<MonsterCategory, string> = {
   early: "Early game",
@@ -25,6 +25,7 @@ export const CATEGORY_LABELS: Record<MonsterCategory, string> = {
   cox: "CoX",
   tob: "ToB",
   toa: "ToA",
+  tfa: "TFA",
   npc: "Non-boss NPC",
 };
 
@@ -126,6 +127,18 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "ba-ba": "toa",
   "zebak": "toa",
   "obelisk-tombs-of-amascut": "toa",
+
+  // --- The Fractured Archive (TFA, Raids 4 — 2026-10-20) ---
+  // Hand-authored in data/monsters/supplemental.ts until weirdgloop ships them.
+  // The Dagon'hai Elder / Monks join once the wiki publishes their stats.
+  "archive-guardian": "tfa",
+  "ezekiel": "tfa",
+  "bork": "tfa",
+  "the-smorks": "tfa",
+  "moia": "tfa",
+  "dreadnoth-the-jellied": "tfa",
+  "xarth": "tfa",
+  "ocellus": "tfa",
 };
 
 // Cross-cutting tag: bosses you can kill on a Slayer task — directly assigned
@@ -203,6 +216,7 @@ export const HEADLINE_BOSS_SLUGS: ReadonlySet<string> = new Set([
   "the-nightmare",
   "great-olm",
   "verzik-vitur",
+  "ocellus",
   "tztok-jad",
   "tzkal-zuk",
 ]);

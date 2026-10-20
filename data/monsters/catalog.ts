@@ -1363,6 +1363,37 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     ]
   },
   {
+    "slug": "archive-guardian",
+    "wikiId": 16659,
+    "name": "Archive Guardian",
+    "version": "",
+    "combatLevel": 984,
+    "hp": 550,
+    "defenceLevel": 260,
+    "magicLevel": 250,
+    "magicAttackBonus": 350,
+    "defenceBonuses": {
+      "stab": 120,
+      "slash": 110,
+      "crush": 20,
+      "magic": 130,
+      "rangedHeavy": 50,
+      "rangedStandard": 120,
+      "rangedLight": 75
+    },
+    "attributes": [
+      "flying"
+    ],
+    "weakness": {
+      "element": "fire",
+      "severity": 80
+    },
+    "image": "Archive Guardian.png",
+    "size": 5,
+    "maxHitText": "25, 99+ (laser beam)",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "arianwyn",
     "wikiId": 8865,
     "name": "Arianwyn",
@@ -4193,6 +4224,88 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 5,
     "maxHitText": "32 total 4+8+20",
     "isSlayerMonster": false
+  },
+  {
+    "slug": "bork",
+    "wikiId": 16640,
+    "name": "Bork",
+    "version": "Base",
+    "combatLevel": 871,
+    "hp": 1500,
+    "defenceLevel": 300,
+    "magicLevel": 90,
+    "defenceBonuses": {
+      "stab": 140,
+      "slash": 130,
+      "crush": 10,
+      "magic": 300,
+      "rangedHeavy": 5,
+      "rangedStandard": 50,
+      "rangedLight": 80,
+      "flatArmour": 12
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 40
+    },
+    "image": "Bork.png",
+    "size": 4,
+    "maxHitText": "",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Base",
+        "wikiId": 16640,
+        "combatLevel": 871,
+        "hp": 1500,
+        "defenceLevel": 300,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 140,
+          "slash": 130,
+          "crush": 10,
+          "magic": 300,
+          "rangedHeavy": 5,
+          "rangedStandard": 50,
+          "rangedLight": 80,
+          "flatArmour": 12
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Bork.png",
+        "size": 4,
+        "maxHitText": ""
+      },
+      {
+        "version": "Stunned",
+        "wikiId": 16640,
+        "combatLevel": 871,
+        "hp": 1500,
+        "defenceLevel": 300,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 140,
+          "slash": 130,
+          "crush": 10,
+          "magic": 300,
+          "rangedHeavy": 5,
+          "rangedStandard": 50,
+          "rangedLight": 80
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Bork.png",
+        "size": 4,
+        "maxHitText": ""
+      }
+    ]
   },
   {
     "slug": "bouncer",
@@ -8195,6 +8308,34 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "dreadnoth-the-jellied",
+    "wikiId": 16665,
+    "name": "Dreadnoth the Jellied",
+    "version": "",
+    "combatLevel": 888,
+    "hp": 2100,
+    "defenceLevel": 125,
+    "magicLevel": 220,
+    "defenceBonuses": {
+      "stab": 15,
+      "slash": 20,
+      "crush": 5,
+      "magic": 20,
+      "rangedHeavy": 80,
+      "rangedStandard": 80,
+      "rangedLight": 100
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "fire",
+      "severity": 85
+    },
+    "image": "Dreadnoth the Jellied.png",
+    "size": 5,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "drink-troll",
     "wikiId": 15164,
     "name": "Drink troll",
@@ -9836,6 +9977,35 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 1,
     "maxHitText": "21",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "ezekiel",
+    "wikiId": 16652,
+    "name": "Ezekiel",
+    "version": "",
+    "combatLevel": 984,
+    "hp": 3000,
+    "defenceLevel": 130,
+    "magicLevel": 200,
+    "magicAttackBonus": 250,
+    "defenceBonuses": {
+      "stab": 150,
+      "slash": 90,
+      "crush": 35,
+      "magic": 200,
+      "rangedHeavy": 320,
+      "rangedStandard": 370,
+      "rangedLight": 445
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 25
+    },
+    "image": "Ezekiel.png",
+    "size": 3,
+    "maxHitText": "",
+    "isSlayerMonster": false
   },
   {
     "slug": "feral-vampyre",
@@ -18409,6 +18579,32 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "moia",
+    "wikiId": 16667,
+    "name": "Moia",
+    "version": "",
+    "combatLevel": 1064,
+    "hp": 785,
+    "defenceLevel": 195,
+    "magicLevel": 350,
+    "magicAttackBonus": 300,
+    "defenceBonuses": {
+      "stab": 20,
+      "slash": 110,
+      "crush": 15,
+      "magic": 30,
+      "rangedHeavy": 140,
+      "rangedStandard": 120,
+      "rangedLight": 60
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Moia.png",
+    "size": 3,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "molanisk",
     "wikiId": 1,
     "name": "Molanisk",
@@ -19482,7 +19678,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "defenceBonuses": {
       "stab": 40,
       "slash": 140,
-      "crush": 60,
+      "crush": 35,
       "magic": 300,
       "rangedHeavy": 150,
       "rangedStandard": 190,
@@ -19842,6 +20038,86 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 2,
     "maxHitText": "22 (Melee)",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "ocellus",
+    "wikiId": 16673,
+    "name": "Ocellus",
+    "version": "Phase 1",
+    "combatLevel": 1121,
+    "hp": 2500,
+    "defenceLevel": 215,
+    "magicLevel": 350,
+    "magicAttackBonus": 150,
+    "defenceBonuses": {
+      "stab": 150,
+      "slash": 95,
+      "crush": 60,
+      "magic": 100,
+      "rangedHeavy": 50,
+      "rangedStandard": 135,
+      "rangedLight": 50
+    },
+    "attributes": [
+      "demon"
+    ],
+    "weakness": null,
+    "image": "Ocellus.png",
+    "size": 3,
+    "maxHitText": "",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Phase 1",
+        "wikiId": 16673,
+        "combatLevel": 1121,
+        "hp": 2500,
+        "defenceLevel": 215,
+        "magicLevel": 350,
+        "magicAttackBonus": 150,
+        "defenceBonuses": {
+          "stab": 150,
+          "slash": 95,
+          "crush": 60,
+          "magic": 100,
+          "rangedHeavy": 50,
+          "rangedStandard": 135,
+          "rangedLight": 50
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Ocellus.png",
+        "size": 3,
+        "maxHitText": ""
+      },
+      {
+        "version": "Phase 3",
+        "wikiId": 16677,
+        "combatLevel": 1197,
+        "hp": 5250,
+        "defenceLevel": 250,
+        "magicLevel": 300,
+        "magicAttackBonus": 350,
+        "defenceBonuses": {
+          "stab": 150,
+          "slash": 100,
+          "crush": 30,
+          "magic": 200,
+          "rangedHeavy": 250,
+          "rangedStandard": 250,
+          "rangedLight": 250
+        },
+        "attributes": [
+          "demon"
+        ],
+        "weakness": null,
+        "image": "Ocellus (phase 3).png",
+        "size": 3,
+        "maxHitText": ""
+      }
+    ]
   },
   {
     "slug": "ogre",
@@ -28351,6 +28627,35 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "the-smorks",
+    "wikiId": 16641,
+    "name": "The Smorks",
+    "version": "",
+    "combatLevel": 640,
+    "hp": 600,
+    "defenceLevel": 220,
+    "magicLevel": 185,
+    "magicAttackBonus": 185,
+    "defenceBonuses": {
+      "stab": 220,
+      "slash": 170,
+      "crush": 160,
+      "magic": 400,
+      "rangedHeavy": 80,
+      "rangedStandard": 150,
+      "rangedLight": 80
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 85
+    },
+    "image": "The Smorks.png",
+    "size": 3,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "the-whisperer",
     "wikiId": 12204,
     "name": "The Whisperer",
@@ -32420,6 +32725,37 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": "11 (50+ recoil)"
       }
     ]
+  },
+  {
+    "slug": "xarth",
+    "wikiId": 16684,
+    "name": "Xarth",
+    "version": "",
+    "combatLevel": 912,
+    "hp": 2600,
+    "defenceLevel": 170,
+    "magicLevel": 350,
+    "magicAttackBonus": 250,
+    "defenceBonuses": {
+      "stab": 115,
+      "slash": 105,
+      "crush": 20,
+      "magic": 205,
+      "rangedHeavy": 155,
+      "rangedStandard": 230,
+      "rangedLight": 125
+    },
+    "attributes": [
+      "demon"
+    ],
+    "weakness": {
+      "element": "water",
+      "severity": 85
+    },
+    "image": "Xarth.png",
+    "size": 3,
+    "maxHitText": "",
+    "isSlayerMonster": false
   },
   {
     "slug": "yama",

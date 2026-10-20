@@ -1,6 +1,7 @@
 // Enchanted-bolt special effects ("procs"). Item ids verified against
-// data/vendor/wgloop/equipment.json. Only the (e) enchanted variants proc —
-// plain gem-tipped bolts are stat sticks.
+// data/vendor/wgloop/equipment.json (the Ascension bolts against the OSRS
+// Wiki, see data/items/supplemental.ts). Only the (e) enchanted variants
+// proc — plain gem-tipped bolts are stat sticks.
 
 export type BoltEffect =
   | "opal"
@@ -24,6 +25,10 @@ export const BOLT_EFFECT_BY_ITEM_ID: ReadonlyMap<number, BoltEffect> = new Map([
   [21948, "dragonstone"], // Dragonstone dragon bolts (e)
   [9245, "onyx"], // Onyx bolts (e)
   [21950, "onyx"], // Onyx dragon bolts (e)
+  // Ascension bolts (The Fractured Archive) — enchanted with the same
+  // Enchant Crossbow Bolt spells, so the same diamond / onyx effects.
+  [34696, "diamond"], // Diamond ascension bolts (e)
+  [34708, "onyx"], // Onyx ascension bolts (e)
 ]);
 
 /** Zaryte crossbow — its passive strengthens enchanted-bolt effects. */

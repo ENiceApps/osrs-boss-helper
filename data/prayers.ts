@@ -56,9 +56,23 @@ const NONE_MELEE: PrayerOption = {
 const NONE_RANGED: PrayerOption = { ...NONE_MELEE, style: "ranged" };
 const NONE_MAGIC: PrayerOption = { ...NONE_MELEE, style: "magic" };
 
-/** Offensive prayers per style, ordered best → worst (the picker shows top first). */
+/** Offensive prayers per style, ordered best → worst (the picker shows top
+ *  first). The DEFAULT per style (DEFAULT_PRAYER_ID) is the best one every
+ *  player can have — Zeal needs a raid unlock, so Piety is melee's default. */
 export const PRAYER_OPTIONS: Record<CombatStyle, PrayerOption[]> = {
   melee: [
+    {
+      // Piety upgrade from The Fractured Archive (unlocked with the Horn of
+      // Bran, 2026-10-20): +25% Attack / +28% Strength / +25% Defence, 84
+      // Prayer (+ 75 Attack and Strength). Same 40 drain rate as Piety on the
+      // wiki, so the same drain effect. Piety stays the default: most players
+      // won't have the unlock, so the optimizer's number assumes Piety unless
+      // Zeal is picked.
+      // https://oldschool.runescape.wiki/w/Zeal
+      id: "zeal", name: "Zeal", effect: "+25% atk · +28% str",
+      style: "melee", level: 84, drainEffect: 24,
+      selection: sel({ attackMultiplier: 1.25, strengthMultiplier: 1.28, defenceMultiplier: 1.25 }),
+    },
     {
       id: "piety", name: "Piety", effect: "+20% atk · +23% str",
       style: "melee", level: 70, drainEffect: 24,

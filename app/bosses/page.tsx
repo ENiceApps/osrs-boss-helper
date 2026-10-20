@@ -29,6 +29,7 @@ const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: "cox", label: CATEGORY_LABELS.cox },
   { key: "tob", label: CATEGORY_LABELS.tob },
   { key: "toa", label: CATEGORY_LABELS.toa },
+  { key: "tfa", label: CATEGORY_LABELS.tfa },
   { key: "slayer", label: "Slayer" },
   { key: "npc", label: CATEGORY_LABELS.npc },
 ];

@@ -24,6 +24,7 @@ export type AmmoClass =
   | "bolt-rack" // Karil's crossbow only
   | "atlatl-dart" // Eclipse atlatl only
   | "antler-bolt" // Hunters' sunlight crossbow only
+  | "ascension-bolt" // Ascension crossbows only
   | "tar"; // salamanders: each one burns only its own herb tar
 
 // Blowpipes consume darts loaded inside the weapon (no in-game ammo slot),
@@ -82,6 +83,10 @@ export const WEAPON_AMMO: Record<string, WeaponAmmoSpec> = {
   // fire dragon bolts, and once bolt procs were modelled its 4-tick speed +
   // Ruby dragon bolts (e) became a bogus top recommendation vs Vorkath.
   "Hunters' sunlight crossbow": { class: "antler-bolt", maxTier: 2 },
+  // Ascension crossbows (The Fractured Archive) fire ONLY Ascension bolts —
+  // plain, gem-tipped or enchanted. Catalog category "Crossbow", so without
+  // this entry the fallback would hand them dragon bolts.
+  "Ascension crossbows": { class: "ascension-bolt", maxTier: 1 },
 
   // Bows — fire arrows. Same metal ladder.
   Shortbow: { class: "arrow", maxTier: 1 },
@@ -256,6 +261,14 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   // Antler bolts — for the Hunters' sunlight crossbow only.
   "Sunlight antler bolts": { class: "antler-bolt", tier: 1 },
   "Moonlight antler bolts": { class: "antler-bolt", tier: 2 },
+
+  // Ascension bolts — for the Ascension crossbows only (one tier: the gem
+  // tips and enchants change strength / procs, not which weapon fires them).
+  "Ascension bolts": { class: "ascension-bolt", tier: 1 },
+  "Diamond ascension bolts": { class: "ascension-bolt", tier: 1 },
+  "Diamond ascension bolts (e)": { class: "ascension-bolt", tier: 1 },
+  "Onyx ascension bolts": { class: "ascension-bolt", tier: 1 },
+  "Onyx ascension bolts (e)": { class: "ascension-bolt", tier: 1 },
 
   // Javelins — for Ballistas (Light / Heavy).
   "Bronze javelin": { class: "javelin", tier: 1 },

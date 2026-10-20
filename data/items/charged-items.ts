@@ -52,6 +52,9 @@ const CHARGED_UNCHARGED_ID: Record<string, number> = {
   "Camphor blowpipe": 31577,
   "Ironwood blowpipe": 31581,
   "Rosewood blowpipe": 31585,
+  // The Fractured Archive (2026-10-20): both tradeable only when uncharged.
+  "Obligator": 34717,
+  "Zorya's tome": 34727,
 };
 
 /** Match a catalog name to a charged key, stripping one trailing recolour/

@@ -18,6 +18,14 @@ export type CombatRequirement = Partial<
 >;
 
 export const REQUIREMENT_OVERRIDES: Record<string, CombatRequirement> = {
+  // The Fractured Archive rewards (2026-10-20) — hand-authored in
+  // data/items/supplemental.ts, so the wiki scrape has no row for them.
+  // Verified on each item's wiki page ("requiring 85 Attack to wield", etc.).
+  "Obligator": { attack: 85 },
+  "Ascension crossbows": { ranged: 80 },
+  "Zorya's tome": { magic: 85 },
+  "Rondache": { defence: 80 },
+
   // Fortified Masori — the wiki lists the fortified Defence req (80) only in a
   // parenthetical, so the scraper read the base 30. Verified: "requires level
   // 80 Ranged and Defence to equip".

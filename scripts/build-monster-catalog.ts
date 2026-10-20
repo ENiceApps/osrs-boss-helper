@@ -122,6 +122,11 @@ function slugify(name: string): string {
 const PREFERRED_VERSION: Record<string, string> = {
   // Serpentine is the wiki calc's default and the most-fought phase.
   "Zulrah": "Serpentine",
+  // The Fractured Archive (data/monsters/supplemental.ts): the fight opens on
+  // Phase 1; the HP tie-breaker would otherwise land on the 5250-HP Phase 3.
+  "Ocellus": "Phase 1",
+  // Bork's flat armour is 12 until he's stunned; the fight starts there.
+  "Bork": "Base",
 };
 
 function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMonster {
@@ -143,7 +148,10 @@ function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMo
 // Keyed by "name|version" (empty version = "") → partial skill/defensive patch.
 // Always cite the OSRS Wiki as source so future maintainers can verify.
 // ---------------------------------------------------------------------------
-const STAT_OVERRIDES: Record<string, Partial<{ def: number; magic: number }>> = {
+const STAT_OVERRIDES: Record<
+  string,
+  Partial<{ def: number; magic: number; defensive: Partial<VendorMonster["defensive"]> }>
+> = {
   // Weirdgloop exports def=0 for all Vardorvis versions: his Defence scales
   // linearly with his HP, from the full-HP value down to 145/181/130 at 0 HP
   // (wgloop src/lib/scaling/Vardorvis.ts). We use the full-HP value, which is
@@ -152,6 +160,13 @@ const STAT_OVERRIDES: Record<string, Partial<{ def: number; magic: number }>> = 
   "Vardorvis|Post-quest": { def: 215 },
   "Vardorvis|Awakened":   { def: 268 },
   "Vardorvis|Quest":      { def: 180 },
+
+  // The Fractured Archive launch (20 Oct 2026) cut Nex's crush defence bonus
+  // from +60 to +35 ("this change means that the final iteration [of the
+  // Obligator] will shine against Zaros' most-feared general"). The vendored
+  // dump still carries 60.
+  // https://oldschool.runescape.wiki/w/Update:The_Fractured_Archive_-_Out_Today
+  "Nex|": { defensive: { crush: 35 } },
 };
 
 // Fold in hand-authored monsters (brand-new releases not yet in the vendored
@@ -173,6 +188,7 @@ const monsters = [...vendorMonsters, ...supplemental].map((m) => {
   return {
     ...m,
     skills: { ...m.skills, ...(patch.def != null ? { def: patch.def } : {}) },
+    defensive: { ...m.defensive, ...(patch.defensive ?? {}) },
   };
 });
 
