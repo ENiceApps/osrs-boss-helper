@@ -173,3 +173,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-20 22:21 UTC · pushed by ENiceApps
 
 - c76912b copy(home): Raids 4 bosses as quick picks, drop the Slayer row
+
+## 2026-10-20 23:32 UTC · pushed by ENiceApps
+
+- 08704b3 updates: newest post first, release notes as plain text in ENice's order
