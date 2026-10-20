@@ -1,5 +1,5 @@
 // Landing page (/): the app's front door — a type-ahead search over every boss
-// and slayer monster, quick picks for both, links into the full catalog, and a
+// and slayer monster, quick picks (popular bosses + the Raids 4 roster), links into the full catalog, and a
 // short "load your own bank" guide. Server component.
 
 import type { Metadata } from "next";
@@ -24,17 +24,18 @@ const QUICK_PICK_SLUGS = [
   "scurrius",
 ];
 
-// Common Slayer tasks, so a visitor sees at a glance that the catalog isn't
-// bosses only. The search covers all 600+ assignable creatures.
-const SLAYER_PICK_SLUGS = [
-  "nechryael",
-  "abyssal-demon",
-  "gargoyle",
-  "dust-devil",
-  "kurask",
-  "hellhound",
-  "demonic-gorilla",
-  "rune-dragon",
+// The Fractured Archive (Raids 4, 2026-10-20) bosses in fight order, so the
+// new roster is one click away while it's the news. Replaced the Slayer row
+// (the search still covers all 600+ assignable creatures).
+const RAIDS_4_PICK_SLUGS = [
+  "archive-guardian",
+  "ezekiel",
+  "bork",
+  "the-smorks",
+  "moia",
+  "dreadnoth-the-jellied",
+  "xarth",
+  "ocellus",
 ];
 
 // The three steps to load your real bank, rendered as a numbered guide below.
@@ -80,7 +81,7 @@ export default function HomePage() {
   const quickPicks = QUICK_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(
     (m): m is NonNullable<typeof m> => Boolean(m),
   );
-  const slayerPicks = SLAYER_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(
+  const raids4Picks = RAIDS_4_PICK_SLUGS.map((slug) => MONSTER_BY_SLUG[slug]).filter(
     (m): m is NonNullable<typeof m> => Boolean(m),
   );
   const slayerCount = MONSTER_CATALOG.filter((m) => m.isSlayerMonster).length;
@@ -130,10 +131,10 @@ export default function HomePage() {
         </div>
       )}
 
-      {slayerPicks.length > 0 && (
+      {raids4Picks.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <span className="label-eyebrow text-parchment-dark">Slayer</span>
-          {slayerPicks.map((m) => (
+          <span className="label-eyebrow text-parchment-dark">Raids 4</span>
+          {raids4Picks.map((m) => (
             <Link
               key={m.slug}
               href={`/boss/${m.slug}`}
