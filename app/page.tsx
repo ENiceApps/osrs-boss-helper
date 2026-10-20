@@ -95,6 +95,19 @@ export default function HomePage() {
         in your bank! Plus the mechanics and spec weapons that matter for that fight.
       </p>
 
+      {/* Game-update banner: Raids 4 (The Fractured Archive) landed 2026-10-20
+          and its bosses + gear went in the same day. Swap or drop with the next
+          game update. */}
+      <Link
+        href="/bosses?category=tfa"
+        className="osrs-panel rounded-lg px-4 py-3 mt-6 max-w-lg text-sm text-parchment-dark hover:bg-osrs-gold/10 transition-colors"
+      >
+        <span className="label-eyebrow text-osrs-gold mr-2">New</span>
+        Raids 4 bosses added! The Fractured Archive bosses and their rewards are in, from
+        the Archive Guardian to Ocellus.{" "}
+        <span className="text-osrs-gold whitespace-nowrap">See them →</span>
+      </Link>
+
       <div className="w-full mt-8">
         <BossSearch />
         <p className="text-caption text-osrs-muted mt-2">
