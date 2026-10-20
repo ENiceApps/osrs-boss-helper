@@ -33,10 +33,10 @@ describe("updates data", () => {
     }
   });
 
-  it("gives every release a title and non-empty changes", () => {
+  it("gives every release a title and either changes or a note", () => {
     for (const r of RELEASES) {
       expect(r.title.trim()).not.toBe("");
-      expect(r.changes.length).toBeGreaterThan(0);
+      expect(r.changes.length + (r.note?.length ?? 0)).toBeGreaterThan(0);
       for (const c of r.changes) expect(c.text.trim()).not.toBe("");
     }
   });
@@ -54,7 +54,11 @@ describe("updates data", () => {
   });
 
   it("makes no novelty claims", () => {
-    const text = RELEASES.flatMap((r) => [...(r.note ?? []), ...r.changes.map((c) => c.text)]).join(
+    const noteText = (r: (typeof RELEASES)[number]) =>
+      (r.note ?? []).flatMap((b) =>
+        typeof b === "string" ? [b] : b.flatMap((i) => (typeof i === "string" ? [i] : [i.text, ...i.sub])),
+      );
+    const text = RELEASES.flatMap((r) => [...noteText(r), ...r.changes.map((c) => c.text)]).join(
       "\n",
     );
     expect(text).not.toMatch(/\b(first|only) (tool|app|site)\b|nobody else|no other tool/i);

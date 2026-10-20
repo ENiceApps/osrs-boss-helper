@@ -43,11 +43,21 @@ export interface Change {
   thanks?: string;
 }
 
+/** One bullet in a note: plain text, or text with its own sub-bullets. */
+export type NoteItem = string | { text: string; sub: string[] };
+/** A note block: a paragraph (string) or a bullet list. */
+export type NoteBlock = string | NoteItem[];
+
 export interface Release {
   version: SemVer;
   date: IsoDate; // release day, ISO
   title: string; // one-line teaser, sentence case
-  note?: string[]; // optional personal note, one string per paragraph
+  /** ENice's note, rendered as plain text in exactly this order (paragraphs
+   *  and bullet lists), above the structured changes. He writes these
+   *  himself; don't reword them. */
+  note?: NoteBlock[];
+  /** Structured change list (New / Improved / Fixed / Removed). A release may
+   *  carry only a note instead. */
   changes: Change[];
 }
 
@@ -61,7 +71,8 @@ export interface PlannedItem {
   text: string;
 }
 
-/** ENice's pinned letter at the top of /updates. A string is a paragraph, a
+/** ENice's letter on /updates, shown in date order with the releases (newest
+ *  post first, so a newer release sits above it). A string is a paragraph, a
  *  string[] is a bullet list. ENice writes these himself; don't reword them. */
 export interface CommunityNote {
   date: IsoDate;
@@ -92,15 +103,22 @@ export const RELEASES: Release[] = [
     title: "Raids 4 is out!",
     note: [
       "Raids 4 The Fractured Archive is out! Here's what I've added so far and what is on my plate for the next few days.",
+      [
+        {
+          text: "All 8 bosses have been added.",
+          sub: ["Each phase of each boss is still being worked out. So, I'll be checking the wiki daily to make sure we can get that added in asap"],
+        },
+        {
+          text: "All new items have been added! The Obligator, Ascension crossbows, Ascension bolts, Zorya's tome, and Rondache (I'll have to think of a way to add the dps on this).",
+          sub: ["I'm also waiting for full detailed mechanics on this to add it to the dps calc properly. Once the wiki dps calc gets it, I should have added it too"],
+        },
+        "Zeal, the new prayer is out and added! 84 Prayer, +25% Attack, +28% Strength, it's the new upgrade to Piety. (The site will default to Piety for now assuming you (and I) haven't gotten the Horn of Bran drop).",
+        "I've also added a few little UI changes to make finding these new bosses easier.",
+      ],
       "I hope you enjoy the new raid! I'll be trying it for the first time shortly.",
-      "— ENice",
+      "ENice",
     ],
-    changes: [
-      { kind: "new", lead: "All 8 bosses have been added", text: "Each phase of each boss is still being worked out. So, I'll be checking the wiki daily to make sure we can get that added in asap." },
-      { kind: "new", lead: "All new items have been added!", text: "The Obligator, Ascension crossbows, Ascension bolts, Zorya's tome, and Rondache (I'll have to think of a way to add the dps on this). I'm also waiting for full detailed mechanics on this to add it to the dps calc properly. Once the wiki dps calc gets it, I should have added it too." },
-      { kind: "new", lead: "Zeal, the new prayer is out and added!", text: "84 Prayer, +25% Attack, +28% Strength, it's the new upgrade to Piety. (The site will default to Piety for now assuming you (and I) haven't gotten the Horn of Bran drop)." },
-      { kind: "new", text: "I've also added a few little UI changes to make finding these new bosses easier." },
-    ],
+    changes: [],
   },
   {
     version: "0.0.1",
