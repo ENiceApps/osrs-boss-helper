@@ -161,3 +161,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-15 02:26 UTC · pushed by ENiceApps
 
 - ed7d6e8 copy(bank): drop the Bank Memory section, the plugin covers it
+
+## 2026-10-20 22:16 UTC · pushed by ENiceApps
+
+- 972a4dc feat(data): add The Fractured Archive (Raids 4) bosses and rewards
