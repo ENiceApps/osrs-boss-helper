@@ -177,3 +177,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-20 23:32 UTC · pushed by ENiceApps
 
 - 08704b3 updates: newest post first, release notes as plain text in ENice's order
+
+## 2026-10-20 23:35 UTC · pushed by ENiceApps
+
+- 913999b feat(dps): model the Obligator passive and Zorya's tome special attack
