@@ -165,3 +165,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-20 22:16 UTC · pushed by ENiceApps
 
 - 972a4dc feat(data): add The Fractured Archive (Raids 4) bosses and rewards
+
+## 2026-10-20 22:18 UTC · pushed by ENiceApps
+
+- 5e0aa88 copy(home): announce the Raids 4 bosses with a link to the TFA roster
