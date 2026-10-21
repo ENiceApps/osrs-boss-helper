@@ -34,6 +34,8 @@ const RAIDS_4_PICK_SLUGS = [
   "the-smorks",
   "moia",
   "dreadnoth-the-jellied",
+  "dagonhai-elder",
+  "dagonhai-monk",
   "xarth",
   "ocellus",
 ];
