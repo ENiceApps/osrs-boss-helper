@@ -193,3 +193,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 00:51 UTC · pushed by ENiceApps
 
 - 0805f1c fix: blowpipe darts in the manual gear editor
+
+## 2026-10-21 01:01 UTC · pushed by ENiceApps
+
+- 7e9bf64 fix: manual weapon swap re-derives combat style, attack type and spell
