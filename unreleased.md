@@ -197,3 +197,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 01:01 UTC · pushed by ENiceApps
 
 - 7e9bf64 fix: manual weapon swap re-derives combat style, attack type and spell
+
+## 2026-10-21 23:26 UTC · pushed by ENiceApps
+
+- 1008ce9 feat(home): Dagon'hai Elder and Monk in the Raids 4 quick-pick row
