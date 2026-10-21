@@ -181,3 +181,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-20 23:35 UTC · pushed by ENiceApps
 
 - 913999b feat(dps): model the Obligator passive and Zorya's tome special attack
+
+## 2026-10-21 00:20 UTC · pushed by ENiceApps
+
+- a072be9 docs: wiki-watch routine id and real run times
