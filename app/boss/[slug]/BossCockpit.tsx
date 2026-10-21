@@ -542,8 +542,8 @@ export function BossCockpit({ slug }: { slug: string }) {
   const selectedSet = useMemo(() => {
     if (!baseSet) return undefined;
     if (!hasOverrides(baseSet, overrides, spellOverride, dartOverride)) return baseSet;
-    return applyOverrides(baseSet, overrides, spellOverride, skills.magic, dartOverride);
-  }, [baseSet, overrides, spellOverride, dartOverride, skills.magic]);
+    return applyOverrides(baseSet, overrides, spellOverride, skills.magic, dartOverride, monster);
+  }, [baseSet, overrides, spellOverride, dartOverride, skills.magic, monster]);
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride, dartOverride) : false;
   // The dart isn't a slot, so the "N slots changed" banner counts it separately.
@@ -782,6 +782,7 @@ export function BossCockpit({ slug }: { slug: string }) {
         spellOverride,
         skills.magic,
         dartOverride,
+        monster,
       );
       return computeSetDps(
         trial,
@@ -804,7 +805,7 @@ export function BossCockpit({ slug }: { slug: string }) {
   const dpsForDart = useCallback(
     (_slot: LoadoutSlotKey, dart: ItemCatalogEntry | null): number | undefined => {
       if (!baseSet) return undefined;
-      const trial = applyOverrides(baseSet, overrides, spellOverride, skills.magic, dart);
+      const trial = applyOverrides(baseSet, overrides, spellOverride, skills.magic, dart, monster);
       return computeSetDps(
         trial,
         monster,

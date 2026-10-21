@@ -18,12 +18,17 @@ import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { spellMaxHit, type SpellEntry } from "@/data/spells/catalog";
+import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
+import { combatStyleFor, defaultStyleFor, WEAPON_STYLES } from "@/data/weapon-styles";
+import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
+import { autoPickSpell } from "@/lib/auto-spell";
 import type {
   AttackType,
   ItemBonusFlags,
   LoadoutSet,
   LoadoutSlotKey,
 } from "@/types/loadout";
+import type { AttackStyleChoice, CombatStyle } from "@/types/osrs";
 
 const ITEM_BY_ID = new Map<number, ItemCatalogEntry>(
   ITEM_CATALOG.map((it) => [it.id, it]),
@@ -143,10 +148,46 @@ function resolveSlot(
   return baseSlot ?? null;
 }
 
+interface ResolvedStyle {
+  style: CombatStyle;
+  attackType: AttackType;
+  attackStyleChoice: AttackStyleChoice;
+}
+
+/**
+ * Combat style follows the WEAPON. The base's (attackType, choice) is kept
+ * while the resolved weapon can still use it — editing armour on a melee set
+ * keeps "aggressive slash" — and a weapon that can't (a blowpipe dropped
+ * into the magic set, a staff into the ranged one, a crush-only mace into a
+ * slash set) gets the same default style scoreScenario would give it.
+ */
+function resolveStyle(base: LoadoutSet, weapon: ItemCatalogEntry | undefined): ResolvedStyle {
+  const current: ResolvedStyle = {
+    style: base.style,
+    attackType: base.attackType,
+    attackStyleChoice: base.attackStyleChoice,
+  };
+  if (!weapon) return current;
+  const options = WEAPON_STYLES[weapon.category];
+  if (!options) return current;
+  const stillLegal = options.some(
+    (o) => o.attackType === base.attackType && o.choice === base.attackStyleChoice,
+  );
+  if (stillLegal) return current;
+  const def = defaultStyleFor(weapon);
+  if (!def) return current;
+  return {
+    style: combatStyleFor(def.attackType),
+    attackType: def.attackType as AttackType,
+    attackStyleChoice: def.choice,
+  };
+}
+
 /**
  * Merge overrides on top of a base set. Produces a fresh LoadoutSet with
- * recomputed totals/speed/itemBonusFlags. The base's predicate, attack
- * style choice, notes, ammo quantity etc. are preserved.
+ * recomputed totals/speed/itemBonusFlags. The base's notes, ammo quantity
+ * etc. are preserved; style, attack type and style choice are re-derived
+ * when the weapon swap makes the old ones illegal (see resolveStyle).
  */
 export function applyOverrides(
   base: LoadoutSet,
@@ -167,8 +208,17 @@ export function applyOverrides(
    * dropped — whenever the resolved weapon is not a blowpipe.
    */
   dartOverride?: ItemCatalogEntry | null,
+  /**
+   * Target the set is scored against. Needed to auto-pick a spell when a
+   * swap moves the set INTO magic (or changes its staff) with no manual
+   * spell; without it such a set carries no spell and scores no magic hit.
+   */
+  target?: MonsterCatalogEntry,
 ): LoadoutSet {
   const resolved: LoadoutSet["slots"] = {};
+  const weaponRef = resolveSlot("weapon", base, overrides);
+  const weaponItem = weaponRef ? ITEM_BY_ID.get(weaponRef.itemId) : undefined;
+  const { style, attackType, attackStyleChoice } = resolveStyle(base, weaponItem);
   let attackBonus = 0;
   let melStr = 0;
   let rngStr = 0;
@@ -191,7 +241,7 @@ export function applyOverrides(
       continue;
     }
     resolved[slot] = { itemId: item.id, itemName: item.name, version: item.version || undefined };
-    attackBonus += offensiveFor(item, base.attackType);
+    attackBonus += offensiveFor(item, attackType);
     melStr += item.str;
     rngStr += item.rangedStr;
     magStr += item.magicStr;
@@ -215,7 +265,7 @@ export function applyOverrides(
   // Style-specific strength selection (mirrors scripts/build-loadouts.ts).
   let strengthBonus = 0;
   let magicDamagePct: number | undefined;
-  switch (base.style) {
+  switch (style) {
     case "melee":
       strengthBonus = melStr;
       break;
@@ -242,29 +292,51 @@ export function applyOverrides(
   // kind so far is the Harmonised set's `attackSpeedTicksOverride: 4`, and
   // since editing usually involves picking a new weapon anyway, taking the
   // raw weapon speed is the right default.
-  const weaponRef = resolved.weapon;
-  const weaponCategory = weaponRef
-    ? ITEM_BY_ID.get(weaponRef.itemId)?.category ?? base.weaponCategory
-    : base.weaponCategory;
-  const armorSetBonus = detectArmorSetBonus(slotItemIds, base.style, {
-    attackType: base.attackType,
-    weaponId: weaponRef?.itemId,
+  const weaponCategory = weaponItem?.category ?? base.weaponCategory;
+  const armorSetBonus = detectArmorSetBonus(slotItemIds, style, {
+    attackType,
+    weaponId: resolved.weapon?.itemId,
   });
 
-  // Manual spell override — rewrite the spell fields the DPS engine consumes.
-  // Twinflame double-cast flows automatically from autoSpellName downstream
-  // (see lib/recommend.ts), so no extra wiring is needed here.
-  const spellFields =
-    base.style === "magic" && spellOverride
-      ? {
-          baseSpellMaxHit: spellMaxHit(spellOverride, magicLevel ?? 99),
-          spellElement: spellOverride.element,
-          autoSpellName: spellOverride.name,
-        }
-      : {};
+  // Spell fields the DPS engine consumes. Twinflame double-cast flows
+  // automatically from autoSpellName downstream (see lib/recommend.ts).
+  //   - not magic any more → stripped, so a blowpipe can't inherit Fire Surge;
+  //   - manual spell on a casting staff → that spell;
+  //   - same weapon as the base → the base's spell, untouched;
+  //   - new powered staff → its own formula; new casting staff → auto-pick
+  //     for the target (nothing to pick without one).
+  const NO_SPELL = { baseSpellMaxHit: undefined, spellElement: undefined, autoSpellName: undefined };
+  const poweredFormula = weaponItem ? POWERED_STAFF_FORMULA.get(weaponItem.id) : undefined;
+  const weaponChanged = weaponItem?.id !== base.slots.weapon?.itemId;
+  let spellFields: Partial<Pick<LoadoutSet, "baseSpellMaxHit" | "spellElement" | "autoSpellName">>;
+  if (style !== "magic") {
+    spellFields = NO_SPELL;
+  } else if (spellOverride && !poweredFormula) {
+    spellFields = {
+      baseSpellMaxHit: spellMaxHit(spellOverride, magicLevel ?? 99),
+      spellElement: spellOverride.element,
+      autoSpellName: spellOverride.name,
+    };
+  } else if (base.style === "magic" && !weaponChanged) {
+    spellFields = {};
+  } else if (poweredFormula) {
+    spellFields = { baseSpellMaxHit: poweredFormula(magicLevel ?? 99), spellElement: undefined, autoSpellName: undefined };
+  } else if (weaponItem && target) {
+    const picked = autoPickSpell(weaponItem, [...slotItemIds], "magic", magicLevel ?? 99, target);
+    spellFields = {
+      baseSpellMaxHit: picked.baseSpellMaxHit,
+      spellElement: picked.spellElement,
+      autoSpellName: picked.autoSpellName,
+    };
+  } else {
+    spellFields = NO_SPELL;
+  }
 
   return {
     ...base,
+    style,
+    attackType,
+    attackStyleChoice,
     slots: resolved,
     totals: {
       attackBonus,

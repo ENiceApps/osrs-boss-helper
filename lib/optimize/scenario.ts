@@ -14,11 +14,7 @@ import {
 import { detectArmorSetBonus } from "@/data/armor-sets";
 import { AMMO_FOR_EVERY_STYLE_CATEGORIES, checkAmmoCompat } from "@/data/ammo-compatibility";
 import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
-import {
-  SPELLCASTING_STAFF_CATEGORIES,
-  WEAPON_STYLES,
-  type WeaponStyleOption,
-} from "@/data/weapon-styles";
+import { combatStyleFor, defaultStyleFor, WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { computeSetDps } from "@/lib/recommend";
 import type { BoostResolver } from "@/lib/dps/boost";
@@ -30,7 +26,6 @@ import type {
 } from "@/types/loadout";
 import type {
   AttackStyleChoice,
-  CombatStyle,
   DpsResult,
   Skills,
   SpellElement,
@@ -95,75 +90,6 @@ function loadoutSlotFor(item: ItemCatalogEntry): LoadoutSlotKey {
   return item.slot === "2h" ? "weapon" : (item.slot as LoadoutSlotKey);
 }
 
-/** Combat style is implied by attackType: ranged → ranged, magic → magic, else melee. */
-function combatStyleFor(attackType: WeaponAttackType): CombatStyle {
-  if (attackType === "ranged") return "ranged";
-  if (attackType === "magic") return "magic";
-  return "melee";
-}
-
-/**
- * Pick a sensible default (attackType, choice) for a weapon when the caller
- * hasn't specified one. Heuristic, not optimal — Phase 2's optimizer will
- * enumerate the few legal styles per weapon and pick the DPS-best.
- */
-function defaultStyleFor(
-  weapon: ItemCatalogEntry,
-): { attackType: WeaponAttackType; choice: AttackStyleChoice } | null {
-  const options = WEAPON_STYLES[weapon.category];
-  if (!options) return null;
-  const offensive = options.filter((o) => !o.defensive);
-  if (offensive.length === 0) return null;
-
-  const isRangedCat = offensive.some((o) => o.attackType === "ranged");
-  const isPoweredStaff = weapon.category === "Powered Staff";
-
-  // Ranged → prefer rapid (extra tick beats Accurate's +3 level in realistic ranges).
-  if (isRangedCat) {
-    const rapid = offensive.find((o) => o.choice === "rapid");
-    if (rapid) return { attackType: rapid.attackType, choice: rapid.choice };
-  }
-
-  // Powered staff auto-casts; "accurate" is the only DPS-relevant mode.
-  if (isPoweredStaff) {
-    const acc = offensive.find((o) => o.choice === "accurate" && o.attackType === "magic");
-    if (acc) return { attackType: acc.attackType, choice: acc.choice };
-  }
-
-  // Regular staff casting spells: longrange (gives +0 atk / +0 str, matching curated magic sets).
-  if (SPELLCASTING_STAFF_CATEGORIES.has(weapon.category)) {
-    const spell = offensive.find((o) => o.attackType === "magic" && o.choice === "longrange");
-    if (spell) return { attackType: spell.attackType, choice: spell.choice };
-  }
-
-  // Melee: pick the style whose attackType maximises the weapon's offensive bonus,
-  // preferring aggressive > accurate > controlled > rapid > longrange.
-  const choiceRank: Record<AttackStyleChoice, number> = {
-    aggressive: 5,
-    accurate: 4,
-    controlled: 3,
-    rapid: 2,
-    longrange: 1,
-    defensive: 0,
-  };
-  const offensiveBonus = (at: WeaponAttackType): number => {
-    switch (at) {
-      case "stab": return weapon.attackStab;
-      case "slash": return weapon.attackSlash;
-      case "crush": return weapon.attackCrush;
-      case "magic": return weapon.attackMagic;
-      case "ranged": return weapon.attackRanged;
-    }
-  };
-  let best: WeaponStyleOption | null = null;
-  for (const o of offensive) {
-    if (!best) { best = o; continue; }
-    const bScore = offensiveBonus(best.attackType) * 10 + choiceRank[best.choice];
-    const oScore = offensiveBonus(o.attackType) * 10 + choiceRank[o.choice];
-    if (oScore > bScore) best = o;
-  }
-  return best ? { attackType: best.attackType, choice: best.choice } : null;
-}
 
 /** Pick the offensive bonus the loadout uses for its attack type. */
 function offensiveFor(item: ItemCatalogEntry, attackType: WeaponAttackType): number {
