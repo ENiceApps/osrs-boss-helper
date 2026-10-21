@@ -43,10 +43,17 @@ export interface Change {
   thanks?: string;
 }
 
-/** One bullet in a note: plain text, or text with its own sub-bullets. */
-export type NoteItem = string | { text: string; sub: string[] };
-/** A note block: a paragraph (string) or a bullet list. */
-export type NoteBlock = string | NoteItem[];
+/** One bullet in a note: plain text, or text with an optional bold lead
+ *  ("Bork") and its own sub-bullets. */
+export type NoteItem = string | { lead?: string; text: string; sub?: string[] };
+/** A note block: a paragraph (string), a small section heading, or a bullet
+ *  list. */
+export type NoteBlock = string | { heading: string } | NoteItem[];
+
+/** Who signs a release note. Omitted = ENice. "ai" = the 4-hourly cloud
+ *  routine that watches the OSRS Wiki for new raid/boss/item data and applies
+ *  it (docs/tfa-wiki-watch.md); the Updates page labels those "From AI". */
+export type ReleaseAuthor = "ai";
 
 export interface Release {
   version: SemVer;
@@ -59,6 +66,8 @@ export interface Release {
   /** Structured change list (New / Improved / Fixed / Removed). A release may
    *  carry only a note instead. */
   changes: Change[];
+  /** "ai" for the wiki-watch routine's patch releases (shown as "From AI"). */
+  author?: ReleaseAuthor;
 }
 
 export type PlanStatus = "planned" | "considering";
@@ -96,6 +105,31 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 };
 
 export const RELEASES: Release[] = [
+  {
+    // First "From AI" patch: the wiki-watch check (docs/tfa-wiki-watch.md)
+    // run by hand on launch night; the cloud routine writes the next ones in
+    // this same shape. Blizzard-style: a dated one-liner, a heading per area,
+    // one terse bullet per change, and what is still missing.
+    version: "0.1.2",
+    date: "2026-10-20",
+    title: "Raids 4 wiki check: Bork, Moia and Dreadnoth updated",
+    author: "ai",
+    note: [
+      "Wiki check at 00:10 UTC, 21 Oct. Numbers below are from the OSRS Wiki boss pages, which were corrected after launch.",
+      { heading: "Bosses" },
+      [
+        { lead: "Bork", text: "flat armour 12 → 10. The Smorks gain 2 flat armour." },
+        { lead: "Moia", text: "now 80% weak to Air." },
+        { lead: "Dreadnoth the Jellied", text: "now counts as a demon, so demonbane weapons and spells apply." },
+      ],
+      { heading: "Still waiting on" },
+      [
+        { lead: "Dagon'hai Elder and Monks", text: "no stats on the wiki yet." },
+        { lead: "Ezekiel", text: "the wiki suspects a single-digit damage cap. Not applied until it is confirmed." },
+      ],
+    ],
+    changes: [],
+  },
   {
     // ENice wrote the note and the change lines himself (2026-10-20, final).
     version: "0.1.1",

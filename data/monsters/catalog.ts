@@ -4242,7 +4242,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedHeavy": 5,
       "rangedStandard": 50,
       "rangedLight": 80,
-      "flatArmour": 12
+      "flatArmour": 10
     },
     "attributes": [],
     "weakness": {
@@ -4269,7 +4269,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "rangedHeavy": 5,
           "rangedStandard": 50,
           "rangedLight": 80,
-          "flatArmour": 12
+          "flatArmour": 10
         },
         "attributes": [],
         "weakness": {
@@ -8325,7 +8325,9 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedStandard": 80,
       "rangedLight": 100
     },
-    "attributes": [],
+    "attributes": [
+      "demon"
+    ],
     "weakness": {
       "element": "fire",
       "severity": 85
@@ -18598,7 +18600,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedLight": 60
     },
     "attributes": [],
-    "weakness": null,
+    "weakness": {
+      "element": "air",
+      "severity": 80
+    },
     "image": "Moia.png",
     "size": 3,
     "maxHitText": "",
@@ -28643,7 +28648,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 400,
       "rangedHeavy": 80,
       "rangedStandard": 150,
-      "rangedLight": 80
+      "rangedLight": 80,
+      "flatArmour": 2
     },
     "attributes": [],
     "weakness": {

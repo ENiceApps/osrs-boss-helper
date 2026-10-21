@@ -52,24 +52,30 @@ function CommunityNoteSection() {
   );
 }
 
-/** One block of ENice's note, as plain text in the order he wrote it. */
+/** One block of a release note, as plain text in the order it was written. */
 function NoteBlockView({ block }: { block: NoteBlock }) {
   if (typeof block === "string") {
     return <p className="text-sm text-parchment-dark leading-relaxed mt-3">{block}</p>;
   }
+  if (!Array.isArray(block)) {
+    return <h3 className="label-eyebrow mt-4">{block.heading}</h3>;
+  }
   return (
-    <ul className="mt-3 space-y-1.5 list-disc pl-5 marker:text-osrs-gold/60 text-sm leading-relaxed text-parchment-dark">
+    <ul className="mt-2 space-y-1.5 list-disc pl-5 marker:text-osrs-gold/60 text-sm leading-relaxed text-parchment-dark">
       {block.map((item, i) =>
         typeof item === "string" ? (
           <li key={i}>{item}</li>
         ) : (
           <li key={i}>
+            {item.lead && <span className="font-semibold text-osrs-brown">{item.lead}: </span>}
             {item.text}
-            <ul className="mt-1 space-y-1 list-[circle] pl-5 marker:text-osrs-gold/40">
-              {item.sub.map((s, j) => (
-                <li key={j}>{s}</li>
-              ))}
-            </ul>
+            {item.sub && item.sub.length > 0 && (
+              <ul className="mt-1 space-y-1 list-[circle] pl-5 marker:text-osrs-gold/40">
+                {item.sub.map((s, j) => (
+                  <li key={j}>{s}</li>
+                ))}
+              </ul>
+            )}
           </li>
         ),
       )}
@@ -91,6 +97,11 @@ function ReleaseArticle({ r }: { r: Release }) {
         </time>
       </div>
       <p className="text-sm text-osrs-brown mt-0.5">{r.title}</p>
+      {r.author === "ai" && (
+        <p className="label-eyebrow mt-3" title="Written by the wiki-watch routine, not ENice">
+          From AI
+        </p>
+      )}
 
       {r.note?.map((block, i) => (
         <NoteBlockView key={i} block={block} />

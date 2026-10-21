@@ -45,10 +45,10 @@ describe("The Fractured Archive bosses", () => {
     expect(HEADLINE_BOSS_SLUGS.has("ocellus")).toBe(true);
   });
 
-  it("Bork starts with 12 flat armour and loses it when stunned", () => {
+  it("Bork starts with 10 flat armour and loses it when stunned", () => {
     const bork = MONSTER_BY_SLUG["bork"];
     expect(bork.version).toBe("Base");
-    expect(bork.defenceBonuses.flatArmour).toBe(12);
+    expect(bork.defenceBonuses.flatArmour).toBe(10);
     const stunned = bork.phases?.find((p) => p.version === "Stunned");
     expect(stunned?.defenceBonuses.flatArmour).toBeUndefined();
   });
@@ -58,9 +58,11 @@ describe("The Fractured Archive bosses", () => {
     expect(MONSTER_BY_SLUG["archive-guardian"].weakness).toEqual({ element: "fire", severity: 80 });
     expect(MONSTER_BY_SLUG["xarth"].attributes).toContain("demon");
     expect(MONSTER_BY_SLUG["xarth"].weakness).toEqual({ element: "water", severity: 85 });
-    // Sealed in jelly: the wiki gives Dreadnoth no demon tag.
-    expect(MONSTER_BY_SLUG["dreadnoth-the-jellied"].attributes).not.toContain("demon");
-    expect(MONSTER_BY_SLUG["moia"].weakness).toBeNull();
+    // Post-launch wiki corrections (2026-10-20 evening): Dreadnoth is a demon,
+    // Moia is weak to Air, the Smorks have 2 flat armour.
+    expect(MONSTER_BY_SLUG["dreadnoth-the-jellied"].attributes).toContain("demon");
+    expect(MONSTER_BY_SLUG["moia"].weakness).toEqual({ element: "air", severity: 80 });
+    expect(MONSTER_BY_SLUG["the-smorks"].defenceBonuses.flatArmour).toBe(2);
   });
 
   it("Nex's crush defence is the post-launch +35, not the vendored +60", () => {

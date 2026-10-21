@@ -109,7 +109,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Bork — second-boss choice, fought alongside the Smorks. The wiki lists
-  // flat armour 12 (Base) / 0 (Stunned), so both are offered as stat phases.
+  // flat armour 10 (Base) / 0 (Stunned), so both are offered as stat phases
+  // (was 12 at launch; corrected 2026-10-20 23:47 UTC, which also added a
+  // "2 (Magic resistance)" value the engine has no slot for).
   // Source: https://oldschool.runescape.wiki/w/Bork
   {
     id: 16640,
@@ -124,7 +126,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     skills: { atk: 200, def: 300, hp: 1500, magic: 90, ranged: 200, str: 200 },
     offensive: { atk: 100, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 40 },
     defensive: {
-      flat_armour: 12,
+      flat_armour: 10,
       crush: 10,
       magic: 300,
       heavy: 5,
@@ -166,7 +168,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     weakness: { element: "earth", severity: 40 },
   },
 
-  // The Smorks — Bork's groupies, fought in the same room. 85% weak to Earth.
+  // The Smorks — Bork's groupies, fought in the same room. 85% weak to Earth,
+  // 2 flat armour (added to the wiki 2026-10-20 23:48 UTC).
   // Source: https://oldschool.runescape.wiki/w/Smork
   {
     id: 16641,
@@ -181,7 +184,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     skills: { atk: 1, def: 220, hp: 600, magic: 185, ranged: 185, str: 1 },
     offensive: { atk: 0, magic: 185, magic_str: 35, ranged: 250, ranged_str: 30, str: 0 },
     defensive: {
-      flat_armour: 0,
+      flat_armour: 2,
       crush: 160,
       magic: 400,
       heavy: 80,
@@ -197,7 +200,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Moia — third-boss choice (vs Dreadnoth). A necromancer with low melee and
-  // magic defence bonuses and no elemental weakness.
+  // magic defence bonuses, 80% weak to Air (added to the wiki 2026-10-20
+  // 23:58 UTC; the launch infobox had no weakness).
   // Source: https://oldschool.runescape.wiki/w/Moia
   {
     id: 16667,
@@ -224,12 +228,13 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     attributes: [],
     immunities: TFA_IMMUNITIES,
     is_slayer_monster: false,
-    weakness: null,
+    weakness: { element: "air", severity: 80 },
   },
 
   // Dreadnoth the Jellied — third-boss choice (vs Moia). A partially summoned
-  // demon sealed in jelly; the wiki gives it NO demon attribute, so demonbane
-  // does not apply. 85% weak to Fire.
+  // demon sealed in jelly, tagged Demon on the wiki since 2026-10-20 23:48 UTC
+  // (the launch infobox had no attribute), so demonbane applies at the default
+  // 100%. 85% weak to Fire.
   // Source: https://oldschool.runescape.wiki/w/Dreadnoth_the_Jellied
   {
     id: 16665,
@@ -253,7 +258,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
       slash: 20,
       stab: 15,
     },
-    attributes: [],
+    attributes: ["demon"],
     immunities: TFA_IMMUNITIES,
     is_slayer_monster: false,
     weakness: { element: "fire", severity: 85 },

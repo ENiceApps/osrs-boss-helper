@@ -56,7 +56,11 @@ describe("updates data", () => {
   it("makes no novelty claims", () => {
     const noteText = (r: (typeof RELEASES)[number]) =>
       (r.note ?? []).flatMap((b) =>
-        typeof b === "string" ? [b] : b.flatMap((i) => (typeof i === "string" ? [i] : [i.text, ...i.sub])),
+        typeof b === "string"
+          ? [b]
+          : !Array.isArray(b)
+            ? [b.heading]
+            : b.flatMap((i) => (typeof i === "string" ? [i] : [i.lead ?? "", i.text, ...(i.sub ?? [])])),
       );
     const text = RELEASES.flatMap((r) => [...noteText(r), ...r.changes.map((c) => c.text)]).join(
       "\n",
