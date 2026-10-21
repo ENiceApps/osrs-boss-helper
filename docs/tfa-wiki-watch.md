@@ -1,17 +1,25 @@
 # Wiki watch: keeping The Fractured Archive data current
 
-A cloud Claude routine runs **every 4 hours** (00:20, 04:20, 08:20, 12:20,
-16:20, 20:20 UTC; the scheduler picks the minute) and checks the OSRS Wiki for new or changed information
-about The Fractured Archive (Raids 4): boss stats and phases, item stats and
-mechanics, and the raid's reward list. When it finds something it can verify,
-it applies it to the site, pushes to `main` (which deploys), and adds a short
-patch release signed **"From AI"** on the Updates page. ENice set this up on
-2026-10-20, the raid's launch day, so the site keeps up while the wiki is
-still being filled in. No email, no review step: the routine ships.
+> **Retired 2026-10-21.** The cloud routine described below was disabled after
+> one day. Every scheduled run failed before checking anything: the Default
+> cloud environment blocked `oldschool.runescape.wiki` (proxy 403), and the
+> allowlist change did not take. ENice chose to drop it and run the wiki check
+> by hand on request instead. This file is now the recipe for that manual check:
+> a Claude session follows the same steps, the same file limits and the same
+> "From AI" release shape. v0.1.2 and v0.1.3 shipped this way.
 
-The routine lives at https://claude.ai/code/routines/trig_01GMfsdgRG7yNHiGCpmvFL7j
-(name: "OSRS Boss Helper TFA wiki watch", model Opus 5.5, no connectors).
-This file is the contract it works to.
+A Claude session checks the OSRS Wiki for new or changed information about The
+Fractured Archive (Raids 4): boss stats and phases, item stats and mechanics,
+and the raid's reward list. When it finds something it can verify, it applies
+it to the site, pushes to `main` (which deploys), and adds a short patch
+release signed **"From AI"** on the Updates page. ENice set this up on
+2026-10-20, the raid's launch day, so the site keeps up while the wiki is
+still being filled in. No review step: once verified, it ships.
+
+Originally this ran as a cloud routine every 4 hours
+(https://claude.ai/code/routines/trig_01GMfsdgRG7yNHiGCpmvFL7j, model Opus 5.5,
+no connectors). The routine is disabled; the contract below is unchanged and
+"the routine" in it now means whichever session runs the check.
 
 ## What it checks
 
