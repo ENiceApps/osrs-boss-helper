@@ -56,6 +56,7 @@ import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import { DittoEditorPanel } from "@/components/DittoEditorPanel";
 import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
 import { applyOverrides, hasOverrides, findCatalogItem } from "@/lib/loadout-edit";
+import { setPresetOverrides, type SetPreset } from "@/lib/set-presets";
 import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { NON_PVE_UNTRADEABLE_IDS } from "@/data/items/non-pve-untradeables";
@@ -674,6 +675,20 @@ export function BossCockpit({ slug }: { slug: string }) {
     },
     [],
   );
+  // The Sets dropdown: every piece of the chosen set lands as one override
+  // batch, preferring the variants the player owns (elite top, a degraded
+  // Dharok's piece) and keeping a worn weapon that already qualifies.
+  const equipSetPreset = useCallback(
+    (preset: SetPreset) => {
+      const pieces = setPresetOverrides(preset, { owned: ownedItemIds, current: selectedSet });
+      setOverrides((prev) => {
+        const next = { ...prev, ...pieces };
+        if (pieces.weapon?.isTwoHanded) next.shield = null;
+        return next;
+      });
+    },
+    [ownedItemIds, selectedSet],
+  );
   function onPickerSelect(item: ItemCatalogEntry | null) {
     if (!pickerSlot) return;
     applySlotOverride(pickerSlot, item);
@@ -1219,6 +1234,7 @@ export function BossCockpit({ slug }: { slug: string }) {
             slotDetails={slotDetails}
             slotAlternatives={alternativesForSlot}
             onAlternativePick={applySlotOverride}
+            onEquipSet={equipSetPreset}
             editedSlots={overridesActive ? (Object.keys(overrides) as LoadoutSlotKey[]) : []}
             onResetEdits={resetOverrides}
             conflicts={setupConflicts}

@@ -12,6 +12,7 @@ import { MetaChip } from "@/components/ui";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import type { SlotExplanation } from "@/lib/loadout-explain";
 import type { SlotAlternative } from "@/lib/slot-alternatives";
+import { setPresetsByStyle, wornSetPreset, type SetPreset } from "@/lib/set-presets";
 import type { SetupMechanicStatus } from "@/lib/setup-mechanics";
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
@@ -57,6 +58,8 @@ interface Props<TabId extends string> {
   slotAlternatives?: (slot: LoadoutSlotKey) => SlotAlternative[];
   /** Apply a next-best option to the loadout. */
   onAlternativePick?: (slot: LoadoutSlotKey, item: ItemCatalogEntry) => void;
+  /** Equip every piece of a set-effect armour at once (the Sets dropdown). */
+  onEquipSet?: (preset: SetPreset) => void;
   /** Slots the user has manually overridden. */
   editedSlots: LoadoutSlotKey[];
   onResetEdits: () => void;
@@ -106,6 +109,7 @@ export function LoadoutPanel<TabId extends string>({
   slotDetails,
   slotAlternatives,
   onAlternativePick,
+  onEquipSet,
   editedSlots,
   onResetEdits,
   conflicts,
@@ -114,6 +118,10 @@ export function LoadoutPanel<TabId extends string>({
   shareCode,
 }: Props<TabId>) {
   const edited = editedSlots.length > 0;
+  // The Sets dropdown reflects whichever set the doll is wearing right now, so
+  // it needs no state of its own: picking one applies the overrides, the
+  // loadout re-renders, and the select lands on the worn set.
+  const wornSet = set ? wornSetPreset(set) : undefined;
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
@@ -263,6 +271,14 @@ export function LoadoutPanel<TabId extends string>({
         </p>
       )}
 
+      {/* Sets dropdown — equips every piece of a set-effect armour (Void,
+          Dharok's, Obsidian, …) in one go. Only the active style's sets are
+          selectable: a set's effect is style-specific, and each tab is its own
+          starting point, so the other styles' groups point at their tab. */}
+      {connected && set && onEquipSet && (
+        <SetsDropdown style={set.style} worn={wornSet} onEquipSet={onEquipSet} />
+      )}
+
       <EquipmentGrid
         set={set}
         ownedItemIds={ownedItemIds}
@@ -384,6 +400,66 @@ export function LoadoutPanel<TabId extends string>({
             </p>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+const STYLE_LABEL: Record<LoadoutSet["style"], string> = {
+  melee: "Melee",
+  ranged: "Ranged",
+  magic: "Magic",
+};
+
+/**
+ * "Sets" picker above the doll. A native select so it works the same on a
+ * phone: one tap, pick Void or Dharok's, every piece lands in the grid.
+ */
+function SetsDropdown({
+  style,
+  worn,
+  onEquipSet,
+}: {
+  style: LoadoutSet["style"];
+  worn?: SetPreset;
+  onEquipSet: (preset: SetPreset) => void;
+}) {
+  const groups = setPresetsByStyle();
+  const byId = new Map(groups.flatMap((g) => g.presets).map((p) => [p.id, p]));
+  return (
+    <div className="mb-3">
+      <label className="flex items-center gap-2 text-caption">
+        <span className="label-eyebrow text-osrs-muted shrink-0">sets</span>
+        <select
+          value={worn?.id ?? ""}
+          onChange={(e) => {
+            const preset = byId.get(e.target.value);
+            if (preset) onEquipSet(preset);
+          }}
+          aria-label="Equip an armour set"
+          className="flex-1 min-w-0 p-1.5 bg-osrs-field border border-osrs-brown/40 rounded text-osrs-brown text-sm"
+        >
+          <option value="">Equip a set…</option>
+          {groups.map((g) => {
+            const other = g.style !== style;
+            return (
+              <optgroup
+                key={g.style}
+                label={other ? `${STYLE_LABEL[g.style]} (switch to the ${STYLE_LABEL[g.style]} tab)` : STYLE_LABEL[g.style]}
+                disabled={other}
+              >
+                {g.presets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
+        </select>
+      </label>
+      {worn?.hint && (
+        <p className="mt-1 text-caption text-osrs-muted leading-snug">{worn.hint}</p>
       )}
     </div>
   );
