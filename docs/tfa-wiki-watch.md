@@ -1,7 +1,7 @@
 # Wiki watch: keeping The Fractured Archive data current
 
-A cloud Claude routine runs **every 4 hours** (00:00, 04:00, 08:00, 12:00,
-16:00, 20:00 UTC) and checks the OSRS Wiki for new or changed information
+A cloud Claude routine runs **every 4 hours** (00:20, 04:20, 08:20, 12:20,
+16:20, 20:20 UTC; the scheduler picks the minute) and checks the OSRS Wiki for new or changed information
 about The Fractured Archive (Raids 4): boss stats and phases, item stats and
 mechanics, and the raid's reward list. When it finds something it can verify,
 it applies it to the site, pushes to `main` (which deploys), and adds a short
@@ -9,8 +9,9 @@ patch release signed **"From AI"** on the Updates page. ENice set this up on
 2026-10-20, the raid's launch day, so the site keeps up while the wiki is
 still being filled in. No email, no review step: the routine ships.
 
-The routine lives at https://claude.ai/code/routines (name: "OSRS Boss Helper
-TFA wiki watch"). This file is the contract it works to.
+The routine lives at https://claude.ai/code/routines/trig_01GMfsdgRG7yNHiGCpmvFL7j
+(name: "OSRS Boss Helper TFA wiki watch", model Opus 5.5, no connectors).
+This file is the contract it works to.
 
 ## What it checks
 
