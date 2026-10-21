@@ -201,3 +201,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 23:26 UTC · pushed by ENiceApps
 
 - 1008ce9 feat(home): Dagon'hai Elder and Monk in the Raids 4 quick-pick row
+
+## 2026-10-21 23:40 UTC · pushed by ENiceApps
+
+- d674aa3 docs: wiki-watch routine retired, contract doc is now the manual-check recipe
