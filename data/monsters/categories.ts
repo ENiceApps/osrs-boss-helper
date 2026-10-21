@@ -138,6 +138,8 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "moia": "tfa",
   "dreadnoth-the-jellied": "tfa",
   "xarth": "tfa",
+  "dagonhai-elder": "tfa",
+  "dagonhai-monk": "tfa",
   "ocellus": "tfa",
 };
 

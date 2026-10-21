@@ -37,22 +37,29 @@ import type { VendorMonster } from "../../types/vendor.js";
 // Boss HP scales with team size (minimum two-player scaling even when solo);
 // the infobox values below are the wiki's listed base stats.
 //
-// NOT listed (the wiki infobox has no stats for them yet, 2026-10-20): the
-// Dagon'hai Elder (ids 16643-16644) and Dagon'hai Monks (staff 16645-16646,
-// book 16647-16648). Add them once the wiki fills the infobox in.
-// Transcribed 2026-10-20 (release day): re-verify against the wiki, the early
-// infoboxes get corrected in the first weeks.
+// The Dagon'hai Elder and Monks (the fourth-boss alternative to Xarth) had
+// empty infoboxes at launch; the wiki filled them in on 2026-10-21 20:32 UTC
+// and they are listed at the end of this file.
+// Transcribed 2026-10-20 (release day), re-checked against the wiki on
+// 2026-10-21 (docs/tfa-wiki-watch.md): the early infoboxes get corrected in
+// the first weeks, keep re-verifying.
 // ---------------------------------------------------------------------------
 const TFA_IMMUNITIES = { burn: null };
 
 export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
-  // Archive Guardian — the fixed first boss. Flying (melee can't reach it
-  // without a halberd), 80% weak to Fire.
+  // Archive Guardian — the fixed first boss. Two wiki versions since
+  // 2026-10-21 19:24 UTC: Flying (melee can't reach it without a halberd,
+  // 80% weak to Fire) and Grounded (after its shield bar is emptied it crashes
+  // down: slash 90, light 50, standard 115, Fire weakness 40%). The infobox
+  // keeps one unversioned `attributes = flying`, but the boss and strategy
+  // pages state that melee reaches it while grounded ("it may also be
+  // attacked with melee"), so the Grounded block drops the flying tag.
+  // Flying is listed first so the stable HP tie-break keeps it as the default.
   // Source: https://oldschool.runescape.wiki/w/Archive_Guardian
   {
     id: 16659,
     name: "Archive Guardian",
-    version: "",
+    version: "Flying",
     image: "Archive Guardian.png",
     level: 984,
     speed: 5,
@@ -75,6 +82,33 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     immunities: TFA_IMMUNITIES,
     is_slayer_monster: false,
     weakness: { element: "fire", severity: 80 },
+  },
+  {
+    id: 16659,
+    name: "Archive Guardian",
+    version: "Grounded",
+    image: "Archive Guardian.png",
+    level: 984,
+    speed: 5,
+    style: ["Crush"],
+    size: 5,
+    max_hit: "25, 99+ (laser beam)",
+    skills: { atk: 250, def: 260, hp: 550, magic: 250, ranged: 280, str: 240 },
+    offensive: { atk: 0, magic: 350, magic_str: 55, ranged: 350, ranged_str: 55, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 20,
+      magic: 130,
+      heavy: 50,
+      standard: 115,
+      light: 50,
+      slash: 90,
+      stab: 120,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "fire", severity: 40 },
   },
 
   // Ezekiel — second-boss choice (vs Bork and the Smorks). A Saradominist
@@ -111,7 +145,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   // Bork — second-boss choice, fought alongside the Smorks. The wiki lists
   // flat armour 10 (Base) / 0 (Stunned), so both are offered as stat phases
   // (was 12 at launch; corrected 2026-10-20 23:47 UTC, which also added a
-  // "2 (Magic resistance)" value the engine has no slot for).
+  // "2 (Magic resistance)" value the engine has no slot for). Crush defence
+  // 10 → 20 on the wiki 2026-10-21 22:39 UTC.
   // Source: https://oldschool.runescape.wiki/w/Bork
   {
     id: 16640,
@@ -127,7 +162,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     offensive: { atk: 100, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 40 },
     defensive: {
       flat_armour: 10,
-      crush: 10,
+      crush: 20,
       magic: 300,
       heavy: 5,
       standard: 50,
@@ -154,7 +189,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     offensive: { atk: 100, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 40 },
     defensive: {
       flat_armour: 0,
-      crush: 10,
+      crush: 20,
       magic: 300,
       heavy: 5,
       standard: 50,
@@ -266,7 +301,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
 
   // Xarth — fourth-boss choice (vs the Dagon'hai). A tormented demon
   // (demonbane applies at the default 100%), 85% weak to Water. The wiki
-  // leaves its attack speed blank.
+  // leaves its attack speed blank; attack styles "Mage, Ranged" and the
+  // offensive bonuses (attbns 150, strbns 225, mbns 350) were added
+  // 2026-10-21 22:59 UTC and are transcribed as given.
   // Source: https://oldschool.runescape.wiki/w/Xarth
   {
     id: 16684,
@@ -275,11 +312,11 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     image: "Xarth.png",
     level: 912,
     speed: 0,
-    style: [],
+    style: ["Magic", "Ranged"],
     size: 3,
     max_hit: "",
     skills: { atk: 250, def: 170, hp: 2600, magic: 350, ranged: 220, str: 225 },
-    offensive: { atk: 0, magic: 250, magic_str: 0, ranged: 250, ranged_str: 0, str: 0 },
+    offensive: { atk: 150, magic: 250, magic_str: 350, ranged: 250, ranged_str: 0, str: 225 },
     defensive: {
       flat_armour: 0,
       crush: 20,
@@ -334,7 +371,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     name: "Ocellus",
     version: "Phase 3",
     image: "Ocellus (phase 3).png",
-    level: 1197,
+    level: 1601,
     speed: 6,
     style: [],
     size: 3,
@@ -352,6 +389,99 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
       stab: 150,
     },
     attributes: ["demon"],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+
+  // Dagon'hai Elder — fourth-boss choice (vs Xarth), fought with two Monks;
+  // the three share one health pool. Stats added to the wiki 2026-10-21
+  // 20:32 UTC. The infobox leaves attack speed blank and puts "6" in the
+  // attack-style field (a misfiled speed), so both stay unset here. Immune to
+  // poison, venom and the cannon; no elemental weakness listed.
+  // Source: https://oldschool.runescape.wiki/w/Dagon'hai_Elder
+  {
+    id: 16643,
+    name: "Dagon'hai Elder",
+    version: "",
+    image: "Dagon'hai Elder.png",
+    level: 427,
+    speed: 0,
+    style: [],
+    size: 2,
+    max_hit: "",
+    skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
+    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    defensive: {
+      flat_armour: 0,
+      crush: 50,
+      magic: 100,
+      heavy: 80,
+      standard: 80,
+      light: 80,
+      slash: 50,
+      stab: 50,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+
+  // Dagon'hai Monk — the Elder's two companions. The wiki's Staff (ids
+  // 16645-16646) and Book (16647-16648) versions carry identical stats, so
+  // the catalog collapses them to one entry. Stats added 2026-10-21 20:32 UTC.
+  // Source: https://oldschool.runescape.wiki/w/Dagon'hai_Monk
+  {
+    id: 16645,
+    name: "Dagon'hai Monk",
+    version: "Staff",
+    image: "Dagon'hai Monk (staff).png",
+    level: 427,
+    speed: 6,
+    style: [],
+    size: 2,
+    max_hit: "",
+    skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
+    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    defensive: {
+      flat_armour: 0,
+      crush: 50,
+      magic: 100,
+      heavy: 80,
+      standard: 80,
+      light: 80,
+      slash: 50,
+      stab: 50,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+  {
+    id: 16647,
+    name: "Dagon'hai Monk",
+    version: "Book",
+    image: "Dagon'hai Monk (book).png",
+    level: 427,
+    speed: 6,
+    style: [],
+    size: 2,
+    max_hit: "",
+    skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
+    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    defensive: {
+      flat_armour: 0,
+      crush: 50,
+      magic: 100,
+      heavy: 80,
+      standard: 80,
+      light: 80,
+      slash: 50,
+      stab: 50,
+    },
+    attributes: [],
     immunities: TFA_IMMUNITIES,
     is_slayer_monster: false,
     weakness: null,

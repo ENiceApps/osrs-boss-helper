@@ -1366,7 +1366,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "slug": "archive-guardian",
     "wikiId": 16659,
     "name": "Archive Guardian",
-    "version": "",
+    "version": "Flying",
     "combatLevel": 984,
     "hp": 550,
     "defenceLevel": 260,
@@ -1391,7 +1391,63 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Archive Guardian.png",
     "size": 5,
     "maxHitText": "25, 99+ (laser beam)",
-    "isSlayerMonster": false
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Flying",
+        "wikiId": 16659,
+        "combatLevel": 984,
+        "hp": 550,
+        "defenceLevel": 260,
+        "magicLevel": 250,
+        "magicAttackBonus": 350,
+        "defenceBonuses": {
+          "stab": 120,
+          "slash": 110,
+          "crush": 20,
+          "magic": 130,
+          "rangedHeavy": 50,
+          "rangedStandard": 120,
+          "rangedLight": 75
+        },
+        "attributes": [
+          "flying"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 80
+        },
+        "image": "Archive Guardian.png",
+        "size": 5,
+        "maxHitText": "25, 99+ (laser beam)"
+      },
+      {
+        "version": "Grounded",
+        "wikiId": 16659,
+        "combatLevel": 984,
+        "hp": 550,
+        "defenceLevel": 260,
+        "magicLevel": 250,
+        "magicAttackBonus": 350,
+        "defenceBonuses": {
+          "stab": 120,
+          "slash": 90,
+          "crush": 20,
+          "magic": 130,
+          "rangedHeavy": 50,
+          "rangedStandard": 115,
+          "rangedLight": 50
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "fire",
+          "severity": 40
+        },
+        "image": "Archive Guardian.png",
+        "size": 5,
+        "maxHitText": "25, 99+ (laser beam)"
+      }
+    ]
   },
   {
     "slug": "arianwyn",
@@ -4237,7 +4293,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "defenceBonuses": {
       "stab": 140,
       "slash": 130,
-      "crush": 10,
+      "crush": 20,
       "magic": 300,
       "rangedHeavy": 5,
       "rangedStandard": 50,
@@ -4264,7 +4320,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceBonuses": {
           "stab": 140,
           "slash": 130,
-          "crush": 10,
+          "crush": 20,
           "magic": 300,
           "rangedHeavy": 5,
           "rangedStandard": 50,
@@ -4290,7 +4346,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceBonuses": {
           "stab": 140,
           "slash": 130,
-          "crush": 10,
+          "crush": 20,
           "magic": 300,
           "rangedHeavy": 5,
           "rangedStandard": 50,
@@ -7132,6 +7188,58 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 3,
     "maxHitText": "30",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "dagonhai-elder",
+    "wikiId": 16643,
+    "name": "Dagon'hai Elder",
+    "version": "",
+    "combatLevel": 427,
+    "hp": 640,
+    "defenceLevel": 100,
+    "magicLevel": 290,
+    "magicAttackBonus": 1,
+    "defenceBonuses": {
+      "stab": 50,
+      "slash": 50,
+      "crush": 50,
+      "magic": 100,
+      "rangedHeavy": 80,
+      "rangedStandard": 80,
+      "rangedLight": 80
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Dagon'hai Elder.png",
+    "size": 2,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
+    "slug": "dagonhai-monk",
+    "wikiId": 16645,
+    "name": "Dagon'hai Monk",
+    "version": "Staff",
+    "combatLevel": 427,
+    "hp": 640,
+    "defenceLevel": 100,
+    "magicLevel": 290,
+    "magicAttackBonus": 1,
+    "defenceBonuses": {
+      "stab": 50,
+      "slash": 50,
+      "crush": 50,
+      "magic": 100,
+      "rangedHeavy": 80,
+      "rangedStandard": 80,
+      "rangedLight": 80
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Dagon'hai Monk (staff).png",
+    "size": 2,
+    "maxHitText": "",
+    "isSlayerMonster": false
   },
   {
     "slug": "damien-leucurte",
@@ -20100,7 +20208,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       {
         "version": "Phase 3",
         "wikiId": 16677,
-        "combatLevel": 1197,
+        "combatLevel": 1601,
         "hp": 5250,
         "defenceLevel": 250,
         "magicLevel": 300,

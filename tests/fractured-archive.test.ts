@@ -22,6 +22,8 @@ const TFA_SLUGS = [
   "moia",
   "dreadnoth-the-jellied",
   "xarth",
+  "dagonhai-elder",
+  "dagonhai-monk",
   "ocellus",
 ];
 
@@ -42,6 +44,8 @@ describe("The Fractured Archive bosses", () => {
     expect(ocellus.attributes).toContain("demon");
     expect(ocellus.phases?.map((p) => p.version)).toEqual(["Phase 1", "Phase 3"]);
     expect(ocellus.phases?.[1].hp).toBe(5250);
+    // Wiki correction 2026-10-21: Phase 3 combat level 1197 → 1601.
+    expect(ocellus.phases?.[1].combatLevel).toBe(1601);
     expect(HEADLINE_BOSS_SLUGS.has("ocellus")).toBe(true);
   });
 
@@ -49,8 +53,38 @@ describe("The Fractured Archive bosses", () => {
     const bork = MONSTER_BY_SLUG["bork"];
     expect(bork.version).toBe("Base");
     expect(bork.defenceBonuses.flatArmour).toBe(10);
+    // Wiki correction 2026-10-21: crush defence 10 → 20.
+    expect(bork.defenceBonuses.crush).toBe(20);
     const stunned = bork.phases?.find((p) => p.version === "Stunned");
     expect(stunned?.defenceBonuses.flatArmour).toBeUndefined();
+  });
+
+  it("the Archive Guardian opens Flying and offers a Grounded phase melee can reach", () => {
+    const guardian = MONSTER_BY_SLUG["archive-guardian"];
+    expect(guardian.version).toBe("Flying");
+    expect(guardian.phases?.map((p) => p.version)).toEqual(["Flying", "Grounded"]);
+    const grounded = guardian.phases?.[1];
+    expect(grounded?.attributes).not.toContain("flying");
+    expect(grounded?.weakness).toEqual({ element: "fire", severity: 40 });
+    expect(grounded?.defenceBonuses.slash).toBe(90);
+    expect(grounded?.defenceBonuses.rangedStandard).toBe(115);
+    expect(grounded?.defenceBonuses.rangedLight).toBe(50);
+  });
+
+  it("the Dagon'hai Elder and Monks carry the stats the wiki added on 21 Oct", () => {
+    for (const slug of ["dagonhai-elder", "dagonhai-monk"]) {
+      const monster = MONSTER_BY_SLUG[slug];
+      expect(monster, slug).toBeDefined();
+      expect(monster.hp).toBe(640);
+      expect(monster.defenceLevel).toBe(100);
+      expect(monster.magicLevel).toBe(290);
+      expect(monster.defenceBonuses.crush).toBe(50);
+      expect(monster.defenceBonuses.magic).toBe(100);
+      expect(monster.defenceBonuses.rangedHeavy).toBe(80);
+      expect(monster.weakness).toBeNull();
+    }
+    // Staff and Book monks share one stat block, so no phase picker.
+    expect(MONSTER_BY_SLUG["dagonhai-monk"].phases).toBeUndefined();
   });
 
   it("carries the wiki attributes and elemental weaknesses", () => {

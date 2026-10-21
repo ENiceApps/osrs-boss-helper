@@ -106,6 +106,32 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 
 export const RELEASES: Release[] = [
   {
+    // Second "From AI" patch (docs/tfa-wiki-watch.md), run by hand on
+    // 2026-10-21 after the cloud routine was retired.
+    version: "0.1.3",
+    date: "2026-10-21",
+    title: "Raids 4 wiki check: Dagon'hai stats, Archive Guardian grounded phase",
+    author: "ai",
+    note: [
+      "Wiki check at 23:14 UTC, 21 Oct. Numbers below are from the OSRS Wiki boss pages, which were corrected and filled in on 21 Oct.",
+      { heading: "Bosses" },
+      [
+        { lead: "Dagon'hai Elder and Monks", text: "added. 640 HP, 100 Defence, +50 melee, +100 Magic and +80 Ranged defence bonuses, no elemental weakness. The three share one health bar." },
+        { lead: "Archive Guardian", text: "now has a Grounded phase: slash defence 110 → 90, light 75 → 50, standard 120 → 115, Fire weakness 80% → 40%, and melee can reach it." },
+        { lead: "Bork", text: "crush defence 10 → 20." },
+        { lead: "Ocellus", text: "Phase 3 combat level 1197 → 1601." },
+        { lead: "Xarth", text: "attack styles (Magic, Ranged) and offensive bonuses filled in. No DPS change." },
+      ],
+      { heading: "Still waiting on" },
+      [
+        { lead: "Defence reduction cap", text: "a 21 Oct hotfix caps Defence reduction at 60% on the Archive Guardian, Bork, Ezekiel, Moia, Xarth and Ocellus. The site does not model Defence reduction yet." },
+        { lead: "Dagon'hai Elder", text: "attack speed still blank on the wiki." },
+        { lead: "Ezekiel", text: "the wiki still only suspects a single-digit damage cap. Not applied until it is confirmed." },
+      ],
+    ],
+    changes: [],
+  },
+  {
     // First "From AI" patch: the wiki-watch check (docs/tfa-wiki-watch.md)
     // run by hand on launch night; the cloud routine writes the next ones in
     // this same shape. Blizzard-style: a dated one-liner, a heading per area,

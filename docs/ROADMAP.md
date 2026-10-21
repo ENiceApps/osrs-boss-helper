@@ -22,9 +22,11 @@ says so. Newest first. Player feature requests from the Reddit launch live in
     control) across rooms rather than within one fight.
   - ToA invocation level, CoX challenge mode and ToB hard mode as inputs.
 - **TFA follow-ups** (2026-10-20): the Rondache Shield Bash, the elemental
-  fragments (+2 base max hit per element) as a player toggle, and the
-  Dagon'hai Elder / Monks once the wiki publishes their stats. Mechanics
-  checklists for the TFA rooms. Done the same day: the Obligator's
+  fragments (+2 base max hit per element) as a player toggle, and Defence
+  reduction (DWH / BGS / Elder maul specs) with the 60% floor the 21 Oct
+  hotfix gave the Archive Guardian, Bork, Ezekiel, Moia, Xarth and Ocellus.
+  Mechanics checklists for the TFA rooms. Done 2026-10-21: the Dagon'hai
+  Elder / Monks (wiki stats landed that evening). Done the same day: the Obligator's
   best-of-2-to-4 damage rolls, size bonus and thrust-vs-smash choice
   (`data/items/obligator.ts`, engine `damageRolls`), and Zorya's tome's
   special attack in `data/spec-weapons.ts`. Still open on the tome: the wiki
