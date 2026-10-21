@@ -185,3 +185,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 00:20 UTC · pushed by ENiceApps
 
 - a072be9 docs: wiki-watch routine id and real run times
+
+## 2026-10-21 00:44 UTC · pushed by ENiceApps
+
+- 7f8b672 feat(loadout): Sets dropdown to equip Void, Dharok's and other set armour in one pick
