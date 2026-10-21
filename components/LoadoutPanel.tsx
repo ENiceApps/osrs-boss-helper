@@ -10,6 +10,7 @@ import { useState } from "react";
 import { EquipmentGrid } from "@/components/EquipmentGrid";
 import { MetaChip } from "@/components/ui";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
+import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
 import type { SlotExplanation } from "@/lib/loadout-explain";
 import type { SlotAlternative } from "@/lib/slot-alternatives";
 import { setPresetsByStyle, wornSetPreset, type SetPreset } from "@/lib/set-presets";
@@ -52,6 +53,8 @@ interface Props<TabId extends string> {
   onSlotClick?: (slot: LoadoutSlotKey) => void;
   /** Opens the spell picker. Only wired for magic loadouts without a powered staff. */
   onSpellClick?: () => void;
+  /** Opens the dart picker. Only shown when the worn weapon is a blowpipe. */
+  onDartClick?: () => void;
   /** Per-slot "why this item" details for the hover tooltips. */
   slotDetails?: Partial<Record<LoadoutSlotKey, SlotExplanation>>;
   /** Ranked next-best options for a slot — the tooltip's clickable list. */
@@ -62,6 +65,8 @@ interface Props<TabId extends string> {
   onEquipSet?: (preset: SetPreset) => void;
   /** Slots the user has manually overridden. */
   editedSlots: LoadoutSlotKey[];
+  /** True when the user changed the blowpipe's dart (not a slot, so not in editedSlots). */
+  dartEdited?: boolean;
   onResetEdits: () => void;
   /** Worn-slot mechanics this setup leaves uncovered. */
   conflicts: SetupMechanicStatus[];
@@ -106,18 +111,21 @@ export function LoadoutPanel<TabId extends string>({
   mapping,
   onSlotClick,
   onSpellClick,
+  onDartClick,
   slotDetails,
   slotAlternatives,
   onAlternativePick,
   onEquipSet,
   editedSlots,
+  dartEdited = false,
   onResetEdits,
   conflicts,
   boostName,
   onWikiExport,
   shareCode,
 }: Props<TabId>) {
-  const edited = editedSlots.length > 0;
+  const editedCount = editedSlots.length + (dartEdited ? 1 : 0);
+  const edited = editedCount > 0;
   // The Sets dropdown reflects whichever set the doll is wearing right now, so
   // it needs no state of its own: picking one applies the overrides, the
   // loadout re-renders, and the select lands on the worn set.
@@ -333,8 +341,28 @@ export function LoadoutPanel<TabId extends string>({
             {set.totals.prayerBonus > 0 && (
               <MetaChip label="prayer">+{set.totals.prayerBonus}</MetaChip>
             )}
-            {set.internalAmmo && (
-              <MetaChip label="loaded">{set.internalAmmo.itemName}</MetaChip>
+            {/* Dart chip. A blowpipe holds its darts inside the weapon, so
+                there's no ammo tile to click — the chip is the affordance.
+                Shown for any blowpipe (even an empty one) when a picker is
+                wired; otherwise only when a dart is actually loaded. */}
+            {INTERNAL_AMMO_WEAPONS.has(set.slots.weapon?.itemId ?? -1) && onDartClick ? (
+              <button
+                type="button"
+                onClick={onDartClick}
+                title="Change the dart loaded in the blowpipe"
+                className="rounded hover:ring-1 hover:ring-osrs-gold/60 cursor-pointer"
+              >
+                <MetaChip
+                  label="loaded"
+                  valueClassName={set.internalAmmo ? undefined : "text-status-missing"}
+                >
+                  {set.internalAmmo?.itemName ?? "no darts"}
+                </MetaChip>
+              </button>
+            ) : (
+              set.internalAmmo && (
+                <MetaChip label="loaded">{set.internalAmmo.itemName}</MetaChip>
+              )
             )}
             <MetaChip
               label="boost"
@@ -348,7 +376,7 @@ export function LoadoutPanel<TabId extends string>({
             <div className="mt-3 text-caption text-osrs-brown flex items-center justify-between gap-2 bg-parchment-raised border border-osrs-gold/60 rounded px-2 py-1.5">
               <span>
                 <strong>Custom loadout</strong>:{" "}
-                {editedSlots.length === 1 ? "1 slot" : `${editedSlots.length} slots`}
+                {editedCount === 1 ? "1 slot" : `${editedCount} slots`}
                 {/* Explicit space: this JSX transform eats a leading space in a
                     text node that follows an expression and wraps lines. */}
                 {" changed from the recommended pick."}

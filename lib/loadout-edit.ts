@@ -4,6 +4,11 @@
 // a set came from codegen or live-edit — it gets a normal LoadoutSet shape.
 
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
+import { AMMO_TYPES } from "@/data/ammo-compatibility";
+import {
+  INTERNAL_AMMO_WEAPONS,
+  type InternalAmmoSpec,
+} from "@/data/items/internal-ammo-weapons";
 import {
   bulwarkDefence,
   bulwarkStrengthBonus,
@@ -37,6 +42,33 @@ export function itemsForSlot(slot: LoadoutSlotKey): ItemCatalogEntry[] {
     if (a.name === b.name) return av.localeCompare(bv);
     return a.name.localeCompare(b.name);
   });
+}
+
+/** True iff `dart` is a dart this blowpipe can load (class + tier cap). */
+function dartFits(dart: ItemCatalogEntry, spec: InternalAmmoSpec): boolean {
+  const ammo = AMMO_TYPES[dart.name];
+  return ammo?.class === spec.class && ammo.tier <= spec.maxDartTier;
+}
+
+/**
+ * Every dart a blowpipe can load, best first (highest ranged strength, then
+ * the plain "Unpoisoned" variant ahead of its poisoned twins so the default
+ * pick reads cleanly). Empty for a weapon that isn't a blowpipe — darts live
+ * in the weapon pool of the catalog (they're thrown weapons), so this is the
+ * only way to list them for the dart picker.
+ */
+export function dartsForBlowpipe(weaponId: number | undefined): ItemCatalogEntry[] {
+  const spec = weaponId !== undefined ? INTERNAL_AMMO_WEAPONS.get(weaponId) : undefined;
+  if (!spec) return [];
+  return ITEM_CATALOG.filter((it) => it.slot === "weapon" && dartFits(it, spec)).sort(
+    (a, b) => {
+      if (a.rangedStr !== b.rangedStr) return b.rangedStr - a.rangedStr;
+      const au = a.version === "Unpoisoned" ? 0 : 1;
+      const bu = b.version === "Unpoisoned" ? 0 : 1;
+      if (au !== bu) return au - bu;
+      return a.id - b.id;
+    },
+  );
 }
 
 /** Pull the right offensive value from an item for the loadout's attack type. */
@@ -127,6 +159,14 @@ export function applyOverrides(
   spellOverride?: SpellEntry | null,
   /** Player magic level, needed to resolve level-scaled spells (Magic Dart). */
   magicLevel?: number,
+  /**
+   * Dart loaded inside a blowpipe. `undefined` keeps the base set's dart when
+   * the resolved weapon can still load it, else loads the best dart the pipe
+   * takes (a blowpipe without darts can't fire); an `ItemCatalogEntry` is an
+   * explicit pick; `null` unloads the pipe. Ignored — and the base's dart
+   * dropped — whenever the resolved weapon is not a blowpipe.
+   */
+  dartOverride?: ItemCatalogEntry | null,
 ): LoadoutSet {
   const resolved: LoadoutSet["slots"] = {};
   let attackBonus = 0;
@@ -163,12 +203,14 @@ export function applyOverrides(
   melStr += bulwarkStrengthBonus(resolved.weapon?.itemId, defenceSum);
 
   // Weapon-internal ammo (blowpipe dart). Not in any slot, so the loop above
-  // won't have picked it up — add its rangedStr back here so the totals stay
-  // correct when the user edits other slots without touching the dart.
-  if (base.internalAmmo) {
-    const dartItem = ITEM_BY_ID.get(base.internalAmmo.itemId);
-    if (dartItem) rngStr += dartItem.rangedStr;
-  }
+  // won't have picked it up — resolve it against the RESOLVED weapon so a
+  // Tbow swapped in doesn't keep firing the old pipe's darts, and a pipe
+  // swapped in gets darts at all, then add its rangedStr to the totals.
+  const dartItem = resolveDart(resolved.weapon?.itemId, base, dartOverride);
+  const internalAmmo: LoadoutSet["internalAmmo"] = dartItem
+    ? { itemId: dartItem.id, itemName: dartItem.name }
+    : undefined;
+  if (dartItem) rngStr += dartItem.rangedStr;
 
   // Style-specific strength selection (mirrors scripts/build-loadouts.ts).
   let strengthBonus = 0;
@@ -234,8 +276,33 @@ export function applyOverrides(
     itemBonusFlags,
     weaponCategory,
     armorSetBonus,
+    internalAmmo,
     ...spellFields,
   };
+}
+
+/**
+ * The dart a blowpipe ends up loaded with after an edit (see the
+ * `dartOverride` doc on applyOverrides). `undefined` when the weapon isn't a
+ * blowpipe or the pipe is deliberately empty.
+ */
+function resolveDart(
+  weaponId: number | undefined,
+  base: LoadoutSet,
+  dartOverride: ItemCatalogEntry | null | undefined,
+): ItemCatalogEntry | undefined {
+  const spec = weaponId !== undefined ? INTERNAL_AMMO_WEAPONS.get(weaponId) : undefined;
+  if (!spec) return undefined;
+  if (dartOverride === null) return undefined;
+  if (dartOverride) {
+    // The picker only offers darts the pipe takes; anything else falls
+    // through to the best legal dart rather than silently emptying the pipe.
+    if (dartFits(dartOverride, spec)) return dartOverride;
+  } else {
+    const carried = base.internalAmmo ? ITEM_BY_ID.get(base.internalAmmo.itemId) : undefined;
+    if (carried && dartFits(carried, spec)) return carried;
+  }
+  return dartsForBlowpipe(weaponId)[0];
 }
 
 /** True iff at least one item or spell override differs from the base. */
@@ -243,9 +310,16 @@ export function hasOverrides(
   base: LoadoutSet,
   overrides: Partial<Record<LoadoutSlotKey, ItemCatalogEntry | null>>,
   spellOverride?: SpellEntry | null,
+  dartOverride?: ItemCatalogEntry | null,
 ): boolean {
   // A chosen spell that differs from the base's current spell is an override.
   if (base.style === "magic" && spellOverride && spellOverride.name !== base.autoSpellName) {
+    return true;
+  }
+  // A dart pick that differs from what the base pipe holds is an override
+  // (`undefined` = untouched; `null` = unloaded, which only counts if the
+  // base had a dart).
+  if (dartOverride === null ? !!base.internalAmmo : dartOverride && dartOverride.id !== base.internalAmmo?.itemId) {
     return true;
   }
   for (const [slot, ov] of Object.entries(overrides) as Array<[LoadoutSlotKey, ItemCatalogEntry | null]>) {

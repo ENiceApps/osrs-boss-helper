@@ -55,7 +55,8 @@ import { BossPhasePanel } from "@/components/BossPhasePanel";
 import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import { DittoEditorPanel } from "@/components/DittoEditorPanel";
 import { wikiIconUrl, wikiPageUrl } from "@/lib/icons";
-import { applyOverrides, hasOverrides, findCatalogItem } from "@/lib/loadout-edit";
+import { applyOverrides, hasOverrides, findCatalogItem, dartsForBlowpipe } from "@/lib/loadout-edit";
+import { INTERNAL_AMMO_WEAPONS } from "@/data/items/internal-ammo-weapons";
 import { setPresetOverrides, type SetPreset } from "@/lib/set-presets";
 import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
@@ -214,6 +215,11 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Manually chosen combat spell (magic loadouts). null = auto-pick by optimizer.
   const [spellOverride, setSpellOverride] = useState<SpellEntry | null>(null);
   const [spellPickerOpen, setSpellPickerOpen] = useState(false);
+  // Dart loaded in a blowpipe. undefined = whatever the editor resolves (the
+  // optimizer's pick, or the best dart when a pipe is swapped in by hand);
+  // an item = the player's pick; null = pipe deliberately left empty.
+  const [dartOverride, setDartOverride] = useState<ItemCatalogEntry | null | undefined>(undefined);
+  const [dartPickerOpen, setDartPickerOpen] = useState(false);
   // Chosen offensive prayer per combat style. Defaults to the best (Piety /
   // Rigour / Augury); the player can pick a weaker one via the results-rail
   // prayer row, which re-runs DPS and the prayer-pot supply cost.
@@ -535,11 +541,13 @@ export function BossCockpit({ slug }: { slug: string }) {
   // mechanic active-bonuses calc. If no overrides, this is identical to base.
   const selectedSet = useMemo(() => {
     if (!baseSet) return undefined;
-    if (!hasOverrides(baseSet, overrides, spellOverride)) return baseSet;
-    return applyOverrides(baseSet, overrides, spellOverride, skills.magic);
-  }, [baseSet, overrides, spellOverride, skills.magic]);
+    if (!hasOverrides(baseSet, overrides, spellOverride, dartOverride)) return baseSet;
+    return applyOverrides(baseSet, overrides, spellOverride, skills.magic, dartOverride);
+  }, [baseSet, overrides, spellOverride, dartOverride, skills.magic]);
 
-  const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride) : false;
+  const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride, dartOverride) : false;
+  // The dart isn't a slot, so the "N slots changed" banner counts it separately.
+  const dartEdited = baseSet ? hasOverrides(baseSet, {}, null, dartOverride) : false;
 
   // Stateless share link: encode the displayed loadout + setup into a `?b=`
   // value (see lib/share-link.ts). `tab` carries the loadout's concrete style so
@@ -653,6 +661,7 @@ export function BossCockpit({ slug }: { slug: string }) {
   function resetOverrides() {
     setOverrides({});
     setSpellOverride(null);
+    setDartOverride(undefined);
   }
   // Each tab is its own starting point — carrying slot edits across tabs
   // would silently mix setups, so switching discards them.
@@ -660,6 +669,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     setActiveTab(id);
     setOverrides({});
     setSpellOverride(null);
+    setDartOverride(undefined);
   }
   // Apply one slot pick as a manual override — shared by the item picker and
   // the tooltip's next-best-option rows.
@@ -672,6 +682,11 @@ export function BossCockpit({ slug }: { slug: string }) {
         if (slot === "weapon" && item?.isTwoHanded) next.shield = null;
         return next;
       });
+      // A dart pick belongs to the blowpipe it was made for — swapping to any
+      // other weapon forgets it, so a later pipe starts from a sane default.
+      if (slot === "weapon" && !INTERNAL_AMMO_WEAPONS.has(item?.id ?? -1)) {
+        setDartOverride(undefined);
+      }
     },
     [],
   );
@@ -766,7 +781,30 @@ export function BossCockpit({ slug }: { slug: string }) {
         { ...overrides, [slot]: item },
         spellOverride,
         skills.magic,
+        dartOverride,
       );
+      return computeSetDps(
+        trial,
+        monster,
+        skills,
+        boostResolver(trial.style),
+        effectiveOnTask,
+        soulreaperMaxStacks,
+        dharokCurrentHp,
+        prayerById(trial.style, prayerIds[trial.style]).selection,
+        rubyProcEnabled,
+        markOfDarkness,
+      ).dps;
+    },
+    [baseSet, overrides, spellOverride, dartOverride, skills, monster, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled, markOfDarkness],
+  );
+
+  // Same, for the dart picker: DPS with `dart` loaded in the worn blowpipe
+  // (null = empty pipe). The picker's slot argument is irrelevant here.
+  const dpsForDart = useCallback(
+    (_slot: LoadoutSlotKey, dart: ItemCatalogEntry | null): number | undefined => {
+      if (!baseSet) return undefined;
+      const trial = applyOverrides(baseSet, overrides, spellOverride, skills.magic, dart);
       return computeSetDps(
         trial,
         monster,
@@ -1231,11 +1269,13 @@ export function BossCockpit({ slug }: { slug: string }) {
             mapping={mapping}
             onSlotClick={(slot) => setPickerSlot(slot)}
             onSpellClick={() => setSpellPickerOpen(true)}
+            onDartClick={() => setDartPickerOpen(true)}
             slotDetails={slotDetails}
             slotAlternatives={alternativesForSlot}
             onAlternativePick={applySlotOverride}
             onEquipSet={equipSetPreset}
             editedSlots={overridesActive ? (Object.keys(overrides) as LoadoutSlotKey[]) : []}
+            dartEdited={dartEdited}
             onResetEdits={resetOverrides}
             conflicts={setupConflicts}
             boostName={ownedBoost?.name}
@@ -1337,6 +1377,23 @@ export function BossCockpit({ slug }: { slug: string }) {
           dpsForItem={dpsForSlotItem}
           onSelect={onPickerSelect}
           onClose={() => setPickerSlot(null)}
+        />
+      )}
+
+      {dartPickerOpen && selectedSet && (
+        <ItemPickerModal
+          slot="weapon"
+          label="Dart"
+          clearLabel="Unload darts"
+          items={dartsForBlowpipe(selectedSet.slots.weapon?.itemId)}
+          currentItemId={selectedSet.internalAmmo?.itemId}
+          currentDps={selectedDps?.dps}
+          dpsForItem={dpsForDart}
+          onSelect={(dart) => {
+            setDartOverride(dart);
+            setDartPickerOpen(false);
+          }}
+          onClose={() => setDartPickerOpen(false)}
         />
       )}
 

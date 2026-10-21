@@ -15,6 +15,16 @@ import { useMapping } from "@/lib/prices";
 
 interface Props {
   slot: LoadoutSlotKey;
+  /**
+   * Candidate list to show instead of every catalog item for `slot` — the
+   * dart picker passes the darts a blowpipe can load (darts are catalogued as
+   * thrown weapons, so no slot lists them on its own).
+   */
+  items?: ItemCatalogEntry[];
+  /** Heading / search-placeholder noun, e.g. "Dart". Defaults to the slot's label. */
+  label?: string;
+  /** Text of the clear button. Defaults to "Clear slot". */
+  clearLabel?: string;
   currentItemId?: number;
   /** DPS of the active loadout — baseline the per-item deltas are measured against. */
   currentDps?: number;
@@ -45,10 +55,21 @@ const SLOT_LABELS: Record<LoadoutSlotKey, string> = {
  * float to the top, click an item to apply. Inspired by the wgloop calc's
  * "Search for equipment..." dropdown.
  */
-export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, onSelect, onClose }: Props) {
+export function ItemPickerModal({
+  slot,
+  items: itemsProp,
+  label,
+  clearLabel = "Clear slot",
+  currentItemId,
+  currentDps,
+  dpsForItem,
+  onSelect,
+  onClose,
+}: Props) {
   const [query, setQuery] = useState("");
   const { data: mapping } = useMapping();
-  const items = useMemo(() => itemsForSlot(slot), [slot]);
+  const items = useMemo(() => itemsProp ?? itemsForSlot(slot), [itemsProp, slot]);
+  const noun = label ?? SLOT_LABELS[slot];
 
   // The DPS each candidate would yield in this slot, keyed by item id. Computed
   // once per open via the parent's engine callback; absent when no callback was
@@ -118,7 +139,7 @@ export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, o
       >
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="font-semibold text-osrs-brown">
-            Pick {SLOT_LABELS[slot]} item
+            Pick {noun} item
           </h3>
           <button
             type="button"
@@ -135,7 +156,7 @@ export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, o
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search ${SLOT_LABELS[slot].toLowerCase()} items…`}
+          placeholder={`Search ${noun.toLowerCase()} items…`}
           className="w-full bg-osrs-field border border-osrs-brown/40 rounded p-1.5 text-sm text-osrs-brown mb-2"
         />
 
@@ -149,7 +170,7 @@ export function ItemPickerModal({ slot, currentItemId, currentDps, dpsForItem, o
               onClick={() => onSelect(null)}
               className="text-status-missing hover:underline"
             >
-              Clear slot
+              {clearLabel}
             </button>
           )}
         </div>
