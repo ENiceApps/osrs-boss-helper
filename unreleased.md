@@ -189,3 +189,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 00:44 UTC · pushed by ENiceApps
 
 - 7f8b672 feat(loadout): Sets dropdown to equip Void, Dharok's and other set armour in one pick
+
+## 2026-10-21 00:51 UTC · pushed by ENiceApps
+
+- 0805f1c fix: blowpipe darts in the manual gear editor
