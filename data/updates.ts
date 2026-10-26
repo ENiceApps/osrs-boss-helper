@@ -106,6 +106,39 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 
 export const RELEASES: Release[] = [
   {
+    // Third "From AI" patch (docs/tfa-wiki-watch.md), run by hand on
+    // 2026-10-26 on ENice's request.
+    version: "0.1.4",
+    date: "2026-10-26",
+    title: "Raids 4 wiki check: Ocellus Phase 2, Bork flat armour, Dreadnoth demonbane",
+    author: "ai",
+    note: [
+      "Wiki check at 19:10 UTC, 26 Oct. All 22 watched pages changed since 21 Oct; numbers below are from the OSRS Wiki boss and item pages.",
+      { heading: "Bosses" },
+      [
+        { lead: "Ocellus", text: "Phase 2 (the Blade) added as a stat phase: 1,000 HP, 250 Defence, 220 Magic, stab 150 / slash 120 / crush 10 / magic 100 / light 100 / standard 110 / heavy 80, no Demon tag. Max hit 24 on all phases." },
+        { lead: "Bork", text: "flat armour 10 → 8 and crush defence 20 → 10. The wiki now lists flat armour 8-14 and magic resistance 0-6, rising 2 for every 25% of the Smorks' health lost; the site uses the starting 8 (magic resistance is not modelled)." },
+        { lead: "Dreadnoth the Jellied", text: "75% demonbane resistance, so Emberlight's +70% becomes +17% against him. Max hit 45." },
+        { lead: "Xarth", text: "attack speed 4, attack styles now Magic, Ranged and Melee." },
+        { lead: "Dagon'hai Elder", text: "attack speed 6 (was blank), attack styles Magic and Ranged." },
+        { lead: "Ezekiel, Moia", text: "attack styles filled in (Magic + Melee; Ranged + Magic). No DPS change." },
+      ],
+      { heading: "Items" },
+      [
+        { lead: "Zorya's tome", text: "special attack named Zorya's flow, 50% energy. The three boosted casts last 30 seconds and survive weapon switches." },
+        { lead: "Ascension crossbows, Obligator, Rondache", text: "stats unchanged. The wiki confirms the Obligator's two base damage rolls plus one per higher stab / slash defence, as already modelled." },
+      ],
+      { heading: "Still waiting on" },
+      [
+        { lead: "Defence reduction cap", text: "the 21 Oct hotfix list now reads Archive Guardian, Ezekiel, Moia, Xarth and Ocellus (60% of normal; Ocellus Phase 2 can go to 0). The site does not model Defence reduction yet." },
+        { lead: "Bork", text: "flat armour and magic resistance that scale with the Smorks' health." },
+        { lead: "Rondache", text: "Shield Slam (flat x + x% damage for x charges, 24 at 20)." },
+        { lead: "Obligator", text: "the 3-tile line hit on thrust." },
+      ],
+    ],
+    changes: [],
+  },
+  {
     // Second "From AI" patch (docs/tfa-wiki-watch.md), run by hand on
     // 2026-10-21 after the cloud routine was retired.
     version: "0.1.3",

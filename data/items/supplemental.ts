@@ -139,8 +139,9 @@ export const SUPPLEMENTAL_ITEMS: VendorEquipmentItem[] = [
   },
 
   // Rondache — icyene shield (80 Defence) with +8 strength. Its +2 flat
-  // armour / magic resistance and the charge-fuelled Shield Bash special are
-  // not modelled.
+  // armour / magic resistance and the charge-fuelled Shield Slam special
+  // (named Shield Bash in the proposal; a flat x + x% damage for x charges
+  // consumed, 24 at the 20-charge cap) are not modelled.
   // Source: https://oldschool.runescape.wiki/w/Rondache
   {
     id: 34719,

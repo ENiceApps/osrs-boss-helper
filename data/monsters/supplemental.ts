@@ -41,8 +41,8 @@ import type { VendorMonster } from "../../types/vendor.js";
 // empty infoboxes at launch; the wiki filled them in on 2026-10-21 20:32 UTC
 // and they are listed at the end of this file.
 // Transcribed 2026-10-20 (release day), re-checked against the wiki on
-// 2026-10-21 (docs/tfa-wiki-watch.md): the early infoboxes get corrected in
-// the first weeks, keep re-verifying.
+// 2026-10-21 and 2026-10-26 (docs/tfa-wiki-watch.md): the early infoboxes get
+// corrected in the first weeks, keep re-verifying.
 // ---------------------------------------------------------------------------
 const TFA_IMMUNITIES = { burn: null };
 
@@ -50,10 +50,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   // Archive Guardian — the fixed first boss. Two wiki versions since
   // 2026-10-21 19:24 UTC: Flying (melee can't reach it without a halberd,
   // 80% weak to Fire) and Grounded (after its shield bar is emptied it crashes
-  // down: slash 90, light 50, standard 115, Fire weakness 40%). The infobox
-  // keeps one unversioned `attributes = flying`, but the boss and strategy
-  // pages state that melee reaches it while grounded ("it may also be
-  // attacked with melee"), so the Grounded block drops the flying tag.
+  // down: slash 90, light 50, standard 115, Fire weakness 40%). Since
+  // 2026-10-26 the infobox versions the attribute too (`attributes1 =
+  // flying`, `attributes2 = No`), so the Grounded block has no flying tag.
   // Flying is listed first so the stable HP tie-break keeps it as the default.
   // Source: https://oldschool.runescape.wiki/w/Archive_Guardian
   {
@@ -112,7 +111,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Ezekiel — second-boss choice (vs Bork and the Smorks). A Saradominist
-  // justiciar: huge ranged defence, 25% weak to Earth.
+  // justiciar: huge ranged defence, 25% weak to Earth. Attack style "Magic,
+  // Melee" on the wiki since 2026-10-26 (was "melee"). Attack style "Magic,
+  // Melee" on the wiki since 2026-10-26 (was "melee").
   // Source: https://oldschool.runescape.wiki/w/Ezekiel
   {
     id: 16652,
@@ -121,7 +122,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     image: "Ezekiel.png",
     level: 984,
     speed: 5,
-    style: ["Melee"],
+    style: ["Magic", "Melee"],
     size: 3,
     max_hit: "",
     skills: { atk: 250, def: 130, hp: 3000, magic: 200, ranged: 80, str: 150 },
@@ -142,11 +143,13 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     weakness: { element: "earth", severity: 25 },
   },
 
-  // Bork — second-boss choice, fought alongside the Smorks. The wiki lists
-  // flat armour 10 (Base) / 0 (Stunned), so both are offered as stat phases
-  // (was 12 at launch; corrected 2026-10-20 23:47 UTC, which also added a
-  // "2 (Magic resistance)" value the engine has no slot for). Crush defence
-  // 10 → 20 on the wiki 2026-10-21 22:39 UTC.
+  // Bork — second-boss choice, fought alongside the Smorks. Since 2026-10-26
+  // the wiki lists flat armour "8-14 (Base), 0 (Stunned)" and magic
+  // resistance "0-6": both start at 8 / 0 with the Smorks at full health and
+  // gain 2 for every 25% of the Smorks' health lost. The Base phase carries
+  // the starting 8 (the engine has no magic-resistance slot); Stunned is 0.
+  // Was 12 at launch, 10 from 2026-10-20 23:47 UTC. Crush defence went
+  // 10 → 20 on 2026-10-21 and back to 10 on 2026-10-26 18:48 UTC.
   // Source: https://oldschool.runescape.wiki/w/Bork
   {
     id: 16640,
@@ -161,8 +164,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     skills: { atk: 200, def: 300, hp: 1500, magic: 90, ranged: 200, str: 200 },
     offensive: { atk: 100, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 40 },
     defensive: {
-      flat_armour: 10,
-      crush: 20,
+      flat_armour: 8,
+      crush: 10,
       magic: 300,
       heavy: 5,
       standard: 50,
@@ -189,7 +192,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     offensive: { atk: 100, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 40 },
     defensive: {
       flat_armour: 0,
-      crush: 20,
+      crush: 10,
       magic: 300,
       heavy: 5,
       standard: 50,
@@ -236,7 +239,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
 
   // Moia — third-boss choice (vs Dreadnoth). A necromancer with low melee and
   // magic defence bonuses, 80% weak to Air (added to the wiki 2026-10-20
-  // 23:58 UTC; the launch infobox had no weakness).
+  // 23:58 UTC; the launch infobox had no weakness). Attack style "Ranged,
+  // Magic" filled in 2026-10-26. Attack style "Ranged,
+  // Magic" filled in 2026-10-26.
   // Source: https://oldschool.runescape.wiki/w/Moia
   {
     id: 16667,
@@ -245,7 +250,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     image: "Moia.png",
     level: 1064,
     speed: 5,
-    style: [],
+    style: ["Ranged", "Magic"],
     size: 3,
     max_hit: "",
     skills: { atk: 1, def: 195, hp: 785, magic: 350, ranged: 200, str: 1 },
@@ -268,8 +273,10 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
 
   // Dreadnoth the Jellied — third-boss choice (vs Moia). A partially summoned
   // demon sealed in jelly, tagged Demon on the wiki since 2026-10-20 23:48 UTC
-  // (the launch infobox had no attribute), so demonbane applies at the default
-  // 100%. 85% weak to Fire.
+  // (the launch infobox had no attribute). Since 2026-10-26 the page states
+  // "75% demonbane resistance" (Emberlight's +70% becomes +17.5%), carried
+  // as a 25% vulnerability in demonbane-vulnerability.ts. 85% weak to Fire.
+  // Max hit 45 and attack style "Melee, Ranged" filled in the same day.
   // Source: https://oldschool.runescape.wiki/w/Dreadnoth_the_Jellied
   {
     id: 16665,
@@ -278,9 +285,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     image: "Dreadnoth the Jellied.png",
     level: 888,
     speed: 4,
-    style: [],
+    style: ["Melee", "Ranged"],
     size: 5,
-    max_hit: "",
+    max_hit: "45",
     skills: { atk: 280, def: 125, hp: 2100, magic: 220, ranged: 250, str: 285 },
     offensive: { atk: 185, magic: 0, magic_str: 0, ranged: 180, ranged_str: 20, str: 35 },
     defensive: {
@@ -300,10 +307,10 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Xarth — fourth-boss choice (vs the Dagon'hai). A tormented demon
-  // (demonbane applies at the default 100%), 85% weak to Water. The wiki
-  // leaves its attack speed blank; attack styles "Mage, Ranged" and the
-  // offensive bonuses (attbns 150, strbns 225, mbns 350) were added
-  // 2026-10-21 22:59 UTC and are transcribed as given.
+  // (demonbane applies at the default 100%), 85% weak to Water. Attack
+  // styles and the offensive bonuses (attbns 150, strbns 225, mbns 350) were
+  // added 2026-10-21 22:59 UTC; attack speed 4 and the Melee style followed
+  // on 2026-10-26 18:49 UTC. Transcribed as given.
   // Source: https://oldschool.runescape.wiki/w/Xarth
   {
     id: 16684,
@@ -311,8 +318,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     version: "",
     image: "Xarth.png",
     level: 912,
-    speed: 0,
-    style: ["Magic", "Ranged"],
+    speed: 4,
+    style: ["Magic", "Ranged", "Melee"],
     size: 3,
     max_hit: "",
     skills: { atk: 250, def: 170, hp: 2600, magic: 350, ranged: 220, str: 225 },
@@ -334,10 +341,13 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Ocellus — the final boss, a fallen Guardian of Guthix (demon). Three
-  // phases on the wiki; Phase 2 ("Gone crazed with power", attack speed 0)
-  // has no hitpoints or combat level listed and reads as the untargetable
-  // portal transition, so only the two fightable stat blocks are listed.
-  // Phase 1 is the catalog default (PREFERRED_VERSION in the build script).
+  // phases on the wiki. Phase 2 ("Gone crazed with power") had no stats
+  // until 2026-10-26 18:50 UTC, when the infobox gave it 1000 HP, 250
+  // Defence, combat level 0, attack speed 0, no Demon tag and its own
+  // defensive bonuses; the strategy page says players "attack Ocellus via
+  // disrupting the Blade" there with Ranged. Transcribed as given. The
+  // unversioned "max hit = 24" applies to all three. Phase 1 is the catalog
+  // default (PREFERRED_VERSION in the build script).
   // Source: https://oldschool.runescape.wiki/w/Ocellus
   {
     id: 16673,
@@ -346,9 +356,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     image: "Ocellus.png",
     level: 1121,
     speed: 5,
-    style: [],
+    style: ["Magic", "Ranged"],
     size: 3,
-    max_hit: "",
+    max_hit: "24",
     skills: { atk: 1, def: 215, hp: 2500, magic: 350, ranged: 250, str: 1 },
     offensive: { atk: 1, magic: 150, magic_str: 0, ranged: 150, ranged_str: 0, str: 1 },
     defensive: {
@@ -367,15 +377,42 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     weakness: null,
   },
   {
+    id: 16675,
+    name: "Ocellus",
+    version: "Phase 2",
+    image: "Ocellus (phase 2).png",
+    level: 0,
+    speed: 0,
+    style: ["Magic"],
+    size: 3,
+    max_hit: "24",
+    skills: { atk: 1, def: 250, hp: 1000, magic: 220, ranged: 1, str: 1 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 10,
+      magic: 100,
+      heavy: 80,
+      standard: 110,
+      light: 100,
+      slash: 120,
+      stab: 150,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+  {
     id: 16677,
     name: "Ocellus",
     version: "Phase 3",
     image: "Ocellus (phase 3).png",
     level: 1601,
     speed: 6,
-    style: [],
+    style: ["Magic", "Melee", "Ranged"],
     size: 3,
-    max_hit: "",
+    max_hit: "24",
     skills: { atk: 325, def: 250, hp: 5250, magic: 300, ranged: 300, str: 250 },
     offensive: { atk: 150, magic: 350, magic_str: 10, ranged: 0, ranged_str: 0, str: 10 },
     defensive: {
@@ -396,9 +433,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
 
   // Dagon'hai Elder — fourth-boss choice (vs Xarth), fought with two Monks;
   // the three share one health pool. Stats added to the wiki 2026-10-21
-  // 20:32 UTC. The infobox leaves attack speed blank and puts "6" in the
-  // attack-style field (a misfiled speed), so both stay unset here. Immune to
-  // poison, venom and the cannon; no elemental weakness listed.
+  // 20:32 UTC; attack speed 6 and attack style "Magic, Ranged" sorted out
+  // on 2026-10-26 (the speed had been misfiled in the style field). Immune
+  // to poison, venom and the cannon; no elemental weakness listed.
   // Source: https://oldschool.runescape.wiki/w/Dagon'hai_Elder
   {
     id: 16643,
@@ -406,8 +443,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     version: "",
     image: "Dagon'hai Elder.png",
     level: 427,
-    speed: 0,
-    style: [],
+    speed: 6,
+    style: ["Magic", "Ranged"],
     size: 2,
     max_hit: "",
     skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },

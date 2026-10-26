@@ -29,11 +29,14 @@ says so. Newest first. Player feature requests from the Reddit launch live in
   Elder / Monks (wiki stats landed that evening). Done the same day: the Obligator's
   best-of-2-to-4 damage rolls, size bonus and thrust-vs-smash choice
   (`data/items/obligator.ts`, engine `damageRolls`), and Zorya's tome's
-  special attack in `data/spec-weapons.ts`. Still open on the tome: the wiki
-  gives only a flat base max hit of 18 (no Magic-level scaling) and no spec
-  name or energy cost — re-check the wiki and weirdgloop (neither weapon was
-  in the calc as of 2026-09-02) and mirror their numbers when they land; the
-  Obligator's size-bonus placement and line hit are unverified too.
+  special attack in `data/spec-weapons.ts`. Done 2026-10-26 (wiki check):
+  the tome's spec name (Zorya's flow) and 50% cost, Dreadnoth's 75% demonbane
+  resistance, Ocellus Phase 2 as a stat phase. Still open on the tome: the
+  wiki gives only a flat base max hit of 18 (no Magic-level scaling) — mirror
+  weirdgloop's numbers when the calc gets the weapon; the Obligator's
+  size-bonus placement and 3-tile line hit are unverified too. Bork's flat
+  armour (8-14) and magic resistance (0-6) scale with the Smorks' health; the
+  site carries the starting 8 / nothing until the engine has a slot for them.
 - **Phone support** (named at the v1.0.0 launch, 2026-10-09).
 - **Raid builds** (named at the v1.0.0 launch, 2026-10-09). Folded into the
   raid rework above.

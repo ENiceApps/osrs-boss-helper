@@ -4293,12 +4293,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "defenceBonuses": {
       "stab": 140,
       "slash": 130,
-      "crush": 20,
+      "crush": 10,
       "magic": 300,
       "rangedHeavy": 5,
       "rangedStandard": 50,
       "rangedLight": 80,
-      "flatArmour": 10
+      "flatArmour": 8
     },
     "attributes": [],
     "weakness": {
@@ -4320,12 +4320,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceBonuses": {
           "stab": 140,
           "slash": 130,
-          "crush": 20,
+          "crush": 10,
           "magic": 300,
           "rangedHeavy": 5,
           "rangedStandard": 50,
           "rangedLight": 80,
-          "flatArmour": 10
+          "flatArmour": 8
         },
         "attributes": [],
         "weakness": {
@@ -4346,7 +4346,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceBonuses": {
           "stab": 140,
           "slash": 130,
-          "crush": 20,
+          "crush": 10,
           "magic": 300,
           "rangedHeavy": 5,
           "rangedStandard": 50,
@@ -8442,7 +8442,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Dreadnoth the Jellied.png",
     "size": 5,
-    "maxHitText": "",
+    "maxHitText": "45",
     "isSlayerMonster": false
   },
   {
@@ -20177,7 +20177,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "weakness": null,
     "image": "Ocellus.png",
     "size": 3,
-    "maxHitText": "",
+    "maxHitText": "24",
     "isSlayerMonster": false,
     "phases": [
       {
@@ -20203,7 +20203,29 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ocellus.png",
         "size": 3,
-        "maxHitText": ""
+        "maxHitText": "24"
+      },
+      {
+        "version": "Phase 2",
+        "wikiId": 16675,
+        "combatLevel": 0,
+        "hp": 1000,
+        "defenceLevel": 250,
+        "magicLevel": 220,
+        "defenceBonuses": {
+          "stab": 150,
+          "slash": 120,
+          "crush": 10,
+          "magic": 100,
+          "rangedHeavy": 80,
+          "rangedStandard": 110,
+          "rangedLight": 100
+        },
+        "attributes": [],
+        "weakness": null,
+        "image": "Ocellus (phase 2).png",
+        "size": 3,
+        "maxHitText": "24"
       },
       {
         "version": "Phase 3",
@@ -20228,7 +20250,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ocellus (phase 3).png",
         "size": 3,
-        "maxHitText": ""
+        "maxHitText": "24"
       }
     ]
   },

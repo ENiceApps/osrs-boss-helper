@@ -256,16 +256,17 @@ export const SPEC_WEAPONS: SpecWeapon[] = [
     role: "dps-spike",
   },
   {
-    // Zorya's tome (The Fractured Archive, 2026-10-20; charged 34725). The
-    // wiki hasn't named the spec or published its energy cost yet (the
-    // proposal's Gatekeeper's Cane was 50%) — fill both in when it does.
+    // Zorya's tome (The Fractured Archive, 2026-10-20; charged 34725). Spec
+    // name and 50% cost from the wiki's "Special attack" section (2026-10-26);
+    // the three boosted casts are stored for 30 seconds and survive weapon
+    // switches (teleporting clears them).
     // https://oldschool.runescape.wiki/w/Zorya's_tome
     itemId: id(34725),
     name: "Zorya's tome",
-    specName: "Special attack",
-    energyCost: null,
+    specName: "Zorya's flow",
+    energyCost: 50,
     effect:
-      "Fires a spell with +150% accuracy and +60% damage; if it lands, the next three casts keep the boost and fire every 2 ticks.",
+      "Fires a spell with +150% accuracy and +60% damage; if it lands, the next three casts keep the boost and fire every 2 ticks (stored for 30 seconds, kept across weapon switches).",
     role: "dps-spike",
   },
   {

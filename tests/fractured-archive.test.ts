@@ -13,6 +13,8 @@ import { BOLT_EFFECT_BY_ITEM_ID } from "@/data/items/bolt-procs";
 import { UNCHARGED_PRICE_ID } from "@/data/items/charged-items";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { PRAYER_OPTIONS, prayerById } from "@/data/prayers";
+import { demonbaneVulnerabilityFor, scaleDemonbanePct } from "@/data/monsters/demonbane-vulnerability";
+import { SPEC_WEAPONS } from "@/data/spec-weapons";
 
 const TFA_SLUGS = [
   "archive-guardian",
@@ -37,24 +39,33 @@ describe("The Fractured Archive bosses", () => {
     }
   });
 
-  it("Ocellus opens on Phase 1 and offers Phase 3 as a stat phase", () => {
+  it("Ocellus opens on Phase 1 and offers Phases 2 and 3 as stat phases", () => {
     const ocellus = MONSTER_BY_SLUG["ocellus"];
     expect(ocellus.version).toBe("Phase 1");
     expect(ocellus.hp).toBe(2500);
     expect(ocellus.attributes).toContain("demon");
-    expect(ocellus.phases?.map((p) => p.version)).toEqual(["Phase 1", "Phase 3"]);
-    expect(ocellus.phases?.[1].hp).toBe(5250);
+    expect(ocellus.phases?.map((p) => p.version)).toEqual(["Phase 1", "Phase 2", "Phase 3"]);
+    // Phase 2 (the Blade) got its stat block on the wiki on 2026-10-26: 1000
+    // HP, 250 Defence, no Demon tag, its own defence bonuses.
+    const phase2 = ocellus.phases?.[1];
+    expect(phase2?.hp).toBe(1000);
+    expect(phase2?.defenceLevel).toBe(250);
+    expect(phase2?.attributes).not.toContain("demon");
+    expect(phase2?.defenceBonuses.slash).toBe(120);
+    expect(phase2?.defenceBonuses.rangedStandard).toBe(110);
+    expect(ocellus.phases?.[2].hp).toBe(5250);
     // Wiki correction 2026-10-21: Phase 3 combat level 1197 → 1601.
-    expect(ocellus.phases?.[1].combatLevel).toBe(1601);
+    expect(ocellus.phases?.[2].combatLevel).toBe(1601);
     expect(HEADLINE_BOSS_SLUGS.has("ocellus")).toBe(true);
   });
 
-  it("Bork starts with 10 flat armour and loses it when stunned", () => {
+  it("Bork starts with 8 flat armour and loses it when stunned", () => {
     const bork = MONSTER_BY_SLUG["bork"];
     expect(bork.version).toBe("Base");
-    expect(bork.defenceBonuses.flatArmour).toBe(10);
-    // Wiki correction 2026-10-21: crush defence 10 → 20.
-    expect(bork.defenceBonuses.crush).toBe(20);
+    // Wiki 2026-10-26: "8-14 (Base)" — 8 with the Smorks at full health.
+    expect(bork.defenceBonuses.flatArmour).toBe(8);
+    // Crush defence: 10 at launch, 20 on 2026-10-21, back to 10 on 2026-10-26.
+    expect(bork.defenceBonuses.crush).toBe(10);
     const stunned = bork.phases?.find((p) => p.version === "Stunned");
     expect(stunned?.defenceBonuses.flatArmour).toBeUndefined();
   });
@@ -95,6 +106,10 @@ describe("The Fractured Archive bosses", () => {
     // Post-launch wiki corrections (2026-10-20 evening): Dreadnoth is a demon,
     // Moia is weak to Air, the Smorks have 2 flat armour.
     expect(MONSTER_BY_SLUG["dreadnoth-the-jellied"].attributes).toContain("demon");
+    // Wiki 2026-10-26: Dreadnoth has 75% demonbane resistance (25% vulnerability).
+    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["dreadnoth-the-jellied"])).toBe(25);
+    expect(scaleDemonbanePct(70, 25)).toBe(17);
+    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["xarth"])).toBe(100);
     expect(MONSTER_BY_SLUG["moia"].weakness).toEqual({ element: "air", severity: 80 });
     expect(MONSTER_BY_SLUG["the-smorks"].defenceBonuses.flatArmour).toBe(2);
   });
@@ -131,6 +146,10 @@ describe("The Fractured Archive rewards", () => {
       expect(tome.requirements).toEqual({ magic: 85 });
       expect(POWERED_STAFF_FORMULA.get(tome.id)?.(99)).toBe(18);
     }
+    // Spec name and cost landed on the wiki on 2026-10-26.
+    const spec = SPEC_WEAPONS.find((w) => w.name === "Zorya's tome");
+    expect(spec?.specName).toBe("Zorya's flow");
+    expect(spec?.energyCost).toBe(50);
   });
 
   it("Ascension crossbows fire only Ascension bolts", () => {

@@ -324,7 +324,7 @@ describe("Zorya's tome", () => {
     const spec = findSpecWeapon(34725);
     expect(spec?.name).toBe("Zorya's tome");
     expect(spec?.role).toBe("dps-spike");
-    expect(spec?.energyCost).toBeNull(); // the wiki hasn't published it yet
+    expect(spec?.energyCost).toBe(50); // "Zorya's flow", wiki 2026-10-26
     expect(SPEC_MAX_HIT[34725]).toEqual({ factor: [8, 5], hits: 4 });
     const display = specMaxHitDisplay(34725, 25)!;
     expect(display.normalMaxHit).toBe(25);
