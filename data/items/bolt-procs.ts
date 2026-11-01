@@ -34,6 +34,10 @@ export const BOLT_EFFECT_BY_ITEM_ID: ReadonlyMap<number, BoltEffect> = new Map([
 /** Zaryte crossbow — its passive strengthens enchanted-bolt effects. */
 export const ZARYTE_CROSSBOW_ID = 26374;
 
+/** Ascension crossbows — "chance to trigger the effects of enchanted bolts is
+ *  reduced by 50%" (OSRS Wiki; wgloop dists/bolts.ts `ascensionsFactor`). */
+export const ASCENSION_CROSSBOWS_ID = 34681;
+
 /**
  * Monsters with effectively infinite HP get a reduced ruby-bolt cap (60/66
  * instead of 100/110) — mirrors wgloop's INFINITE_HEALTH_MONSTERS list,

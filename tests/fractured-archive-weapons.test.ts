@@ -332,12 +332,15 @@ describe("Zorya's tome", () => {
     expect(display.hits).toBe(4);
   });
 
-  it("keeps the wiki's flat base max hit of 18 at every Magic level", () => {
+  it("scales with Magic like weirdgloop: max(1, trunc(level / 3) - 10)", () => {
+    // wgloop PlayerVsNPCCalc.getPlayerMaxMagicHit (2026-10-24); the wiki's
+    // "base max hit of 18" is the 84-86 Magic value.
     for (const id of [34725, 34727]) {
       const formula = POWERED_STAFF_FORMULA.get(id)!;
       expect(formula(85)).toBe(18);
-      expect(formula(99)).toBe(18);
-      expect(formula(120)).toBe(18);
+      expect(formula(99)).toBe(23);
+      expect(formula(120)).toBe(30);
+      expect(formula(30)).toBe(1);
     }
   });
 });

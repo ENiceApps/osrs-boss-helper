@@ -31,12 +31,20 @@ says so. Newest first. Player feature requests from the Reddit launch live in
   (`data/items/obligator.ts`, engine `damageRolls`), and Zorya's tome's
   special attack in `data/spec-weapons.ts`. Done 2026-10-26 (wiki check):
   the tome's spec name (Zorya's flow) and 50% cost, Dreadnoth's 75% demonbane
-  resistance, Ocellus Phase 2 as a stat phase. Still open on the tome: the
-  wiki gives only a flat base max hit of 18 (no Magic-level scaling) — mirror
-  weirdgloop's numbers when the calc gets the weapon; the Obligator's
-  size-bonus placement and 3-tile line hit are unverified too. Bork's flat
-  armour (8-14) and magic resistance (0-6) scale with the Smorks' health; the
-  site carries the starting 8 / nothing until the engine has a slot for them.
+  resistance, Ocellus Phase 2 as a stat phase. Done 2026-11-01 (v0.2.0):
+  weirdgloop shipped TFA on 24-27 Oct, so the tome now uses its formula
+  (trunc(Magic/3) − 10), Ocellus and Xarth carry its 20% demonbane
+  resistance, the Ascension crossbows halve bolt proc chances, and the seven
+  side NPCs (Undead binder, Jelly, Corpse, the three Voids, the Imp) are in
+  the catalog under TFA. Still open: the Obligator's size-bonus placement and
+  3-tile line hit; Bork's flat armour (8-14) and magic resistance (0-6) that
+  scale with the Smorks' health (upstream now has a `magic_resistance` slot
+  and a 60% Defence floor for the TFA bosses, both worth mirroring with the
+  Defence-reduction work); the 28 Oct 50% cap on offensive stat drains at
+  Ocellus, Xarth and Dreadnoth. Next vendor refresh: upstream's JSON drops
+  every hand-authored TFA entry, but its 24 Oct snapshot is behind the wiki
+  on Moia (785 → 1900 HP), Ezekiel (130 → 200 Defence), Xarth and the
+  Dagon'hai bonuses — carry those as STAT_OVERRIDES in the build script.
 - **Phone support** (named at the v1.0.0 launch, 2026-10-09).
 - **Raid builds** (named at the v1.0.0 launch, 2026-10-09). Folded into the
   raid rework above.

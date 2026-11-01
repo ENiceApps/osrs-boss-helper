@@ -12,7 +12,7 @@ import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import monstersJson from "../data/vendor/wgloop/monsters.json" with { type: "json" };
-import { SUPPLEMENTAL_MONSTERS } from "../data/monsters/supplemental.js";
+import { SUPPLEMENTAL_MONSTERS, TFA_SIDE_NPC_IDS } from "../data/monsters/supplemental.js";
 import type { VendorMonster } from "../types/vendor.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -127,7 +127,15 @@ const PREFERRED_VERSION: Record<string, string> = {
   "Ocellus": "Phase 1",
   // Bork's flat armour is 12 until he's stunned; the fight starts there.
   "Bork": "Base",
+  // The fight opens Flying (550 shield HP); Grounded carries the 1100 health
+  // bar and would win the HP tie-break.
+  "Archive Guardian": "Flying",
 };
+
+// Raid side NPCs players actually DPS (Moia's binders, Dreadnoth's jellies,
+// Xarth's corpses, Ocellus' Voids, the Dagon'hai imps) all sit below the HP
+// floor and are not Slayer creatures; admit them by id.
+const FORCE_INCLUDE_IDS = new Set<number>(TFA_SIDE_NPC_IDS);
 
 function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMonster {
   if (candidates.length === 1) return candidates[0];
@@ -196,7 +204,9 @@ const eligible = monsters.filter((m) => {
   if (!m.name) return false;
   // Admit boss-tier monsters by HP, plus every Slayer-assignable creature
   // regardless of HP (the UI's "Slayer" filter hides them by default).
-  if ((m.skills?.hp ?? 0) < HP_FLOOR && !m.is_slayer_monster) return false;
+  if ((m.skills?.hp ?? 0) < HP_FLOOR && !m.is_slayer_monster && !FORCE_INCLUDE_IDS.has(m.id)) {
+    return false;
+  }
   if (EXCLUDED_TAGS.some((tag) => m.version?.includes(tag) || m.name?.includes(tag))) {
     return false;
   }

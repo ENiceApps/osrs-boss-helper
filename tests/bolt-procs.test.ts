@@ -49,6 +49,25 @@ describe("resolveBoltProc — gating", () => {
     expect(spec).toMatchObject({ chance: expect.closeTo(0.06, 5) });
   });
 
+  it("Ascension crossbows halve the proc chance (wgloop ascensionsFactor)", () => {
+    const ASCENSION_CROSSBOWS = 34681;
+    const DIAMOND_ASCENSION_E = 34696;
+    const ONYX_ASCENSION_E = 34708;
+    const diamond = resolveBoltProc({ ...base, weaponItemId: ASCENSION_CROSSBOWS, ammoItemId: DIAMOND_ASCENSION_E });
+    expect(diamond).toMatchObject({ effect: "diamond", chance: expect.closeTo(0.055, 5) });
+    // Onyx vs a non-undead target: 11% × 1.1 × 0.5.
+    const onyx = resolveBoltProc({
+      ...base,
+      weaponItemId: ASCENSION_CROSSBOWS,
+      ammoItemId: ONYX_ASCENSION_E,
+      target: { hp: 2600, attributes: ["demon"], slug: "xarth" },
+    });
+    expect(onyx).toMatchObject({ effect: "onyx", chance: expect.closeTo(0.0605, 5) });
+    // The same bolt from a regular crossbow keeps the full chance.
+    const full = resolveBoltProc({ ...base, ammoItemId: DIAMOND_DRAGON_E });
+    expect(full).toMatchObject({ chance: expect.closeTo(0.11, 5) });
+  });
+
   it("onyx is inert vs undead Vorkath; dragonstone inert vs dragon/fiery", () => {
     expect(resolveBoltProc({ ...base, ammoItemId: ONYX_DRAGON_E })).toBeUndefined();
     expect(resolveBoltProc({ ...base, ammoItemId: DRAGONSTONE_DRAGON_E })).toBeUndefined();

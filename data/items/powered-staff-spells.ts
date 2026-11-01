@@ -56,15 +56,15 @@ export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Dawnbringer: floor(magic / 6) - 1  (15 at 99)
   [22516, (lvl) => Math.floor(lvl / 6) - 1],
 
-  // Zorya's tome (The Fractured Archive, 2026-10-20): a flat "base max hit of
-  // 18" for its built-in 3-tick spell. Re-checked on release day: the item
-  // page and the Rewards Poll Blog both give the flat 18 and no Magic-level
-  // scaling, and weirdgloop (last commit 2026-09-02) has no entry. Re-check
-  // once either publishes a formula. The +15% magic damage is in the catalog
-  // stats; the special attack is listed in data/spec-weapons.ts.
+  // Zorya's tome (The Fractured Archive, 2026-10-20): weirdgloop's formula
+  // since 2026-10-24 (PlayerVsNPCCalc.getPlayerMaxMagicHit):
+  //   max(1, trunc(magic / 3) - 10)  → 23 at 99, 18 at 84-86
+  // The wiki still quotes "a base max hit of 18" (true at 84 Magic). The
+  // flat 18 the site carried until 2026-11-01 is gone. The +15% magic damage
+  // is in the catalog stats; the special attack is in data/spec-weapons.ts.
   // https://oldschool.runescape.wiki/w/Zorya's_tome
-  [34725, () => 18], // Charged
-  [34727, () => 18], // Uncharged
+  [34725, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 10)], // Charged
+  [34727, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 10)], // Uncharged
 
   // Eye of Ayak: max(1, trunc(magic / 3) - 6)  (27 at 99)
   [31113, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 6)], // Charged

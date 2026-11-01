@@ -41,8 +41,20 @@ import type { VendorMonster } from "../../types/vendor.js";
 // empty infoboxes at launch; the wiki filled them in on 2026-10-21 20:32 UTC
 // and they are listed at the end of this file.
 // Transcribed 2026-10-20 (release day), re-checked against the wiki on
-// 2026-10-21 and 2026-10-26 (docs/tfa-wiki-watch.md): the early infoboxes get
-// corrected in the first weeks, keep re-verifying.
+// 2026-10-21, 2026-10-26 and 2026-11-01 (docs/tfa-wiki-watch.md): the early
+// infoboxes get corrected in the first weeks, keep re-verifying. The 30 Oct
+// pass ("Fix stats based on cache", wiki user Orion) rewrote Moia's HP and
+// the Xarth / Dagon'hai offensive bonuses from the game cache.
+//
+// The raid's side NPCs (Undead binder, Jelly, Corpse, the three Voids, the
+// Imp) are listed after the bosses. They sit below the catalog's 200 HP floor,
+// so scripts/build-monster-catalog.ts admits them by id (TFA_SIDE_NPC_IDS).
+//
+// weirdgloop shipped every TFA boss and item on 2026-10-24/27 (its
+// cdn/json is a 24 Oct snapshot, behind the wiki on Moia, Xarth, Ezekiel and
+// the Dagon'hai). The next `npm run refresh-vendor` drops the overlapping
+// entries here automatically; move the newer wiki numbers into the build
+// script's STAT_OVERRIDES when that happens.
 // ---------------------------------------------------------------------------
 const TFA_IMMUNITIES = { burn: null };
 
@@ -53,7 +65,9 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   // down: slash 90, light 50, standard 115, Fire weakness 40%). Since
   // 2026-10-26 the infobox versions the attribute too (`attributes1 =
   // flying`, `attributes2 = No`), so the Grounded block has no flying tag.
-  // Flying is listed first so the stable HP tie-break keeps it as the default.
+  // Since 2026-10-30 the infobox versions HP too: Flying 550 (the shield bar),
+  // Grounded 1100 (the health bar). Flying stays the default via
+  // PREFERRED_VERSION in the build script.
   // Source: https://oldschool.runescape.wiki/w/Archive_Guardian
   {
     id: 16659,
@@ -92,7 +106,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     style: ["Crush"],
     size: 5,
     max_hit: "25, 99+ (laser beam)",
-    skills: { atk: 250, def: 260, hp: 550, magic: 250, ranged: 280, str: 240 },
+    skills: { atk: 250, def: 260, hp: 1100, magic: 250, ranged: 280, str: 240 },
     offensive: { atk: 0, magic: 350, magic_str: 55, ranged: 350, ranged_str: 55, str: 0 },
     defensive: {
       flat_armour: 0,
@@ -112,8 +126,10 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
 
   // Ezekiel — second-boss choice (vs Bork and the Smorks). A Saradominist
   // justiciar: huge ranged defence, 25% weak to Earth. Attack style "Magic,
-  // Melee" on the wiki since 2026-10-26 (was "melee"). Attack style "Magic,
-  // Melee" on the wiki since 2026-10-26 (was "melee").
+  // Melee" on the wiki since 2026-10-26 (was "melee"). Defence 130 → 200 and
+  // max hit 77 were added 2026-10-28/30 by anonymous editors (no cache
+  // citation, unlike the Moia / Xarth fixes) — transcribed as the infobox
+  // reads; weirdgloop's 24 Oct snapshot still carries 130.
   // Source: https://oldschool.runescape.wiki/w/Ezekiel
   {
     id: 16652,
@@ -124,8 +140,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     speed: 5,
     style: ["Magic", "Melee"],
     size: 3,
-    max_hit: "",
-    skills: { atk: 250, def: 130, hp: 3000, magic: 200, ranged: 80, str: 150 },
+    max_hit: "77",
+    skills: { atk: 250, def: 200, hp: 3000, magic: 200, ranged: 80, str: 150 },
     offensive: { atk: 0, magic: 250, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
     defensive: {
       flat_armour: 0,
@@ -240,8 +256,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   // Moia — third-boss choice (vs Dreadnoth). A necromancer with low melee and
   // magic defence bonuses, 80% weak to Air (added to the wiki 2026-10-20
   // 23:58 UTC; the launch infobox had no weakness). Attack style "Ranged,
-  // Magic" filled in 2026-10-26. Attack style "Ranged,
-  // Magic" filled in 2026-10-26.
+  // Magic" filled in 2026-10-26. HP 785 → 1900 and magic strength bonus 15
+  // from the 2026-10-30 cache fix (weirdgloop's snapshot still has 785).
   // Source: https://oldschool.runescape.wiki/w/Moia
   {
     id: 16667,
@@ -253,8 +269,8 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     style: ["Ranged", "Magic"],
     size: 3,
     max_hit: "",
-    skills: { atk: 1, def: 195, hp: 785, magic: 350, ranged: 200, str: 1 },
-    offensive: { atk: 0, magic: 300, magic_str: 0, ranged: 350, ranged_str: 35, str: 0 },
+    skills: { atk: 1, def: 195, hp: 1900, magic: 350, ranged: 200, str: 1 },
+    offensive: { atk: 0, magic: 300, magic_str: 15, ranged: 350, ranged_str: 35, str: 0 },
     defensive: {
       flat_armour: 0,
       crush: 15,
@@ -307,10 +323,11 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   },
 
   // Xarth — fourth-boss choice (vs the Dagon'hai). A tormented demon
-  // (demonbane applies at the default 100%), 85% weak to Water. Attack
-  // styles and the offensive bonuses (attbns 150, strbns 225, mbns 350) were
-  // added 2026-10-21 22:59 UTC; attack speed 4 and the Melee style followed
-  // on 2026-10-26 18:49 UTC. Transcribed as given.
+  // with 20% demonbane resistance (Strategies page; weirdgloop codes 80%, see
+  // demonbane-vulnerability.ts), 85% weak to Water. Attack styles and the
+  // offensive bonuses were added 2026-10-21 22:59 UTC; attack speed 4 and the
+  // Melee style followed on 2026-10-26. The 2026-10-30 cache fix rewrote the
+  // bonuses: strbns 225 → 30, mbns 350 → 0, rngbns blank → 30.
   // Source: https://oldschool.runescape.wiki/w/Xarth
   {
     id: 16684,
@@ -323,7 +340,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     size: 3,
     max_hit: "",
     skills: { atk: 250, def: 170, hp: 2600, magic: 350, ranged: 220, str: 225 },
-    offensive: { atk: 150, magic: 250, magic_str: 350, ranged: 250, ranged_str: 0, str: 225 },
+    offensive: { atk: 150, magic: 250, magic_str: 0, ranged: 250, ranged_str: 30, str: 30 },
     defensive: {
       flat_armour: 0,
       crush: 20,
@@ -434,8 +451,11 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
   // Dagon'hai Elder — fourth-boss choice (vs Xarth), fought with two Monks;
   // the three share one health pool. Stats added to the wiki 2026-10-21
   // 20:32 UTC; attack speed 6 and attack style "Magic, Ranged" sorted out
-  // on 2026-10-26 (the speed had been misfiled in the style field). Immune
-  // to poison, venom and the cannon; no elemental weakness listed.
+  // on 2026-10-26 (the speed had been misfiled in the style field). The
+  // 2026-10-30 cache fix moved the misfiled bonuses too: magic accuracy
+  // 1 → 250, ranged accuracy blank → 180, ranged strength 180 → 0 (the Monks
+  // share the block). Immune to poison, venom and the cannon; no elemental
+  // weakness listed.
   // Source: https://oldschool.runescape.wiki/w/Dagon'hai_Elder
   {
     id: 16643,
@@ -448,7 +468,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     size: 2,
     max_hit: "",
     skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
-    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    offensive: { atk: 0, magic: 250, magic_str: 0, ranged: 180, ranged_str: 0, str: 1 },
     defensive: {
       flat_armour: 0,
       crush: 50,
@@ -480,7 +500,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     size: 2,
     max_hit: "",
     skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
-    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    offensive: { atk: 0, magic: 250, magic_str: 0, ranged: 180, ranged_str: 0, str: 1 },
     defensive: {
       flat_armour: 0,
       crush: 50,
@@ -507,7 +527,7 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     size: 2,
     max_hit: "",
     skills: { atk: 1, def: 100, hp: 640, magic: 290, ranged: 260, str: 1 },
-    offensive: { atk: 0, magic: 1, magic_str: 0, ranged: 0, ranged_str: 180, str: 1 },
+    offensive: { atk: 0, magic: 250, magic_str: 0, ranged: 180, ranged_str: 0, str: 1 },
     defensive: {
       flat_armour: 0,
       crush: 50,
@@ -523,4 +543,276 @@ export const SUPPLEMENTAL_MONSTERS: VendorMonster[] = [
     is_slayer_monster: false,
     weakness: null,
   },
+
+  // -------------------------------------------------------------------------
+  // Side NPCs (added 2026-11-01). Everything players actually hit during a
+  // room besides the boss. All sit under the catalog's 200 HP floor and are
+  // admitted by id in scripts/build-monster-catalog.ts (TFA_SIDE_NPC_IDS).
+  // Infobox fields the wiki leaves blank are filled from weirdgloop's
+  // monsters.json entry for the same id (its 24 Oct snapshot has all eight);
+  // nothing here is estimated. Spawn counts and HP scaling with team size are
+  // not modelled.
+  // -------------------------------------------------------------------------
+
+  // Undead binder — Moia's summons; the enrage-phase targets. Fire weakness
+  // 80% and the light / standard ranged defences sit on one mangled infobox
+  // line on the wiki ("elementalweaknesstype = Fire|...|dlight=30|dstandard=90");
+  // heavy defence is blank on the wiki and 0 upstream. No attack style listed.
+  // Source: https://oldschool.runescape.wiki/w/Undead_binder
+  {
+    id: 16670,
+    name: "Undead binder",
+    version: "",
+    image: "Undead binder.png",
+    level: 135,
+    speed: 5,
+    style: [],
+    size: 1,
+    max_hit: "",
+    skills: { atk: 1, def: 225, hp: 95, magic: 50, ranged: 1, str: 170 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 15 },
+    defensive: {
+      flat_armour: 0,
+      crush: 10,
+      magic: -20,
+      heavy: 0,
+      standard: 90,
+      light: 30,
+      slash: 15,
+      stab: 12,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "fire", severity: 80 },
+  },
+
+  // Jelly — Dreadnoth's mini-jellies (prayer-draining, like Tz-Kihs). Demon,
+  // 60% weak to Fire, negative heavy / light ranged defence.
+  // Source: https://oldschool.runescape.wiki/w/Jelly_(Dreadnoth)
+  {
+    id: 16666,
+    name: "Jelly (Dreadnoth)",
+    version: "",
+    image: "Jelly (Dreadnoth).png",
+    level: 101,
+    speed: 5,
+    style: ["Crush"],
+    size: 1,
+    max_hit: "17",
+    skills: { atk: 200, def: 100, hp: 61, magic: 100, ranged: 1, str: 160 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 0,
+      magic: 15,
+      heavy: -50,
+      standard: 18,
+      light: -45,
+      slash: 5,
+      stab: 4,
+    },
+    attributes: ["demon"],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "fire", severity: 60 },
+  },
+
+  // Corpse — Xarth's reanimated healers. Two wiki versions: Normal (+100
+  // melee defence, 40% weak to Water) and Doused after a water spell (-20
+  // melee defence, 100% weak to Fire). Undead per weirdgloop (the wiki
+  // infobox carries no attribute; the page says Undead Grasp freezes them).
+  // Normal is listed first so the equal-HP tie-break keeps it the default.
+  // Source: https://oldschool.runescape.wiki/w/Corpse_(Xarth)
+  {
+    id: 16687,
+    name: "Corpse (Xarth)",
+    version: "Normal",
+    image: "Corpse (Xarth).png",
+    level: 89,
+    speed: 0,
+    style: [],
+    size: 1,
+    max_hit: "0",
+    skills: { atk: 50, def: 100, hp: 62, magic: 100, ranged: 1, str: 40 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 100,
+      magic: 0,
+      heavy: 80,
+      standard: 80,
+      light: -20,
+      slash: 100,
+      stab: 100,
+    },
+    attributes: ["undead"],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "water", severity: 40 },
+  },
+  {
+    id: 16688,
+    name: "Corpse (Xarth)",
+    version: "Doused",
+    image: "Corpse (Xarth).png",
+    level: 89,
+    speed: 0,
+    style: [],
+    size: 1,
+    max_hit: "0",
+    skills: { atk: 50, def: 100, hp: 62, magic: 100, ranged: 1, str: 40 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: -20,
+      magic: 0,
+      heavy: 80,
+      standard: 80,
+      light: -20,
+      slash: -20,
+      stab: -20,
+    },
+    attributes: ["undead"],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "fire", severity: 100 },
+  },
+
+  // Void Siphon — Ocellus Phase 3; heals him unless killed, heals the killer
+  // 22. Ranged max-hits it. +50 melee defence, nothing else listed.
+  // Source: https://oldschool.runescape.wiki/w/Void_Siphon
+  {
+    id: 16679,
+    name: "Void Siphon",
+    version: "",
+    image: "Void Siphon.png",
+    level: 138,
+    speed: 0,
+    style: [],
+    size: 1,
+    max_hit: "",
+    skills: { atk: 1, def: 175, hp: 44, magic: 300, ranged: 1, str: 1 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 50,
+      magic: 0,
+      heavy: 0,
+      standard: 0,
+      light: 0,
+      slash: 50,
+      stab: 50,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+
+  // Void Rift — Ocellus Phase 3; killing it resets the attack cooldown.
+  // Melee always max-hits it: every defence bonus is 0. 75% weak to Earth.
+  // Size is blank on the wiki (0 upstream); 1 like its siblings.
+  // Source: https://oldschool.runescape.wiki/w/Void_Rift
+  {
+    id: 16678,
+    name: "Void Rift",
+    version: "",
+    image: "Void Rift.png",
+    level: 138,
+    speed: 0,
+    style: [],
+    size: 1,
+    max_hit: "",
+    skills: { atk: 1, def: 175, hp: 44, magic: 300, ranged: 1, str: 1 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 0,
+      magic: 0,
+      heavy: 0,
+      standard: 0,
+      light: 0,
+      slash: 0,
+      stab: 0,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "earth", severity: 75 },
+  },
+
+  // Void Augmenter — Ocellus Phase 3; killing it boosts the killer's combat
+  // stats. Magic max-hits it only with enough accuracy: 300 Magic level,
+  // +50 melee / heavy / standard defence, 0 magic and light. 75% weak to Earth.
+  // Source: https://oldschool.runescape.wiki/w/Void_Augmenter
+  {
+    id: 16680,
+    name: "Void Augmenter",
+    version: "",
+    image: "Void Augmenter.png",
+    level: 138,
+    speed: 4,
+    style: ["Crush"],
+    size: 1,
+    max_hit: "1",
+    skills: { atk: 1, def: 175, hp: 44, magic: 300, ranged: 1, str: 1 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 50,
+      magic: 0,
+      heavy: 50,
+      standard: 50,
+      light: 0,
+      slash: 50,
+      stab: 50,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: { element: "earth", severity: 75 },
+  },
+
+  // Imp — the Dagon'hai Elder's rift summons. The wiki gives only combat
+  // level, HP and a Melee style; weirdgloop has 0 for every level and bonus.
+  // Source: https://oldschool.runescape.wiki/w/Imp_(Dagon'hai_Trio)
+  {
+    id: 16650,
+    name: "Imp (Dagon'hai Trio)",
+    version: "",
+    image: "Imp (Dagon'hai Trio).png",
+    level: 168,
+    speed: 0,
+    style: ["Melee"],
+    size: 1,
+    max_hit: "",
+    skills: { atk: 0, def: 0, hp: 44, magic: 0, ranged: 0, str: 0 },
+    offensive: { atk: 0, magic: 0, magic_str: 0, ranged: 0, ranged_str: 0, str: 0 },
+    defensive: {
+      flat_armour: 0,
+      crush: 0,
+      magic: 0,
+      heavy: 0,
+      standard: 0,
+      light: 0,
+      slash: 0,
+      stab: 0,
+    },
+    attributes: [],
+    immunities: TFA_IMMUNITIES,
+    is_slayer_monster: false,
+    weakness: null,
+  },
+];
+
+/** Side-NPC ids the catalog admits despite the HP floor (see the build script). */
+export const TFA_SIDE_NPC_IDS: readonly number[] = [
+  16670, // Undead binder
+  16666, // Jelly (Dreadnoth)
+  16687, 16688, // Corpse (Xarth): Normal, Doused
+  16679, // Void Siphon
+  16678, // Void Rift
+  16680, // Void Augmenter
+  16650, // Imp (Dagon'hai Trio)
 ];

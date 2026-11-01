@@ -1425,7 +1425,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "version": "Grounded",
         "wikiId": 16659,
         "combatLevel": 984,
-        "hp": 550,
+        "hp": 1100,
         "defenceLevel": 260,
         "magicLevel": 250,
         "magicAttackBonus": 350,
@@ -5978,6 +5978,92 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": false
   },
   {
+    "slug": "corpse-xarth",
+    "wikiId": 16687,
+    "name": "Corpse (Xarth)",
+    "version": "Normal",
+    "combatLevel": 89,
+    "hp": 62,
+    "defenceLevel": 100,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": 100,
+      "slash": 100,
+      "crush": 100,
+      "magic": 0,
+      "rangedHeavy": 80,
+      "rangedStandard": 80,
+      "rangedLight": -20
+    },
+    "attributes": [
+      "undead"
+    ],
+    "weakness": {
+      "element": "water",
+      "severity": 40
+    },
+    "image": "Corpse (Xarth).png",
+    "size": 1,
+    "maxHitText": "0",
+    "isSlayerMonster": false,
+    "phases": [
+      {
+        "version": "Normal",
+        "wikiId": 16687,
+        "combatLevel": 89,
+        "hp": 62,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": 100,
+          "slash": 100,
+          "crush": 100,
+          "magic": 0,
+          "rangedHeavy": 80,
+          "rangedStandard": 80,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "water",
+          "severity": 40
+        },
+        "image": "Corpse (Xarth).png",
+        "size": 1,
+        "maxHitText": "0"
+      },
+      {
+        "version": "Doused",
+        "wikiId": 16688,
+        "combatLevel": 89,
+        "hp": 62,
+        "defenceLevel": 100,
+        "magicLevel": 100,
+        "defenceBonuses": {
+          "stab": -20,
+          "slash": -20,
+          "crush": -20,
+          "magic": 0,
+          "rangedHeavy": 80,
+          "rangedStandard": 80,
+          "rangedLight": -20
+        },
+        "attributes": [
+          "undead"
+        ],
+        "weakness": {
+          "element": "fire",
+          "severity": 100
+        },
+        "image": "Corpse (Xarth).png",
+        "size": 1,
+        "maxHitText": "0"
+      }
+    ]
+  },
+  {
     "slug": "corrupt-lizardman",
     "wikiId": 8000,
     "name": "Corrupt Lizardman",
@@ -7198,7 +7284,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 640,
     "defenceLevel": 100,
     "magicLevel": 290,
-    "magicAttackBonus": 1,
+    "magicAttackBonus": 250,
     "defenceBonuses": {
       "stab": 50,
       "slash": 50,
@@ -7224,7 +7310,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "hp": 640,
     "defenceLevel": 100,
     "magicLevel": 290,
-    "magicAttackBonus": 1,
+    "magicAttackBonus": 250,
     "defenceBonuses": {
       "stab": 50,
       "slash": 50,
@@ -10095,7 +10181,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "version": "",
     "combatLevel": 984,
     "hp": 3000,
-    "defenceLevel": 130,
+    "defenceLevel": 200,
     "magicLevel": 200,
     "magicAttackBonus": 250,
     "defenceBonuses": {
@@ -10114,7 +10200,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     },
     "image": "Ezekiel.png",
     "size": 3,
-    "maxHitText": "",
+    "maxHitText": "77",
     "isSlayerMonster": false
   },
   {
@@ -14901,6 +14987,31 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "imp-dagonhai-trio",
+    "wikiId": 16650,
+    "name": "Imp (Dagon'hai Trio)",
+    "version": "",
+    "combatLevel": 168,
+    "hp": 44,
+    "defenceLevel": 0,
+    "magicLevel": 0,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 0,
+      "rangedStandard": 0,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Imp (Dagon'hai Trio).png",
+    "size": 1,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "infernal-mage",
     "wikiId": 443,
     "name": "Infernal Mage",
@@ -15537,6 +15648,36 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "size": 1,
     "maxHitText": "5",
     "isSlayerMonster": true
+  },
+  {
+    "slug": "jelly-dreadnoth",
+    "wikiId": 16666,
+    "name": "Jelly (Dreadnoth)",
+    "version": "",
+    "combatLevel": 101,
+    "hp": 61,
+    "defenceLevel": 100,
+    "magicLevel": 100,
+    "defenceBonuses": {
+      "stab": 4,
+      "slash": 5,
+      "crush": 0,
+      "magic": 15,
+      "rangedHeavy": -50,
+      "rangedStandard": 18,
+      "rangedLight": -45
+    },
+    "attributes": [
+      "demon"
+    ],
+    "weakness": {
+      "element": "fire",
+      "severity": 60
+    },
+    "image": "Jelly (Dreadnoth).png",
+    "size": 1,
+    "maxHitText": "17",
+    "isSlayerMonster": false
   },
   {
     "slug": "jhallan",
@@ -18694,7 +18835,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "name": "Moia",
     "version": "",
     "combatLevel": 1064,
-    "hp": 785,
+    "hp": 1900,
     "defenceLevel": 195,
     "magicLevel": 350,
     "magicAttackBonus": 300,
@@ -30233,6 +30374,34 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": false
   },
   {
+    "slug": "undead-binder",
+    "wikiId": 16670,
+    "name": "Undead binder",
+    "version": "",
+    "combatLevel": 135,
+    "hp": 95,
+    "defenceLevel": 225,
+    "magicLevel": 50,
+    "defenceBonuses": {
+      "stab": 12,
+      "slash": 15,
+      "crush": 10,
+      "magic": -20,
+      "rangedHeavy": 0,
+      "rangedStandard": 90,
+      "rangedLight": 30
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "fire",
+      "severity": 80
+    },
+    "image": "Undead binder.png",
+    "size": 1,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "undead-chicken",
     "wikiId": 2993,
     "name": "Undead chicken",
@@ -31776,6 +31945,34 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "isSlayerMonster": true
   },
   {
+    "slug": "void-augmenter",
+    "wikiId": 16680,
+    "name": "Void Augmenter",
+    "version": "",
+    "combatLevel": 138,
+    "hp": 44,
+    "defenceLevel": 175,
+    "magicLevel": 300,
+    "defenceBonuses": {
+      "stab": 50,
+      "slash": 50,
+      "crush": 50,
+      "magic": 0,
+      "rangedHeavy": 50,
+      "rangedStandard": 50,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 75
+    },
+    "image": "Void Augmenter.png",
+    "size": 1,
+    "maxHitText": "1",
+    "isSlayerMonster": false
+  },
+  {
     "slug": "void-knight-pest-control",
     "wikiId": 2950,
     "name": "Void Knight (Pest Control)",
@@ -31798,6 +31995,59 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "image": "Void Knight (Pest Control, 1).png",
     "size": 0,
     "maxHitText": "0 (Does not attack)",
+    "isSlayerMonster": false
+  },
+  {
+    "slug": "void-rift",
+    "wikiId": 16678,
+    "name": "Void Rift",
+    "version": "",
+    "combatLevel": 138,
+    "hp": 44,
+    "defenceLevel": 175,
+    "magicLevel": 300,
+    "defenceBonuses": {
+      "stab": 0,
+      "slash": 0,
+      "crush": 0,
+      "magic": 0,
+      "rangedHeavy": 0,
+      "rangedStandard": 0,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": {
+      "element": "earth",
+      "severity": 75
+    },
+    "image": "Void Rift.png",
+    "size": 1,
+    "maxHitText": "",
+    "isSlayerMonster": false
+  },
+  {
+    "slug": "void-siphon",
+    "wikiId": 16679,
+    "name": "Void Siphon",
+    "version": "",
+    "combatLevel": 138,
+    "hp": 44,
+    "defenceLevel": 175,
+    "magicLevel": 300,
+    "defenceBonuses": {
+      "stab": 50,
+      "slash": 50,
+      "crush": 50,
+      "magic": 0,
+      "rangedHeavy": 0,
+      "rangedStandard": 0,
+      "rangedLight": 0
+    },
+    "attributes": [],
+    "weakness": null,
+    "image": "Void Siphon.png",
+    "size": 1,
+    "maxHitText": "",
     "isSlayerMonster": false
   },
   {

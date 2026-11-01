@@ -141,6 +141,14 @@ const BOSS_CATEGORY: Record<string, Exclude<MonsterCategory, "npc">> = {
   "dagonhai-elder": "tfa",
   "dagonhai-monk": "tfa",
   "ocellus": "tfa",
+  // Side NPCs (2026-11-01): what players hit besides the boss in each room.
+  "undead-binder": "tfa",
+  "jelly-dreadnoth": "tfa",
+  "corpse-xarth": "tfa",
+  "void-siphon": "tfa",
+  "void-rift": "tfa",
+  "void-augmenter": "tfa",
+  "imp-dagonhai-trio": "tfa",
 };
 
 // Cross-cutting tag: bosses you can kill on a Slayer task — directly assigned

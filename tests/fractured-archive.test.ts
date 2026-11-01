@@ -75,6 +75,9 @@ describe("The Fractured Archive bosses", () => {
     expect(guardian.version).toBe("Flying");
     expect(guardian.phases?.map((p) => p.version)).toEqual(["Flying", "Grounded"]);
     const grounded = guardian.phases?.[1];
+    // Wiki 2026-10-30: Flying 550 (shield bar), Grounded 1100 (health bar).
+    expect(guardian.hp).toBe(550);
+    expect(grounded?.hp).toBe(1100);
     expect(grounded?.attributes).not.toContain("flying");
     expect(grounded?.weakness).toEqual({ element: "fire", severity: 40 });
     expect(grounded?.defenceBonuses.slash).toBe(90);
@@ -93,6 +96,8 @@ describe("The Fractured Archive bosses", () => {
       expect(monster.defenceBonuses.magic).toBe(100);
       expect(monster.defenceBonuses.rangedHeavy).toBe(80);
       expect(monster.weakness).toBeNull();
+      // Cache fix 2026-10-30: the +180 was ranged ACCURACY, and magic accuracy is 250.
+      expect(monster.magicAttackBonus).toBe(250);
     }
     // Staff and Book monks share one stat block, so no phase picker.
     expect(MONSTER_BY_SLUG["dagonhai-monk"].phases).toBeUndefined();
@@ -109,9 +114,53 @@ describe("The Fractured Archive bosses", () => {
     // Wiki 2026-10-26: Dreadnoth has 75% demonbane resistance (25% vulnerability).
     expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["dreadnoth-the-jellied"])).toBe(25);
     expect(scaleDemonbanePct(70, 25)).toBe(17);
-    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["xarth"])).toBe(100);
+    // Strategies page / weirdgloop (2026-10-24): Xarth and Ocellus have 20%
+    // demonbane resistance; Ocellus Phase 2 is not a demon at all.
+    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["xarth"])).toBe(80);
+    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["ocellus"])).toBe(80);
+    expect(scaleDemonbanePct(70, 80)).toBe(56);
+    expect(demonbaneVulnerabilityFor(MONSTER_BY_SLUG["jelly-dreadnoth"])).toBe(25);
     expect(MONSTER_BY_SLUG["moia"].weakness).toEqual({ element: "air", severity: 80 });
     expect(MONSTER_BY_SLUG["the-smorks"].defenceBonuses.flatArmour).toBe(2);
+  });
+
+  it("carries the 30 Oct cache corrections", () => {
+    expect(MONSTER_BY_SLUG["moia"].hp).toBe(1900);
+    expect(MONSTER_BY_SLUG["ezekiel"].defenceLevel).toBe(200);
+    expect(MONSTER_BY_SLUG["xarth"].magicAttackBonus).toBe(250);
+  });
+
+  it("lists the side NPCs under TFA despite the 200 HP floor", () => {
+    const expected: Record<string, number> = {
+      "undead-binder": 95,
+      "jelly-dreadnoth": 61,
+      "corpse-xarth": 62,
+      "void-siphon": 44,
+      "void-rift": 44,
+      "void-augmenter": 44,
+      "imp-dagonhai-trio": 44,
+    };
+    for (const [slug, hp] of Object.entries(expected)) {
+      const npc = MONSTER_BY_SLUG[slug];
+      expect(npc, slug).toBeDefined();
+      expect(npc.hp).toBe(hp);
+      expect(categoryForMonster(slug)).toBe("tfa");
+    }
+    expect(MONSTER_BY_SLUG["undead-binder"].defenceLevel).toBe(225);
+    expect(MONSTER_BY_SLUG["undead-binder"].weakness).toEqual({ element: "fire", severity: 80 });
+    expect(MONSTER_BY_SLUG["jelly-dreadnoth"].attributes).toContain("demon");
+    expect(MONSTER_BY_SLUG["jelly-dreadnoth"].defenceBonuses.rangedHeavy).toBe(-50);
+    // Corpse: Normal first, Doused as a stat phase with negative melee defence.
+    const corpse = MONSTER_BY_SLUG["corpse-xarth"];
+    expect(corpse.version).toBe("Normal");
+    expect(corpse.attributes).toContain("undead");
+    expect(corpse.phases?.map((p) => p.version)).toEqual(["Normal", "Doused"]);
+    expect(corpse.phases?.[1].defenceBonuses.crush).toBe(-20);
+    expect(corpse.phases?.[1].weakness).toEqual({ element: "fire", severity: 100 });
+    // Voids: 300 Magic, 175 Defence; the Rift has no defence bonuses at all.
+    expect(MONSTER_BY_SLUG["void-augmenter"].magicLevel).toBe(300);
+    expect(MONSTER_BY_SLUG["void-rift"].defenceBonuses.slash).toBe(0);
+    expect(MONSTER_BY_SLUG["void-siphon"].defenceBonuses.slash).toBe(50);
   });
 
   it("Nex's crush defence is the post-launch +35, not the vendored +60", () => {
@@ -144,7 +193,10 @@ describe("The Fractured Archive rewards", () => {
       expect(tome.speed).toBe(3);
       expect(tome.magicStr).toBe(150);
       expect(tome.requirements).toEqual({ magic: 85 });
-      expect(POWERED_STAFF_FORMULA.get(tome.id)?.(99)).toBe(18);
+      // weirdgloop (2026-10-24): max(1, trunc(magic / 3) - 10) → 23 at 99.
+      expect(POWERED_STAFF_FORMULA.get(tome.id)?.(99)).toBe(23);
+      expect(POWERED_STAFF_FORMULA.get(tome.id)?.(84)).toBe(18);
+      expect(POWERED_STAFF_FORMULA.get(tome.id)?.(1)).toBe(1);
     }
     // Spec name and cost landed on the wiki on 2026-10-26.
     const spec = SPEC_WEAPONS.find((w) => w.name === "Zorya's tome");

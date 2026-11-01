@@ -2,6 +2,7 @@
 // src/lib/dists/bolts.ts exactly (no special attacks, no Leagues effects):
 //
 //   proc chance = base × 1.1 with the Kandarin Hard diary (their default ON)
+//                 × 0.5 with the Ascension crossbows
 //   Zaryte crossbow strengthens effect VALUES (not the chance)
 //   ruby/diamond procs bypass the accuracy roll entirely (fire on misses)
 //   onyx/dragonstone procs only fire on accurate hits
@@ -12,6 +13,7 @@
 // folded in here, where the loadout and monster are known.
 
 import {
+  ASCENSION_CROSSBOWS_ID,
   BOLT_EFFECT_BY_ITEM_ID,
   INFINITE_HEALTH_MONSTER_SLUGS,
   ZARYTE_CROSSBOW_ID,
@@ -102,7 +104,11 @@ export function resolveBoltProc(input: ResolveBoltProcInput): BoltProcSpec | und
 
   const zcb = input.weaponItemId === ZARYTE_CROSSBOW_ID;
   const kandarin = input.kandarinDiary ?? true;
-  const chance = BASE_CHANCE[effect] * (kandarin ? 1.1 : 1.0);
+  // Ascension crossbows halve the proc chance (upstream `ascensionsFactor`,
+  // applied after the Kandarin ×1.1). Only their diamond / onyx (e) bolts
+  // can reach this line, since they fire nothing else.
+  const ascensions = input.weaponItemId === ASCENSION_CROSSBOWS_ID;
+  const chance = BASE_CHANCE[effect] * (kandarin ? 1.1 : 1.0) * (ascensions ? 0.5 : 1.0);
   const lvl = input.visibleRangedLevel;
 
   switch (effect) {

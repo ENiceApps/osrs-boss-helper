@@ -106,6 +106,30 @@ export const COMMUNITY_NOTE: CommunityNote | null = {
 
 export const RELEASES: Release[] = [
   {
+    // Minor bump: new targets a player can pick (the raid's side NPCs), plus
+    // the 30 Oct wiki corrections and the formulas weirdgloop published when
+    // its calc got TFA (24-27 Oct). Drafted for ENice in his voice, 2026-11-01.
+    version: "0.2.0",
+    date: "2026-11-01",
+    title: "Raids 4 side NPCs, wiki fixes and the wiki calc catches up",
+    note: [
+      "Quick one! The wiki DPS calc finally got Raids 4 this week, so I've matched their numbers where the wiki was still guessing. I've also added the little guys you actually fight in each room, not just the bosses.",
+      [
+        {
+          text: "New targets: Moia's Undead binders, Dreadnoth's Jellies, Xarth's Corpses (normal and doused), the three Voids at Ocellus (Siphon, Rift, Augmenter) and the Dagon'hai Imps. They're all under the TFA chip.",
+          sub: ["The Voids are one-shot checks, so this is really an accuracy question. If your setup isn't maxing them, try swapping a piece and see what it says."],
+        },
+        "Zorya's tome now scales with your Magic level like the other powered staves (23 max hit at 99, it was a flat 18 before). Thanks to the wiki calc folks for the formula!",
+        "Ascension crossbows now halve the chance of a diamond or onyx bolt proc, like the wiki says they should.",
+        "Xarth and Ocellus have 20% demonbane resistance, so Emberlight and friends are a bit less good there than the site was telling you.",
+        "Wiki corrections from the game cache: Moia has 1,900 HP (not 785!), Ezekiel 200 Defence, the Archive Guardian's grounded health bar is 1,100, and some offensive stats on Xarth and the Dagon'hai that don't change your DPS.",
+      ],
+      "Still on the list: Bork's flat armour and magic resistance that scale with the Smorks, the Defence reduction cap, and the Rondache's Shield Slam. As always, let me know if a number looks off!",
+      "ENice",
+    ],
+    changes: [],
+  },
+  {
     // Third "From AI" patch (docs/tfa-wiki-watch.md), run by hand on
     // 2026-10-26 on ENice's request.
     version: "0.1.4",
