@@ -205,3 +205,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-10-21 23:40 UTC · pushed by ENiceApps
 
 - d674aa3 docs: wiki-watch routine retired, contract doc is now the manual-check recipe
+
+## 2026-11-13 16:01 UTC · pushed by ENiceApps
+
+- 1d02626 fix(dps): match the wiki DPS calc across every item x monster family
