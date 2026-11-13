@@ -217,3 +217,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-11-13 18:57 UTC · pushed by ENiceApps
 
 - ca0bc40 fix(magic): match the wiki calc across spells, staves, levels and prayers
+
+## 2026-11-13 23:51 UTC · pushed by ENiceApps
+
+- 77e337f fix(magic): Ahrim's staff autocasts Ancient with the full set and Amulet of the damned
