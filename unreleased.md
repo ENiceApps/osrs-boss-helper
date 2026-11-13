@@ -213,3 +213,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-11-13 18:13 UTC · pushed by ENiceApps
 
 - 865e494 feat(results): show max hit the way the wiki calc does
+
+## 2026-11-13 18:57 UTC · pushed by ENiceApps
+
+- ca0bc40 fix(magic): match the wiki calc across spells, staves, levels and prayers
