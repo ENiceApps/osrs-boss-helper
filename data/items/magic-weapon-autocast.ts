@@ -11,19 +11,23 @@
 
 import { ITEM_CATALOG } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
-import type { Spellbook } from "@/data/spells/catalog";
+import { weaponCanCastSpell, type Spellbook } from "@/data/spells/catalog";
+import { canonicalItemId } from "@/data/items/aliases";
 
 const NAME_BY_ID = new Map<number, string>(ITEM_CATALOG.map((i) => [i.id, i.name]));
 
-// Weapons that add Ancient Magicks autocast. NOTE the Harmonised Nightmare staff
-// matches "nightmare staff" but is Standard-only (it speeds up standard spells),
-// so it is explicitly excluded below.
+// Weapons that add Ancient Magicks autocast (wiki Autocast page, read
+// 2026-11-13). NOTE the Harmonised Nightmare staff matches "nightmare staff"
+// but is Standard-only (it speeds up standard spells), so it is explicitly
+// excluded below. Ahrim's staff autocasts Ancient only with the full Ahrim's
+// set and an Amulet of the damned; this table sees the weapon alone, so it is
+// left out. Neither Staff of the dead autocasts Ancient.
 const ANCIENT_CAPABLE =
-  /ancient staff|kodai wand|master wand|nightmare staff|toxic staff of the dead|accursed sceptre \(a\)|blue moon spear|dragon hunter wand/i;
+  /ancient staff|ancient sceptre|kodai wand|master wand|nightmare staff|accursed sceptre \(a\)|thammaron's sceptre \(a\)|blue moon spear|dragon hunter wand/i;
 
-// Weapons that add Arceuus autocast.
+// Weapons that add Arceuus autocast ("staff of the dead" covers the toxic one).
 const ARCEUUS_CAPABLE =
-  /kodai wand|master wand|purging staff|slayer's staff|skull sceptre|toxic staff of the dead|blue moon spear/i;
+  /kodai wand|master wand|purging staff|slayer's staff|skull sceptre \(i\)|staff of the dead|ahrim's staff|blue moon spear/i;
 
 /** Spellbooks the given weapon can autocast. Empty for powered staves (no autocast). */
 export function autocastableSpellbooks(weaponId: number | undefined): Spellbook[] {
@@ -48,18 +52,15 @@ export function weaponCanAutocastSpellbook(
 }
 
 /**
- * True iff the equipped weapon satisfies a spell's specific-staff requirement
- * (Iban Blast → Iban's staff, Magic Dart → Slayer's staff, god spells → their
- * god staff). Matches the staff name loosely so recolours / (e)/(o) variants
- * still count.
+ * True iff the equipped weapon can cast a staff-locked spell (Iban Blast, the
+ * god spells, Magic Dart), by the same list the engine scores with
+ * (SPELL_REQUIRED_WEAPONS): Magic Dart also casts from a Staff of the dead /
+ * light / balance, Flames of Zamorak from a Staff of the dead, and so on. A
+ * variant counts as its base item. Spells with no staff lock are always true.
  */
-export function weaponSatisfiesStaffRequirement(
-  weaponId: number | undefined,
-  requiresStaff: string,
-): boolean {
+export function weaponCanCastStaffSpell(weaponId: number | undefined, spellName: string): boolean {
   if (weaponId === undefined) return false;
-  const name = NAME_BY_ID.get(weaponId);
+  const name = NAME_BY_ID.get(canonicalItemId(weaponId)) ?? NAME_BY_ID.get(weaponId);
   if (!name) return false;
-  const norm = (s: string) => s.replace(/'/g, "").toLowerCase();
-  return norm(name).includes(norm(requiresStaff));
+  return weaponCanCastSpell(spellName, name);
 }

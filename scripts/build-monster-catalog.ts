@@ -62,6 +62,8 @@ interface PhaseEntry {
   image: string;
   size: number;
   maxHitText: string;
+  /** A version can differ from the primary (Awakened bosses are not slayer monsters). */
+  isSlayerMonster: boolean;
 }
 
 interface CatalogEntry {
@@ -300,6 +302,7 @@ function toPhase(m: VendorMonster): PhaseEntry {
     image: m.image,
     size: m.size,
     maxHitText: cleanMaxHit(m.max_hit),
+    isSlayerMonster: m.is_slayer_monster ?? false,
   };
 }
 
@@ -476,6 +479,8 @@ lines.push(`  weakness: { element: string; severity: number } | null;`);
 lines.push(`  image: string;`);
 lines.push(`  size: number;`);
 lines.push(`  maxHitText: string;`);
+lines.push(`  /** This version's own flag: an Awakened boss is not a slayer monster. */`);
+lines.push(`  isSlayerMonster: boolean;`);
 lines.push(`}`);
 lines.push(``);
 lines.push(`export interface MonsterCatalogEntry {`);

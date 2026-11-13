@@ -12,7 +12,7 @@ import { calculateDps, forceDistributionEngine, type DpsScenario } from "@/lib/d
 import { OBLIGATOR_SMASH_TICKS, obligatorThrust } from "@/data/items/obligator";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
-import { SPELLS_BY_NAME, weaponCanCastSpell } from "@/data/spells/catalog";
+import { BIND_SPELL_NAMES, SPELLS_BY_NAME, weaponCanCastSpell } from "@/data/spells/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import { canonicalItemId } from "@/data/items/aliases";
 import { canonicalItemById, canonicalNameOf } from "@/lib/gear-totals";
@@ -239,7 +239,7 @@ export function computeSetDps(
   // spear is excluded by item id (28988) — see BLUE_MOON_SPEAR_ID — with a
   // case-insensitive name fallback for callers/sets that carry no item id.
   const weaponName = set.slots.weapon
-    ? canonicalNameOf(slotId("weapon"), set.slots.weapon.itemName)
+    ? canonicalNameOf(set.slots.weapon.itemId, set.slots.weapon.itemName)
     : "";
   const isBlueMoonSpear =
     weaponId === BLUE_MOON_SPEAR_ID || weaponName.toLowerCase() === "blue moon spear";
@@ -578,6 +578,9 @@ export function computeSetDps(
     spellElement: set.spellElement,
     tomeOfFireEquipped: activeBonuses.tomeOfFireEquipped,
     tomeOfWaterEquipped: activeBonuses.tomeOfWaterEquipped,
+    tomeOfWaterBindSpell:
+      set.style === "magic" && set.itemBonusFlags.tomeOfWater === true &&
+      castSpell !== undefined && BIND_SPELL_NAMES.has(castSpell.name),
     tomeOfEarthEquipped: activeBonuses.tomeOfEarthEquipped,
     // Elemental amulet +2 on the cast spell's base hit (0 -> undefined = inactive).
     elementalSpellFlatBonus: activeBonuses.elementalAmuletMaxHitBonus || undefined,

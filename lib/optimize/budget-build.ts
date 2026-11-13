@@ -37,7 +37,7 @@ import { BOLT_EFFECT_BY_ITEM_ID, type BoltEffect } from "@/data/items/bolt-procs
 import { boltEffectApplies } from "@/lib/dps/bolts";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
 import { BROAD_AMMO_IDS, LEAF_BLADED_MELEE_WEAPON_IDS, LEAFY_SPELL_NAME } from "@/data/items/leaf-bladed";
-import { weaponSatisfiesStaffRequirement } from "@/data/items/magic-weapon-autocast";
+import { weaponCanCastStaffSpell } from "@/data/items/magic-weapon-autocast";
 import { SPELLS_BY_NAME } from "@/data/spells/catalog";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
@@ -135,10 +135,10 @@ function forcedWeaponIds(affordable: Set<number>, target: MonsterCatalogEntry): 
   if (attrs.includes("leafy")) {
     // Turoth/Kurask: every other weapon deals 0, so the top-K cap must not drop
     // the leaf-bladed weapons or the Slayer's staves that cast Magic Dart.
-    const staff = SPELLS_BY_NAME.get(LEAFY_SPELL_NAME)?.requiresStaff;
+    const staff = SPELLS_BY_NAME.get(LEAFY_SPELL_NAME)?.name;
     for (const id of affordable) {
       if (LEAF_BLADED_MELEE_WEAPON_IDS.has(id)) out.push(id);
-      else if (staff && weaponSatisfiesStaffRequirement(id, staff)) out.push(id);
+      else if (staff && weaponCanCastStaffSpell(id, staff)) out.push(id);
     }
   }
   out.push(...ownedTriggerIds(affordable, "TWISTED_BOW")); // scales with target magic
@@ -516,6 +516,7 @@ export function bestLoadoutForBudget(input: BudgetBuildInput): BudgetResult {
       input.target,
       input.baseSpellMaxHit,
       input.spellElement,
+      input.onTask ?? false,
     );
     const scored = scoreScenario({
       itemIds: c.ids,

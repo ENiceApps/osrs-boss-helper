@@ -194,5 +194,8 @@ export function effectiveLevel(
   // uses +8 with a powered staff's Accurate at +3 rather than +2 — the same
   // total there; see styleBonuses in calculate.ts. Default keeps existing
   // ranged/melee callsites unchanged.
-  return Math.floor(visibleLevel * prayerMultiplier) + styleBonus + baseOffset + voidBonus;
+  // Whole-percent integer maths, as upstream's trunc(level x 115 / 100): the
+  // float product 100 x 1.15 is 114.99999999999999.
+  const prayed = Math.trunc((visibleLevel * Math.round(prayerMultiplier * 100)) / 100);
+  return prayed + styleBonus + baseOffset + voidBonus;
 }

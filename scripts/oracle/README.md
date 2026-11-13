@@ -130,6 +130,26 @@ mode. What is left, by design or because the wiki calc's data is off:
 - App mode only: the fang's max hit under flat armour / a phase factor is our
   true max, not the trimmed roll's (display convention).
 
+### Magic in depth (2026-11-13)
+
+Five more families (`--family=magic-staves,magic-levels,magic-prayers,magic-gear,magic-monsters`,
+about 194,000 combos) cover what the 99-Magic, Augury-only families above miss:
+every spell on every casting staff in both cast stances, every spell and
+powered staff at every Magic level it can be used at, every magic prayer (and
+the ranged ones) across levels and with a Saturated heart, every worn item
+under each kind of spell and powered staff, and every monster and phase vs each
+kind. Combos can now carry `skills` (levels other than 99) and `prayerId`.
+
+Result at upstream 74958b1: all match in both modes bar the known rows above
+(Gryphon, the Nightmare totems) and one more wiki-calc quirk we do not copy:
+
+- **Empty Tome of water**: the wiki calc gives its x6/5 accuracy to water and
+  binding spells even when the tome is Empty; ours needs it charged.
+
+Not modelled on our side (wiki calc toggles, all off by default there): the
+Charge spell with a god cape, sunfire runes, and the Leagues elemental
+fragments.
+
 ## Multiplier-order combos
 
 `orderingCombos()` in `combos.ts` pins the ORDER multipliers apply in — every

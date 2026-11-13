@@ -40,6 +40,13 @@ export interface CanonicalCombo {
   /** A combat boost potion, by lib/dps/boost.ts id; `wgBoosts` are the same boosts as level deltas for wgloop. */
   boost?: "super-combat" | "ranging" | "saturated-heart";
   wgBoosts?: { atk?: number; str?: number; ranged?: number; magic?: number };
+  /** Player levels other than 99 (both sides; unlisted skills stay 99). */
+  skills?: Partial<Record<"attack" | "strength" | "defence" | "ranged" | "magic" | "hitpoints" | "prayer", number>>;
+  /**
+   * The offensive prayer, by data/prayers.ts id ("augury", "mystic-vigour",
+   * "none", ...). Omitted = the style's default (Piety / Rigour / Augury).
+   */
+  prayerId?: string;
   /** Mark of Darkness active (demonbane spells). */
   markOfDarkness?: boolean;
   /** wgloop-only phase input (a stat-phase combo still needs the monster's default mechanic phase pinned upstream). */

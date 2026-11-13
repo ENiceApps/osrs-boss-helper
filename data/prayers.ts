@@ -109,6 +109,12 @@ export const PRAYER_OPTIONS: Record<CombatStyle, PrayerOption[]> = {
       selection: sel({ rangedAttackMultiplier: 1.2, rangedStrengthMultiplier: 1.23, defenceMultiplier: 1.25 }),
     },
     {
+      // Unlocked with the Deadeye prayer scroll (Royal Titans).
+      id: "deadeye", name: "Deadeye", effect: "+18% atk · +18% str",
+      style: "ranged", level: 62, drainEffect: 12,
+      selection: sel({ rangedAttackMultiplier: 1.18, rangedStrengthMultiplier: 1.18, defenceMultiplier: 1.05 }),
+    },
+    {
       id: "eagle-eye", name: "Eagle Eye", effect: "+15% atk · +15% str",
       style: "ranged", level: 44, drainEffect: 12,
       selection: sel({ rangedAttackMultiplier: 1.15, rangedStrengthMultiplier: 1.15 }),
@@ -132,14 +138,20 @@ export const PRAYER_OPTIONS: Record<CombatStyle, PrayerOption[]> = {
       selection: sel({ magicAttackMultiplier: 1.25, magicDamageMultiplier: 1.04, defenceMultiplier: 1.25 }),
     },
     {
-      id: "mystic-might", name: "Mystic Might", effect: "+15% acc",
-      style: "magic", level: 45, drainEffect: 12,
-      selection: sel({ magicAttackMultiplier: 1.15 }),
+      // Unlocked with the Mystic vigour prayer scroll (Royal Titans).
+      id: "mystic-vigour", name: "Mystic Vigour", effect: "+18% acc · +3% dmg",
+      style: "magic", level: 63, drainEffect: 12,
+      selection: sel({ magicAttackMultiplier: 1.18, magicDamageMultiplier: 1.03, defenceMultiplier: 1.05 }),
     },
     {
-      id: "mystic-lore", name: "Mystic Lore", effect: "+10% acc",
+      id: "mystic-might", name: "Mystic Might", effect: "+15% acc · +2% dmg",
+      style: "magic", level: 45, drainEffect: 12,
+      selection: sel({ magicAttackMultiplier: 1.15, magicDamageMultiplier: 1.02 }),
+    },
+    {
+      id: "mystic-lore", name: "Mystic Lore", effect: "+10% acc · +1% dmg",
       style: "magic", level: 27, drainEffect: 6,
-      selection: sel({ magicAttackMultiplier: 1.1 }),
+      selection: sel({ magicAttackMultiplier: 1.1, magicDamageMultiplier: 1.01 }),
     },
     {
       id: "mystic-will", name: "Mystic Will", effect: "+5% acc",

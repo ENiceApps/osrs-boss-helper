@@ -97,6 +97,8 @@ export interface DpsScenario {
    * step below for why).
    */
   tomeOfWaterEquipped?: boolean;
+  /** A charged Tome of water with Snare / Entangle: its accuracy only. */
+  tomeOfWaterBindSpell?: boolean;
   /** Magic-only: ×11/10 damage when spellElement === "earth" (no accuracy bonus). */
   tomeOfEarthEquipped?: boolean;
   /**
@@ -722,13 +724,16 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       // Prayer magic damage % (e.g. Augury = +4%) and the flat Salve / smoke
       // staff percents fold into the single equipment-percent application,
       // matching wgloop's magicDmgBonus before trackAddFactor.
-      const prayerPctBoost = (scenario.prayers.magicDamageMultiplier - 1) * 100;
+      // (Rounded: 1.03 - 1 is not 0.03 in floating point.)
+      const prayerPctBoost = Math.round((scenario.prayers.magicDamageMultiplier - 1) * 1000) / 10;
       // Elite Void's +5% is part of the same percent (damageOnMagicPercent).
       const voidMagicDmg = scenario.armorSetBonus?.damageOnMagicPercent
         ? scenario.armorSetBonus.damageFactor
         : undefined;
       const voidPct = voidMagicDmg ? ((voidMagicDmg[0] - voidMagicDmg[1]) / voidMagicDmg[1]) * 100 : 0;
-      maxHit = magicMaxHit(base, pctFromGear + prayerPctBoost + flatPct + voidPct);
+      // Never below 0: a joke amulet's negative magic damage, tripled by the
+      // Shadow, would otherwise give a negative max hit.
+      maxHit = Math.max(0, magicMaxHit(base, pctFromGear + prayerPctBoost + flatPct + voidPct));
       break;
     }
   }
@@ -891,7 +896,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   //    DHW scales it.
   if (scenario.style === "magic") {
     const el = scenario.spellElement;
-    if (scenario.tomeOfWaterEquipped && el === "water") {
+    if ((scenario.tomeOfWaterEquipped && el === "water") || scenario.tomeOfWaterBindSpell) {
       attackRoll = Math.trunc((attackRoll * 6) / 5);
     }
     const weak = scenario.targetWeakness;

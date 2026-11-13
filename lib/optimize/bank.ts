@@ -706,6 +706,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       input.target,
       input.baseSpellMaxHit,
       input.spellElement,
+      input.onTask ?? false,
     );
 
     const scored = scoreScenario({

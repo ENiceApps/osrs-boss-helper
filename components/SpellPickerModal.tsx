@@ -15,7 +15,7 @@ import {
 } from "@/data/spells/catalog";
 import {
   weaponCanAutocastSpellbook,
-  weaponSatisfiesStaffRequirement,
+  weaponCanCastStaffSpell,
 } from "@/data/items/magic-weapon-autocast";
 import type { ElementalAmuletKind } from "@/data/bonus-trigger-items";
 
@@ -67,7 +67,7 @@ function autocastBlockReason(spell: SpellEntry, weaponId: number | undefined): s
   if (!weaponCanAutocastSpellbook(weaponId, spell.spellbook)) {
     return `can't autocast ${SPELLBOOK_LABELS[spell.spellbook]}`;
   }
-  if (spell.requiresStaff && !weaponSatisfiesStaffRequirement(weaponId, spell.requiresStaff)) {
+  if (spell.requiresStaff && !weaponCanCastStaffSpell(weaponId, spell.name)) {
     return `needs ${spell.requiresStaff}`;
   }
   return undefined;

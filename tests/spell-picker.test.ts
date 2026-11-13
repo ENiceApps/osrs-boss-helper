@@ -10,8 +10,9 @@ import { calculateDps } from "@/lib/dps/calculate";
 import {
   autocastableSpellbooks,
   weaponCanAutocastSpellbook,
-  weaponSatisfiesStaffRequirement,
+  weaponCanCastStaffSpell,
 } from "@/data/items/magic-weapon-autocast";
+import { ITEM_CATALOG } from "@/data/items/catalog";
 import type { ItemBonusFlags, LoadoutSet } from "@/types/loadout";
 
 // Weapon ids (from data/items/catalog.ts).
@@ -131,9 +132,27 @@ describe("magic weapon autocast capability", () => {
     expect(autocastableSpellbooks(TRIDENT_OF_THE_SEAS)).toEqual([]);
   });
 
-  it("matches a spell's specific-staff requirement loosely", () => {
-    expect(weaponSatisfiesStaffRequirement(IBANS_STAFF, "Iban's staff")).toBe(true);
-    expect(weaponSatisfiesStaffRequirement(STAFF_OF_WATER, "Iban's staff")).toBe(false);
+  it("staff-locked spells follow the engine's list", () => {
+    expect(weaponCanCastStaffSpell(IBANS_STAFF, "Iban Blast")).toBe(true);
+    expect(weaponCanCastStaffSpell(STAFF_OF_WATER, "Iban Blast")).toBe(false);
+    const id = (name: string) => ITEM_CATALOG.find((i) => i.name.toLowerCase() === name.toLowerCase())!.id;
+    expect(weaponCanCastStaffSpell(id("Staff of the dead"), "Magic Dart")).toBe(true);
+    expect(weaponCanCastStaffSpell(id("Staff of the dead"), "Flames of Zamorak")).toBe(true);
+    expect(weaponCanCastStaffSpell(id("Staff of light"), "Saradomin Strike")).toBe(true);
+    expect(weaponCanCastStaffSpell(id("Void knight mace"), "Claws of Guthix")).toBe(true);
+    expect(weaponCanCastStaffSpell(id("Kodai wand"), "Magic Dart")).toBe(false);
+  });
+
+  it("follows the wiki's Autocast table", () => {
+    const id = (name: string) => ITEM_CATALOG.find((i) => i.name.toLowerCase() === name.toLowerCase())!.id;
+    const books = (name: string) => autocastableSpellbooks(id(name)).sort();
+    expect(books("Toxic staff of the dead")).toEqual(["arceuus", "standard"]);
+    expect(books("Staff of the dead")).toEqual(["arceuus", "standard"]);
+    expect(books("Ancient sceptre")).toEqual(["ancient", "standard"]);
+    expect(books("Blood ancient sceptre")).toEqual(["ancient", "standard"]);
+    expect(books("Thammaron's sceptre (a)")).toEqual(["ancient", "standard"]);
+    expect(books("Ahrim's staff")).toEqual(["arceuus", "standard"]);
+    expect(books("Staff of light")).toEqual(["standard"]);
   });
 });
 

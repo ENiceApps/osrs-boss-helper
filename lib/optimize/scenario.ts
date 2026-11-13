@@ -27,6 +27,7 @@ import type {
 import type {
   AttackStyleChoice,
   DpsResult,
+  PrayerSelection,
   Skills,
   SpellElement,
   WeaponAttackType,
@@ -55,6 +56,8 @@ export interface ScenarioInput {
   rubyProcEnabled?: boolean;
   /** Mark of Darkness active (default OFF) — boosts demonbane spells vs demons. */
   markOfDarkness?: boolean;
+  /** The offensive prayer. Omitted = the style's best (Piety / Rigour / Augury). */
+  prayer?: PrayerSelection;
   /**
    * Dart loaded inside a blowpipe (internal ammo). NOT in the itemIds list —
    * it lives inside the weapon, leaving the ammo slot free for a blessing.
@@ -309,7 +312,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     input.onTask ?? false,
     input.soulreaperMaxStacks ?? false,
     undefined,
-    undefined,
+    input.prayer,
     input.rubyProcEnabled ?? true,
     input.markOfDarkness ?? false,
   );

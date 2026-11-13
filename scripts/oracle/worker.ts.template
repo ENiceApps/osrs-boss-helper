@@ -77,6 +77,8 @@ interface Combo {
   wgPhase?: string;
   wgBoosts?: { atk?: number; str?: number; ranged?: number; magic?: number };
   markOfDarkness?: boolean;
+  skills?: Partial<Record<'attack' | 'strength' | 'defence' | 'ranged' | 'magic' | 'hitpoints' | 'prayer', number>>;
+  prayerId?: string;
   attackType: AttackType;
   choice: Choice;
   spellName?: string;
@@ -135,6 +137,44 @@ function prayerFor(attackType: AttackType): Prayer {
   if (attackType === 'ranged') return Prayer.RIGOUR;
   if (attackType === 'magic') return Prayer.AUGURY;
   return Prayer.PIETY;
+}
+
+/** Our data/prayers.ts ids -> the wiki calc's prayers ("none" = no prayer). */
+const PRAYER_BY_ID: Record<string, Prayer | null> = {
+  none: null,
+  augury: Prayer.AUGURY,
+  'mystic-vigour': Prayer.MYSTIC_VIGOUR,
+  'mystic-might': Prayer.MYSTIC_MIGHT,
+  'mystic-lore': Prayer.MYSTIC_LORE,
+  'mystic-will': Prayer.MYSTIC_WILL,
+  rigour: Prayer.RIGOUR,
+  deadeye: Prayer.DEADEYE,
+  'eagle-eye': Prayer.EAGLE_EYE,
+  'hawk-eye': Prayer.HAWK_EYE,
+  'sharp-eye': Prayer.SHARP_EYE,
+  piety: Prayer.PIETY,
+  chivalry: Prayer.CHIVALRY,
+};
+
+function prayersFor(combo: Combo): Prayer[] {
+  if (combo.prayerId === undefined) return [prayerFor(combo.attackType)];
+  if (!(combo.prayerId in PRAYER_BY_ID)) throw new Error(`worker: unknown prayer ${combo.prayerId}`);
+  const p = PRAYER_BY_ID[combo.prayerId];
+  return p === null ? [] : [p];
+}
+
+function skillsFor(combo: Combo): Record<string, number> | undefined {
+  const s = combo.skills;
+  if (!s) return undefined;
+  const out: Record<string, number> = {};
+  if (s.attack !== undefined) out.atk = s.attack;
+  if (s.strength !== undefined) out.str = s.strength;
+  if (s.defence !== undefined) out.def = s.defence;
+  if (s.ranged !== undefined) out.ranged = s.ranged;
+  if (s.magic !== undefined) out.magic = s.magic;
+  if (s.hitpoints !== undefined) out.hp = s.hitpoints;
+  if (s.prayer !== undefined) out.prayer = s.prayer;
+  return out;
 }
 
 function runOne(combo: Combo): Result {
@@ -202,7 +242,8 @@ function runOne(combo: Combo): Result {
   const player = getTestPlayer(monster, {
     equipment,
     style,
-    prayers: [prayerFor(combo.attackType)],
+    prayers: prayersFor(combo),
+    ...(skillsFor(combo) ? { skills: skillsFor(combo) } : {}),
     spell: combo.spellName ? findSpell(combo.spellName) : null,
     ...(combo.wgBoosts ? { boosts: combo.wgBoosts } : {}),
     buffs: {

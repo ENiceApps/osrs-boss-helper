@@ -700,7 +700,294 @@ function effectsFamily(): CanonicalCombo[] {
   return out;
 }
 
+// ── Magic in depth ──
+// The families above score magic at 99 Magic with Augury. These cover the rest:
+// every spell on every casting staff, every Magic level, every magic prayer,
+// every worn item under each kind of spell, and every monster vs each kind.
+
+const AUTOCAST: Style = { attackType: "magic", choice: "longrange" };
+const DEFENSIVE_CAST: Style = { attackType: "magic", choice: "defensive" };
+const POWERED_STYLES: Style[] = [{ attackType: "magic", choice: "accurate" }, { attackType: "magic", choice: "longrange" }];
+const MAGIC_PRAYERS = ["none", "mystic-will", "mystic-lore", "mystic-might", "mystic-vigour", "augury"];
+const spellAt = (s: SpellEntry, level: number): Spell =>
+  ({ baseSpellMaxHit: spellMaxHit(s, level), spellElement: s.element, spellName: s.name });
+const withLevel = (c: CanonicalCombo, magic: number): CanonicalCombo => {
+  c.id = `${c.id}|L${magic}`;
+  if (magic !== 99) c.skills = { magic };
+  return c;
+};
+const withPrayer = (c: CanonicalCombo, prayerId: string): CanonicalCombo => {
+  c.id = `${c.id}|p:${prayerId}`;
+  c.prayerId = prayerId;
+  return c;
+};
+const weakTo = (el: string): MonsterCatalogEntry | undefined =>
+  MONSTER_CATALOG.find((x) => x.wikiId !== 0 && x.weakness?.element === el);
+/** Targets a spell can be cast at: a plain one, plus one that brings out its rule. */
+function spellTargets(s: SpellEntry): MonsterCatalogEntry[] {
+  const demon = MONSTER_BY_SLUG["abyssal-demon"];
+  const undead = MONSTER_BY_SLUG["vorkath"];
+  if (s.requiresAttribute === "demon") return [demon, MONSTER_BY_SLUG["kril-tsutsaroth"]].filter(Boolean);
+  if (s.requiresAttribute === "undead") return [undead, MONSTER_BY_SLUG["vetion"]].filter(Boolean);
+  const weak = s.element !== "none" ? weakTo(s.element) : undefined;
+  return [GRAARDOR, weak ?? demon];
+}
+const poweredStaves = (): ItemCatalogEntry[] =>
+  ITEM_CATALOG.filter((w) => isWeapon(w) && !ownershipVariant(w) && stylesOf(w).some((o) => o.attackType === "magic")
+    && !SPELLCASTING_STAFF_CATEGORIES.has(w.category));
+const castingStaves = (): ItemCatalogEntry[] =>
+  ITEM_CATALOG.filter((w) => isWeapon(w) && !ownershipVariant(w) && SPELLCASTING_STAFF_CATEGORIES.has(w.category));
+
+/** Every spell on every casting staff in the catalog, both cast stances. */
+function magicStavesFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  for (const w of castingStaves()) {
+    for (const s of ALL_SPELLS) {
+      const spell = spellAt(s, 99);
+      const kit: Kit = { itemIds: equip(MAGIC_SHELL, [w.id]) };
+      for (const t of spellTargets(s)) {
+        out.push(combo(`ms|${w.id}|${s.name}|${t.slug}`, t, kit, AUTOCAST, { spell }));
+      }
+      out.push(combo(`ms|${w.id}|${s.name}|def`, spellTargets(s)[0], kit, DEFENSIVE_CAST, { spell }));
+    }
+  }
+  return out;
+}
+
+/** Every spell and every powered staff at every Magic level it can be used at. */
+function magicLevelsFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const casterFor = (s: SpellEntry): number[] => {
+    if (s.name === "Magic Dart") return ids("Slayer's staff (e)", "Slayer's staff", "Staff of the dead");
+    if (s.name === "Iban Blast") return ids("Iban's staff (u)");
+    if (s.name === "Saradomin Strike") return ids("Saradomin staff", "Staff of light");
+    if (s.name === "Claws of Guthix") return ids("Guthix staff", "Void knight mace");
+    if (s.name === "Flames of Zamorak") return ids("Zamorak staff", "Staff of the dead");
+    if (s.spellbook === "ancient") return ids("Ancient staff", "Kodai wand");
+    if (qualifiesTwin(s)) return ids("Staff of fire", "Twinflame staff", "Kodai wand");
+    return ids("Staff of fire", "Kodai wand");
+  };
+  const reqOf = (w: ItemCatalogEntry): number => w.requirements?.magic ?? 1;
+  for (const s of ALL_SPELLS) {
+    for (const c of casterFor(s)) {
+      const w = BY_ID.get(c)!;
+      const kit: Kit = { itemIds: equip(MAGIC_SHELL, [c]) };
+      // The shell's own requirements (Ancestral: 75 Magic) bound the low end.
+      for (let level = Math.max(s.minLevel, reqOf(w), 75); level <= 99; level++) {
+        for (const t of spellTargets(s)) {
+          out.push(withLevel(combo(`ml|${s.name}|${c}|${t.slug}`, t, kit, AUTOCAST, { spell: spellAt(s, level) }), level));
+        }
+      }
+    }
+    // Low levels in gear with no requirements: a bare staff and nothing else.
+    const bare = casterFor(s)[0];
+    const bw = BY_ID.get(bare)!;
+    for (let level = Math.max(s.minLevel, reqOf(bw)); level < 75; level++) {
+      const t = spellTargets(s)[0];
+      out.push(withLevel(combo(`ml-bare|${s.name}|${bare}|${t.slug}`, t, { itemIds: [bare] }, AUTOCAST, { spell: spellAt(s, level) }), level));
+    }
+    // Magic Dart on task, every level (the (e) staff's own formula).
+    if (s.name === "Magic Dart") {
+      for (const c of casterFor(s)) {
+        const kit: Kit = { itemIds: equip(MAGIC_SHELL, [c, ...ids("Slayer helmet (i)")]) };
+        for (let level = 75; level <= 99; level++) {
+          const c2 = combo(`ml-task|${s.name}|${c}|abyssal-demon`, MONSTER_BY_SLUG["abyssal-demon"], kit, AUTOCAST,
+            { spell: spellAt(s, level), onTask: true });
+          out.push(withLevel(c2, level));
+        }
+      }
+    }
+  }
+  for (const w of poweredStaves()) {
+    for (const st of stylesOf(w).filter((o) => o.attackType === "magic")) {
+      const full = kitFor(w, st);
+      const bareAmmo = full.itemIds.filter((i) => BY_ID.get(i)?.slot === "ammo");
+      for (let level = reqOf(w); level <= 99; level++) {
+        const kit: Kit = level >= 75 ? full : { itemIds: [w.id, ...bareAmmo] };
+        for (const t of [GRAARDOR, MONSTER_BY_SLUG["abyssal-demon"]]) {
+          out.push(withLevel(combo(`ml-p|${w.id}|${st.choice}|${t.slug}`, t, kit, st), level));
+        }
+      }
+    }
+  }
+  return out;
+}
+const qualifiesTwin = (s: SpellEntry): boolean =>
+  s.spellbook === "standard" && s.element !== "none" && /(Bolt|Blast|Wave)$/.test(s.name);
+
+/** Every magic prayer, on spells and powered staves, across Magic levels and potions. */
+function magicPrayersFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const targets = ["general-graardor", "abyssal-demon", "vorkath", "zulrah", "corporeal-beast"]
+    .map(monster).filter((m): m is MonsterCatalogEntry => Boolean(m));
+  const spells = ["Fire Surge", "Wind Wave", "Fire Bolt", "Ice Barrage", "Blood Blitz", "Smoke Rush", "Undead Grasp",
+    "Iban Blast", "Flames of Zamorak", "Magic Dart", "Dark Demonbane", "Crumble Undead"];
+  const casterOf: Record<string, string> = { "Iban Blast": "Iban's staff (u)", "Flames of Zamorak": "Staff of the dead",
+    "Magic Dart": "Slayer's staff (e)", "Wind Wave": "Twinflame staff", "Dark Demonbane": "Purging staff" };
+  const heart = applyCombatBoost(SKILLS_AT_99, SATURATED_HEART);
+  const boosted = (c: CanonicalCombo): CanonicalCombo => {
+    c.id = `${c.id}|heart`;
+    c.boost = "saturated-heart";
+    c.wgBoosts = { magic: heart.magic - 99 };
+    return c;
+  };
+  for (const p of MAGIC_PRAYERS) {
+    for (const name of spells) {
+      const s = ALL_SPELLS.find((x) => x.name === name)!;
+      const c = item(casterOf[name] ?? "Kodai wand")!;
+      const need = BY_ID.get(c)?.requirements?.magic ?? 1;
+      const kit: Kit = { itemIds: equip(MAGIC_SHELL, [c]) };
+      for (const t of targets) {
+        if (s.requiresAttribute && !t.attributes.includes(s.requiresAttribute)) continue;
+        for (let level = Math.max(s.minLevel, need, 75); level <= 99; level++) {
+          out.push(withPrayer(withLevel(combo(`mp|${name}|${t.slug}`, t, kit, AUTOCAST, { spell: spellAt(s, level) }), level), p));
+        }
+        out.push(boosted(withPrayer(combo(`mp|${name}|${t.slug}`, t, kit, AUTOCAST, { spell: spellAt(s, 99) }), p)));
+      }
+    }
+    for (const w of poweredStaves()) {
+      for (const st of stylesOf(w).filter((o) => o.attackType === "magic")) {
+        const kit = kitFor(w, st);
+        for (const t of targets) {
+          const low = Math.max(75, w.requirements?.magic ?? 1);
+          for (const level of [low, 80, 87, 90, 94, 99].filter((l) => l >= low)) {
+            out.push(withPrayer(withLevel(combo(`mp-p|${w.id}|${st.choice}|${t.slug}`, t, kit, st), level), p));
+          }
+          out.push(boosted(withPrayer(combo(`mp-p|${w.id}|${st.choice}|${t.slug}`, t, kit, st), p)));
+        }
+      }
+    }
+  }
+  // The ranged prayers, Deadeye included, at a few Ranged levels.
+  const rapid: Style = { attackType: "ranged", choice: "rapid" };
+  for (const p of ["none", "sharp-eye", "hawk-eye", "eagle-eye", "deadeye", "rigour"]) {
+    for (const [wpn, ammo] of [["Twisted bow", "Dragon arrow"], ["Armadyl crossbow", "Runite bolts"], ["Toxic blowpipe", ""]]) {
+      const w = BY_ID.get(item(wpn)!)!;
+      const k = kitFor(w, rapid);
+      const kit: Kit = { itemIds: equip(k.itemIds, ammo ? ids(ammo) : []), internalAmmoId: k.internalAmmoId };
+      for (const t of targets) {
+        for (let level = 80; level <= 99; level++) {
+          const c = withPrayer(combo(`rp|${w.id}|${t.slug}|R${level}`, t, kit, rapid), p);
+          if (level !== 99) c.skills = { ranged: level };
+          out.push(c);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+interface MagicBase { key: string; weapon: string; style: Style; spell?: string; extras?: string[]; target: string; task?: boolean; mark?: boolean }
+const MAGIC_BASES: MagicBase[] = [
+  { key: "barrage", weapon: "Kodai wand", style: AUTOCAST, spell: "Ice Barrage", target: "general-graardor" },
+  { key: "blitz-sceptre", weapon: "Blood ancient sceptre", style: AUTOCAST, spell: "Blood Blitz", target: "abyssal-demon" },
+  { key: "wave-twin", weapon: "Twinflame staff", style: AUTOCAST, spell: "Fire Wave", target: "general-graardor" },
+  { key: "surge-harm", weapon: "Harmonised nightmare staff", style: AUTOCAST, spell: "Earth Surge", target: "abyssal-demon" },
+  { key: "bolt", weapon: "Staff of fire", style: AUTOCAST, spell: "Fire Bolt", target: "general-graardor" },
+  { key: "strike-smoke", weapon: "Smoke battlestaff", style: AUTOCAST, spell: "Wind Strike", target: "general-graardor" },
+  { key: "demonbane", weapon: "Purging staff", style: AUTOCAST, spell: "Dark Demonbane", target: "abyssal-demon" },
+  { key: "demonbane-mark", weapon: "Kodai wand", style: AUTOCAST, spell: "Superior Demonbane", target: "kril-tsutsaroth", mark: true },
+  { key: "grasp", weapon: "Kodai wand", style: AUTOCAST, spell: "Undead Grasp", target: "vorkath" },
+  { key: "crumble", weapon: "Staff of fire", style: AUTOCAST, spell: "Crumble Undead", target: "vorkath" },
+  { key: "god", weapon: "Staff of light", style: AUTOCAST, spell: "Saradomin Strike", target: "general-graardor" },
+  { key: "god-zam", weapon: "Toxic staff of the dead", style: AUTOCAST, spell: "Flames of Zamorak", target: "abyssal-demon" },
+  { key: "god-guthix", weapon: "Void knight mace", style: AUTOCAST, spell: "Claws of Guthix", target: "general-graardor" },
+  { key: "iban", weapon: "Iban's staff (u)", style: AUTOCAST, spell: "Iban Blast", target: "general-graardor" },
+  { key: "snare-tome", weapon: "Kodai wand", style: AUTOCAST, spell: "Snare", extras: ["Tome of water"], target: "general-graardor" },
+  { key: "entangle", weapon: "Staff of fire", style: AUTOCAST, spell: "Entangle", target: "abyssal-demon" },
+  { key: "dart", weapon: "Slayer's staff (e)", style: AUTOCAST, spell: "Magic Dart", target: "abyssal-demon", task: true },
+  { key: "shadow", weapon: "Tumeken's shadow", style: POWERED_STYLES[0], target: "general-graardor" },
+  { key: "sang", weapon: "Sanguinesti staff", style: POWERED_STYLES[0], target: "abyssal-demon" },
+  { key: "ayak", weapon: "Eye of ayak", style: POWERED_STYLES[0], target: "vorkath" },
+  { key: "accursed", weapon: "Accursed sceptre", style: POWERED_STYLES[0], target: "vetion" },
+  { key: "dawnbringer", weapon: "Dawnbringer", style: POWERED_STYLES[0], target: "general-graardor" },
+  { key: "zorya", weapon: "Zorya's tome", style: POWERED_STYLES[0], target: "abyssal-demon" },
+];
+
+/** Every worn (non-weapon) item under each kind of spell and powered staff. */
+function magicGearFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  for (const b of MAGIC_BASES) {
+    const wid = item(b.weapon);
+    const w = wid === undefined ? undefined : BY_ID.get(wid);
+    const t = monster(b.target);
+    if (!w || !t) continue;
+    const s = b.spell ? ALL_SPELLS.find((x) => x.name === b.spell) : undefined;
+    const spell = s ? spellAt(s, 99) : undefined;
+    const base = equip(MAGIC_SHELL, [w.id, ...ids(...(b.extras ?? []))]);
+    for (const it of ITEM_CATALOG) {
+      if (isWeapon(it) || it.slot === "ammo") continue;
+      const kit: Kit = { itemIds: equip(base, [it.id]) };
+      const c = combo(`mg|${b.key}|${it.id}`, t, kit, b.style, { spell, onTask: b.task });
+      if (b.mark) c.markOfDarkness = true;
+      out.push(c);
+      // Slayer heads and Salve amulets matter on task / vs undead: both ways.
+      if ((it.slot === "head" || it.slot === "neck") && !b.task && t.isSlayerMonster) {
+        const c2 = combo(`mg|${b.key}|${it.id}|task`, t, kit, b.style, { spell, onTask: true });
+        if (b.mark) c2.markOfDarkness = true;
+        out.push(c2);
+      }
+    }
+  }
+  return out;
+}
+
+/** Every monster and phase vs each kind of spell and powered staff. */
+function magicMonstersFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const extra: MagicBase[] = [
+    { key: "water-tome", weapon: "Kodai wand", style: AUTOCAST, spell: "Water Surge", extras: ["Tome of water"], target: "" },
+    { key: "fire-tome", weapon: "Kodai wand", style: AUTOCAST, spell: "Fire Surge", extras: ["Tome of fire"], target: "" },
+    { key: "earth-tome", weapon: "Kodai wand", style: AUTOCAST, spell: "Earth Surge", extras: ["Tome of earth"], target: "" },
+    { key: "wind-blast", weapon: "Kodai wand", style: AUTOCAST, spell: "Wind Blast", target: "" },
+    { key: "swamp", weapon: "Trident of the swamp", style: POWERED_STYLES[0], target: "" },
+    { key: "warped", weapon: "Warped sceptre", style: POWERED_STYLES[1], target: "" },
+    { key: "salamander", weapon: "Black salamander", style: { attackType: "magic", choice: "defensive" }, target: "" },
+    { key: "thammaron", weapon: "Thammaron's sceptre", style: POWERED_STYLES[0], target: "" },
+    { key: "def-cast", weapon: "Kodai wand", style: DEFENSIVE_CAST, spell: "Shadow Barrage", target: "" },
+  ];
+  const refs = [...MAGIC_BASES, ...extra].map((b) => {
+    const wid = item(b.weapon);
+    const w = wid === undefined ? undefined : BY_ID.get(wid);
+    if (!w) return undefined;
+    const s = b.spell ? ALL_SPELLS.find((x) => x.name === b.spell) : undefined;
+    const base = s ? { itemIds: equip(MAGIC_SHELL, [w.id]) } : kitFor(w, b.style);
+    const kit: Kit = { itemIds: equip(base.itemIds, ids(...(b.extras ?? []))) };
+    return { b, kit, s };
+  }).filter((x): x is { b: MagicBase; kit: Kit; s: SpellEntry | undefined } => Boolean(x));
+  for (const m of MONSTER_CATALOG) {
+    if (m.wikiId === 0) continue;
+    for (const { b, kit, s } of refs) {
+      if (s?.requiresAttribute && !m.attributes.includes(s.requiresAttribute)) continue;
+      if (b.task && !m.isSlayerMonster) continue;
+      const spell = s ? spellAt(s, 99) : undefined;
+      const mk = (id: string, e: Parameters<typeof combo>[4] = {}): CanonicalCombo => {
+        const c = combo(id, m, kit, b.style, { spell, onTask: b.task, ...e });
+        if (b.mark) c.markOfDarkness = true;
+        return c;
+      };
+      out.push(mk(`mm|${m.slug}|${b.key}`));
+      for (const p of (MECHANIC_PHASES[m.slug] ?? []).slice(1)) {
+        if (!p.wikiPhase) continue;
+        const c = mk(`mm|${m.slug}|${b.key}|m:${p.id}`);
+        c.bossPhase = { mechanicId: p.id, wikiPhase: p.wikiPhase };
+        out.push(c);
+      }
+      for (const p of m.phases ?? []) {
+        if (p.wikiId === m.wikiId && p.version === m.version) continue;
+        out.push(mk(`mm|${m.slug}|${b.key}|s:${p.version}`, { statPhase: { version: p.version, wikiId: p.wikiId } }));
+      }
+    }
+  }
+  return out;
+}
+
 const FAMILIES: Record<string, () => CanonicalCombo[]> = {
+  "magic-staves": magicStavesFamily,
+  "magic-levels": magicLevelsFamily,
+  "magic-prayers": magicPrayersFamily,
+  "magic-gear": magicGearFamily,
+  "magic-monsters": magicMonstersFamily,
   effects: effectsFamily,
   noammo: noAmmoFamily,
   weapons: weaponsFamily,

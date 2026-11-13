@@ -8,7 +8,7 @@ import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import {
   autocastableSpellbooks,
-  weaponSatisfiesStaffRequirement,
+  weaponCanCastStaffSpell,
 } from "@/data/items/magic-weapon-autocast";
 import { LEAFY_SPELL_NAME } from "@/data/items/leaf-bladed";
 import {
@@ -38,8 +38,8 @@ function leafyMagicDart(
 ): SpellEntry | undefined {
   if (!target.attributes.includes("leafy")) return undefined;
   const dart = SPELLS_BY_NAME.get(LEAFY_SPELL_NAME);
-  if (!dart?.requiresStaff) return undefined;
-  if (!weaponSatisfiesStaffRequirement(weaponId, dart.requiresStaff)) return undefined;
+  if (!dart) return undefined;
+  if (!weaponCanCastStaffSpell(weaponId, dart.name)) return undefined;
   return spellCastableVs(dart, magicLevel, target.attributes) ? dart : undefined;
 }
 
@@ -67,6 +67,8 @@ export function autoPickSpell(
   target: MonsterCatalogEntry,
   fallbackBaseSpellMaxHit?: number,
   fallbackSpellElement?: SpellElement,
+  /** On a slayer task: a Slayer's staff (e) then casts the stronger Magic Dart. */
+  onTask = false,
 ): AutoSpellResult {
   const poweredFormula = POWERED_STAFF_FORMULA.get(weapon.id);
   let baseSpellMaxHit = poweredFormula
@@ -90,6 +92,9 @@ export function autoPickSpell(
       twinflame: weapon.id === 30634, // Twinflame staff
       // Never recommend a spell the equipped weapon can't autocast.
       allowedSpellbooks: autocastableSpellbooks(weapon.id),
+      canCastStaffSpell: (name) => weaponCanCastStaffSpell(weapon.id, name),
+      enhancedMagicDart:
+        onTask && target.isSlayerMonster !== false && /^slayer's staff \(e\)$/i.test(weapon.name),
     });
     if (spell) {
       baseSpellMaxHit = spellMaxHit(spell, magicLevel);

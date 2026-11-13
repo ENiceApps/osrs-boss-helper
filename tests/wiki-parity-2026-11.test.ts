@@ -7,11 +7,15 @@ import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { scoreScenario } from "@/lib/optimize/scenario";
 import { computeSetDps, SKILLS_AT_99, wikiMaxHitForSet } from "@/lib/recommend";
-import { hitChance } from "@/lib/dps/common";
+import { effectiveLevel, hitChance } from "@/lib/dps/common";
+import { ITEM_CATALOG } from "@/data/items/catalog";
+import { prayerById } from "@/data/prayers";
+import { applyPhase, phaseOptionsFor } from "@/lib/phases";
+import { autoPickSpell } from "@/lib/auto-spell";
 import { ammoApplicability } from "@/data/items/ammo-applicability";
 import { canonicalItemId } from "@/data/items/aliases";
 import { WEAPON_STYLES } from "@/data/weapon-styles";
-import { SPELLS_BY_NAME, weaponCanCastSpell } from "@/data/spells/catalog";
+import { SPELLS_BY_NAME, spellMaxHit, weaponCanCastSpell } from "@/data/spells/catalog";
 import type { AttackStyleChoice, WeaponAttackType } from "@/types/osrs";
 
 const RAPIER = 22324;
@@ -145,5 +149,76 @@ describe("data corrections", () => {
     expect(weaponCanCastSpell("Iban Blast", "Iban's staff (u)")).toBe(true);
     expect(weaponCanCastSpell("Magic Dart", "Toxic staff of the dead")).toBe(true);
     expect(weaponCanCastSpell("Fire Surge", "Kodai wand")).toBe(true);
+  });
+});
+
+// Magic sweep (2026-11-13): every spell on every casting staff, every Magic
+// level, every magic prayer, vs the wiki calc at 74958b1.
+describe("magic: prayers, levels and staff-locked spells", () => {
+  const cast = (
+    weapon: string,
+    spellName: string,
+    slug: string,
+    opts: { prayerId?: string; magic?: number; onTask?: boolean; extra?: string[]; version?: string } = {},
+  ) => {
+    const id = (n: string) => ITEM_CATALOG.find((i) => i.name.toLowerCase() === n.toLowerCase())!.id;
+    const s = SPELLS_BY_NAME.get(spellName)!;
+    const base = MONSTER_BY_SLUG[slug];
+    const phase = opts.version ? phaseOptionsFor(base).find((o) => o.id === `s:${opts.version}`) : undefined;
+    const r = scoreScenario({
+      itemIds: [id(weapon), ...(opts.extra ?? []).map(id)],
+      target: applyPhase(base, phase),
+      skills: { ...SKILLS_AT_99, magic: opts.magic ?? 99 },
+      attackStyle: { attackType: "magic", choice: "longrange" },
+      baseSpellMaxHit: spellMaxHit(s, opts.magic ?? 99),
+      spellElement: s.element,
+      autoSpellName: s.name,
+      onTask: opts.onTask,
+      prayer: opts.prayerId ? prayerById("magic", opts.prayerId).selection : undefined,
+    });
+    if (!r.valid) throw new Error(r.reasons.join("; "));
+    return r.dps;
+  };
+
+  it("Mystic Lore / Might / Vigour add 1 / 2 / 3% magic damage", () => {
+    // Fire Surge 24 on a Kodai wand (+15%): 24 + trunc(24 x 150/1000) = 27;
+    // with Mystic Vigour 24 + trunc(24 x 180/1000) = 28.
+    expect(cast("Kodai wand", "Fire Surge", "general-graardor", { prayerId: "none" }).maxHit).toBe(27);
+    expect(cast("Kodai wand", "Fire Surge", "general-graardor", { prayerId: "mystic-vigour" }).maxHit).toBe(28);
+    expect(prayerById("magic", "mystic-might").selection.magicDamageMultiplier).toBe(1.02);
+    expect(prayerById("magic", "mystic-lore").selection.magicDamageMultiplier).toBe(1.01);
+    expect(prayerById("ranged", "deadeye").selection.rangedStrengthMultiplier).toBe(1.18);
+  });
+  it("a prayer scales the level in whole percents (100 x 1.15 is 115, not 114)", () => {
+    expect(effectiveLevel(100, 1.15, 0, 0, 9)).toBe(124);
+  });
+  it("an ornamented Iban's staff casts Iban Blast", () => {
+    expect(cast("Iban's staff (u) (o)", "Iban Blast", "general-graardor").maxHit).toBe(
+      cast("Iban's staff (u)", "Iban Blast", "general-graardor").maxHit,
+    );
+  });
+  it("an Awakened boss is not a slayer monster: no on-task Magic Dart bonus", () => {
+    const onTask = { onTask: true };
+    const post = cast("Slayer's staff (e)", "Magic Dart", "vardorvis", onTask).maxHit;
+    const awakened = cast("Slayer's staff (e)", "Magic Dart", "vardorvis", { ...onTask, version: "Awakened" }).maxHit;
+    expect(post).toBeGreaterThan(awakened);
+  });
+  it("a Tome of water adds its accuracy to Snare", () => {
+    const bare = cast("Kodai wand", "Snare", "general-graardor");
+    const tome = cast("Kodai wand", "Snare", "general-graardor", { extra: ["Tome of water"] });
+    expect(tome.maxHit).toBe(bare.maxHit);
+    expect(tome.accuracy).toBeGreaterThan(bare.accuracy);
+  });
+  it("the auto-pick uses a staff-locked spell when the staff casts it", () => {
+    const id = (n: string) => ITEM_CATALOG.find((i) => i.name.toLowerCase() === n.toLowerCase())!;
+    // A target with no elemental weakness (a weakness rightly outranks Iban Blast).
+    const graardor = Object.values(MONSTER_BY_SLUG).find(
+      (m) => !m.weakness && m.isSlayerMonster && !m.attributes.includes("demon") && !m.attributes.includes("undead"),
+    )!;
+    const demon = graardor; // not a demon: Dark Demonbane (30) would outrank the Dart's 29
+    expect(autoPickSpell(id("Iban's staff (u)"), [], "magic", 99, graardor).autoSpellName).toBe("Iban Blast");
+    expect(autoPickSpell(id("Slayer's staff (e)"), [], "magic", 99, demon, undefined, undefined, true).autoSpellName).toBe("Magic Dart");
+    expect(autoPickSpell(id("Slayer's staff (e)"), [], "magic", 99, demon).autoSpellName).not.toBe("Magic Dart");
+    expect(autoPickSpell(id("Kodai wand"), [], "magic", 99, graardor).autoSpellName).not.toBe("Iban Blast");
   });
 });

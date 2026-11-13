@@ -32,6 +32,7 @@ import { isSplitProfile } from "@/lib/dps/multihit";
 import { forceDistributionEngine } from "@/lib/dps/calculate";
 import { RANGING_POTION, SATURATED_HEART, SUPER_COMBAT } from "@/lib/dps/boost";
 import { applyPhase, phaseOptionsFor } from "@/lib/phases";
+import { prayerById } from "@/data/prayers";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
 import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
@@ -122,7 +123,10 @@ function ourEngineUnsafe(combo: CanonicalCombo): OurResult {
     itemIds: combo.itemIds,
     internalAmmoId: combo.internalAmmoId,
     target: boss,
-    skills: SKILLS_AT_99,
+    skills: { ...SKILLS_AT_99, ...(combo.skills ?? {}) },
+    prayer: combo.prayerId
+      ? prayerById(combo.attackType === "magic" ? "magic" : combo.attackType === "ranged" ? "ranged" : "melee", combo.prayerId).selection
+      : undefined,
     attackStyle: { attackType: combo.attackType, choice: combo.choice },
     baseSpellMaxHit: combo.baseSpellMaxHit,
     spellElement: combo.spellElement,

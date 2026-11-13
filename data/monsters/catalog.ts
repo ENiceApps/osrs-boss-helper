@@ -41,6 +41,8 @@ export interface MonsterPhaseEntry {
   image: string;
   size: number;
   maxHitText: string;
+  /** This version's own flag: an Awakened boss is not a slayer monster. */
+  isSlayerMonster: boolean;
 }
 
 export interface MonsterCatalogEntry {
@@ -293,7 +295,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Abyssal Sire (phase 1).png",
         "size": 6,
-        "maxHitText": "66 (Melee)"
+        "maxHitText": "66 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Phase 3 (stage 2)",
@@ -317,7 +320,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Abyssal Sire (phase 3, stage 2).png",
         "size": 6,
-        "maxHitText": "66 (Melee)"
+        "maxHitText": "66 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -608,7 +612,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Amoxliatl.png",
         "size": 3,
-        "maxHitText": "22 (standard) · 34 (Icicle Crash)"
+        "maxHitText": "22 (standard) · 34 (Icicle Crash)",
+        "isSlayerMonster": true
       },
       {
         "version": "Quest",
@@ -637,7 +642,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Amoxliatl.png",
         "size": 3,
-        "maxHitText": "16 (standard) · ? (Icicle Crash)"
+        "maxHitText": "16 (standard) · ? (Icicle Crash)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -773,7 +779,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry bear (level 40).png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 47",
@@ -795,7 +802,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry bear (level 47).png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -844,7 +852,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry giant rat (level 45, 1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 47",
@@ -866,7 +875,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry giant rat (level 47, 1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -915,7 +925,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry goblin.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 47",
@@ -937,7 +948,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry goblin.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -986,7 +998,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry unicorn.png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 47",
@@ -1008,7 +1021,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry unicorn.png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -1069,7 +1083,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ankou.png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 75",
@@ -1097,7 +1112,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ankou.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 82",
@@ -1125,7 +1141,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ankou.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 86",
@@ -1153,7 +1170,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ankou.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 95",
@@ -1181,7 +1199,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ankou.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -1232,7 +1251,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Aquanite.png",
         "size": 2,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": true
       },
       {
         "version": "No lure",
@@ -1255,7 +1275,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Aquanite (no lure).png",
         "size": 2,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -1339,7 +1360,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Araxyte (lv 146).png",
         "size": 2,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 96",
@@ -1364,7 +1386,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Araxyte (lv 96).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -1425,7 +1448,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Archive Guardian.png",
         "size": 5,
-        "maxHitText": "25, 99+ (laser beam)"
+        "maxHitText": "25, 99+ (laser beam)",
+        "isSlayerMonster": false
       },
       {
         "version": "Grounded",
@@ -1451,7 +1475,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Archive Guardian.png",
         "size": 5,
-        "maxHitText": "25, 99+ (laser beam)"
+        "maxHitText": "25, 99+ (laser beam)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -1726,7 +1751,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Magic.png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 125",
@@ -1748,7 +1774,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Magic (level 125).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 75",
@@ -1770,7 +1797,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Magic (level 75).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -1819,7 +1847,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Ranging.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 125",
@@ -1841,7 +1870,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Ranging (level 125).png",
         "size": 1,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 75",
@@ -1863,7 +1893,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Ranging (level 75).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -1912,7 +1943,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Strength.png",
         "size": 1,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 125",
@@ -1934,7 +1966,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Strength (level 125).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 75",
@@ -1956,7 +1989,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Arzinian Avatar of Strength (level 75).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -2071,7 +2105,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Asyn Shade.png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -2100,7 +2135,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Asyn Shadow.png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -2240,7 +2276,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 148).png",
         "size": 2,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 131",
@@ -2267,7 +2304,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 131).png",
         "size": 2,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 137",
@@ -2294,7 +2332,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 137).png",
         "size": 2,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 69",
@@ -2321,7 +2360,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 69).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 71",
@@ -2348,7 +2388,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 71).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 73",
@@ -2375,7 +2416,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 73).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 79 (1)",
@@ -2402,7 +2444,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 79, 1).png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 79 (2)",
@@ -2429,7 +2472,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 79, 2).png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 83",
@@ -2456,7 +2500,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 83).png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 84",
@@ -2483,7 +2528,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 84).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 89",
@@ -2510,7 +2556,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 89).png",
         "size": 2,
-        "maxHitText": "12"
+        "maxHitText": "12",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 92",
@@ -2537,7 +2584,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 92).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 94",
@@ -2564,7 +2612,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 94).png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 97 (1)",
@@ -2591,7 +2640,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 97, 1).png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 97 (2)",
@@ -2618,7 +2668,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Aviansie (level 97, 2).png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -2702,7 +2753,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Baby black dragon.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Myths' Guild",
@@ -2726,7 +2778,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Baby black dragon.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -2785,7 +2838,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Baby blue dragon (1).png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Ruins of Tapoyauik, 1",
@@ -2812,7 +2866,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Baby blue dragon (Ruins of Tapoyauik, 1).png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -2974,7 +3029,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Bandit.png",
         "size": 1,
-        "maxHitText": "12"
+        "maxHitText": "12",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 22",
@@ -2996,7 +3052,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Bandit.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -3328,7 +3385,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Big Evil Chicken.png",
         "size": 3,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       },
       {
         "version": "Permanent",
@@ -3350,7 +3408,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Big Evil Chicken.png",
         "size": 3,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -3433,7 +3492,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bird (level 11).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 5",
@@ -3458,7 +3518,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bird (level 5).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -3545,7 +3606,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black demon.png",
         "size": 3,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 172",
@@ -3572,7 +3634,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black demon.png",
         "size": 3,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 178",
@@ -3599,7 +3662,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black demon (5).png",
         "size": 3,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 184",
@@ -3626,7 +3690,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black demon (3).png",
         "size": 3,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -3747,7 +3812,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black dragon.png",
         "size": 4,
-        "maxHitText": "22 (Melee)"
+        "maxHitText": "22 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 227",
@@ -3775,7 +3841,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Black dragon.png",
         "size": 4,
-        "maxHitText": "21 (Melee)"
+        "maxHitText": "21 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -3824,7 +3891,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Black Guard (level 48, 1).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 25, 1",
@@ -3846,7 +3914,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Black Guard (level 25, 1).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -4085,7 +4154,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Bloodveld.png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "GWD",
@@ -4109,7 +4179,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Bloodveld (God Wars Dungeon).png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -4198,7 +4269,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Blue dragon (2).png",
         "size": 4,
-        "maxHitText": "10 (Slash)"
+        "maxHitText": "10 (Slash)",
+        "isSlayerMonster": true
       },
       {
         "version": "Ruins of Tapoyauik, 1",
@@ -4226,7 +4298,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Blue dragon (Ruins of Tapoyauik, 1).png",
         "size": 4,
-        "maxHitText": "10 (Slash)"
+        "maxHitText": "10 (Slash)",
+        "isSlayerMonster": true
       },
       {
         "version": "Task only, 1",
@@ -4254,7 +4327,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Blue dragon (2).png",
         "size": 4,
-        "maxHitText": "10 (Slash)"
+        "maxHitText": "10 (Slash)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -4340,7 +4414,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bork.png",
         "size": 4,
-        "maxHitText": ""
+        "maxHitText": "",
+        "isSlayerMonster": false
       },
       {
         "version": "Smorks 75% - 50%",
@@ -4367,7 +4442,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bork.png",
         "size": 4,
-        "maxHitText": ""
+        "maxHitText": "",
+        "isSlayerMonster": false
       },
       {
         "version": "Smorks 50% - 25%",
@@ -4394,7 +4470,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bork.png",
         "size": 4,
-        "maxHitText": ""
+        "maxHitText": "",
+        "isSlayerMonster": false
       },
       {
         "version": "Smorks 25% - 0%",
@@ -4421,7 +4498,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bork.png",
         "size": 4,
-        "maxHitText": ""
+        "maxHitText": "",
+        "isSlayerMonster": false
       },
       {
         "version": "Stunned",
@@ -4446,7 +4524,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bork.png",
         "size": 4,
-        "maxHitText": ""
+        "maxHitText": "",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -4592,7 +4671,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bronze dragon.png",
         "size": 4,
-        "maxHitText": "14 (Melee)"
+        "maxHitText": "14 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard",
@@ -4620,7 +4700,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Bronze dragon.png",
         "size": 4,
-        "maxHitText": "12 (Melee)"
+        "maxHitText": "12 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -4712,7 +4793,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Brutal blue dragon.png",
         "size": 4,
-        "maxHitText": "21 (Melee; Magic)"
+        "maxHitText": "21 (Melee; Magic)",
+        "isSlayerMonster": true
       },
       {
         "version": "Ruins of Tapoyauik",
@@ -4740,7 +4822,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Brutal blue dragon (Ruins of Tapoyauik).png",
         "size": 4,
-        "maxHitText": "21 (Melee; Magic)"
+        "maxHitText": "21 (Melee; Magic)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -4956,7 +5039,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Catablepon.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 49",
@@ -4978,7 +5062,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Catablepon.png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 68",
@@ -5000,7 +5085,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Catablepon.png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -5080,7 +5166,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Cave bug (level 96).png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 6",
@@ -5105,7 +5192,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Cave bug (level 6).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -5160,7 +5248,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Cave crawler (icy) (1).png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard (1)",
@@ -5182,7 +5271,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cave crawler (1).png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -5267,7 +5357,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Cave goblin guard (level 24).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 26",
@@ -5289,7 +5380,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cave goblin guard (level 26).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -5400,7 +5492,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Cave kraken.png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Whirlpool",
@@ -5425,7 +5518,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Whirlpool (cave kraken).png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -5698,7 +5792,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Chasm Crawler (icy).png",
         "size": 3,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard",
@@ -5720,7 +5815,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Chasm Crawler.png",
         "size": 3,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -6115,7 +6211,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Corpse (Xarth).png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       },
       {
         "version": "Doused",
@@ -6140,7 +6237,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Corpse (Xarth).png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -6292,7 +6390,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cow calf.png",
         "size": 2,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Farmland",
@@ -6314,7 +6413,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cow calf.png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -6369,7 +6469,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Crab.png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 21",
@@ -6394,7 +6495,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Crab.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -6447,7 +6549,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (level 12, 1).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 11 (unused)",
@@ -6471,7 +6574,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (unused, 1).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 12 (unused 1)",
@@ -6495,7 +6599,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (unused, 2).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 12 (unused 2)",
@@ -6519,7 +6624,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (unused, 3).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 7",
@@ -6543,7 +6649,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (level 7).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 8 (1)",
@@ -6567,7 +6674,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Crawling Hand (level 8).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -6803,7 +6911,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cyclops (level 56, 2).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 56",
@@ -6825,7 +6934,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cyclops.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 76",
@@ -6847,7 +6957,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cyclops (level 76, 1).png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -6921,7 +7032,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cyclops (level 76, 2).png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 56",
@@ -6943,7 +7055,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Cyclops (level 56, 4).png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -7079,7 +7192,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dagannoth.png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 74 (1)",
@@ -7104,7 +7218,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dagannoth.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -7159,7 +7274,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dagannoth (Waterbirth Island, level 90).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 88",
@@ -7184,7 +7300,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dagannoth (Waterbirth Island, level 88).png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -7481,7 +7598,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Damis.png",
         "size": 1,
-        "maxHitText": "28"
+        "maxHitText": "28",
+        "isSlayerMonster": false
       },
       {
         "version": "First form",
@@ -7503,7 +7621,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Damis first form.png",
         "size": 1,
-        "maxHitText": "22"
+        "maxHitText": "22",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -7633,7 +7752,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dark warrior.png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 37",
@@ -7655,7 +7775,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dark warrior.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 51",
@@ -7677,7 +7798,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dark warrior.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 62",
@@ -7699,7 +7821,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dark warrior.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 8",
@@ -7721,7 +7844,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dark warrior.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -8164,7 +8288,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dire Wolf.png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 72",
@@ -8186,7 +8311,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dire Wolf (albino).png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Meat and Greet",
@@ -8208,7 +8334,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dire Wolf.png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -8369,7 +8496,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "65 · 99 (charge)"
+        "maxHitText": "65 · 99 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Deep Delve",
@@ -8394,7 +8522,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "65 · 99 (charge)"
+        "maxHitText": "65 · 99 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Delve 1",
@@ -8419,7 +8548,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "47 · 60 (charge)"
+        "maxHitText": "47 · 60 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Delve 2",
@@ -8444,7 +8574,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "50 · 60 (charge)"
+        "maxHitText": "50 · 60 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Delve 3",
@@ -8469,7 +8600,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "50 · 80 (charge)"
+        "maxHitText": "50 · 80 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Delve 4",
@@ -8494,7 +8626,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "80 (charge)"
+        "maxHitText": "80 (charge)",
+        "isSlayerMonster": false
       },
       {
         "version": "Delve 6",
@@ -8519,7 +8652,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Doom of Mokhaiotl.png",
         "size": 5,
-        "maxHitText": "99 (charge)"
+        "maxHitText": "99 (charge)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -8791,7 +8925,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Duke Sucellus.png",
         "size": 7,
-        "maxHitText": "56 (Melee)"
+        "maxHitText": "56 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Awakened, Awake",
@@ -8816,7 +8951,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Duke Sucellus.png",
         "size": 7,
-        "maxHitText": "81 (Melee)"
+        "maxHitText": "81 (Melee)",
+        "isSlayerMonster": false
       },
       {
         "version": "Quest, Awake",
@@ -8841,7 +8977,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Duke Sucellus.png",
         "size": 7,
-        "maxHitText": "36 (Melee)"
+        "maxHitText": "36 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -8894,7 +9031,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dungeon rat.png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Small",
@@ -8918,7 +9056,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dungeon rat.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -8979,7 +9118,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dusk.png",
         "size": 4,
-        "maxHitText": "15 (melee) 33 (special attack)"
+        "maxHitText": "15 (melee) 33 (special attack)",
+        "isSlayerMonster": true
       },
       {
         "version": "Second form",
@@ -9006,7 +9146,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dusk (2nd form).png",
         "size": 6,
-        "maxHitText": "26 (melee) · 15x2 (ranged) · 65 (special attack)"
+        "maxHitText": "26 (melee) · 15x2 (ranged) · 65 (special attack)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9061,7 +9202,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dust devil.png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Smoke Dungeon",
@@ -9086,7 +9228,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Dust devil.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9135,7 +9278,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Level 20).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Mining Guild (1)",
@@ -9157,7 +9301,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Falador, 1).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Mining Guild (2)",
@@ -9179,7 +9324,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Falador, 2).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Mining Guild (3)",
@@ -9201,7 +9347,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Falador, 3).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard (Level 10)",
@@ -9223,7 +9370,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Worker (3)",
@@ -9245,7 +9393,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Worker, 3).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Worker (5)",
@@ -9267,7 +9416,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Worker, 5).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Worker (6)",
@@ -9289,7 +9439,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Worker, 6).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Worker (7)",
@@ -9311,7 +9462,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Worker, 7).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Worker (8)",
@@ -9333,7 +9485,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf (Worker, 8).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9382,7 +9535,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf gang member (1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 48",
@@ -9404,7 +9558,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf gang member (2).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 49",
@@ -9426,7 +9581,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Dwarf gang member (3).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9512,7 +9668,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Earthen Nagua.png",
         "size": 2,
-        "maxHitText": "13 total"
+        "maxHitText": "13 total",
+        "isSlayerMonster": true
       },
       {
         "version": "Reinforced",
@@ -9540,7 +9697,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Earthen Nagua (reinforced).png",
         "size": 2,
-        "maxHitText": "13 total"
+        "maxHitText": "13 total",
+        "isSlayerMonster": true
       },
       {
         "version": "Weakened",
@@ -9568,7 +9726,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Earthen Nagua (weakened).png",
         "size": 2,
-        "maxHitText": "13 total"
+        "maxHitText": "13 total",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9625,7 +9784,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Eclipse Moon.png",
         "size": 5,
-        "maxHitText": "32 total 4+8+20"
+        "maxHitText": "32 total 4+8+20",
+        "isSlayerMonster": false
       },
       {
         "version": "Regular",
@@ -9651,7 +9811,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Eclipse Moon.png",
         "size": 5,
-        "maxHitText": "32 total 4+8+20"
+        "maxHitText": "32 total 4+8+20",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -9700,7 +9861,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Elder aquanite (lure).png",
         "size": 3,
-        "maxHitText": "34 (normal)"
+        "maxHitText": "34 (normal)",
+        "isSlayerMonster": true
       },
       {
         "version": "No lure",
@@ -9722,7 +9884,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Elder aquanite (no lure).png",
         "size": 3,
-        "maxHitText": "34 (normal)"
+        "maxHitText": "34 (normal)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -9912,7 +10075,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Elidinis' Warden (level-489, core-ejected).png",
         "size": 5,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       },
       {
         "version": "Active",
@@ -9938,7 +10102,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Elidinis' Warden (level-489).png",
         "size": 5,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       },
       {
         "version": "Damaged",
@@ -9964,7 +10129,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Elidinis' Warden (level-544).png",
         "size": 5,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       },
       {
         "version": "Enraged",
@@ -9990,7 +10156,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Elidinis' Warden (level-544, immune).png",
         "size": 5,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -10123,7 +10290,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ent (lv 101).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Woodcutting Guild",
@@ -10148,7 +10316,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ent (lv 86).png",
         "size": 2,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -10333,7 +10502,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre (Temple Trekking).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 100 (Temple Trekking)",
@@ -10357,7 +10527,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre (Temple Trekking).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 61",
@@ -10381,7 +10552,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 64 (Juvenile/Juvinate)",
@@ -10405,7 +10577,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Angry vampyre.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 70 (Temple Trekking)",
@@ -10429,7 +10602,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre (Temple Trekking).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 72 (Spider)",
@@ -10453,7 +10627,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre (lv 72).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 77 (God Wars Dungeon)",
@@ -10477,7 +10652,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Feral Vampyre (GWD).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -10564,7 +10740,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Fire giant (5).png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 104",
@@ -10591,7 +10768,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Fire giant (6).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 86",
@@ -10618,7 +10796,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Fire giant.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -10683,7 +10862,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Fiyr Shade.png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -10712,7 +10892,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Fiyr Shadow.png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -11345,7 +11526,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ghost.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 19",
@@ -11373,7 +11555,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ghost.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 76",
@@ -11401,7 +11584,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ghost.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -11648,7 +11832,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant goblin.png",
         "size": 2,
-        "maxHitText": "27"
+        "maxHitText": "27",
+        "isSlayerMonster": false
       },
       {
         "version": "Apocalypse",
@@ -11670,7 +11855,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant goblin.png",
         "size": 2,
-        "maxHitText": "27"
+        "maxHitText": "27",
+        "isSlayerMonster": false
       },
       {
         "version": "Armageddon",
@@ -11692,7 +11878,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant goblin.png",
         "size": 2,
-        "maxHitText": "27"
+        "maxHitText": "27",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -11826,7 +12013,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant rat.png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 3",
@@ -11850,7 +12038,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant rat.png",
         "size": 2,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 6",
@@ -11874,7 +12063,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Giant rat.png",
         "size": 2,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -11984,7 +12174,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Giant Rock Crab.png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "2",
@@ -12009,7 +12200,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Giant Rock Crab.png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -12183,7 +12375,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Giant spider (Level 50).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 2",
@@ -12208,7 +12401,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Giant spider (Level 2).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 27",
@@ -12233,7 +12427,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Giant spider (Level 27).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -12334,7 +12529,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 13).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 2",
@@ -12356,7 +12552,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin.png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 2 (armed)",
@@ -12378,7 +12575,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (armed).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 5",
@@ -12400,7 +12598,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 5).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -12474,7 +12673,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 17).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 12",
@@ -12496,7 +12696,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 12).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 12 (banner)",
@@ -12518,7 +12719,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 12, banner).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 13",
@@ -12540,7 +12742,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 13, GWD).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 15",
@@ -12562,7 +12765,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 15).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -12611,7 +12815,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 25).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 11",
@@ -12633,7 +12838,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 11).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 13",
@@ -12655,7 +12861,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 13, SoS).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 16",
@@ -12677,7 +12884,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 16, helmet).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 5",
@@ -12699,7 +12907,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Goblin (level 5, Stronghold).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -12840,7 +13049,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Great Olm.png",
         "size": 5,
-        "maxHitText": "27 · 28 · 29 (phase 4)"
+        "maxHitText": "27 · 28 · 29 (phase 4)",
+        "isSlayerMonster": false
       },
       {
         "version": "Left claw (Normal)",
@@ -12869,7 +13079,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Great Olm.png",
         "size": 5,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       },
       {
         "version": "Right claw (Normal)",
@@ -12898,7 +13109,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Great Olm.png",
         "size": 5,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -13009,7 +13221,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Greater demon (5).png",
         "size": 3,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 100",
@@ -13036,7 +13249,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Greater demon (4).png",
         "size": 3,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 101",
@@ -13063,7 +13277,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Greater demon (2).png",
         "size": 3,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 104 (Wilderness Slayer Cave)",
@@ -13090,7 +13305,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Greater demon.png",
         "size": 3,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 92",
@@ -13117,7 +13333,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Greater demon.png",
         "size": 3,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -13295,7 +13512,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Green dragon.png",
         "size": 4,
-        "maxHitText": "8 (Slash)"
+        "maxHitText": "8 (Slash)",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 79",
@@ -13323,7 +13541,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Green dragon.png",
         "size": 4,
-        "maxHitText": "8 (Slash)"
+        "maxHitText": "8 (Slash)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -13404,7 +13623,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Grizzly bear (level 42).png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 21",
@@ -13429,7 +13649,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Grizzly bear (level 21).png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -13512,7 +13733,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Grizzly bear cub (level 33).png",
         "size": 2,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 36",
@@ -13537,7 +13759,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Grizzly bear cub (level 36).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -13642,7 +13865,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Guard (Cave goblin with bone club).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Bone spear",
@@ -13665,7 +13889,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Guard (Cave goblin with bone spear).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -13997,7 +14222,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Hellhound.png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 122",
@@ -14024,7 +14250,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Hellhound.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 127",
@@ -14048,7 +14275,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Hellhound (GWD).png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14180,7 +14408,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Hobgoblin (God Wars Dungeon).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Hobgoblin",
@@ -14202,7 +14431,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Hobgoblin.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Hobgoblin (armed)",
@@ -14224,7 +14454,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Hobgoblin (armed).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14334,7 +14565,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "I DSCIM YOU.png",
         "size": 1,
-        "maxHitText": "21"
+        "maxHitText": "21",
+        "isSlayerMonster": false
       },
       {
         "version": "Permanent",
@@ -14359,7 +14591,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "I DSCIM YOU.png",
         "size": 1,
-        "maxHitText": "21"
+        "maxHitText": "21",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -14414,7 +14647,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice giant.png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "1",
@@ -14439,7 +14673,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice giant.png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14522,7 +14757,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll (level 120, 1).png",
         "size": 1,
-        "maxHitText": "21"
+        "maxHitText": "21",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 121",
@@ -14547,7 +14783,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll (level 121, 1).png",
         "size": 1,
-        "maxHitText": "23"
+        "maxHitText": "23",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 123",
@@ -14572,7 +14809,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice Troll (level 123).png",
         "size": 1,
-        "maxHitText": "25"
+        "maxHitText": "25",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 124",
@@ -14597,7 +14835,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice Troll (level 124).png",
         "size": 1,
-        "maxHitText": "25"
+        "maxHitText": "25",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14652,7 +14891,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll female.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Variant 2",
@@ -14677,7 +14917,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll female.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14788,7 +15029,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll male.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       },
       {
         "version": "Variant 2",
@@ -14813,7 +15055,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll male.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -14868,7 +15111,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll runt.png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Variant 2",
@@ -14893,7 +15137,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ice troll runt.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -15008,7 +15253,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Icefiend.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 13",
@@ -15035,7 +15281,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Icefiend.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -15305,7 +15552,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Iron dragon.png",
         "size": 4,
-        "maxHitText": "19 (Melee)"
+        "maxHitText": "19 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard",
@@ -15333,7 +15581,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Iron dragon.png",
         "size": 4,
-        "maxHitText": "17 (Melee)"
+        "maxHitText": "17 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -15807,7 +16056,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Jhallan.png",
         "size": 2,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       },
       {
         "version": "",
@@ -15830,7 +16080,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Jhallan.png",
         "size": 2,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -15967,7 +16218,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Jungle horror (pink eyes).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Young warrior",
@@ -15992,7 +16244,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Jungle horror (blue eyes).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -16252,7 +16505,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Kalphite Queen 2nd form.png",
         "size": 5,
-        "maxHitText": "31"
+        "maxHitText": "31",
+        "isSlayerMonster": true
       },
       {
         "version": "Crawling",
@@ -16279,7 +16533,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Kalphite Queen.png",
         "size": 5,
-        "maxHitText": "31"
+        "maxHitText": "31",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -16561,7 +16816,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ketla the Unworthy.png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": false
       },
       {
         "version": "Shadow Clone",
@@ -16585,7 +16841,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ketla the Unworthy (shadow).png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -16804,7 +17061,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Kolodion demon form.png",
         "size": 3,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": true
       },
       {
         "version": "Ghost",
@@ -16826,7 +17084,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Kolodion ghost form.png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       },
       {
         "version": "Human",
@@ -16848,7 +17107,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Kolodion.png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       },
       {
         "version": "Ogre",
@@ -16870,7 +17130,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Kolodion ogre form.png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       },
       {
         "version": "Spider",
@@ -16892,7 +17153,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Kolodion spider form.png",
         "size": 3,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -16941,7 +17203,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Koschei the deathless.png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": false
       },
       {
         "version": "The Fremennik Trials (Form 1)",
@@ -16963,7 +17226,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Koschei the deathless.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": false
       },
       {
         "version": "The Fremennik Trials (Form 2)",
@@ -16985,7 +17249,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Koschei the deathless.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": false
       },
       {
         "version": "The Fremennik Trials (Form 3)",
@@ -17007,7 +17272,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Koschei the deathless.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -17090,7 +17356,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Kraken.png",
         "size": 4,
-        "maxHitText": "28"
+        "maxHitText": "28",
+        "isSlayerMonster": true
       },
       {
         "version": "Whirlpool",
@@ -17115,7 +17382,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Whirlpool.png",
         "size": 5,
-        "maxHitText": "28"
+        "maxHitText": "28",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -17370,7 +17638,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon.png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 82",
@@ -17397,7 +17666,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon.png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 87",
@@ -17424,7 +17694,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon (lv 87).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 94",
@@ -17451,7 +17722,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon (lv 94).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -17540,7 +17812,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon (level 39).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 82",
@@ -17567,7 +17840,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon (level 82, Scar).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": false
       },
       {
         "version": "Level 94 (mage)",
@@ -17595,7 +17869,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Lesser demon (level 94, mage).png",
         "size": 2,
-        "maxHitText": "12"
+        "maxHitText": "12",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -17669,7 +17944,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Lizardman (level 53).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 62",
@@ -17691,7 +17967,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Lizardman (level 62).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -17766,7 +18043,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Lizardman shaman (Lizardman Temple).png",
         "size": 2,
-        "maxHitText": "31 (Melee)"
+        "maxHitText": "31 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Standard",
@@ -17788,7 +18066,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Lizardman shaman (1).png",
         "size": 3,
-        "maxHitText": "31 (Melee)"
+        "maxHitText": "31 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -17880,7 +18159,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Loar Shade.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -17909,7 +18189,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Loar Shadow.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -17998,7 +18279,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Locust rider (melee).png",
         "size": 2,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Ranger",
@@ -18026,7 +18308,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Locust rider (ranged).png",
         "size": 2,
-        "maxHitText": "22"
+        "maxHitText": "22",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -18145,7 +18428,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Mad Angel.png",
         "size": 3,
-        "maxHitText": "31"
+        "maxHitText": "31",
+        "isSlayerMonster": false
       },
       {
         "version": "Quest",
@@ -18173,7 +18457,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Mad Angel.png",
         "size": 3,
-        "maxHitText": "31"
+        "maxHitText": "31",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -18230,7 +18515,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Maggot King.png",
         "size": 5,
-        "maxHitText": "46 (Magic / Ranged)"
+        "maxHitText": "46 (Magic / Ranged)",
+        "isSlayerMonster": true
       },
       {
         "version": "Nearby",
@@ -18256,7 +18542,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Maggot King.png",
         "size": 5,
-        "maxHitText": "46 (Magic / Ranged)"
+        "maxHitText": "46 (Magic / Ranged)",
+        "isSlayerMonster": true
       },
       {
         "version": "Roaring",
@@ -18282,7 +18569,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Maggot King.png",
         "size": 5,
-        "maxHitText": "46 (Magic / Ranged)"
+        "maxHitText": "46 (Magic / Ranged)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -18358,7 +18646,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Magic Mark.png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": false
       },
       {
         "version": "Armageddon",
@@ -18381,7 +18670,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Magic Mark.png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -18699,7 +18989,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Minotaur.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 12",
@@ -18721,7 +19012,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Minotaur.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Unused",
@@ -18743,7 +19035,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Minotaur.png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -19122,7 +19415,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Monkey Zombie.png",
         "size": 1,
-        "maxHitText": "12"
+        "maxHitText": "12",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 82",
@@ -19149,7 +19443,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Monkey Zombie.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -19282,7 +19577,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Moss giant (level 48, 1).png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 42",
@@ -19307,7 +19603,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Moss giant.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -19466,7 +19763,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Mountain troll.png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 71",
@@ -19491,7 +19789,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Mountain troll (level 71).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -19540,7 +19839,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Mounted terrorbird gnome.png",
         "size": 2,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 31",
@@ -19562,7 +19862,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Mounted terrorbird gnome.png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -19611,7 +19912,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Mourner (level 108).png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "level 11",
@@ -19633,7 +19935,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Mourner.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -19774,7 +20077,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Muttadile.png",
         "size": 5,
-        "maxHitText": "72 (Stomp)"
+        "maxHitText": "72 (Stomp)",
+        "isSlayerMonster": false
       },
       {
         "version": "Small",
@@ -19801,7 +20105,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Muttadile.png",
         "size": 3,
-        "maxHitText": "28 (Melee)"
+        "maxHitText": "28 (Melee)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -19888,7 +20193,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nazastarool (Ghost).png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Skeleton",
@@ -19915,7 +20221,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nazastarool (Skeleton).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Zombie",
@@ -19942,7 +20249,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nazastarool.png",
         "size": 2,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -20130,7 +20438,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Matomenos.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry Mode Maiden",
@@ -20155,7 +20464,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Matomenos.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": false
       },
       {
         "version": "Hard Mode Maiden",
@@ -20180,7 +20490,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Matomenos.png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": false
       },
       {
         "version": "Normal Mode Verzik",
@@ -20205,7 +20516,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Matomenos.png",
         "size": 2,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -20291,7 +20603,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Vasilias (melee).png",
         "size": 4,
-        "maxHitText": "70"
+        "maxHitText": "70",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry",
@@ -20317,7 +20630,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Nylocas Vasilias (melee).png",
         "size": 4,
-        "maxHitText": "24"
+        "maxHitText": "24",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -20425,7 +20739,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ocellus.png",
         "size": 3,
-        "maxHitText": "24"
+        "maxHitText": "24",
+        "isSlayerMonster": false
       },
       {
         "version": "Phase 2",
@@ -20447,7 +20762,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ocellus (phase 2).png",
         "size": 3,
-        "maxHitText": "24"
+        "maxHitText": "24",
+        "isSlayerMonster": false
       },
       {
         "version": "Phase 3",
@@ -20472,7 +20788,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ocellus (phase 3).png",
         "size": 3,
-        "maxHitText": "24"
+        "maxHitText": "24",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -20527,7 +20844,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ogre (GWD).png",
         "size": 2,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 53",
@@ -20552,7 +20870,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ogre.png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 63",
@@ -20577,7 +20896,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Ogre.png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -20954,7 +21274,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pestilent Bloat.png",
         "size": 5,
-        "maxHitText": "20 (Flies)"
+        "maxHitText": "20 (Flies)",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry",
@@ -20978,7 +21299,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pestilent Bloat.png",
         "size": 5,
-        "maxHitText": "8 (Flies)"
+        "maxHitText": "8 (Flies)",
+        "isSlayerMonster": false
       },
       {
         "version": "Hard",
@@ -21002,7 +21324,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pestilent Bloat.png",
         "size": 5,
-        "maxHitText": "20 (Flies)"
+        "maxHitText": "20 (Flies)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -21063,7 +21386,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phantom Muspah (melee).png",
         "size": 5,
-        "maxHitText": "34"
+        "maxHitText": "34",
+        "isSlayerMonster": true
       },
       {
         "version": "Post-shield",
@@ -21091,7 +21415,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phantom Muspah (ranged).png",
         "size": 5,
-        "maxHitText": "72 (Ranged)"
+        "maxHitText": "72 (Ranged)",
+        "isSlayerMonster": true
       },
       {
         "version": "Ranged",
@@ -21119,7 +21444,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phantom Muspah (ranged).png",
         "size": 5,
-        "maxHitText": "61 (Ranged)"
+        "maxHitText": "61 (Ranged)",
+        "isSlayerMonster": true
       },
       {
         "version": "Shielded",
@@ -21147,7 +21473,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phantom Muspah (shielded).png",
         "size": 5,
-        "maxHitText": "72 (Ranged)"
+        "maxHitText": "72 (Ranged)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -21238,7 +21565,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phrin Shade.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -21267,7 +21595,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Phrin Shadow.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -21316,7 +21645,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pirate (Cabin Fever).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Asgarnian Ice Dungeon",
@@ -21338,7 +21668,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pirate (Asgarnian Ice Dungeon).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Brimhaven",
@@ -21360,7 +21691,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pirate (Brimhaven).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Pirate's Cove",
@@ -21382,7 +21714,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pirate (Pirates' Cove).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -21493,7 +21826,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Poison spider (Level 64).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 31",
@@ -21518,7 +21852,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Poison spider (Level 31).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -21625,7 +21960,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Blue Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Blue, Novice",
@@ -21648,7 +21984,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Blue Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Purple, Intermediate/veteran",
@@ -21671,7 +22008,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pink Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Purple, Novice",
@@ -21694,7 +22032,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Pink Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Red, Intermediate/veteran",
@@ -21717,7 +22056,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Red Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Red, Novice",
@@ -21740,7 +22080,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Red Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Yellow, Intermediate/veteran",
@@ -21763,7 +22104,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Yellow Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       },
       {
         "version": "Yellow, Novice",
@@ -21786,7 +22128,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Yellow Portal.png",
         "size": 3,
-        "maxHitText": "0 (Does not attack)"
+        "maxHitText": "0 (Does not attack)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -21872,7 +22215,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Pyrefiend.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 43",
@@ -21900,7 +22244,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Pyrefiend.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -22006,7 +22351,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ranging Ro.png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": false
       },
       {
         "version": "Armageddon",
@@ -22029,7 +22375,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Ranging Ro.png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -23142,7 +23489,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 120",
@@ -23167,7 +23515,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 14",
@@ -23192,7 +23541,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 29",
@@ -23217,7 +23567,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 49",
@@ -23242,7 +23593,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 79",
@@ -23267,7 +23619,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "River troll.png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -23332,7 +23685,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Riyl Shade.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -23361,7 +23715,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Riyl Shadow.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -23550,7 +23905,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Rogue (lv 135).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 15",
@@ -23572,7 +23928,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Rogue.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -23621,7 +23978,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Rooster.png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 2",
@@ -23643,7 +24001,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Rooster.png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -23874,7 +24233,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scarab Mage.png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 66 (Contact!)",
@@ -23902,7 +24262,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scarab Mage.png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -24101,7 +24462,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scorpion.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 1",
@@ -24126,7 +24488,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scorpion (Sailing).png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 14",
@@ -24151,7 +24514,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scorpion.png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 37",
@@ -24176,7 +24540,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scorpion (Level 37).png",
         "size": 2,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 38",
@@ -24201,7 +24566,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Scorpion (Level 38).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -24318,7 +24684,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Scurrius.png",
         "size": 3,
-        "maxHitText": "13 (Melee)"
+        "maxHitText": "13 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Solo",
@@ -24343,7 +24710,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Scurrius.png",
         "size": 3,
-        "maxHitText": "13 (Melee)"
+        "maxHitText": "13 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -24482,7 +24850,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Seagull (level 3).png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 2",
@@ -24507,7 +24876,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Seagull.png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -24667,7 +25037,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Shade.png",
         "size": 1,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": true
       },
       {
         "version": "Catacombs of Kourend",
@@ -24696,7 +25067,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Shade (Catacombs of Kourend).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -25061,7 +25433,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (level 45, 1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 21, 1",
@@ -25088,7 +25461,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (level 21, 1).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 22, 1",
@@ -25115,7 +25489,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (level 22, 1).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 25, 1",
@@ -25142,7 +25517,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (level 25, 1).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 29, 1",
@@ -25169,7 +25545,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (level 29, 1).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -25470,7 +25847,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Shayzien Crypts, magic).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       },
       {
         "version": "Melee",
@@ -25497,7 +25875,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Shayzien Crypts, melee).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       },
       {
         "version": "Range",
@@ -25524,7 +25903,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Shayzien Crypts, range).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -25583,7 +25963,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Stronghold of Security, 5).png",
         "size": 1,
-        "maxHitText": "10?"
+        "maxHitText": "10?",
+        "isSlayerMonster": true
       },
       {
         "version": "1",
@@ -25610,7 +25991,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Stronghold of Security, 1).png",
         "size": 1,
-        "maxHitText": "10?"
+        "maxHitText": "10?",
+        "isSlayerMonster": true
       },
       {
         "version": "4",
@@ -25637,7 +26019,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Stronghold of Security, 4).png",
         "size": 1,
-        "maxHitText": "10?"
+        "maxHitText": "10?",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -25696,7 +26079,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 9).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 40",
@@ -25723,7 +26107,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 7).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 42 (Hammer)",
@@ -25750,7 +26135,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 5).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 42 (Sword)",
@@ -25777,7 +26163,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 3).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 59",
@@ -25804,7 +26191,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 4).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 63",
@@ -25831,7 +26219,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 6).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 72",
@@ -25858,7 +26247,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 8).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 77",
@@ -25885,7 +26275,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 81",
@@ -25912,7 +26303,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton (Tarn's Lair, 2).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -26061,7 +26453,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton fremennik (Level 60).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 40",
@@ -26088,7 +26481,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton fremennik.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 50",
@@ -26115,7 +26509,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton fremennik (Level 50).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -26326,7 +26721,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton Mage (lv 83).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 16",
@@ -26353,7 +26749,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Skeleton Mage (lv 16).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -26759,7 +27156,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Sotetseg.png",
         "size": 5,
-        "maxHitText": "45 (Melee)"
+        "maxHitText": "45 (Melee)",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry",
@@ -26782,7 +27180,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Sotetseg.png",
         "size": 5,
-        "maxHitText": "20 (Melee)"
+        "maxHitText": "20 (Melee)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -26856,7 +27255,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Spawn of Sarachnis (melee).png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 68",
@@ -26878,7 +27278,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Spawn of Sarachnis (magic).png",
         "size": 2,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -26958,7 +27359,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spider.png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Common",
@@ -26983,7 +27385,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spider.png",
         "size": 1,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -27155,7 +27558,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual Mage (Zaros).png",
         "size": 1,
-        "maxHitText": "38"
+        "maxHitText": "38",
+        "isSlayerMonster": true
       },
       {
         "version": "Armadyl",
@@ -27182,7 +27586,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual mage (Armadyl).png",
         "size": 2,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       },
       {
         "version": "Bandos",
@@ -27209,7 +27614,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual mage (Bandos).png",
         "size": 1,
-        "maxHitText": "17"
+        "maxHitText": "17",
+        "isSlayerMonster": true
       },
       {
         "version": "Saradomin",
@@ -27236,7 +27642,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual mage (Saradomin).png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": true
       },
       {
         "version": "Zamorak",
@@ -27263,7 +27670,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual mage (Zamorak).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -27322,7 +27730,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual ranger (Bandos).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Armadyl",
@@ -27349,7 +27758,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual ranger (Armadyl).png",
         "size": 2,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Saradomin",
@@ -27376,7 +27786,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual ranger (Saradomin).png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Zamorak",
@@ -27403,7 +27814,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual ranger (Zamorak).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Zaros",
@@ -27430,7 +27842,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual Ranger (Zaros).png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -27489,7 +27902,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual warrior (Bandos).png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Armadyl",
@@ -27516,7 +27930,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual warrior (Armadyl).png",
         "size": 2,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Saradomin",
@@ -27543,7 +27958,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual warrior (Saradomin).png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Zamorak",
@@ -27570,7 +27986,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual warrior (Zamorak).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Zaros",
@@ -27597,7 +28014,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Spiritual Warrior (Zaros).png",
         "size": 1,
-        "maxHitText": "20"
+        "maxHitText": "20",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -27688,7 +28106,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Steel dragon.png",
         "size": 4,
-        "maxHitText": "24 (Melee)"
+        "maxHitText": "24 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 246",
@@ -27716,7 +28135,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Steel dragon.png",
         "size": 4,
-        "maxHitText": "22 (Melee)"
+        "maxHitText": "22 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -27823,7 +28243,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Strange Creature (melee).png",
         "size": 5,
-        "maxHitText": "24"
+        "maxHitText": "24",
+        "isSlayerMonster": false
       },
       {
         "version": "Post-shield",
@@ -27846,7 +28267,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Strange Creature (ranged).png",
         "size": 5,
-        "maxHitText": "38 (Ranged)"
+        "maxHitText": "38 (Ranged)",
+        "isSlayerMonster": false
       },
       {
         "version": "Ranged",
@@ -27869,7 +28291,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Strange Creature (ranged).png",
         "size": 5,
-        "maxHitText": "32 (Ranged)"
+        "maxHitText": "32 (Ranged)",
+        "isSlayerMonster": false
       },
       {
         "version": "Shielded",
@@ -27892,7 +28315,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Strange Creature (shielded).png",
         "size": 5,
-        "maxHitText": "38 (Ranged)"
+        "maxHitText": "38 (Ranged)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -28256,7 +28680,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tekton.png",
         "size": 4,
-        "maxHitText": "52"
+        "maxHitText": "52",
+        "isSlayerMonster": false
       },
       {
         "version": "Enraged",
@@ -28283,7 +28708,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tekton (enraged).png",
         "size": 4,
-        "maxHitText": "59"
+        "maxHitText": "59",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -28412,7 +28838,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Terror dog (level 110).png",
         "size": 2,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 100",
@@ -28434,7 +28861,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Terror dog (level 100).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -28575,7 +29003,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "The Hueycoatl.png",
         "size": 7,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": false
       },
       {
         "version": "Body",
@@ -28603,7 +29032,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Hueycoatl body.png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": false
       },
       {
         "version": "Tail",
@@ -28631,7 +29061,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Hueycoatl tail.png",
         "size": 5,
-        "maxHitText": "25"
+        "maxHitText": "25",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -28710,7 +29141,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Leviathan.png",
         "size": 7,
-        "maxHitText": "50 (Melee orb & Bite)"
+        "maxHitText": "50 (Melee orb & Bite)",
+        "isSlayerMonster": true
       },
       {
         "version": "Awakened",
@@ -28733,7 +29165,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Leviathan.png",
         "size": 7,
-        "maxHitText": "86 (Melee orb & Bite)"
+        "maxHitText": "86 (Melee orb & Bite)",
+        "isSlayerMonster": false
       },
       {
         "version": "Quest",
@@ -28756,7 +29189,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Leviathan.png",
         "size": 7,
-        "maxHitText": "34 (Melee orb & Bite)"
+        "maxHitText": "34 (Melee orb & Bite)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -28807,7 +29241,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Maiden of Sugadinti.png",
         "size": 6,
-        "maxHitText": "36"
+        "maxHitText": "36",
+        "isSlayerMonster": false
       },
       {
         "version": "30% Health",
@@ -28830,7 +29265,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Maiden of Sugadinti (30% health).png",
         "size": 6,
-        "maxHitText": "36"
+        "maxHitText": "36",
+        "isSlayerMonster": false
       },
       {
         "version": "50% Health",
@@ -28853,7 +29289,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Maiden of Sugadinti (50% health).png",
         "size": 6,
-        "maxHitText": "36"
+        "maxHitText": "36",
+        "isSlayerMonster": false
       },
       {
         "version": "70% Health",
@@ -28876,7 +29313,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Maiden of Sugadinti (70% health).png",
         "size": 6,
-        "maxHitText": "36"
+        "maxHitText": "36",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry Mode",
@@ -28899,7 +29337,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "The Maiden of Sugadinti.png",
         "size": 6,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -29066,7 +29505,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "The Whisperer.png",
         "size": 3,
-        "maxHitText": "42 (x2) (Melee)"
+        "maxHitText": "42 (x2) (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Awakened",
@@ -29092,7 +29532,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "The Whisperer.png",
         "size": 3,
-        "maxHitText": "70+ (x2) (Melee)"
+        "maxHitText": "70+ (x2) (Melee)",
+        "isSlayerMonster": false
       },
       {
         "version": "Quest",
@@ -29118,7 +29559,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "The Whisperer.png",
         "size": 3,
-        "maxHitText": "30 (x2) (Melee)"
+        "maxHitText": "30 (x2) (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -29343,7 +29785,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Tortured gorilla.png",
         "size": 2,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 142",
@@ -29365,7 +29808,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Tortured gorilla.png",
         "size": 2,
-        "maxHitText": "29"
+        "maxHitText": "29",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -29448,7 +29892,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Totem (Phosani's Nightmare, uncharged).png",
         "size": 3,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       },
       {
         "version": "",
@@ -29470,7 +29915,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Totem (Phosani's Nightmare, charged).png",
         "size": 3,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -29525,7 +29971,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Totem (The Nightmare, uncharged).png",
         "size": 3,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       },
       {
         "version": "",
@@ -29547,7 +29994,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Totem (The Nightmare, charged).png",
         "size": 3,
-        "maxHitText": "0"
+        "maxHitText": "0",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -29752,7 +30200,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tumeken's Warden (level-489, core-ejected).png",
         "size": 5,
-        "maxHitText": "22"
+        "maxHitText": "22",
+        "isSlayerMonster": false
       },
       {
         "version": "Active",
@@ -29778,7 +30227,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tumeken's Warden (level-489).png",
         "size": 5,
-        "maxHitText": "22"
+        "maxHitText": "22",
+        "isSlayerMonster": false
       },
       {
         "version": "Damaged",
@@ -29804,7 +30254,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tumeken's Warden (level-544).png",
         "size": 5,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       },
       {
         "version": "Enraged",
@@ -29830,7 +30281,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tumeken's Warden (level-544, immune).png",
         "size": 5,
-        "maxHitText": "26"
+        "maxHitText": "26",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -29883,7 +30335,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Turoth (lv 89).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Baby",
@@ -29907,7 +30360,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Turoth (lv 83).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Child",
@@ -29931,7 +30385,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Turoth (lv 85).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Mum",
@@ -29955,7 +30410,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Turoth (lv 87).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -30094,7 +30550,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tz-Kek (level 45).png",
         "size": 2,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 22",
@@ -30119,7 +30576,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Tz-Kek (level 22).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -30230,7 +30688,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "TzHaar-Ket (level 221).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 149",
@@ -30255,7 +30714,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "TzHaar-Ket (level 149).png",
         "size": 1,
-        "maxHitText": "15"
+        "maxHitText": "15",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -30630,7 +31090,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 30",
@@ -30657,7 +31118,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 35",
@@ -30684,7 +31146,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 40",
@@ -30711,7 +31174,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 45",
@@ -30738,7 +31202,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 50",
@@ -30765,7 +31230,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 55",
@@ -30792,7 +31258,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 60",
@@ -30819,7 +31286,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 64",
@@ -30846,7 +31314,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead Lumberjack.png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -30905,7 +31374,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead one (Zombie, 4).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 61",
@@ -30932,7 +31402,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead one (Skeletal, 3).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 68 (Skeletal)",
@@ -30959,7 +31430,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead one (Skeletal).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 68 (Zombie)",
@@ -30986,7 +31458,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Undead one (Zombie).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -31076,7 +31549,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Urium Shade.png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Shadow",
@@ -31105,7 +31579,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Urium Shadow.png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -31210,7 +31685,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate (Sins of the Father).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 50 (In Aid of the Myreque)",
@@ -31234,7 +31710,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate (In Aid of the Myreque, level 50).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 54 (Burgh de Rott)",
@@ -31258,7 +31735,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate.png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 59 (Temple Trekking)",
@@ -31282,7 +31760,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate (Temple Trekking, level 59).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 75 (In Aid of the Myreque)",
@@ -31306,7 +31785,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate (In Aid of the Myreque, level 75).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 90 (Temple Trekking)",
@@ -31330,7 +31810,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vampyre Juvinate (Temple Trekking, level 90).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -31441,7 +31922,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vanstrom Klause (vampyre).png",
         "size": 1,
-        "maxHitText": "24 (Standard)"
+        "maxHitText": "24 (Standard)",
+        "isSlayerMonster": true
       },
       {
         "version": "Vampyre",
@@ -31465,7 +31947,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vanstrom Klause (vampyre, Darkness of Hallowvale).png",
         "size": 1,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -31520,7 +32003,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Vardorvis.png",
         "size": 2,
-        "maxHitText": "32-43 (Melee)"
+        "maxHitText": "32-43 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Awakened",
@@ -31545,7 +32029,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Vardorvis.png",
         "size": 2,
-        "maxHitText": "46-61 (Melee)"
+        "maxHitText": "46-61 (Melee)",
+        "isSlayerMonster": false
       },
       {
         "version": "Quest",
@@ -31570,7 +32055,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Vardorvis.png",
         "size": 2,
-        "maxHitText": "30-37 (Melee)"
+        "maxHitText": "30-37 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -31760,7 +32246,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Verzik Vitur (flying).png",
         "size": 3,
-        "maxHitText": "44"
+        "maxHitText": "44",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry mode, Phase 1",
@@ -31783,7 +32270,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Verzik Vitur.png",
         "size": 5,
-        "maxHitText": "60"
+        "maxHitText": "60",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry mode, Phase 2",
@@ -31806,7 +32294,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Verzik Vitur (flying).png",
         "size": 3,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry mode, Phase 3",
@@ -31832,7 +32321,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Verzik Vitur (final form).png",
         "size": 7,
-        "maxHitText": "36 (melee)"
+        "maxHitText": "36 (melee)",
+        "isSlayerMonster": false
       },
       {
         "version": "Hard mode, Phase 1",
@@ -31855,7 +32345,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Verzik Vitur.png",
         "size": 5,
-        "maxHitText": "137"
+        "maxHitText": "137",
+        "isSlayerMonster": false
       },
       {
         "version": "Hard mode, Phase 3",
@@ -31881,7 +32372,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Verzik Vitur (final form).png",
         "size": 7,
-        "maxHitText": "63 (melee)"
+        "maxHitText": "63 (melee)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -32194,7 +32686,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Vorkath.png",
         "size": 7,
-        "maxHitText": "30 (Magic)"
+        "maxHitText": "30 (Magic)",
+        "isSlayerMonster": true
       },
       {
         "version": "Dragon Slayer II",
@@ -32224,7 +32717,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Vorkath.png",
         "size": 7,
-        "maxHitText": "30 (Magic)"
+        "maxHitText": "30 (Magic)",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -32305,7 +32799,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vyrewatch.png",
         "size": 1,
-        "maxHitText": "13"
+        "maxHitText": "13",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 105",
@@ -32329,7 +32824,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vyrewatch.png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 110",
@@ -32353,7 +32849,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vyrewatch.png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 120",
@@ -32377,7 +32874,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vyrewatch.png",
         "size": 1,
-        "maxHitText": "12"
+        "maxHitText": "12",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 87",
@@ -32401,7 +32899,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Vyrewatch.png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -32530,7 +33029,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Warped Terrorbird (lv 138).png",
         "size": 2,
-        "maxHitText": "16"
+        "maxHitText": "16",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 96",
@@ -32552,7 +33052,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Warped Terrorbird (lv 96).png",
         "size": 2,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -32659,7 +33160,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Werewolf (Alexis).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "God Wars Dungeon (1)",
@@ -32681,7 +33183,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Werewolf (God Wars Dungeon, 1).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -32736,7 +33239,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "White wolf.png",
         "size": 2,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 25",
@@ -32761,7 +33265,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "White wolf.png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -32871,7 +33376,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Wolf.png",
         "size": 2,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 11",
@@ -32896,7 +33402,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Wolf (level 11).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 14",
@@ -32921,7 +33428,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Wolf (level 14).png",
         "size": 2,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 25",
@@ -32946,7 +33454,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Wolf (level 25).png",
         "size": 2,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -33141,7 +33650,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Xarpus.png",
         "size": 5,
-        "maxHitText": "11 (50+ recoil)"
+        "maxHitText": "11 (50+ recoil)",
+        "isSlayerMonster": false
       },
       {
         "version": "Entry mode",
@@ -33166,7 +33676,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Xarpus.png",
         "size": 5,
-        "maxHitText": "6 (38+ recoil)"
+        "maxHitText": "6 (38+ recoil)",
+        "isSlayerMonster": false
       },
       {
         "version": "Normal mode",
@@ -33191,7 +33702,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Xarpus.png",
         "size": 5,
-        "maxHitText": "11 (50+ recoil)"
+        "maxHitText": "11 (50+ recoil)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -33283,7 +33795,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yama.png",
         "size": 5,
-        "maxHitText": "46 (auto-attacks)"
+        "maxHitText": "46 (auto-attacks)",
+        "isSlayerMonster": false
       },
       {
         "version": "Phase 3",
@@ -33311,7 +33824,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yama.png",
         "size": 5,
-        "maxHitText": "46 (auto-attacks)"
+        "maxHitText": "46 (auto-attacks)",
+        "isSlayerMonster": false
       },
       {
         "version": "Glyphic Attenuation",
@@ -33339,7 +33853,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yama.png",
         "size": 5,
-        "maxHitText": "46 (auto-attacks)"
+        "maxHitText": "46 (auto-attacks)",
+        "isSlayerMonster": false
       },
       {
         "version": "Glyphic Attenuation, Phase 3",
@@ -33367,7 +33882,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yama.png",
         "size": 5,
-        "maxHitText": "46 (auto-attacks)"
+        "maxHitText": "46 (auto-attacks)",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -33424,7 +33940,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yt-HurKot.png",
         "size": 1,
-        "maxHitText": "18"
+        "maxHitText": "18",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 108",
@@ -33449,7 +33966,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Yt-HurKot.png",
         "size": 1,
-        "maxHitText": "14"
+        "maxHitText": "14",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -33556,7 +34074,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Zalcano (weakened).png",
         "size": 5,
-        "maxHitText": "N/A"
+        "maxHitText": "N/A",
+        "isSlayerMonster": false
       },
       {
         "version": "Armoured",
@@ -33578,7 +34097,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "weakness": null,
         "image": "Zalcano.png",
         "size": 5,
-        "maxHitText": "53"
+        "maxHitText": "53",
+        "isSlayerMonster": false
       }
     ]
   },
@@ -33690,7 +34210,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 24).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 13, 1",
@@ -33717,7 +34238,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 13).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 18, 1",
@@ -33744,7 +34266,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 18).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -33833,7 +34356,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 76).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 56",
@@ -33860,7 +34384,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 56).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 70",
@@ -33887,7 +34412,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 70).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 72",
@@ -33914,7 +34440,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Level 72).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -34032,7 +34559,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Shayzien Crypts, Magic).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       },
       {
         "version": "Melee",
@@ -34059,7 +34587,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Shayzien Crypts, Melee).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       },
       {
         "version": "Range",
@@ -34086,7 +34615,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Shayzien Crypts, Range).png",
         "size": 1,
-        "maxHitText": "19"
+        "maxHitText": "19",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -34145,7 +34675,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Stronghold of Security, level 53, 1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 30, 1",
@@ -34172,7 +34703,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Stronghold of Security, level 30, 1).png",
         "size": 1,
-        "maxHitText": "4"
+        "maxHitText": "4",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 44, 1",
@@ -34199,7 +34731,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Stronghold of Security, level 44, 1).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -34258,7 +34791,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 100).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 40",
@@ -34285,7 +34819,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 40).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 42",
@@ -34312,7 +34847,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 42).png",
         "size": 1,
-        "maxHitText": "5"
+        "maxHitText": "5",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 47",
@@ -34339,7 +34875,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 47).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 50",
@@ -34366,7 +34903,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 50).png",
         "size": 1,
-        "maxHitText": "6"
+        "maxHitText": "6",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 56",
@@ -34393,7 +34931,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 56).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 61",
@@ -34420,7 +34959,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 61).png",
         "size": 1,
-        "maxHitText": "7"
+        "maxHitText": "7",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 67",
@@ -34447,7 +34987,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 67).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 70",
@@ -34474,7 +35015,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 70).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 72",
@@ -34501,7 +35043,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 72).png",
         "size": 1,
-        "maxHitText": "8"
+        "maxHitText": "8",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 76",
@@ -34528,7 +35071,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 76).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 80",
@@ -34555,7 +35099,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 80).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 81",
@@ -34582,7 +35127,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 81).png",
         "size": 1,
-        "maxHitText": "9"
+        "maxHitText": "9",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 85",
@@ -34609,7 +35155,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 85).png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 90",
@@ -34636,7 +35183,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 90).png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 95",
@@ -34663,7 +35211,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 95).png",
         "size": 1,
-        "maxHitText": "10"
+        "maxHitText": "10",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 98",
@@ -34690,7 +35239,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Tarn's Lair, Level 98).png",
         "size": 1,
-        "maxHitText": "11"
+        "maxHitText": "11",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -34776,7 +35326,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Wilderness, level 24, 1).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 18, 1",
@@ -34803,7 +35354,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie (Wilderness, level 18, 1).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -34892,7 +35444,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie pirate (4).png",
         "size": 1,
-        "maxHitText": "3"
+        "maxHitText": "3",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 22",
@@ -34919,7 +35472,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie pirate (1).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 28",
@@ -34946,7 +35500,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie pirate (2).png",
         "size": 1,
-        "maxHitText": "2"
+        "maxHitText": "2",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -35067,7 +35622,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie rat (1).png",
         "size": 2,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       },
       {
         "version": "3",
@@ -35095,7 +35651,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zombie rat (3).png",
         "size": 1,
-        "maxHitText": "1"
+        "maxHitText": "1",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -35182,7 +35739,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zulrah (serpentine).png",
         "size": 5,
-        "maxHitText": "41"
+        "maxHitText": "41",
+        "isSlayerMonster": true
       },
       {
         "version": "Magma",
@@ -35208,7 +35766,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zulrah (magma).png",
         "size": 5,
-        "maxHitText": "30"
+        "maxHitText": "30",
+        "isSlayerMonster": true
       },
       {
         "version": "Tanzanite",
@@ -35234,7 +35793,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zulrah (tanzanite).png",
         "size": 5,
-        "maxHitText": "41"
+        "maxHitText": "41",
+        "isSlayerMonster": true
       }
     ]
   },
@@ -35289,7 +35849,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zygomite (level 86).png",
         "size": 2,
-        "maxHitText": "8 (Melee)"
+        "maxHitText": "8 (Melee)",
+        "isSlayerMonster": true
       },
       {
         "version": "Level 74",
@@ -35314,7 +35875,8 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         },
         "image": "Zygomite (level 74).png",
         "size": 1,
-        "maxHitText": "7 (Melee)"
+        "maxHitText": "7 (Melee)",
+        "isSlayerMonster": true
       }
     ]
   }

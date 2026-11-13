@@ -128,7 +128,14 @@ const STANDARD: readonly SpellEntry[] = [
   // Magic Dart: ⌊magic/10⌋ + 10 (19 at 99). Needs a Slayer's staff family weapon.
   { name: "Magic Dart", spellbook: "standard", element: "none", minLevel: 50, baseMaxHit: 0, scaledMaxHit: (lvl) => Math.floor(lvl / 10) + 10, requiresStaff: "Slayer's staff" },
   { name: "Crumble Undead", spellbook: "standard", element: "none", minLevel: 39, baseMaxHit: 15, requiresAttribute: "undead" },
+  // The binding spells that deal damage (Bind deals none). Max hits as the
+  // wiki calc has them; a charged Tome of water adds its accuracy to them.
+  { name: "Entangle", spellbook: "standard", element: "none", minLevel: 79, baseMaxHit: 5 },
+  { name: "Snare", spellbook: "standard", element: "none", minLevel: 50, baseMaxHit: 3 },
 ];
+
+/** Snare / Entangle: a Tome of water's accuracy applies to them (upstream isBindSpell). */
+export const BIND_SPELL_NAMES: ReadonlySet<string> = new Set(["Snare", "Entangle"]);
 
 const ANCIENT: readonly SpellEntry[] = [
   { name: "Ice Barrage", spellbook: "ancient", element: "none", minLevel: 94, baseMaxHit: 30 },
@@ -267,6 +274,13 @@ export interface SpellSelectionContext {
    * Omitted = no weapon constraint.
    */
   allowedSpellbooks?: readonly Spellbook[];
+  /**
+   * Whether the equipped weapon can cast a staff-locked spell (Iban Blast, the
+   * god spells, Magic Dart). Omitted = none of them is considered.
+   */
+  canCastStaffSpell?: (spellName: string) => boolean;
+  /** Slayer's staff (e) on a slayer task: Magic Dart is 13 + trunc(magic / 6). */
+  enhancedMagicDart?: boolean;
 }
 
 /**
@@ -275,7 +289,10 @@ export interface SpellSelectionContext {
  * on the base, weakness on that base, tome).
  */
 function spellFirstCastMaxHit(spell: SpellEntry, ctx: SpellSelectionContext): number {
-  let hit = spellMaxHit(spell, ctx.magicLevel);
+  let hit =
+    spell.name === "Magic Dart" && ctx.enhancedMagicDart
+      ? Math.trunc(13 + ctx.magicLevel / 6)
+      : spellMaxHit(spell, ctx.magicLevel);
   if (amuletBoostsElement(ctx.elementalAmulet, spell.element)) {
     hit += ELEMENTAL_AMULET_MAX_HIT_BONUS;
   }
@@ -325,15 +342,16 @@ export function spellExpectedHit(spell: SpellEntry, ctx: SpellSelectionContext):
  * can override this. Assumes the player can access whichever spellbook wins
  * (the picker is there for when they can't, or want a specific spell).
  *
- * Spells needing a specific staff (Iban Blast, Magic Dart, god spells) are
- * excluded from the auto-pick — we can't assume that exact staff is equipped, so
- * recommending them on a generic staff would be wrong. They remain selectable in
- * the manual picker, which lists every spell directly.
+ * Spells needing a specific staff (Iban Blast, Magic Dart, god spells) join
+ * the pick only when `canCastStaffSpell` says the equipped weapon casts them:
+ * Iban Blast (25) then beats Fire Surge (24) on Iban's staff, and Magic Dart
+ * (29 at 99) wins on a Slayer's staff (e) on task.
  */
 export function bestSpell(ctx: SpellSelectionContext): SpellEntry | undefined {
   let castable = ALL_SPELLS.filter(
     (s) =>
-      !s.requiresStaff && spellCastableVs(s, ctx.magicLevel, ctx.targetAttributes),
+      (!s.requiresStaff || ctx.canCastStaffSpell?.(s.name) === true) &&
+      spellCastableVs(s, ctx.magicLevel, ctx.targetAttributes),
   );
   // The Twinflame staff can only autocast standard-spellbook spells, so when
   // it's equipped the auto-pick must stay within Standard (otherwise an Ancient

@@ -320,6 +320,7 @@ function solveHybrid(
             input.target,
             input.baseSpellMaxHit,
             input.spellElement,
+            input.onTask ?? false,
           )
         : { baseSpellMaxHit: input.baseSpellMaxHit, spellElement: input.spellElement, autoSpellName: undefined };
       const scored = scoreScenario({
