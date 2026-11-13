@@ -332,7 +332,11 @@ export function ResultsPanel({
           : null;
         return (
         <div>
-          <StatRow label="Max hit" value={specMax ? specMax.normalMaxHit : dps.maxHit} />
+          {/* As the wiki calc shows it: everything one attack can deal. */}
+          <StatRow
+            label="Max hit"
+            value={dps.wikiMaxHit ?? (specMax ? specMax.normalMaxHit : dps.maxHit)}
+          />
           {specMax && (
             <StatRow label={`Spec max (${specMax.specName})`} value={specValue} />
           )}

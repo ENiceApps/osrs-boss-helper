@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { MONSTER_BY_SLUG } from "@/data/monsters/catalog";
 import { scoreScenario } from "@/lib/optimize/scenario";
-import { SKILLS_AT_99 } from "@/lib/recommend";
+import { computeSetDps, SKILLS_AT_99, wikiMaxHitForSet } from "@/lib/recommend";
 import { hitChance } from "@/lib/dps/common";
 import { ammoApplicability } from "@/data/items/ammo-applicability";
 import { canonicalItemId } from "@/data/items/aliases";
@@ -88,6 +88,32 @@ describe("monsters with their own hit rules", () => {
   it("the Fragment of Seren caps every hit at 22-24", () => {
     const r = score([RAPIER, ...MELEE_REST], "fragment-of-seren", "stab", "aggressive");
     expect(r.maxHit).toBe(24);
+  });
+});
+
+describe("the max hit the results rail shows (wiki convention)", () => {
+  const graardor = MONSTER_BY_SLUG["general-graardor"];
+  const set = (weaponId: number, attackType: WeaponAttackType) => {
+    const r = scoreScenario({
+      itemIds: [weaponId, ...MELEE_REST],
+      target: graardor,
+      skills: SKILLS_AT_99,
+      attackStyle: { attackType, choice: "aggressive" },
+    });
+    if (!r.valid) throw new Error(r.reasons.join("; "));
+    return r;
+  };
+  it("a Scythe's three swings are summed", () => {
+    const r = set(22325, "slash");
+    const m = r.dps.maxHit;
+    expect(wikiMaxHitForSet(r.loadout, graardor, SKILLS_AT_99)).toBe(
+      m + Math.trunc(m / 2) + Math.trunc(m / 4),
+    );
+  });
+  it("a plain weapon's is its max hit, and the engine goes back to the fast path", () => {
+    const r = set(RAPIER, "stab");
+    expect(wikiMaxHitForSet(r.loadout, graardor, SKILLS_AT_99)).toBe(r.dps.maxHit);
+    expect(computeSetDps(r.loadout, graardor, SKILLS_AT_99).wikiMaxHit).toBeUndefined();
   });
 });
 

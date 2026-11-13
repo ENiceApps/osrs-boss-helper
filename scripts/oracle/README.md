@@ -109,7 +109,9 @@ npx tsx scripts/oracle/data-diff.ts .oracle/wgloop-head      # pure data diff
   (`lib/dps/dist-pipeline.ts`) and compares its wiki-convention max hit
   (`DpsResult.wikiMaxHit`: all hitsplats and procs summed) with no exceptions.
   Without it the app's normal path runs (closed forms, the distribution only
-  for the rarer mechanics) and the max hit keeps our display convention.
+  for the rarer mechanics) and `maxHit` is the largest single hitsplat. The
+  boss page shows the wiki-convention figure (`wikiMaxHitForSet` in
+  `lib/recommend.ts`, the same forced-distribution run).
 
 Result at upstream 74958b1: every comparable row matches in forced-distribution
 mode. What is left, by design or because the wiki calc's data is off:

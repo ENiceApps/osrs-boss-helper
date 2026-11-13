@@ -12,7 +12,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MONSTER_BY_SLUG, type MonsterCatalogEntry } from "@/data/monsters/catalog";
-import { computeSetDps, SKILLS_AT_99, SOULREAPER_AXE_IDS } from "@/lib/recommend";
+import { computeSetDps, SKILLS_AT_99, SOULREAPER_AXE_IDS, wikiMaxHitForSet } from "@/lib/recommend";
 import { findUpgrades, recommendedSellToFund, type BudgetMode } from "@/lib/optimize/budget";
 import { bestLoadoutForBudget } from "@/lib/optimize/budget-build";
 import { itemScore, meetsRequirements, loadoutSlotFor } from "@/lib/optimize/bank";
@@ -748,8 +748,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     (dharokFullSetEquipped && dharokCurrentHp !== undefined && dharokCurrentHp < (skills.hitpoints ?? 99));
   const selectedDps = useMemo(() => {
     if (!selectedSet) return undefined;
-    if (!needsDpsRecompute) return activeScenario?.dps;
-    return computeSetDps(
+    const args: Parameters<typeof computeSetDps> = [
       selectedSet,
       monster,
       skills,
@@ -760,7 +759,12 @@ export function BossCockpit({ slug }: { slug: string }) {
       prayerById(selectedSet.style, prayerIds[selectedSet.style]).selection,
       rubyProcEnabled,
       markOfDarkness,
-    );
+    ];
+    const dps = needsDpsRecompute ? computeSetDps(...args) : activeScenario?.dps;
+    if (!dps) return dps;
+    // The results rail shows the max hit the way the wiki calc does.
+    const wikiMaxHit = wikiMaxHitForSet(...args);
+    return wikiMaxHit === undefined ? dps : { ...dps, wikiMaxHit };
   }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled, markOfDarkness]);
 
   // The prayer option backing the displayed DPS — drives the results-rail prayer

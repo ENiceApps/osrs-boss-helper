@@ -8,7 +8,7 @@
 import { SPELLCASTING_STAFF_CATEGORIES } from "@/data/weapon-styles";
 import type { DpsResult, PrayerSelection, Skills } from "@/types/osrs";
 import { defaultPrayerFor } from "@/data/prayers";
-import { calculateDps, type DpsScenario } from "@/lib/dps/calculate";
+import { calculateDps, forceDistributionEngine, type DpsScenario } from "@/lib/dps/calculate";
 import { OBLIGATOR_SMASH_TICKS, obligatorThrust } from "@/data/items/obligator";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
@@ -688,6 +688,22 @@ export function computeSetDps(
   }
 
   return calculateDps(scenario);
+}
+
+/**
+ * The max hit as the wiki DPS calc shows it (everything one attack can deal:
+ * all hitsplats and procs summed, the fang's trimmed roll), for the loadout
+ * `computeSetDps` would score with the same arguments. Display only: it runs
+ * the exact hit distribution, which the optimizer's hot path skips. Undefined
+ * for a loadout that can't attack.
+ */
+export function wikiMaxHitForSet(...args: Parameters<typeof computeSetDps>): number | undefined {
+  const previous = forceDistributionEngine(true);
+  try {
+    return computeSetDps(...args).wikiMaxHit;
+  } finally {
+    forceDistributionEngine(previous);
+  }
 }
 
 /** Convenience for pages that just want recommendations at default level-99 skills. */

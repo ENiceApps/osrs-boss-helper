@@ -584,8 +584,11 @@ function spellBaseMaxHit(scenario: DpsScenario): number {
 // cross-check the closed forms against the distribution model, and to read the
 // wiki-convention max hit off every loadout).
 let FORCE_DISTRIBUTION = false;
-export function forceDistributionEngine(on: boolean): void {
+/** Returns the previous setting, so a caller can restore it. */
+export function forceDistributionEngine(on: boolean): boolean {
+  const previous = FORCE_DISTRIBUTION;
   FORCE_DISTRIBUTION = on;
+  return previous;
 }
 
 export function calculateDps(scenario: DpsScenario): DpsResult {
