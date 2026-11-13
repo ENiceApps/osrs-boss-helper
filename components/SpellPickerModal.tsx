@@ -25,6 +25,8 @@ interface Props {
   targetAttributes: readonly string[];
   /** Equipped weapon — gates which spellbooks/spells can actually be autocast. */
   weaponId?: number;
+  /** The whole loadout: a set can unlock a spellbook (Ahrim's + Amulet of the damned). */
+  wornItemIds?: readonly number[];
   /** Worn elemental amulet and the target's elemental weakness — fold into the
       effective-max-hit ordering so the best element for this setup sorts first. */
   elementalAmulet?: ElementalAmuletKind;
@@ -63,8 +65,12 @@ function uncastableReason(
  * uncastableReason, this disables the row entirely — the weapon physically can't
  * cast it, so it must not be chooseable.
  */
-function autocastBlockReason(spell: SpellEntry, weaponId: number | undefined): string | undefined {
-  if (!weaponCanAutocastSpellbook(weaponId, spell.spellbook)) {
+function autocastBlockReason(
+  spell: SpellEntry,
+  weaponId: number | undefined,
+  wornItemIds: readonly number[],
+): string | undefined {
+  if (!weaponCanAutocastSpellbook(weaponId, spell.spellbook, wornItemIds)) {
     return `can't autocast ${SPELLBOOK_LABELS[spell.spellbook]}`;
   }
   if (spell.requiresStaff && !weaponCanCastStaffSpell(weaponId, spell.name)) {
@@ -85,6 +91,7 @@ export function SpellPickerModal({
   magicLevel,
   targetAttributes,
   weaponId,
+  wornItemIds,
   elementalAmulet,
   targetWeakness,
   onSelect,
@@ -178,7 +185,7 @@ export function SpellPickerModal({
                   // Hard block (weapon can't autocast) disables the row; soft
                   // reason (level / target attribute) only greys it but stays
                   // selectable for what-if comparison.
-                  const blocked = autocastBlockReason(spell, weaponId);
+                  const blocked = autocastBlockReason(spell, weaponId, wornItemIds ?? []);
                   const reason = blocked ?? uncastableReason(spell, magicLevel, targetAttributes);
                   return (
                     <li key={spell.name}>

@@ -153,6 +153,11 @@ describe("magic weapon autocast capability", () => {
     expect(books("Thammaron's sceptre (a)")).toEqual(["ancient", "standard"]);
     expect(books("Ahrim's staff")).toEqual(["arceuus", "standard"]);
     expect(books("Staff of light")).toEqual(["standard"]);
+    // Ahrim's staff casts Ancient only with the rest of the set and the amulet.
+    const set = ["Ahrim's hood", "Ahrim's robetop", "Ahrim's robeskirt", "Amulet of the damned"].map(id);
+    expect(autocastableSpellbooks(id("Ahrim's staff"), set).sort()).toEqual(["ancient", "arceuus", "standard"]);
+    expect(autocastableSpellbooks(id("Ahrim's staff"), set.slice(1))).not.toContain("ancient");
+    expect(autocastableSpellbooks(id("Kodai wand"), set.slice(1))).toContain("ancient");
   });
 });
 

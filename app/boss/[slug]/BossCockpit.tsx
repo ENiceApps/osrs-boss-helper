@@ -1408,6 +1408,7 @@ export function BossCockpit({ slug }: { slug: string }) {
           magicLevel={skills.magic}
           targetAttributes={monster.attributes}
           weaponId={selectedSet?.slots.weapon?.itemId}
+          wornItemIds={Object.values(selectedSet?.slots ?? {}).flatMap((s) => (s ? [s.itemId] : []))}
           elementalAmulet={selectedSet?.itemBonusFlags.elementalAmulet}
           targetWeakness={monster.weakness}
           onSelect={onSpellSelect}

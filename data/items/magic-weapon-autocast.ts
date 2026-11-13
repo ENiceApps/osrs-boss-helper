@@ -20,8 +20,8 @@ const NAME_BY_ID = new Map<number, string>(ITEM_CATALOG.map((i) => [i.id, i.name
 // 2026-11-13). NOTE the Harmonised Nightmare staff matches "nightmare staff"
 // but is Standard-only (it speeds up standard spells), so it is explicitly
 // excluded below. Ahrim's staff autocasts Ancient only with the full Ahrim's
-// set and an Amulet of the damned; this table sees the weapon alone, so it is
-// left out. Neither Staff of the dead autocasts Ancient.
+// set and an Amulet of the damned (ahrimsAncientAutocast). Neither Staff of
+// the dead autocasts Ancient.
 const ANCIENT_CAPABLE =
   /ancient staff|ancient sceptre|kodai wand|master wand|nightmare staff|accursed sceptre \(a\)|thammaron's sceptre \(a\)|blue moon spear|dragon hunter wand/i;
 
@@ -29,16 +29,42 @@ const ANCIENT_CAPABLE =
 const ARCEUUS_CAPABLE =
   /kodai wand|master wand|purging staff|slayer's staff|skull sceptre \(i\)|staff of the dead|ahrim's staff|blue moon spear/i;
 
-/** Spellbooks the given weapon can autocast. Empty for powered staves (no autocast). */
-export function autocastableSpellbooks(weaponId: number | undefined): Spellbook[] {
+const AHRIMS_SET = ["ahrim's hood", "ahrim's robetop", "ahrim's robeskirt", "amulet of the damned"];
+
+/**
+ * Ahrim's staff with the rest of Ahrim's set and an Amulet of the damned
+ * autocasts Ancient Magicks (wiki, Ahrim's staff: restored 5 May 2021).
+ * Degraded pieces count as their base item.
+ */
+function ahrimsAncientAutocast(weaponName: string, wornItemIds: readonly number[]): boolean {
+  if (!/^ahrim's staff$/i.test(weaponName)) return false;
+  const worn = new Set(
+    wornItemIds.map((id) => (NAME_BY_ID.get(canonicalItemId(id)) ?? NAME_BY_ID.get(id) ?? "").toLowerCase()),
+  );
+  return AHRIMS_SET.every((n) => worn.has(n));
+}
+
+/**
+ * Spellbooks the given weapon can autocast. Empty for powered staves (no
+ * autocast). `wornItemIds` (the whole loadout) lets a set unlock a book.
+ */
+export function autocastableSpellbooks(
+  weaponId: number | undefined,
+  wornItemIds: readonly number[] = [],
+): Spellbook[] {
   // No weapon (unarmed) — assume the player can autocast Standard from any book they're on.
   if (weaponId === undefined) return ["standard"];
   // Powered staves fire their own attack; they can't autocast a chosen spell.
   if (POWERED_STAFF_FORMULA.has(weaponId)) return [];
-  const name = NAME_BY_ID.get(weaponId);
+  const name = NAME_BY_ID.get(canonicalItemId(weaponId)) ?? NAME_BY_ID.get(weaponId);
   if (!name) return ["standard"];
   const books: Spellbook[] = ["standard"];
-  if (ANCIENT_CAPABLE.test(name) && !/harmonised/i.test(name)) books.push("ancient");
+  if (
+    (ANCIENT_CAPABLE.test(name) && !/harmonised/i.test(name)) ||
+    ahrimsAncientAutocast(name, wornItemIds)
+  ) {
+    books.push("ancient");
+  }
   if (ARCEUUS_CAPABLE.test(name)) books.push("arceuus");
   return books;
 }
@@ -47,8 +73,9 @@ export function autocastableSpellbooks(weaponId: number | undefined): Spellbook[
 export function weaponCanAutocastSpellbook(
   weaponId: number | undefined,
   spellbook: Spellbook,
+  wornItemIds: readonly number[] = [],
 ): boolean {
-  return autocastableSpellbooks(weaponId).includes(spellbook);
+  return autocastableSpellbooks(weaponId, wornItemIds).includes(spellbook);
 }
 
 /**

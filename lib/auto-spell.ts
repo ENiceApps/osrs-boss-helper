@@ -91,7 +91,7 @@ export function autoPickSpell(
       targetWeakness: target.weakness,
       twinflame: weapon.id === 30634, // Twinflame staff
       // Never recommend a spell the equipped weapon can't autocast.
-      allowedSpellbooks: autocastableSpellbooks(weapon.id),
+      allowedSpellbooks: autocastableSpellbooks(weapon.id, itemIds),
       canCastStaffSpell: (name) => weaponCanCastStaffSpell(weapon.id, name),
       enhancedMagicDart:
         onTask && target.isSlayerMonster !== false && /^slayer's staff \(e\)$/i.test(weapon.name),
