@@ -78,6 +78,56 @@ nearest `package-lock.json` (adds `@next/swc-win32-ia32-msvc`) — ours, when th
 clone sits under this checkout. Revert it (`git checkout -- package-lock.json`)
 before committing.
 
+## Full sweep against the live wiki calc (2026-11-13)
+
+`full-sweep.ts` enumerates the catalog instead of picking combos: every weapon
+on every style vs a target per monster attribute, every armour piece swapped
+into a base loadout per style, every ammo on every launcher, every spell on
+every casting weapon, every armour set (whole and short of each piece), every
+monster and stat / mechanic phase vs a reference loadout per mechanic, plus a
+hand-picked `effects` family (Barrows sets, vampyrebane, the monsters with
+their own hit rules, potions, Mark of Darkness, item variants). About 390,000
+combos.
+
+```bash
+# one-time: a second checkout of the wiki calc at upstream HEAD
+git -C .oracle/wgloop fetch origin
+git -C .oracle/wgloop worktree add --detach ../wgloop-head origin/main
+#   junction .oracle/wgloop-head/node_modules -> ../wgloop/node_modules
+#   (HEAD also needs the `uuid` package in node_modules)
+
+npx tsx scripts/oracle/full-sweep.ts <dir>/combos            # write chunk files
+ORACLE_CLONE_DIR=.oracle/wgloop-head ORACLE_NATIVE_DATA=1 ORACLE_STRICT=1   ORACLE_IO_DIR=<dir>/io npx tsx scripts/oracle/run-oracle.ts   --combos-file=<dir>/combos/weapons-000.json --json-out=<dir>/out/weapons-000.json
+npx tsx scripts/oracle/data-diff.ts .oracle/wgloop-head      # pure data diff
+```
+
+- `ORACLE_CLONE_DIR` points the run at another checkout; `ORACLE_NATIVE_DATA=1`
+  leaves that checkout's own item / monster JSON in place (no vendor sync, no
+  stat overrides), so the wgloop side is exactly what dps.osrs.wiki shows.
+- `ORACLE_STRICT=1`: accuracy to 1e-4, DPS to 0.05% on every row.
+- `ORACLE_FORCE_DIST=1` scores every combo through the exact hit distribution
+  (`lib/dps/dist-pipeline.ts`) and compares its wiki-convention max hit
+  (`DpsResult.wikiMaxHit`: all hitsplats and procs summed) with no exceptions.
+  Without it the app's normal path runs (closed forms, the distribution only
+  for the rarer mechanics) and the max hit keeps our display convention.
+
+Result at upstream 74958b1: every comparable row matches in forced-distribution
+mode. What is left, by design or because the wiki calc's data is off:
+
+- **Ownership variants**: an Empty blowpipe is scored loaded, an Uncharged
+  Wilderness weapon / Obligator charged (the bank holds what the player owns);
+  the wiki calc reads the version literally. Left out of the sweep.
+- **Trident of the Seas (o), Fully charged** (33323): the wiki calc scores it 0
+  through a missing alias.
+- **Dizana's quiver with an aliased crossbow** (Dragon crossbow (cr), …): the
+  wiki calc checks the raw weapon id there and gives no bonus; ours does.
+- **Nightmare totems**: the wiki calc's data has the two totems' hitpoints
+  swapped (ruby bolt procs differ); ours follows the wiki pages.
+- **Monsters the wiki calc lacks** (Gryphon 15009, Strange Creature 12063).
+- **Obligator on Aggressive**: we score the better of Thrust and Smash.
+- App mode only: the fang's max hit under flat armour / a phase factor is our
+  true max, not the trimmed roll's (display convention).
+
 ## Multiplier-order combos
 
 `orderingCombos()` in `combos.ts` pins the ORDER multipliers apply in — every

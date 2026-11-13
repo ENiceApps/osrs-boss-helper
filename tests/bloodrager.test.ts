@@ -9,7 +9,7 @@ import type { LoadoutSet } from "@/types/loadout";
 // Blood moon "Bloodrager" set effect: full Blood moon armour + Dual macuahuitl.
 // Each of the macuahuitl's two sequential hits has a 33% chance to make the
 // next attack land a tick sooner. Per-attack accelerate chance is
-//   P = 0.33·a·(1 + 0.67·a)   (a = per-hit accuracy)
+//   P = a/3 + 2·a²/9   (a = per-hit accuracy; wiki calc getExpectedAttackSpeed)
 // and the long-run effective interval drops from 4 ticks to (4 − P). The effect
 // is accuracy-dependent, so it's applied after accuracy is known.
 const MELEE_PRAYERS = {
@@ -44,7 +44,7 @@ describe("Bloodrager attack-speed effect", () => {
     const on = calculateDps(macuahuitlScenario({ bloodrager: true }));
 
     const a = off.accuracy; // accuracy is identical with/without the speed effect
-    const p = 0.33 * a * (1 + 0.67 * a);
+    const p = a / 3 + (2 * a * a) / 9;
     const expectedRatio = 4 / (4 - p);
 
     expect(on.accuracy).toBeCloseTo(off.accuracy, 10);

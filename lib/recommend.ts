@@ -12,7 +12,23 @@ import { calculateDps, type DpsScenario } from "@/lib/dps/calculate";
 import { OBLIGATOR_SMASH_TICKS, obligatorThrust } from "@/data/items/obligator";
 import { magicCastSpeedTicks } from "@/lib/dps/magic-cast-speed";
 import { usesDefenceLevelForMagicDefence } from "@/data/monsters/magic-defence-uses-defence-level";
-import { SPELLS_BY_NAME } from "@/data/spells/catalog";
+import { SPELLS_BY_NAME, weaponCanCastSpell } from "@/data/spells/catalog";
+import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
+import { canonicalItemId } from "@/data/items/aliases";
+import { canonicalItemById, canonicalNameOf } from "@/lib/gear-totals";
+import {
+  npcHitRules,
+  P2_WARDEN_IDS,
+  SCURRIUS_GIANT_RAT_ID,
+  TOMBS_OF_AMASCUT_IDS,
+  vampyreBonuses,
+  wearingRatBoneWeapon,
+  type AttackContext,
+} from "@/data/monsters/hit-rules";
+import { scaleDemonbanePct } from "@/data/monsters/demonbane-vulnerability";
+import { ECLIPSE_ATLATL_ID, HUNTERS_SPEAR_ID } from "@/data/items/special-strength";
+import { wikiDefaultHp } from "@/data/monsters/raid-hp";
+import { SLAYER_HEAD_IDS } from "@/data/items/slayer-helm";
 import { BONUS_TRIGGER_ITEM_IDS } from "@/data/bonus-trigger-items";
 import { resolveBoltProc } from "@/lib/dps/bolts";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
@@ -148,28 +164,54 @@ export function computeSetDps(
   markOfDarkness = false,
 ): DpsResult {
   const activeBonuses = activeBonusesForTarget(set, target);
+  // Every worn item is read as its canonical item (a locked / ornamented /
+  // recoloured / degraded variant behaves as the base item, as upstream's
+  // getCanonicalEquipment has it). -1 = an empty slot.
+  const slotId = (slot: keyof LoadoutSet["slots"]): number => {
+    const id = set.slots[slot]?.itemId;
+    return id === undefined ? -1 : canonicalItemId(id);
+  };
+  const wornNames = new Set<string>();
+  for (const worn of Object.values(set.slots)) {
+    if (worn) wornNames.add(canonicalNameOf(worn.itemId, worn.itemName).toLowerCase());
+  }
+  const wears = (...names: string[]): boolean => names.every((n) => wornNames.has(n.toLowerCase()));
+  // Amulet of avarice vs a Revenant: takes the Salve / black mask slot.
+  const avarice = wears("Amulet of avarice") && (target.name ?? "").startsWith("Revenant");
   // Black mask / slayer helm (i): only on-task, and only when no Salve is active
   // (they don't stack — Salve takes priority vs undead).
   const salveActive =
     activeBonuses.conditionalBonuses.salveAmulet || activeBonuses.conditionalBonuses.salveAmuletEi;
-  const slayerOnTask = set.itemBonusFlags.slayerHelmImbued && onTask && !salveActive;
+  // The imbued head works on every style; a plain black mask / slayer helmet
+  // only in melee (and on the Strength-scaled thrown weapons). Slayer monsters
+  // only, as upstream's isSlayerMonster gates it.
+  const plainSlayerHead = SLAYER_HEAD_IDS.has(slotId("head"));
+  const slayerHeadApplies =
+    set.itemBonusFlags.slayerHelmImbued || (plainSlayerHead && set.style === "melee");
+  const slayerOnTask =
+    slayerHeadApplies && onTask && target.isSlayerMonster !== false && !salveActive && !avarice;
   let effectiveSkills = applyCombatBoost(skills, boost);
   // Soulreaper axe (28338, and the (o) variant 33335): +6% Strength level per
   // stack × 5 max stacks = +30%. The wiki confirms the boost applies to the
   // visible Strength level (after boost potion), multiplicative, floored —
   // identical to how Piety/Turmoil apply.
-  const weaponId = set.slots.weapon?.itemId;
-  if (soulreaperMaxStacks && weaponId !== undefined && SOULREAPER_AXE_IDS.has(weaponId)) {
-    effectiveSkills = { ...effectiveSkills, strength: Math.floor(effectiveSkills.strength * 1.3) };
-  }
+  const weaponId = slotId("weapon");
+  // Soulreaper axe at 5 stacks: + trunc(Strength x 30/100) on the EFFECTIVE
+  // level, after the prayer (upstream: "does not stack multiplicatively with
+  // prayers"), off the potion-boosted visible level.
+  const strengthLevelBonus =
+    soulreaperMaxStacks && SOULREAPER_AXE_IDS.has(weaponId) && set.style === "melee"
+      ? Math.trunc((effectiveSkills.strength * 30) / 100)
+      : undefined;
+  effectiveSkills = { ...effectiveSkills };
   // Dharok's full set: max-hit scales with missing HP. Detect all 4 pieces worn
   // in their correct slots; degradation variants all share the same set effect.
   const dharokFullSet =
     set.style === "melee" &&
     weaponId !== undefined && DHAROK_GREATAXE_IDS.has(weaponId) &&
-    set.slots.head?.itemId !== undefined && DHAROK_HELM_IDS.has(set.slots.head.itemId) &&
-    set.slots.body?.itemId !== undefined && DHAROK_BODY_IDS.has(set.slots.body.itemId) &&
-    set.slots.legs?.itemId !== undefined && DHAROK_LEGS_IDS.has(set.slots.legs.itemId);
+    slotId("head") !== undefined && DHAROK_HELM_IDS.has(slotId("head")) &&
+    slotId("body") !== undefined && DHAROK_BODY_IDS.has(slotId("body")) &&
+    slotId("legs") !== undefined && DHAROK_LEGS_IDS.has(slotId("legs"));
   const maxHp = skills.hitpoints;
   const dharok =
     dharokFullSet && currentHp !== undefined && currentHp < maxHp
@@ -180,15 +222,15 @@ export function computeSetDps(
   const bloodrager =
     set.style === "melee" &&
     weaponId === DUAL_MACUAHUITL_ID &&
-    set.slots.head?.itemId !== undefined && BLOOD_MOON_HELM_IDS.has(set.slots.head.itemId) &&
-    set.slots.body?.itemId !== undefined && BLOOD_MOON_BODY_IDS.has(set.slots.body.itemId) &&
-    set.slots.legs?.itemId !== undefined && BLOOD_MOON_LEGS_IDS.has(set.slots.legs.itemId);
+    slotId("head") !== undefined && BLOOD_MOON_HELM_IDS.has(slotId("head")) &&
+    slotId("body") !== undefined && BLOOD_MOON_BODY_IDS.has(slotId("body")) &&
+    slotId("legs") !== undefined && BLOOD_MOON_LEGS_IDS.has(slotId("legs"));
   // Berserker necklace (11128) + a TzHaar/obsidian MELEE weapon → ×6/5 damage.
   // Stacks on top of the Obsidian armour set's ×11/10 (which arrives via
   // set.armorSetBonus). Neck-slot item, so it's not part of the armor set.
   const berserkerObsidian =
     set.style === "melee" &&
-    set.slots.neck?.itemId === 11128 &&
+    slotId("neck") === 11128 &&
     weaponId !== undefined &&
     TZHAAR_MELEE_WEAPON_IDS.has(weaponId);
   // Corporeal Beast halves damage from non-"corpbane" weapons: full damage only
@@ -196,14 +238,16 @@ export function computeSetDps(
   // spear excluded). Mirrors wgloop's isWearingCorpbaneWeapon. The Blue Moon
   // spear is excluded by item id (28988) — see BLUE_MOON_SPEAR_ID — with a
   // case-insensitive name fallback for callers/sets that carry no item id.
-  const weaponName = set.slots.weapon?.itemName ?? "";
+  const weaponName = set.slots.weapon
+    ? canonicalNameOf(slotId("weapon"), set.slots.weapon.itemName)
+    : "";
   const isBlueMoonSpear =
     weaponId === BLUE_MOON_SPEAR_ID || weaponName.toLowerCase() === "blue moon spear";
   const isCorpbane =
     set.style === "magic" ||
     (set.attackType === "stab" &&
       (set.itemBonusFlags?.fang === true ||
-        weaponName.endsWith("halberd") ||
+        weaponName.toLowerCase().includes("halberd") ||
         (weaponName.toLowerCase().includes("spear") && !isBlueMoonSpear)));
   const corpDamageHalved = target.slug === "corporeal-beast" && !isCorpbane;
   // Per-monster/per-phase damage scale (Tormented Demon's shield ×4/5, Abyssal
@@ -260,18 +304,20 @@ export function computeSetDps(
   // The Maggot King's melee punish window: ×3/2 on the first melee hitsplat,
   // and crush attacks roll against trunc(def × 15/100).
   const punish = set.style === "melee" ? target.meleePunish : undefined;
-  const firstHitDamageFactor = punish?.damageFactor;
+  // Crush only, damage and defence alike (upstream isMaggotKingMeleePunish).
+  const firstHitDamageFactor = punish && set.attackType === "crush" ? punish.damageFactor : undefined;
   const firstHitDefenceRollFactor =
     punish && set.attackType === "crush" ? punish.crushDefenceFactor : undefined;
   // Enchanted-bolt proc (crossbows only). Resolved here because the boosted
   // visible ranged level and the target's immunities are both in scope.
   const boltProc = set.style === "ranged"
     ? resolveBoltProc({
-        ammoItemId: set.slots.ammo?.itemId,
-        weaponItemId: set.slots.weapon?.itemId,
+        ammoItemId: slotId("ammo"),
+        weaponItemId: slotId("weapon"),
         weaponCategory: set.weaponCategory,
         visibleRangedLevel: effectiveSkills.ranged,
-        target: { hp: target.hp, attributes: target.attributes, slug: target.slug },
+        // Hitpoints at the wiki calc's default raid scale (ruby procs read them).
+        target: { hp: wikiDefaultHp(target), attributes: target.attributes, slug: target.slug },
         rubyProcEnabled,
       })
     : undefined;
@@ -280,7 +326,7 @@ export function computeSetDps(
     set.style === "ranged" && (set.slots.ammo?.itemName ?? "").includes("Seeking") && firesAmmo(set);
   // Multi-hit weapons (Scythe size-gated, Dual macuahuitl, Dark bow,
   // Tonalztics, the two-hit Torag's / Sulphur / Temotli / Tecpatl).
-  const hitProfile = hitProfileForWeapon(set.slots.weapon?.itemId, {
+  const hitProfile = hitProfileForWeapon(slotId("weapon"), {
     targetSize: target.size,
   });
   // Sanguinesti staff (incl. Holy, charged + uncharged catalog variants): the
@@ -309,8 +355,10 @@ export function computeSetDps(
   // standard-spellbook spells. The cast spell's book decides; with no named
   // spell, an elemental element implies a standard one (no other book has
   // them). The Twinflame also casts a second hit (~40%) on Bolt/Blast/Wave.
+  // A spell the weapon can't cast is no spell at all (no smoke-staff bonus).
+  const spellUsable = !castSpell || weaponCanCastSpell(castSpell.name, weaponName);
   const castsStandardSpell = castSpell
-    ? castSpell.spellbook === "standard"
+    ? castSpell.spellbook === "standard" && spellUsable
     : set.spellElement !== undefined && set.spellElement !== "none";
   const smokeStaffStandard =
     set.style === "magic" &&
@@ -336,9 +384,9 @@ export function computeSetDps(
   // worn piece grants +3% MORE (2%→5%). Count worn pieces and add the delta.
   const VIRTUS_PIECE_IDS = new Set([26241, 26243, 26245]); // mask, robe top, robe bottom
   const virtusPiecesWorn = [
-    set.slots.head?.itemId,
-    set.slots.body?.itemId,
-    set.slots.legs?.itemId,
+    slotId("head"),
+    slotId("body"),
+    slotId("legs"),
   ].filter((id) => id !== undefined && VIRTUS_PIECE_IDS.has(id)).length;
   const virtusAncientBonusPct =
     castSpell?.spellbook === "ancient" ? virtusPiecesWorn * 3 : 0;
@@ -360,6 +408,128 @@ export function computeSetDps(
       ? magicCastSpeedTicks(weaponId!, set.attackSpeedTicks, isStandardSpell)
       : set.attackSpeedTicks;
 
+  // ── Magic: what the cast actually is ──
+  // Powered staves and Magic Dart scale off the BOOSTED Magic level; a spell
+  // the weapon can't cast (Iban Blast without Iban's staff), a demonbane
+  // spell on a non-demon or Crumble Undead on the living does nothing.
+  let baseSpellMaxHit = set.style === "magic" ? set.baseSpellMaxHit : undefined;
+  if (set.style === "magic") {
+    const formula = POWERED_STAFF_FORMULA.get(weaponId);
+    if (formula && !castSpell) baseSpellMaxHit = formula(effectiveSkills.magic);
+    if (castSpell?.name === "Magic Dart") {
+      baseSpellMaxHit =
+        wears("Slayer's staff (e)") && onTask && target.isSlayerMonster !== false
+          ? Math.trunc(13 + effectiveSkills.magic / 6)
+          : Math.trunc(10 + effectiveSkills.magic / 10);
+    }
+    if (castSpell && baseSpellMaxHit) {
+      // Chaos gauntlets: +3 on the Bolt spells' base hit.
+      if (wears("Chaos gauntlets") && castSpell.name.toLowerCase().includes("bolt")) baseSpellMaxHit += 3;
+      if (
+        !weaponCanCastSpell(castSpell.name, weaponName) ||
+        (castSpell.requiresAttribute && !target.attributes.includes(castSpell.requiresAttribute))
+      ) {
+        baseSpellMaxHit = 0;
+      }
+    }
+  }
+
+  // ── Thrown weapons that scale off Strength, and fixed max hits ──
+  const strengthScaled =
+    set.style === "ranged" && (weaponId === ECLIPSE_ATLATL_ID || weaponId === HUNTERS_SPEAR_ID);
+  // Their damage takes the MELEE Salve / black mask rules (accuracy keeps the
+  // ranged ones): a plain Salve or Salve (e) counts, and any black mask or
+  // slayer helmet gives x7/6 on task, ahead of the imbued x23/20.
+  let slotDamageFactor: [number, number] | undefined;
+  if (strengthScaled && !avarice) {
+    const undead = target.attributes.includes("undead");
+    if (undead && (wears("Salve amulet(ei)") || wears("Salve amulet (e)"))) slotDamageFactor = [6, 5];
+    else if (undead && (wears("Salve amulet(i)") || wears("Salve amulet"))) slotDamageFactor = [7, 6];
+    else if (plainSlayerHead && onTask && target.isSlayerMonster !== false) slotDamageFactor = [7, 6];
+  }
+  let fixedMaxHit: number | undefined;
+  if (set.style === "ranged" && (weaponName === "Ogre bow" || weaponName === "Comp ogre bow")) {
+    // Ignores all gear but the arrow: trunc(((Ranged + 10) x (arrow str + 64) + 320) / 640).
+    const arrowStr = firesAmmo(set) ? (canonicalItemById(slotId("ammo"))?.rangedStr ?? 0) : 0;
+    fixedMaxHit = Math.trunc(((effectiveSkills.ranged + 10) * (arrowStr + 64) + 320) / 640);
+  } else if (set.style === "ranged" && weaponName === "Holy water") {
+    if (!target.attributes.includes("demon")) fixedMaxHit = 0;
+    else {
+      const str = 64 + (canonicalItemById(weaponId)?.rangedStr ?? 0);
+      const base = Math.trunc(((effectiveSkills.ranged + 10) * str + 320) / 640);
+      fixedMaxHit =
+        base +
+        Math.trunc((base * scaleDemonbanePct(60, demonbaneVulnerabilityFor(target))) / 100) +
+        (target.name === "Nezikchened" ? 5 : 0);
+    }
+  }
+
+  // ── Set effects and one-off items ──
+  const veracs = set.style === "melee" &&
+    wears("Verac's helm", "Verac's brassard", "Verac's plateskirt", "Verac's flail");
+  const karils = set.style === "ranged" &&
+    wears("Karil's coif", "Karil's leathertop", "Karil's leatherskirt", "Karil's crossbow", "Amulet of the damned");
+  const ahrims = set.style === "magic" &&
+    wears("Ahrim's staff", "Ahrim's hood", "Ahrim's robetop", "Ahrim's robeskirt", "Amulet of the damned");
+  const gadderhammer = set.style === "melee" && wears("Gadderhammer") && target.attributes.includes("shade");
+
+  // ── The target's own rules (data/monsters/hit-rules.ts) ──
+  const stanceSpeed =
+    attackSpeedTicks + (set.style === "ranged" && set.attackStyleChoice === "rapid" ? -1 : 0);
+  const usingDemonbane =
+    set.style === "magic"
+      ? (set.autoSpellName ?? "").includes("Demonbane")
+      : set.style === "ranged"
+        ? weaponName === "Scorching bow"
+        : ["Silverlight", "Darklight", "Arclight", "Emberlight", "Bone claws", "Burning claws"].includes(weaponName);
+  const attackCtx: AttackContext = {
+    style: set.style,
+    attackType: set.attackType,
+    weaponName,
+    weaponCategory: set.weaponCategory ?? "",
+    ammoName: set.slots.ammo ? canonicalNameOf(set.slots.ammo.itemId, set.slots.ammo.itemName) : "",
+    worn: wornNames,
+    spellName: set.style === "magic" ? set.autoSpellName : undefined,
+    spellElement: set.style === "magic" ? set.spellElement : undefined,
+    offensive: set.totals.offensive,
+    ammoInvalid: activeBonuses.ammoInvalid,
+    usingDemonbane,
+    attackSpeed: stanceSpeed > 0 ? stanceSpeed : 4,
+    wikiPhase: target.wikiPhase,
+  };
+  const rules = npcHitRules(target, attackCtx);
+  const vampyre = vampyreBonuses(target.attributes, attackCtx);
+  const ratBone = wearingRatBoneWeapon(attackCtx);
+  // Flat max-hit bonuses after the weapon banes: the Colossal blade's
+  // + min(2 x size, 10), ratbane's +10 (the Bone staff's is in its formula).
+  const flatMaxHitBonus =
+    (set.style === "melee" && wears("Colossal blade") ? Math.min((target.size ?? 1) * 2, 10) : 0) +
+    (set.style !== "magic" && ratBone && target.attributes.includes("rat") ? 10 : 0);
+  // Yama's Glyphic Attenuation: damage scales with the worn prayer bonus.
+  let finalMaxHitFactor: [number, number] | undefined;
+  if ((target.version ?? "").includes("Glyphic Attenuation")) {
+    const prayerBonus = set.totals.prayerBonus;
+    const bonus =
+      Math.floor(0.85 * prayerBonus) +
+      (prayerBonus >= 20 ? 7 : 0) +
+      (prayerBonus >= 30 ? 10 : 0) +
+      (prayerBonus >= 40 ? 15 : 0) +
+      (prayerBonus >= 50 ? 15 : 0);
+    finalMaxHitFactor = [100 + bonus, 100];
+  }
+  // The Mad Angel's reaction buffs condition the FIRST hit only (it always
+  // lands, then is floored or maxed); later hitsplats roll as usual.
+  const madAngel: DpsScenario["madAngel"] = targetMinHitFactor
+    ? targetMinHitFactor[0] >= targetMinHitFactor[1]
+      ? "lightning"
+      : "cleave"
+    : undefined;
+  // Scurrius's giant rats: a rat-bone weapon attacks every tick.
+  const ratSpeed =
+    target.wikiId === SCURRIUS_GIANT_RAT_ID && ratBone
+      ? 1 + (set.style === "ranged" && set.attackStyleChoice === "rapid" ? 1 : 0)
+      : undefined;
+
   const scenario: DpsScenario = {
     style: set.style,
     attackStyle: set.attackStyleChoice,
@@ -369,8 +539,39 @@ export function computeSetDps(
       set.totals.attackBonus - (kerisAmascutWeakened && set.attackType === "stab" ? 50 : 0),
     strengthBonus: set.totals.strengthBonus - (kerisAmascutWeakened ? 22 : 0),
     magicDamagePercent,
-    baseSpellMaxHit: set.style === "magic" ? set.baseSpellMaxHit : undefined,
-    attackSpeedTicks,
+    baseSpellMaxHit,
+    // The wiki calc skips the accurate-zero raise for Magic Dart (its listed
+    // spell max is 0, read as a no-damage spell).
+    noAccurateZeroRaise: castSpell?.name === "Magic Dart",
+    attackSpeedTicks: ratSpeed ?? attackSpeedTicks,
+    strengthLevelBonus,
+    rangedDamageLevel: strengthScaled ? effectiveSkills.strength : undefined,
+    fixedMaxHit,
+    slotDamageFactor,
+    avarice,
+    extraAccuracyFactors: vampyre.accuracyFactors,
+    magicAccuracyPctBonus: vampyre.magicAccuracyPct || undefined,
+    damageScales: vampyre.damageScales,
+    veracs,
+    karils,
+    ahrims,
+    gadderhammer,
+    flatMaxHitBonus: flatMaxHitBonus || undefined,
+    finalMaxHitFactor,
+    brimstoneRing: set.style === "magic" && wears("Brimstone ring"),
+    fangToa: TOMBS_OF_AMASCUT_IDS.has(target.wikiId),
+    dawnbringer: set.style === "magic" && weaponName === "Dawnbringer",
+    p2Warden: P2_WARDEN_IDS.has(target.wikiId),
+    accuracyOverride: rules.accuracyOverride,
+    alwaysMax: rules.alwaysMax,
+    oneHitDamage: rules.oneHitDamage,
+    accurateKillDamage: rules.accurateKillDamage,
+    guaranteedMaxEarly: rules.guaranteedMaxEarly,
+    minHitHalfMax: rules.minHitHalfMax,
+    extraNpcTransforms: rules.transforms,
+    lateNpcTransforms: rules.lateTransforms,
+    expectedSpeedOverride: rules.attackSpeedOverride,
+    madAngel,
     targetDefenceLevel: targetDefenceLevelFor(set, target),
     targetDefenceBonusForStyle: defenceBonusForSet(set, target),
     conditionalBonuses: activeBonuses.conditionalBonuses,
@@ -417,7 +618,8 @@ export function computeSetDps(
     targetAccuracyFactor,
     firstHitDefenceRollFactor,
     firstHitDamageFactor,
-    targetAlwaysHit,
+    // A Mad Angel buff makes only the first hit sure (`madAngel`), not all.
+    targetAlwaysHit: targetAlwaysHit && !madAngel,
     speedScaledHitBonus,
     // Leafy (Turoth/Kurask) without a leaf-bladed weapon / broad ammo / Magic
     // Dart, melee vs a flying target without a halberd / salamander, melee vs
@@ -427,17 +629,20 @@ export function computeSetDps(
     // is immunity, not a scale: it must also zero bolt procs. A salamander
     // without its own tar deals 0 on every style too (upstream isAmmoInvalid
     // zeroes the roll and max hit).
+    // No ammo the weapon can fire: no attack at all (roll and max hit 0).
+    attackInvalid: activeBonuses.ammoInvalid,
     targetImmune:
-      activeBonuses.salamanderMissingTar ||
+      rules.immune ||
       activeBonuses.leafyImmune ||
       activeBonuses.flyingMeleeImmune ||
       activeBonuses.npcMeleeImmune !== null ||
       activeBonuses.guardianImmune ||
       targetDamageFactor?.[0] === 0,
-    targetMinHitFactor,
+    targetMinHitFactor: undefined,
     // Flat armour (Gargoyle -2, Heavy skeleton +1, …) on every accurate
     // melee/ranged hitsplat; the engine ignores it for magic.
     targetFlatArmour: target.defenceBonuses.flatArmour,
+    targetMagicResistance: target.defenceBonuses.magicResistance,
     // Zulrah: every hitsplat over 50 deals 45-50, any style.
     targetDamageCap: damageCapFor(target),
     // The Kraken / Cave kraken take ranged at trunc(d/7), minimum 1.
@@ -462,8 +667,12 @@ export function computeSetDps(
       damageRolls: thrust.damageRolls,
       sizeDamageFactor: thrust.sizeDamageFactor,
     });
-    const smashDps = calculateDps({ ...scenario, attackSpeedTicks: OBLIGATOR_SMASH_TICKS });
-    return smashDps.dps > thrustDps.dps
+    // Smash is an Aggressive style only (Thrust has Accurate and Aggressive).
+    const smashDps =
+      set.attackStyleChoice === "aggressive"
+        ? calculateDps({ ...scenario, attackSpeedTicks: OBLIGATOR_SMASH_TICKS })
+        : undefined;
+    return smashDps && smashDps.dps > thrustDps.dps
       ? {
           ...smashDps,
           obligatorStyle: { style: "smash", attackSpeedTicks: OBLIGATOR_SMASH_TICKS, damageRolls: 1 },

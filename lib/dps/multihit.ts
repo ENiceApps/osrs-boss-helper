@@ -39,6 +39,13 @@ export interface HitDescriptor {
    * (the default) are always attempted.
    */
   requiresPrevious?: boolean;
+  /**
+   * The hitsplat's max is the max hit LESS the truncated remainder,
+   * M − trunc(M × (1 − fraction)), instead of trunc(M × fraction): the
+   * Tonalztics of Ralos' M − trunc(M/4), one more than trunc(3M/4) whenever M
+   * is not a multiple of 4.
+   */
+  roundUp?: boolean;
 }
 
 export type HitProfile = readonly HitDescriptor[];
@@ -68,7 +75,9 @@ export function hitsplatMaxima(
   maxHit: number,
   firstHitFactor?: [number, number],
 ): number[] {
-  const maxima = profile.map((h) => Math.trunc(h.maxFraction * maxHit));
+  const maxima = profile.map((h) =>
+    h.roundUp ? maxHit - Math.trunc((1 - h.maxFraction) * maxHit) : Math.trunc(h.maxFraction * maxHit),
+  );
   if (isSplitProfile(profile)) {
     const others = maxima.slice(0, -1).reduce((sum, m) => sum + m, 0);
     maxima[maxima.length - 1] = maxHit - others;

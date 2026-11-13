@@ -76,11 +76,18 @@ describe("Soulreaper axe (o) — max stacks (+30% Str level)", () => {
     expect(on.maxHit).toBe(baseOn.maxHit);
   });
 
-  it("(o) Strength level is floored: floor(99 × 1.3) = 128", () => {
+  it("(o) Strength boost is trunc(Str x 30/100) added after the prayer (no stacking)", () => {
     const set = axe(SOULREAPER_O, "Soulreaper axe (o)");
     const boosted = computeSetDps(set, DUMMY, { ...SKILLS_AT_99, strength: 99 }, undefined, false, true);
-    const manual = computeSetDps(set, DUMMY, { ...SKILLS_AT_99, strength: 128 }, undefined, false, false);
-    expect(boosted.dps).toBeCloseTo(manual.dps, 10);
+    // Wiki calc: Soulreaper adds trunc(Strength x 30/100) to the effective
+    // level AFTER the prayer; it does not multiply with Piety (x1.23).
+    // eff = floor(99 x 1.23) + 29 + 3 (aggressive) + 8.
+    const eff = Math.trunc(99 * 1.23) + Math.trunc((99 * 30) / 100) + 3 + 8;
+    const expected = Math.trunc((eff * (100 + 64) + 320) / 640);
+    expect(boosted.maxHit).toBe(expected);
+    // The old multiplicative model (floor(99 x 1.3) = 128 through the prayer) differs.
+    const oldEff = Math.trunc(Math.trunc(99 * 1.3) * 1.23) + 3 + 8;
+    expect(expected).not.toBe(Math.trunc((oldEff * 164 + 320) / 640));
   });
 
   it("no effect for a non-Soulreaper weapon, or with the flag off", () => {

@@ -10,6 +10,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const FILES = [
   { name: "equipment.json", url: "https://raw.githubusercontent.com/weirdgloop/osrs-dps-calc/main/cdn/json/equipment.json" },
   { name: "monsters.json", url: "https://raw.githubusercontent.com/weirdgloop/osrs-dps-calc/main/cdn/json/monsters.json" },
+  // Item variants the calc treats as one item (data/items/aliases.ts). The
+  // ammo table (ammo-applicability.json) is dumped from upstream's
+  // Equipment.ts by hand: see data/items/ammo-applicability.ts.
+  { name: "equipment_aliases.json", url: "https://raw.githubusercontent.com/weirdgloop/osrs-dps-calc/main/cdn/json/equipment_aliases.json" },
 ];
 
 for (const f of FILES) {

@@ -20,41 +20,54 @@ function salamanderBlaze(blaze: number): PoweredStaffFormula {
 // The tests/powered-staff-formula.test.ts guard fails if a key drifts from the catalog.
 export const POWERED_STAFF_FORMULA = new Map<number, PoweredStaffFormula>([
   // Trident of the Seas: floor(magic / 3) - 5  (28 at 99)
-  [11905, (lvl) => Math.floor(lvl / 3) - 5], // Charged
-  [11907, (lvl) => Math.floor(lvl / 3) - 5], // Partially charged
-  [11908, (lvl) => Math.floor(lvl / 3) - 5], // Uncharged
-  [22288, (lvl) => Math.floor(lvl / 3) - 5], // (e) Charged
-  [22290, (lvl) => Math.floor(lvl / 3) - 5], // (e) Uncharged
-  [33323, (lvl) => Math.floor(lvl / 3) - 5], // (o) Fully charged
-  [33322, (lvl) => Math.floor(lvl / 3) - 5], // (o) Partially charged
-  [33326, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Charged
-  [33328, (lvl) => Math.floor(lvl / 3) - 5], // (e) (o) Uncharged
+  [11905, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // Charged
+  [11907, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // Partially charged
+  [11908, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // Uncharged
+  [22288, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (e) Charged
+  [22290, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (e) Uncharged
+  [33323, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (o) Fully charged
+  [33322, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (o) Partially charged
+  [33326, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (e) (o) Charged
+  [33328, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 5))], // (e) (o) Uncharged
 
   // Trident of the Swamp: floor(magic / 3) - 2  (31 at 99; 24 at 78, 39 at 123)
-  [12899, (lvl) => Math.floor(lvl / 3) - 2], // Charged
-  [12900, (lvl) => Math.floor(lvl / 3) - 2], // Uncharged
-  [22292, (lvl) => Math.floor(lvl / 3) - 2], // (e) Charged
-  [22294, (lvl) => Math.floor(lvl / 3) - 2], // (e) Uncharged
-  [33314, (lvl) => Math.floor(lvl / 3) - 2], // (o) Charged
-  [33316, (lvl) => Math.floor(lvl / 3) - 2], // (o) Uncharged
-  [33318, (lvl) => Math.floor(lvl / 3) - 2], // (e) (o) Charged
-  [33320, (lvl) => Math.floor(lvl / 3) - 2], // (e) (o) Uncharged
+  [12899, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // Charged
+  [12900, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // Uncharged
+  [22292, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (e) Charged
+  [22294, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (e) Uncharged
+  [33314, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (o) Charged
+  [33316, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (o) Uncharged
+  [33318, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (e) (o) Charged
+  [33320, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))], // (e) (o) Uncharged
 
   // Sanguinesti staff: floor(magic / 3)  (33 at 99)
   // Summer Sweep-Up (2026-07-22): base max hit +1, was floor(magic / 3) - 1.
   // The same patch made the 1/5 life-leech proc deal 8 bonus damage — that
   // lives in the DPS engine (sanguinestiProc), not in this base formula.
-  [22323, (lvl) => Math.floor(lvl / 3)], // Charged
-  [22481, (lvl) => Math.floor(lvl / 3)], // Uncharged
-  [25731, (lvl) => Math.floor(lvl / 3)], // Holy sanguinesti staff (charged)
-  [25733, (lvl) => Math.floor(lvl / 3)], // Holy sanguinesti staff (uncharged)
+  [22323, (lvl) => Math.max(1, Math.trunc(lvl / 3))], // Charged
+  [22481, (lvl) => Math.max(1, Math.trunc(lvl / 3))], // Uncharged
+  [25731, (lvl) => Math.max(1, Math.trunc(lvl / 3))], // Holy sanguinesti staff (charged)
+  [25733, (lvl) => Math.max(1, Math.trunc(lvl / 3))], // Holy sanguinesti staff (uncharged)
 
   // Tumeken's shadow: floor(magic / 3) + 1  (34 at 99)
-  [27275, (lvl) => Math.floor(lvl / 3) + 1], // Charged
-  [27277, (lvl) => Math.floor(lvl / 3) + 1], // Uncharged
+  [27275, (lvl) => Math.max(1, Math.trunc(lvl / 3) + 1)], // Charged
+  [27277, (lvl) => Math.max(1, Math.trunc(lvl / 3) + 1)], // Uncharged
 
-  // Dawnbringer: floor(magic / 6) - 1  (15 at 99)
-  [22516, (lvl) => Math.floor(lvl / 6) - 1],
+  // Dawnbringer: max(1, trunc(magic / 3 - 2))  (31 at 99) as the base; the
+  // engine then halves the hit after the magic damage % and the black mask,
+  // minimum 2 (`dawnbringer` in lib/dps/calculate.ts; upstream
+  // getPlayerMaxMagicHit), so gear magic damage rounds as in game.
+  [22516, (lvl) => Math.max(1, Math.trunc(lvl / 3 - 2))],
+
+  // Starter staff: a flat 8.
+  [22335, () => 8],
+  // Warped sceptre: max(1, trunc((8 x magic + 96) / 37))  (24 at 99).
+  [28585, (lvl) => Math.max(1, Math.trunc((8 * lvl + 96) / 37))], // Charged
+  [28583, (lvl) => Math.max(1, Math.trunc((8 * lvl + 96) / 37))], // Uncharged
+  // Bone staff: max(1, trunc(magic / 3) - 5) + 10  (38 at 99). The +10 is its
+  // ratbane, always on: it cannot attack anything but rats
+  // (data/monsters/hit-rules.ts).
+  [28796, (lvl) => Math.max(1, Math.trunc(lvl / 3) - 5) + 10],
 
   // Zorya's tome (The Fractured Archive, 2026-10-20): weirdgloop's formula
   // since 2026-10-24 (PlayerVsNPCCalc.getPlayerMaxMagicHit):

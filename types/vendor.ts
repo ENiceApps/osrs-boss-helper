@@ -89,6 +89,8 @@ export interface VendorMonsterOffensive {
  */
 export interface VendorMonsterDefensive {
   flat_armour: number;
+  /** Subtracted from every accurate MAGIC hitsplat (Bork). Absent = 0. */
+  magic_resistance?: number;
   crush: number;
   magic: number;
   heavy: number;

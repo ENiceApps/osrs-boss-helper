@@ -29,13 +29,28 @@ import { scoreScenario } from "@/lib/optimize/scenario";
 import { STAT_OVERRIDES } from "@/data/items/stat-overrides";
 import { hitProfileForWeapon } from "@/data/items/multi-hit-weapons";
 import { isSplitProfile } from "@/lib/dps/multihit";
+import { forceDistributionEngine } from "@/lib/dps/calculate";
+import { RANGING_POTION, SATURATED_HEART, SUPER_COMBAT } from "@/lib/dps/boost";
 import { applyPhase, phaseOptionsFor } from "@/lib/phases";
 import type { CombatStyle } from "@/types/osrs";
 import type { CanonicalCombo, OracleResult } from "./contract";
 import { optimizedSweepCombos, sweepCombos, validationCombos } from "./combos";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const CLONE_DIR = join(ROOT, ".oracle", "wgloop");
+// ORACLE_CLONE_DIR points the run at another checkout of the wiki calc (e.g.
+// .oracle/wgloop-head, a worktree at upstream HEAD = the live dps.osrs.wiki).
+const CLONE_DIR = process.env.ORACLE_CLONE_DIR
+  ? resolve(process.env.ORACLE_CLONE_DIR)
+  : join(ROOT, ".oracle", "wgloop");
+// ORACLE_NATIVE_DATA=1: leave the clone's own equipment/monster JSON alone and
+// replay no stat overrides, so the wgloop side is exactly what the wiki calc
+// shows (data differences then surface as divergences too).
+const NATIVE_DATA = process.env.ORACLE_NATIVE_DATA === "1";
+// ORACLE_STRICT=1: accuracy to 1e-4 and DPS to 0.05% on every combo.
+const STRICT = process.env.ORACLE_STRICT === "1";
+// ORACLE_FORCE_DIST=1: score every combo through the exact hit distribution
+// (lib/dps/dist-pipeline.ts) and compare its wiki-convention max hit exactly.
+if (process.env.ORACLE_FORCE_DIST === "1") forceDistributionEngine(true);
 // ORACLE_IO_DIR keeps a run's combos/results private — parallel sessions
 // sharing .oracle/io overwrite each other's combos mid-run.
 const IO_DIR = process.env.ORACLE_IO_DIR
@@ -44,7 +59,7 @@ const IO_DIR = process.env.ORACLE_IO_DIR
 
 // Tolerances. maxHit must match exactly — any difference is a real modelling
 // gap. accuracy/dps allow small slop for integer-rounding order differences.
-const ACC_TOL = 0.0015;
+const ACC_TOL = STRICT ? 0.0001 : 0.0015;
 const DPS_REL_TOL = 0.005;
 const DPS_ABS_TOL = 0.02;
 // Combos with `strictDps` (see contract.ts): relative only, and tighter.
@@ -71,15 +86,34 @@ interface OurResult {
   tripleProc?: boolean;
   /** Our engine's flat-armour shift (armour + pre-armour max), when any. */
   flatArmour?: { armour: number; rawMaxHit: number };
+  /** The wiki-convention max hit (distribution engine), compared exactly when set. */
+  wikiMaxHit?: number;
+  /** Our side refused the loadout (no usable ammo, ...): matches a wiki 0. */
+  invalid?: boolean;
+  /** Osmumten's fang: wgloop reports the trimmed normal max, M − trunc(M × 3/20). */
+  fang?: boolean;
   error?: string;
 }
 
 function ourEngine(combo: CanonicalCombo): OurResult {
+  try {
+    return ourEngineUnsafe(combo);
+  } catch (e) {
+    return { id: combo.id, ok: false, error: `threw: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+
+function ourEngineUnsafe(combo: CanonicalCombo): OurResult {
   const catalogBoss = MONSTER_BY_SLUG[combo.bossSlug];
   if (!catalogBoss) return { id: combo.id, ok: false, error: `boss not in catalog: ${combo.bossSlug}` };
   const phaseOption = combo.bossPhase
     ? phaseOptionsFor(catalogBoss).find((o) => o.id === `m:${combo.bossPhase!.mechanicId}`)
-    : undefined;
+    : combo.bossStatPhase !== undefined
+      ? phaseOptionsFor(catalogBoss).find((o) => o.id === `s:${combo.bossStatPhase}`)
+      : undefined;
+  if (combo.bossStatPhase !== undefined && !phaseOption) {
+    return { id: combo.id, ok: false, error: `no stat phase "${combo.bossStatPhase}" on ${combo.bossSlug}` };
+  }
   if (combo.bossPhase && !phaseOption) {
     return { id: combo.id, ok: false, error: `no mechanic phase ${combo.bossPhase.mechanicId} on ${combo.bossSlug}` };
   }
@@ -95,8 +129,14 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     // The spell name gates Twinflame's double cast and demonbane spells.
     autoSpellName: combo.spellName,
     onTask: combo.onTask ?? false,
+    boostResolver: combo.boost
+      ? () => ({ "super-combat": SUPER_COMBAT, ranging: RANGING_POTION, "saturated-heart": SATURATED_HEART })[combo.boost!]
+      : undefined,
+    markOfDarkness: combo.markOfDarkness ?? false,
+    // The wiki calc defaults the Soulreaper axe to 5 stacks.
+    soulreaperMaxStacks: true,
   });
-  if (!scored.valid) return { id: combo.id, ok: false, error: scored.reasons.join("; ") };
+  if (!scored.valid) return { id: combo.id, ok: false, invalid: true, error: scored.reasons.join("; ") };
   const weaponId = scored.loadout.slots.weapon?.itemId;
   const profile = hitProfileForWeapon(weaponId, { targetSize: boss.size });
   // A split weapon (Dual macuahuitl, Torag's) reports the whole attack's max
@@ -108,16 +148,18 @@ function ourEngine(combo: CanonicalCombo): OurResult {
     id: combo.id,
     ok: true,
     maxHit: scored.dps.maxHit,
+    wikiMaxHit: scored.dps.wikiMaxHit,
     accuracy: scored.dps.accuracy,
     dps: scored.dps.dps,
     multiHit,
     tripleProc,
+    fang: scored.loadout.style === "melee" && /osmumten.s fang/i.test(scored.loadout.slots.weapon?.itemName ?? ""),
     flatArmour: scored.dps.flatArmour,
   };
 }
 
 function ensureOracle(): void {
-  if (existsSync(join(CLONE_DIR, "node_modules")) && existsSync(join(CLONE_DIR, "src", "tests", "oracle", "oracle-worker.test.ts"))) {
+  if (existsSync(join(CLONE_DIR, "node_modules")) && (process.env.ORACLE_CLONE_DIR || existsSync(join(CLONE_DIR, "src", "tests", "oracle", "oracle-worker.test.ts")))) {
     return;
   }
   console.log("Oracle clone not ready — running setup-oracle …\n");
@@ -129,7 +171,8 @@ function ensureOracle(): void {
 function refreshWorker(): void {
   const template = readFileSync(join(ROOT, "scripts", "oracle", "worker.ts.template"), "utf8");
   const dest = join(CLONE_DIR, "src", "tests", "oracle", "oracle-worker.test.ts");
-  if (existsSync(dest)) writeFileSync(dest, template, "utf8");
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, template, "utf8");
 }
 
 /**
@@ -153,13 +196,13 @@ function syncVendorData(): void {
 function runWorker(combos: CanonicalCombo[]): OracleResult[] {
   mkdirSync(IO_DIR, { recursive: true });
   refreshWorker();
-  syncVendorData();
+  if (!NATIVE_DATA) syncVendorData();
   const combosPath = join(IO_DIR, "combos.json");
   const outPath = join(IO_DIR, "results.json");
   const overridesPath = join(IO_DIR, "overrides.json");
-  writeFileSync(combosPath, JSON.stringify(combos, null, 2), "utf8");
+  writeFileSync(combosPath, JSON.stringify(combos), "utf8");
   // Replay our catalog's stat overrides so both engines use identical item data.
-  writeFileSync(overridesPath, JSON.stringify(STAT_OVERRIDES), "utf8");
+  writeFileSync(overridesPath, JSON.stringify(NATIVE_DATA ? {} : STAT_OVERRIDES), "utf8");
 
   console.log(`Running wgloop worker on ${combos.length} combo(s) …`);
   execFileSync(
@@ -167,7 +210,7 @@ function runWorker(combos: CanonicalCombo[]): OracleResult[] {
     ["node_modules/jest/bin/jest.js", "src/tests/oracle/oracle-worker.test.ts", "--coverage=false", "--runInBand"],
     {
       cwd: CLONE_DIR,
-      stdio: "inherit",
+      stdio: process.env.ORACLE_QUIET ? "ignore" : "inherit",
       env: {
         ...process.env,
         ORACLE_COMBOS: combosPath,
@@ -199,6 +242,9 @@ function impliedAttackRoll(accuracy: number, defRoll: number): number | undefine
  * 3 × 41 + 2 = 125 vs a Locust rider), so the pre-armour max is tripled.
  */
 function comparableMaxHit(our: OurResult): number | undefined {
+  if (our.fang && process.env.ORACLE_FANG_TRIM === "1" && our.maxHit !== undefined && !our.flatArmour) {
+    return our.maxHit - Math.trunc((our.maxHit * 3) / 20);
+  }
   if (!our.tripleProc) return our.maxHit;
   const fa = our.flatArmour;
   return fa ? Math.max(0, fa.rawMaxHit * 3 - fa.armour) : (our.maxHit ?? 0) * 3;
@@ -211,15 +257,20 @@ function compare(
   wg: OracleResult | undefined,
   combo: CanonicalCombo,
 ): { verdict: Verdict; detail: string } {
-  if (!our.ok) return { verdict: "ERROR", detail: `ours: ${our.error}` };
   if (!wg) return { verdict: "ERROR", detail: "wgloop: no result" };
+  // A loadout our side refuses to score is the wiki calc's 0 (no usable ammo).
+  if (!our.ok && our.invalid && wg.ok && wg.dps === 0 && wg.maxHit === 0) return { verdict: "OK", detail: "" };
+  if (!our.ok) return { verdict: "ERROR", detail: `ours: ${our.error}` };
   if (!wg.ok) return { verdict: "ERROR", detail: `wgloop: ${wg.error}` };
+  if (our.wikiMaxHit !== undefined && our.wikiMaxHit !== wg.maxHit) {
+    return { verdict: "MAXHIT", detail: `wikiMaxHit ours=${our.wikiMaxHit} wg=${wg.maxHit}` };
+  }
 
   // Multi-hit weapons report maxHit differently on each side (single largest
   // hit vs summed max across hits), so it isn't comparable — rely on DPS + acc.
   const ourMax = comparableMaxHit(our);
   let maxHitNote = "";
-  if (!our.multiHit && ourMax !== wg.maxHit) {
+  if (our.wikiMaxHit === undefined && !our.multiHit && ourMax !== wg.maxHit) {
     const detail = `maxHit ours=${ourMax} wg=${wg.maxHit}`;
     if (!combo.knownMaxHitResidual) return { verdict: "MAXHIT", detail };
     maxHitNote = `${detail} — known: ${combo.knownMaxHitResidual}`;
@@ -235,7 +286,7 @@ function compare(
   }
   const dOurs = our.dps ?? 0;
   const rel = Math.abs(dOurs - wg.dps) / Math.max(wg.dps, 1e-9);
-  const dpsOff = combo.strictDps
+  const dpsOff = combo.strictDps || STRICT
     ? rel > STRICT_DPS_REL_TOL
     : rel > DPS_REL_TOL && Math.abs(dOurs - wg.dps) > DPS_ABS_TOL;
   if (dpsOff) {
@@ -264,7 +315,11 @@ function main(): void {
   const bossesArg = args.find((a) => a.startsWith("--bosses="));
   const bossSlugs = bossesArg ? bossesArg.slice("--bosses=".length).split(",").filter(Boolean) : undefined;
 
-  let combos = optimize
+  const combosFileArg = args.find((a) => a.startsWith("--combos-file="));
+  const jsonOutArg = args.find((a) => a.startsWith("--json-out="));
+  let combos = combosFileArg
+    ? (JSON.parse(readFileSync(combosFileArg.slice("--combos-file=".length), "utf8")) as CanonicalCombo[])
+    : optimize
     ? optimizedSweepCombos({ limit, bossSlugs })
     : sweep
       ? sweepCombos({ style, limit })
@@ -285,11 +340,14 @@ function main(): void {
   console.log("═".repeat(96));
 
   let diverged = 0;
+  const rows: unknown[] = [];
   for (const c of combos) {
     const o = ours.get(c.id)!;
     const w = wg.get(c.id);
     const { verdict, detail } = compare(o, w, c);
     if (verdict !== "OK") diverged++;
+    if (jsonOutArg && (verdict !== "OK" || detail)) rows.push({ id: c.id, verdict, detail, combo: c, ours: o, wg: w });
+    if (jsonOutArg) continue;
     if (verdict === "OK" && !showAll) continue;
 
     const mark = verdict === "OK" ? "✓" : "✗";
@@ -313,6 +371,7 @@ function main(): void {
   }
 
   console.log("\n" + "─".repeat(96));
+  if (jsonOutArg) writeFileSync(jsonOutArg.slice("--json-out=".length), JSON.stringify(rows, null, 1), "utf8");
   const okCount = combos.length - diverged;
   console.log(`Result: ${okCount}/${combos.length} match, ${diverged} diverged.`);
   console.log("─".repeat(96));

@@ -103,9 +103,11 @@ describe("Scorching bow vs a demon", () => {
   });
 
   it("on task with slayer helm (i): folds into the mask — ×29/20, NOT ×23/20 then +30%", () => {
+    // Doom is not slayer-assignable (isSlayerMonster false), so the mask
+    // needs a slayer demon.
     const onTask = scoreScenario({
       itemIds: [...KIT, SLAYER_HELM_I],
-      target: DOOM,
+      target: MONSTER_BY_SLUG["abyssal-demon"],
       skills: SKILLS_AT_99,
       onTask: true,
     });

@@ -12,6 +12,7 @@
 // ~10^29 combinations. K=1 greedy + style enum + force-includes yields a
 // few dozen candidates per boss, scored in <100ms.
 
+import { canonicalItemId } from "@/data/items/aliases";
 import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import {
   bulwarkDefence,
@@ -499,7 +500,7 @@ export function optimizeForBoss(input: BankOptimizerInput): BankOptimizerResult 
       // on crush, Obsidian only with TzHaar weapons — skip force-builds
       // that wouldn't actually trigger the bonus.
       if (setDef.attackTypes && !setDef.attackTypes.includes(ws.attackType)) continue;
-      if (setDef.requiredWeaponIds && !setDef.requiredWeaponIds.includes(ws.weapon.id)) continue;
+      if (setDef.requiredWeaponIds && !setDef.requiredWeaponIds.includes(canonicalItemId(ws.weapon.id))) continue;
       // Build greedy for this weapon-style, then replace any slot the set
       // covers with the set's piece.
       const { ids, internalAmmoId } = greedyBuild(ws, bySlot);

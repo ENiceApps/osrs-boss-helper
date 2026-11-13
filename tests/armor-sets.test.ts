@@ -24,6 +24,7 @@ const ELITE_VOID_TOP = 13072;
 const ELITE_VOID_ROBE = 13073;
 const VOID_GLOVES = 8842;
 const RUNE_CROSSBOW = 9185;
+const ADAMANT_BOLTS = 9143;
 const DIAMOND_BOLTS_E = 9243; // tier 6 — Rune crossbow can fire these.
 
 describe("armor-sets catalog — detection", () => {
@@ -82,11 +83,13 @@ describe("armor-sets DPS engine integration", () => {
     const fullEliteVoid = [
       VOID_RANGER_HELM, ELITE_VOID_TOP, ELITE_VOID_ROBE, VOID_GLOVES,
       RUNE_CROSSBOW, // basic ranged weapon, no requirements above 61
+      ADAMANT_BOLTS, // a crossbow with an empty ammo slot is rejected
     ];
     const partialNoSet = [
       VOID_RANGER_HELM, ELITE_VOID_TOP, ELITE_VOID_ROBE,
       // No gloves → set doesn't fire.
       RUNE_CROSSBOW,
+      ADAMANT_BOLTS,
     ];
     const withSet = scoreScenario({
       itemIds: fullEliteVoid,
@@ -270,6 +273,7 @@ const OBBY_BODY = 21301;
 const OBBY_LEGS = 21304;
 const TOKTZ_XIL_AK = 6523;     // Obsidian sword, stab melee
 const TOKTZ_MEJ_TAL = 6526;    // Obsidian staff, magic
+const TOKTZ_XIL_UL = 6522;    // Toktz-xil-ul, ranged throwing ring
 const RUNE_SCIMITAR = 1333;    // Slash melee — should NEVER fire Obsidian
 
 describe("Obsidian armour — TzHaar-weapon constraint", () => {
@@ -283,7 +287,14 @@ describe("Obsidian armour — TzHaar-weapon constraint", () => {
   it("fires with Toktz-mej-tal (obsidian staff) on magic", () => {
     const ids = new Set([OBBY_HELM, OBBY_BODY, OBBY_LEGS, TOKTZ_MEJ_TAL]);
     const bonus = detectArmorSetBonus(ids, "magic", { attackType: "magic", weaponId: TOKTZ_MEJ_TAL });
-    expect(bonus?.id).toBe("obsidian-magic");
+    // The wiki calc has no obsidian bonus for magic (melee only).
+    expect(bonus).toBeUndefined();
+  });
+
+  it("does NOT fire with Toktz-xil-ul (obsidian ring/ranged) on ranged", () => {
+    const ids = new Set([OBBY_HELM, OBBY_BODY, OBBY_LEGS, TOKTZ_XIL_UL]);
+    const bonus = detectArmorSetBonus(ids, "ranged", { attackType: "ranged", weaponId: TOKTZ_XIL_UL });
+    expect(bonus).toBeUndefined();
   });
 
   it("does NOT fire with a non-TzHaar weapon (rune scimitar)", () => {
@@ -298,6 +309,8 @@ describe("Obsidian armour — TzHaar-weapon constraint", () => {
     const withWeapon = new Set([OBBY_HELM, OBBY_BODY, OBBY_LEGS, TOKTZ_XIL_AK]);
     const found = availableArmorSetsInBank(withWeapon).map((s) => s.id);
     expect(found).toContain("obsidian-melee");
+    expect(found).not.toContain("obsidian-magic");
+    expect(found).not.toContain("obsidian-ranged");
   });
 });
 
@@ -307,16 +320,16 @@ const CRYSTAL_BODY = 23975;
 const CRYSTAL_LEGS = 23979;
 const CRYSTAL_BOW = 23983;
 const BOFA = 25865; // regular Bow of Faerdhinen
-const BOFA_CORRUPTED = 25867; // (c) — does NOT benefit from crystal armour
+const BOFA_CORRUPTED = 25867; // (c) — also benefits (wiki calc: any Bow of Faerdhinen)
 const MAGIC_SHORTBOW = 861; // ordinary bow — should never fire crystal
 
 describe("Crystal armour — crystal-weapon constraint", () => {
-  it("fires with the crystal bow (+30% acc / +15% dmg)", () => {
+  it("fires with the crystal bow (full set: acc 26/20, dmg 46/40)", () => {
     const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, CRYSTAL_BOW]);
     const bonus = detectArmorSetBonus(ids, "ranged", { attackType: "ranged", weaponId: CRYSTAL_BOW });
     expect(bonus?.id).toBe("crystal-armour");
-    expect(bonus?.accuracyFactor).toEqual([13, 10]);
-    expect(bonus?.damageFactor).toEqual([23, 20]);
+    expect(bonus?.accuracyFactor).toEqual([26, 20]);
+    expect(bonus?.damageFactor).toEqual([46, 40]);
   });
 
   it("fires with the regular Bow of Faerdhinen", () => {
@@ -324,9 +337,19 @@ describe("Crystal armour — crystal-weapon constraint", () => {
     expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA })?.id).toBe("crystal-armour");
   });
 
-  it("does NOT fire with the corrupted Bow of Faerdhinen (c)", () => {
+  it("fires with the corrupted Bow of Faerdhinen (c)", () => {
     const ids = new Set([CRYSTAL_HELM, CRYSTAL_BODY, CRYSTAL_LEGS, BOFA_CORRUPTED]);
-    expect(detectArmorSetBonus(ids, "ranged", { weaponId: BOFA_CORRUPTED })).toBeUndefined();
+    const bonus = detectArmorSetBonus(ids, "ranged", { weaponId: BOFA_CORRUPTED });
+    expect(bonus?.id).toBe("crystal-armour");
+    expect(bonus?.accuracyFactor).toEqual([26, 20]);
+    expect(bonus?.damageFactor).toEqual([46, 40]);
+  });
+
+  it("partial set (body + legs) scales per piece: acc 25/20, dmg 45/40", () => {
+    const ids = new Set([CRYSTAL_BODY, CRYSTAL_LEGS, CRYSTAL_BOW]);
+    const bonus = detectArmorSetBonus(ids, "ranged", { weaponId: CRYSTAL_BOW });
+    expect(bonus?.accuracyFactor).toEqual([25, 20]);
+    expect(bonus?.damageFactor).toEqual([45, 40]);
   });
 
   it("does NOT fire with an ordinary bow", () => {

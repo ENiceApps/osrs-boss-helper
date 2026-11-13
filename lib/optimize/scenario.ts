@@ -7,12 +7,12 @@
 import type { ItemCatalogEntry } from "@/data/items/catalog";
 import { POWERED_STAFF_FORMULA } from "@/data/items/powered-staff-spells";
 import {
-  bulwarkDefence,
-  bulwarkStrengthBonus,
   rangedDamageUsesMeleeStrength,
 } from "@/data/items/special-strength";
 import { detectArmorSetBonus } from "@/data/armor-sets";
-import { AMMO_FOR_EVERY_STYLE_CATEGORIES, checkAmmoCompat } from "@/data/ammo-compatibility";
+import { ammoApplicability } from "@/data/items/ammo-applicability";
+import { canonicalItemId, withCanonicalIds } from "@/data/items/aliases";
+import { sumGear } from "@/lib/gear-totals";
 import { findCatalogItem, itemBonusFlagsFor } from "@/lib/loadout-edit";
 import { combatStyleFor, defaultStyleFor, WEAPON_STYLES } from "@/data/weapon-styles";
 import type { MonsterCatalogEntry } from "@/data/monsters/catalog";
@@ -31,16 +31,6 @@ import type {
   SpellElement,
   WeaponAttackType,
 } from "@/types/osrs";
-
-// Cape variants that grant the Dizana passive (+10 ranged atk / +1 ranged str
-// with compatible ammo): Blessed Dizana's quiver, Dizana's max cape, and the
-// Charged Dizana's quiver — all version ids. Uncharged/broken base quiver and
-// the cosmetic max hood do NOT qualify.
-const DIZANA_PASSIVE_CAPE_IDS: ReadonlySet<number> = new Set([
-  28828, 28957, 28955, // Blessed Dizana's quiver (Broken / Locked / Normal)
-  28830, 28906, 28902, // Dizana's max cape (Broken / Locked / Normal)
-  28951, 28953, // Dizana's quiver (Charged / Charged + Locked)
-]);
 
 export interface ScenarioInput {
   /** Up to 11 item IDs — one per slot. Order doesn't matter. */
@@ -90,17 +80,6 @@ function loadoutSlotFor(item: ItemCatalogEntry): LoadoutSlotKey {
   return item.slot === "2h" ? "weapon" : (item.slot as LoadoutSlotKey);
 }
 
-
-/** Pick the offensive bonus the loadout uses for its attack type. */
-function offensiveFor(item: ItemCatalogEntry, attackType: WeaponAttackType): number {
-  switch (attackType) {
-    case "stab": return item.attackStab;
-    case "slash": return item.attackSlash;
-    case "crush": return item.attackCrush;
-    case "magic": return item.attackMagic;
-    case "ranged": return item.attackRanged;
-  }
-}
 
 /** Check every requirement against skills; return list of failures. */
 function requirementFailures(item: ItemCatalogEntry, skills: Skills): string[] {
@@ -173,27 +152,18 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     reasons.push(`2H weapon "${weapon.name}" cannot be equipped with a shield.`);
   }
 
-  // Step 6: ammo ↔ weapon compat.
-  // Blessings (prayer > 0, no offensive stats) are decorative ammo-slot items
-  // that can be worn alongside ANY weapon — skip the projectile compat check for
-  // them. Real ammo (bolts, arrows, darts) still goes through the full check.
+  // Step 6: ammo vs weapon. The wiki calc's own table decides
+  // (data/items/ammo-applicability.ts): a weapon that needs ammo and has none
+  // it can fire (an empty slot, a blessing under a bow, bolts in a bow, a
+  // salamander without its tar) attacks for 0 upstream, so it is never a
+  // build worth scoring. A weapon that uses no ammo ignores the slot.
   const ammoItems = bySlot.get("ammo") ?? [];
-  // Whether real ammo compatible with the weapon is loaded (its ranged stats
-  // apply). Gates the Dizana's quiver passive below.
-  let ammoIsIncluded = false;
-  if (weapon && ammoItems[0]) {
-    const ammo = ammoItems[0];
-    const isBlessingItem = ammo.prayer > 0 && ammo.rangedStr === 0 && ammo.attackRanged === 0;
-    if (!isBlessingItem) {
-      const compat = checkAmmoCompat(weapon.name, ammo.name);
-      if (!compat.ok) reasons.push(compat.reason);
-      else ammoIsIncluded = true;
-    }
-  }
-  // A salamander burns its own tar on every style and deals 0 without it
-  // (upstream isAmmoInvalid) — never a build worth scoring.
-  if (weapon && AMMO_FOR_EVERY_STYLE_CATEGORIES.has(weapon.category) && !ammoIsIncluded) {
-    reasons.push(`"${weapon.name}" needs its own tar in the ammo slot.`);
+  if (weapon && ammoApplicability(weapon.id, ammoItems[0]?.id) === "invalid") {
+    reasons.push(
+      ammoItems[0]
+        ? `"${weapon.name}" can't fire "${ammoItems[0].name}".`
+        : `"${weapon.name}" needs ammo in the ammo slot.`,
+    );
   }
 
   // Step 7: weapon style. Honour caller override if legal; else default.
@@ -230,14 +200,8 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   // Step 8: synthesize the LoadoutSet. Mirrors lib/loadout-edit.ts:applyOverrides
   // and scripts/build-loadouts.ts so the DPS engine sees an identical shape.
   const combatStyle = combatStyleFor(style.attackType);
-  let attackBonus = 0;
-  let melStr = 0;
-  let rngStr = 0;
-  let magStr = 0;
-  let prayerBonus = 0;
-  let defenceSum = 0; // Dinh's bulwark scales its strength off this
-  let attackSpeedTicks = 0;
   const computedSlots: LoadoutSet["slots"] = {};
+  const worn: { slot: LoadoutSlotKey; item: ItemCatalogEntry }[] = [];
   for (const { item, slot } of resolved) {
     if ((bySlot.get(slot)?.length ?? 0) > 1) continue; // skip collided slots
     computedSlots[slot] = {
@@ -245,16 +209,17 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
       itemName: item.name,
       version: item.version || undefined,
     };
-    attackBonus += offensiveFor(item, style.attackType);
-    melStr += item.str;
-    rngStr += item.rangedStr;
-    magStr += item.magicStr;
-    prayerBonus += item.prayer;
-    defenceSum += bulwarkDefence(item);
-    if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
+    worn.push({ slot, item });
   }
-  // Dinh's bulwark: melee strength from total defence (0 for other weapons).
-  melStr += bulwarkStrengthBonus(weapon.id, defenceSum);
+  // Canonical stats, fired-ammo gating, Dizana's quiver and Dinh's bulwark all
+  // live in sumGear, shared with the manual gear editor.
+  const gear = sumGear(worn, style.attackType);
+  const attackBonus = gear.attackBonus;
+  const melStr = gear.melStr;
+  let rngStr = gear.rngStr;
+  const magStr = gear.magStr;
+  const prayerBonus = gear.prayerBonus;
+  const attackSpeedTicks = gear.attackSpeedTicks;
 
   // Weapon-internal ammo (blowpipe dart). The dart lives inside the weapon
   // and is NOT in the slot list — add its rangedStr separately so DPS reflects
@@ -266,21 +231,6 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
     if (dartItem) {
       rngStr += dartItem.rangedStr;
       internalAmmo = { itemId: dartItem.id, itemName: dartItem.name };
-    }
-  }
-
-  // Dizana's quiver / max cape passive: +10 ranged attack and +1 ranged strength
-  // when compatible ammo is loaded — a bonus NOT in the cape's base stats. Only
-  // the charged/blessed/max variants grant it. Mirrors wgloop's
-  // calculateEquipmentBonusesFromGear (Blessed Dizana's quiver et al.).
-  // Only real ammo in the AMMO SLOT counts — a blowpipe's internal dart does
-  // not (wgloop checks the ammo-slot item, which is empty for a blowpipe), so
-  // the passive does not apply to self-ammo weapons.
-  if (combatStyle === "ranged") {
-    const capeId = computedSlots.cape?.itemId;
-    if (capeId !== undefined && DIZANA_PASSIVE_CAPE_IDS.has(capeId) && ammoIsIncluded) {
-      attackBonus += 10;
-      rngStr += 1;
     }
   }
 
@@ -305,7 +255,9 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
   }
 
   // Shared with the manual gear editor (applyOverrides) so the two can't drift.
-  const slotItemIds = new Set(itemIds);
+  // Canonical ids too, so a locked / ornamented / recoloured variant triggers
+  // what its base item does (upstream canonicalises before every check).
+  const slotItemIds = withCanonicalIds(itemIds);
   const itemBonusFlags = itemBonusFlagsFor(slotItemIds);
 
   // Tier is purely informational on the recommend path; mark scratch loadouts
@@ -314,7 +266,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
 
   const armorSetBonus = detectArmorSetBonus(slotItemIds, combatStyle, {
     attackType: style.attackType,
-    weaponId: weapon.id,
+    weaponId: canonicalItemId(weapon.id),
   });
 
   const loadout: LoadoutSet = {
@@ -329,6 +281,7 @@ export function scoreScenario(input: ScenarioInput): ScoredScenario {
       attackBonus,
       strengthBonus,
       prayerBonus,
+      offensive: gear.offensive,
       ...(magicDamagePct !== undefined ? { magicDamagePct } : {}),
     },
     attackSpeedTicks,

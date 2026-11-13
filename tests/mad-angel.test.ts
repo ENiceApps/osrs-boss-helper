@@ -124,11 +124,13 @@ describe("Mad Angel reaction-buff phases (minHitFactor)", () => {
     expect(ids).toEqual(["m:standard", "m:sword-cleave", "m:perfect-lightning"]);
   });
 
-  it("Sword Cleave: can't miss, mean = [m(m+1) + M(M+1)] / (2(M+1)) with m = trunc(M/2)", () => {
+  it("Sword Cleave: first hit can't miss, mean = [m(m+1) + M(M+1)] / (2(M+1)) with m = trunc(M/2)", () => {
     const set = meleeSet();
     const std = computeSetDps(set, phased("standard"), SKILLS_AT_99);
     const buffed = computeSetDps(set, phased("sword-cleave"), SKILLS_AT_99);
-    expect(buffed.accuracy).toBe(1);
+    // Wiki calc: reported accuracy is the normal hit chance; only the first
+    // hit is guaranteed to land (DPS below assumes that for a single-hit weapon).
+    expect(buffed.accuracy).toBe(std.accuracy);
     expect(buffed.maxHit).toBe(std.maxHit);
     const M = std.maxHit;
     const m = Math.trunc(M / 2);
@@ -147,11 +149,11 @@ describe("Mad Angel reaction-buff phases (minHitFactor)", () => {
     expect(meanLandedHitWithMinimum(40, 20)).toBeCloseTo(25.122, 3);
   });
 
-  it("Perfect Lightning: can't miss and every hit is the max", () => {
+  it("Perfect Lightning: first hit can't miss and is is the max", () => {
     const set = meleeSet();
     const std = computeSetDps(set, phased("standard"), SKILLS_AT_99);
     const buffed = computeSetDps(set, phased("perfect-lightning"), SKILLS_AT_99);
-    expect(buffed.accuracy).toBe(1);
+    expect(buffed.accuracy).toBe(std.accuracy);
     const secondsPerAttack = 4 * 0.6;
     expect(buffed.dps).toBeCloseTo(std.maxHit / secondsPerAttack, 10);
     // Ordering sanity: standard < sword cleave < perfect lightning.

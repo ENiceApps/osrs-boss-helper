@@ -180,18 +180,18 @@ describe("Soulreaper axe — max stacks (+30% Str level)", () => {
     expect(boosted.dps / base.dps).toBeGreaterThan(1.1);
   });
 
-  it("Strength level is floored: floor(99 * 1.3) = 128", () => {
-    // Verify the effective skill used. We can infer it from maxHit:
-    // effStr = floor(floor(128*1)+8) = 136 (with piety=1 aggressive=+3 → 139)
-    // meleeMaxHit(139, 100) = floor((139*128+64+100)/128) = floor(17892+64+100)/128
-    // = floor(18056/128) = floor(141.0625) = 141... let's just verify the boost.
+  it("Strength boost is trunc(Str x 30/100) added after the prayer (no stacking)", () => {
     const set = meleeSet({ slots: { weapon: { itemId: 28338, itemName: "Soulreaper axe" } } });
-    const skills99 = { ...BASE_SKILLS, strength: 99 };
-    const skills128 = { ...BASE_SKILLS, strength: 128 };
-    const withFlooredBoost = computeSetDps(set, MONSTER, skills99, undefined, false, true);
-    const withActual128 = computeSetDps(set, MONSTER, skills128, undefined, false, false);
-    // floor(99 * 1.3) = 128, so both should produce identical DPS
-    expect(withFlooredBoost.dps).toBeCloseTo(withActual128.dps, 6);
+    const boosted = computeSetDps(set, MONSTER, { ...BASE_SKILLS, strength: 99 }, undefined, false, true);
+    // Wiki calc: Soulreaper adds trunc(Strength x 30/100) to the effective
+    // level AFTER the prayer; it does not multiply with Piety (x1.23).
+    // eff = floor(99 x 1.23) + 29 + 3 (aggressive) + 8.
+    const eff = Math.trunc(99 * 1.23) + Math.trunc((99 * 30) / 100) + 3 + 8;
+    const expected = Math.trunc((eff * (100 + 64) + 320) / 640);
+    expect(boosted.maxHit).toBe(expected);
+    // The old multiplicative model (floor(99 x 1.3) = 128 through the prayer) differs.
+    const oldEff = Math.trunc(Math.trunc(99 * 1.3) * 1.23) + 3 + 8;
+    expect(expected).not.toBe(Math.trunc((oldEff * 164 + 320) / 640));
   });
 });
 

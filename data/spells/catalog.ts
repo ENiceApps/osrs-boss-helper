@@ -141,12 +141,12 @@ const ANCIENT: readonly SpellEntry[] = [
   { name: "Smoke Blitz", spellbook: "ancient", element: "none", minLevel: 74, baseMaxHit: 23 },
   { name: "Ice Burst", spellbook: "ancient", element: "none", minLevel: 70, baseMaxHit: 22 },
   { name: "Blood Burst", spellbook: "ancient", element: "none", minLevel: 68, baseMaxHit: 21 },
-  { name: "Shadow Burst", spellbook: "ancient", element: "none", minLevel: 64, baseMaxHit: 19 },
-  { name: "Smoke Burst", spellbook: "ancient", element: "none", minLevel: 62, baseMaxHit: 18 },
+  { name: "Shadow Burst", spellbook: "ancient", element: "none", minLevel: 64, baseMaxHit: 18 },
+  { name: "Smoke Burst", spellbook: "ancient", element: "none", minLevel: 62, baseMaxHit: 17 },
   { name: "Ice Rush", spellbook: "ancient", element: "none", minLevel: 58, baseMaxHit: 16 },
   { name: "Blood Rush", spellbook: "ancient", element: "none", minLevel: 56, baseMaxHit: 15 },
-  { name: "Shadow Rush", spellbook: "ancient", element: "none", minLevel: 52, baseMaxHit: 13 },
-  { name: "Smoke Rush", spellbook: "ancient", element: "none", minLevel: 50, baseMaxHit: 12 },
+  { name: "Shadow Rush", spellbook: "ancient", element: "none", minLevel: 52, baseMaxHit: 14 },
+  { name: "Smoke Rush", spellbook: "ancient", element: "none", minLevel: 50, baseMaxHit: 13 },
 ];
 
 const ARCEUUS: readonly SpellEntry[] = [
@@ -162,6 +162,31 @@ const ARCEUUS: readonly SpellEntry[] = [
   { name: "Superior Demonbane", spellbook: "arceuus", element: "none", minLevel: 62, baseMaxHit: 23, requiresAttribute: "demon", vsDemonAccuracyPct: 20 },
   { name: "Inferior Demonbane", spellbook: "arceuus", element: "none", minLevel: 44, baseMaxHit: 16, requiresAttribute: "demon", vsDemonAccuracyPct: 20 },
 ];
+
+/**
+ * Spells that only cast through particular weapons (canonical item names,
+ * lower-cased). With any other weapon the spell does nothing: the wiki calc
+ * drops it (BaseCalc: "This spell needs a specific weapon equipped to cast").
+ */
+export const SPELL_REQUIRED_WEAPONS: ReadonlyMap<string, readonly string[]> = new Map([
+  ["Iban Blast", ["iban's staff", "iban's staff (u)"]],
+  ["Saradomin Strike", ["saradomin staff", "staff of light"]],
+  ["Claws of Guthix", ["guthix staff", "void knight mace", "staff of balance"]],
+  ["Flames of Zamorak", [
+    "zamorak staff", "staff of the dead", "toxic staff of the dead",
+    "thammaron's sceptre (a)", "accursed sceptre (a)",
+  ]],
+  ["Magic Dart", [
+    "slayer's staff", "slayer's staff (e)", "staff of the dead", "toxic staff of the dead",
+    "staff of light", "staff of balance",
+  ]],
+]);
+
+/** True iff the weapon (canonical name) can cast the spell. */
+export function weaponCanCastSpell(spellName: string, weaponName: string): boolean {
+  const required = SPELL_REQUIRED_WEAPONS.get(spellName);
+  return !required || required.includes(weaponName.toLowerCase());
+}
 
 /** Every modeled combat spell, across all spellbooks. */
 export const ALL_SPELLS: readonly SpellEntry[] = [...STANDARD, ...ANCIENT, ...ARCEUUS];

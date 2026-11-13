@@ -9,11 +9,9 @@ import {
   INTERNAL_AMMO_WEAPONS,
   type InternalAmmoSpec,
 } from "@/data/items/internal-ammo-weapons";
-import {
-  bulwarkDefence,
-  bulwarkStrengthBonus,
-  rangedDamageUsesMeleeStrength,
-} from "@/data/items/special-strength";
+import { rangedDamageUsesMeleeStrength } from "@/data/items/special-strength";
+import { canonicalItemId, withCanonicalIds } from "@/data/items/aliases";
+import { sumGear } from "@/lib/gear-totals";
 import { elementalAmuletKind, hasTrigger } from "@/data/bonus-trigger-items";
 import { hasImbuedSlayerHelm } from "@/data/items/slayer-helm";
 import { detectArmorSetBonus } from "@/data/armor-sets";
@@ -74,17 +72,6 @@ export function dartsForBlowpipe(weaponId: number | undefined): ItemCatalogEntry
       return a.id - b.id;
     },
   );
-}
-
-/** Pull the right offensive value from an item for the loadout's attack type. */
-function offensiveFor(item: ItemCatalogEntry, attackType: AttackType): number {
-  switch (attackType) {
-    case "stab": return item.attackStab;
-    case "slash": return item.attackSlash;
-    case "crush": return item.attackCrush;
-    case "magic": return item.attackMagic;
-    case "ranged": return item.attackRanged;
-  }
 }
 
 /**
@@ -219,17 +206,11 @@ export function applyOverrides(
   const weaponRef = resolveSlot("weapon", base, overrides);
   const weaponItem = weaponRef ? ITEM_BY_ID.get(weaponRef.itemId) : undefined;
   const { style, attackType, attackStyleChoice } = resolveStyle(base, weaponItem);
-  let attackBonus = 0;
-  let melStr = 0;
-  let rngStr = 0;
-  let magStr = 0;
-  let prayerBonus = 0;
-  let defenceSum = 0; // Dinh's bulwark scales its strength off this
-  let attackSpeedTicks = 0;
   const slotKeys: LoadoutSlotKey[] = [
     "head", "cape", "neck", "ammo", "weapon", "body",
     "shield", "legs", "hands", "feet", "ring",
   ];
+  const worn: { slot: LoadoutSlotKey; item: ItemCatalogEntry }[] = [];
   for (const slot of slotKeys) {
     const ref = resolveSlot(slot, base, overrides);
     if (!ref) continue;
@@ -241,16 +222,17 @@ export function applyOverrides(
       continue;
     }
     resolved[slot] = { itemId: item.id, itemName: item.name, version: item.version || undefined };
-    attackBonus += offensiveFor(item, attackType);
-    melStr += item.str;
-    rngStr += item.rangedStr;
-    magStr += item.magicStr;
-    prayerBonus += item.prayer;
-    defenceSum += bulwarkDefence(item);
-    if (slot === "weapon" && item.speed > 0) attackSpeedTicks = item.speed;
+    worn.push({ slot, item });
   }
-  // Dinh's bulwark: melee strength from total defence (0 for other weapons).
-  melStr += bulwarkStrengthBonus(resolved.weapon?.itemId, defenceSum);
+  // Canonical stats, fired-ammo gating, Dizana's quiver and Dinh's bulwark:
+  // the same sum the optimizer uses (lib/gear-totals.ts).
+  const gear = sumGear(worn, attackType);
+  const attackBonus = gear.attackBonus;
+  const melStr = gear.melStr;
+  let rngStr = gear.rngStr;
+  const magStr = gear.magStr;
+  const prayerBonus = gear.prayerBonus;
+  const attackSpeedTicks = gear.attackSpeedTicks;
 
   // Weapon-internal ammo (blowpipe dart). Not in any slot, so the loop above
   // won't have picked it up — resolve it against the RESOLVED weapon so a
@@ -281,7 +263,7 @@ export function applyOverrides(
       break;
   }
 
-  const slotItemIds = new Set(
+  const slotItemIds = withCanonicalIds(
     Object.values(resolved).map((s) => s?.itemId).filter((n): n is number => typeof n === "number"),
   );
   const itemBonusFlags = itemBonusFlagsFor(slotItemIds);
@@ -295,7 +277,7 @@ export function applyOverrides(
   const weaponCategory = weaponItem?.category ?? base.weaponCategory;
   const armorSetBonus = detectArmorSetBonus(slotItemIds, style, {
     attackType,
-    weaponId: resolved.weapon?.itemId,
+    weaponId: resolved.weapon ? canonicalItemId(resolved.weapon.itemId) : undefined,
   });
 
   // Spell fields the DPS engine consumes. Twinflame double-cast flows
@@ -342,6 +324,7 @@ export function applyOverrides(
       attackBonus,
       strengthBonus,
       prayerBonus,
+      offensive: gear.offensive,
       ...(magicDamagePct !== undefined ? { magicDamagePct } : {}),
     },
     attackSpeedTicks: attackSpeedTicks > 0 ? attackSpeedTicks : base.attackSpeedTicks,

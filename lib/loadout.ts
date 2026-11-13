@@ -16,7 +16,7 @@ import {
   amuletBoostsElement,
   ELEMENTAL_AMULET_MAX_HIT_BONUS,
 } from "@/data/bonus-trigger-items";
-import { checkAmmoCompatWithCategory } from "@/data/ammo-compatibility";
+import { ammoApplicability } from "@/data/items/ammo-applicability";
 import {
   BROAD_AMMO_IDS,
   LEAF_BLADED_BATTLEAXE_ID,
@@ -87,6 +87,11 @@ export interface TargetActiveBonuses {
    * roll and max hit (see `salamanderMissingTar`). Target-independent.
    */
   salamanderMissingTar: boolean;
+  /**
+   * The weapon needs ammo and has none it can fire: the attack does nothing
+   * at all, accuracy included (see `ammoInvalid`). Target-independent.
+   */
+  ammoInvalid: boolean;
 }
 
 /**
@@ -117,9 +122,19 @@ export function canDamageLeafy(set: LoadoutSet): boolean {
 export function firesAmmo(set: LoadoutSet): boolean {
   const { weapon, ammo } = set.slots;
   if (!weapon || !ammo) return false;
-  const category = set.weaponCategory ?? "";
-  if (category !== "Bow" && category !== "Crossbow") return false;
-  return checkAmmoCompatWithCategory(weapon.itemName, category, ammo.itemName).ok;
+  return ammoApplicability(weapon.itemId, ammo.itemId) === "included";
+}
+
+/**
+ * True iff the weapon needs ammo and the ammo slot holds none it can fire (an
+ * empty slot, a blessing, the wrong class or tier): upstream's isAmmoInvalid,
+ * which zeroes the attack roll and the max hit on every style. A Twisted bow
+ * with no arrows deals nothing, and neither does a salamander without its tar.
+ */
+export function ammoInvalid(set: LoadoutSet): boolean {
+  const { weapon, ammo } = set.slots;
+  if (!weapon) return false;
+  return ammoApplicability(weapon.itemId, ammo?.itemId) === "invalid";
 }
 
 /**
@@ -129,10 +144,16 @@ export function firesAmmo(set: LoadoutSet): boolean {
  * magic included, since the salamander burns the tar for all three.
  */
 export function salamanderMissingTar(set: LoadoutSet): boolean {
-  if (set.weaponCategory !== "Salamander") return false;
-  const { weapon, ammo } = set.slots;
-  if (!weapon || !ammo) return true;
-  return !checkAmmoCompatWithCategory(weapon.itemName, "Salamander", ammo.itemName).ok;
+  return set.weaponCategory === "Salamander" && ammoInvalid(set);
+}
+
+/** The combat style a Wilderness weapon's bonus works on, by its name. */
+function wildernessWeaponStyle(weaponName: string): "melee" | "ranged" | "magic" | undefined {
+  const name = weaponName.toLowerCase();
+  if (name.includes("chainmace")) return "melee";
+  if (name.includes("craw's bow") || name.includes("webweaver bow")) return "ranged";
+  if (name.includes("sceptre")) return "magic";
+  return undefined;
 }
 
 /**
@@ -151,9 +172,9 @@ export function activeBonusesForTarget(
   const isKalphite = target.attributes.includes("kalphite");
   const isGolem = target.attributes.includes("golem");
   const isLeafy = target.attributes.includes("leafy");
-  // Dragon hunter wand's dragonbane is active vs dragons AND does NOT stack with
-  // Salve (unlike DHCB/DHL, which do). On an undead dragon (e.g. Vorkath) the
-  // wand wins (+75/+40 ≫ Salve's +20/+20), so suppress Salve when it's active.
+  // Dragon hunter wand vs a dragon. It stacks with a Salve on an undead dragon
+  // (Vorkath): upstream applies the Salve percent and the wand's factor
+  // independently, in melee and magic alike.
   const wandActive = set.itemBonusFlags.dragonHunterWand && isDragon;
   // The regular and (e) Salve amulets boost melee only; ranged and magic need
   // the imbued (i)/(ei) (wgloop gates Salve per style the same way). A
@@ -168,8 +189,8 @@ export function activeBonusesForTarget(
       dragonHunterCrossbow: set.itemBonusFlags.dragonHunterCrossbow && isDragon,
       dragonHunterLance: set.itemBonusFlags.dragonHunterLance && isDragon,
       dragonHunterWand: wandActive,
-      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && !wandActive && salveFits,
-      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && !wandActive && salveFits,
+      salveAmuletEi: set.itemBonusFlags.salveAmuletEi && isUndead && salveFits,
+      salveAmulet: set.itemBonusFlags.salveAmulet && isUndead && salveFits,
       demonbane: set.itemBonusFlags.demonbane && isDemon,
       demonbaneSilverlight: (set.itemBonusFlags.demonbaneSilverlight ?? false) && isDemon,
       demonbaneClaws: (set.itemBonusFlags.demonbaneClaws ?? false) && isDemon,
@@ -187,8 +208,13 @@ export function activeBonusesForTarget(
         set.style === "melee" &&
         set.slots.weapon?.itemId === LEAF_BLADED_BATTLEAXE_ID,
       // Wilderness weapons only get their ×3/2 vs NPCs fought in the Wilderness.
+      // Each on its own style only (upstream isRevWeaponBuffApplicable): the
+      // chainmaces in melee, the bows at range, the sceptres on magic. A
+      // sceptre swung as a mace gets nothing.
       wildernessWeapon:
-        (set.itemBonusFlags.wildernessWeapon ?? false) && isWildernessBoss(target.slug),
+        (set.itemBonusFlags.wildernessWeapon ?? false) &&
+        isWildernessBoss(target.slug) &&
+        wildernessWeaponStyle(set.slots.weapon?.itemName ?? "") === set.style,
     },
     // Tomes boost their element's spells vs all NPCs — not just element-weak
     // targets. (Element weakness is a separate accuracy+damage bonus modelled
@@ -223,6 +249,7 @@ export function activeBonusesForTarget(
       set.slots.weapon?.itemName,
     ),
     salamanderMissingTar: salamanderMissingTar(set),
+    ammoInvalid: ammoInvalid(set),
   };
 }
 

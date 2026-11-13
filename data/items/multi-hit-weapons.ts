@@ -9,7 +9,7 @@
 import type { HitProfile } from "@/lib/dps/multihit";
 
 // Scythe of Vitur — charged, uncharged, Holy, Sanguine. Same mechanic.
-const SCYTHE_IDS = new Set([22325, 22486, 25736, 25739]);
+const SCYTHE_IDS = new Set([22325, 22486, 25736, 25738, 25739, 25741]);
 // Dark bow — base + cosmetic/deadman variants.
 const DARK_BOW_IDS = new Set([12766, 12765, 11235, 12768, 12767]);
 const DUAL_MACUAHUITL = 28997;
@@ -63,11 +63,11 @@ export function hitProfileForWeapon(
     // Charged: two independent hits, each 0–75% of max ranged hit (×1.5 overall).
     // The wiki states 75% explicitly only for the uncharged single hit; the
     // charged per-hit fraction follows the weirdgloop calc / community testing.
-    return [{ maxFraction: 0.75 }, { maxFraction: 0.75 }];
+    return [{ maxFraction: 0.75, roundUp: true }, { maxFraction: 0.75, roundUp: true }];
   }
   if (weaponId === TONALZTICS_UNCHARGED) {
     // Uncharged: a single 0–75% hit (weaker than a normal full hit).
-    return [{ maxFraction: 0.75 }];
+    return [{ maxFraction: 0.75, roundUp: true }];
   }
 
   // Two independent halves, trunc(M/2) and M − trunc(M/2) — the same mean as

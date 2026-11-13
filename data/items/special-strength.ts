@@ -9,6 +9,10 @@
 // give no bonuses at all.
 // See https://oldschool.runescape.wiki/w/Eclipse_atlatl
 export const ECLIPSE_ATLATL_ID = 29000;
+// The Hunter's spear (thrown) works the same way: upstream's `scalesWithStr`
+// lists both (PlayerVsNPCCalc getPlayerMaxRangedHit). For both, the DAMAGE
+// roll also scales off the Strength level instead of Ranged.
+export const HUNTERS_SPEAR_ID = 29305;
 
 /**
  * True when a ranged loadout should compute its max hit from the summed MELEE
@@ -16,7 +20,7 @@ export const ECLIPSE_ATLATL_ID = 29000;
  * atlatl. Pass the equipped weapon's item id.
  */
 export function rangedDamageUsesMeleeStrength(weaponId: number | undefined): boolean {
-  return weaponId === ECLIPSE_ATLATL_ID;
+  return weaponId === ECLIPSE_ATLATL_ID || weaponId === HUNTERS_SPEAR_ID;
 }
 
 // Dinh's bulwark (and its blazing recolour) adds melee strength from the

@@ -74,6 +74,9 @@ interface Combo {
   bossWikiId: number;
   bossVersion?: string;
   bossPhase?: { mechanicId: string; wikiPhase: string };
+  wgPhase?: string;
+  wgBoosts?: { atk?: number; str?: number; ranged?: number; magic?: number };
+  markOfDarkness?: boolean;
   attackType: AttackType;
   choice: Choice;
   spellName?: string;
@@ -141,7 +144,15 @@ function runOne(combo: Combo): Result {
   // name + version so both engines fight the same stat block.
   let monster = getTestMonsterById(combo.bossWikiId);
   if (combo.bossVersion && monster.version !== combo.bossVersion) {
-    monster = getTestMonster(monster.name, combo.bossVersion);
+    // Only when that version shares the id: our version names can differ from
+    // upstream's (a renamed quest variant), and a same-named version of
+    // ANOTHER npc must not be picked instead.
+    try {
+      const alt = getTestMonster(monster.name, combo.bossVersion);
+      if (alt.id === monster.id) monster = alt;
+    } catch {
+      /* no such version upstream: keep the id's entry */
+    }
   }
   // getTestMonsterById applies INITIAL_MONSTER_INPUTS, which defaults
   // monsterCurrentHp to 150. Current-HP-based procs (ruby bolts' 20%) would then
@@ -150,6 +161,7 @@ function runOne(combo: Combo): Result {
   monster.inputs.monsterCurrentHp = monster.skills.hp;
   monster.monsterCurrentHp = monster.skills.hp;
   if (combo.bossPhase) monster.inputs.phase = combo.bossPhase.wikiPhase;
+  else if (combo.wgPhase) monster.inputs.phase = combo.wgPhase;
 
   const equipment: Partial<PlayerEquipment> = {};
   let weapon: EquipmentPiece | undefined;
@@ -192,6 +204,7 @@ function runOne(combo: Combo): Result {
     style,
     prayers: [prayerFor(combo.attackType)],
     spell: combo.spellName ? findSpell(combo.spellName) : null,
+    ...(combo.wgBoosts ? { boosts: combo.wgBoosts } : {}),
     buffs: {
       // Match our engine's assumptions. generateEmptyPlayer defaults
       // onSlayerTask=true (forced to the combo's value here) and
@@ -203,6 +216,7 @@ function runOne(combo: Combo): Result {
       // Our engine auto-applies the Wilderness weapon ×3/2 for wilderness bosses;
       // set the buff so wgloop matches.
       inWilderness: combo.inWilderness ?? false,
+      markOfDarknessSpell: combo.markOfDarkness ?? false,
     },
   });
 
@@ -210,9 +224,10 @@ function runOne(combo: Combo): Result {
   // A phased combo reports the accuracy the wiki calc DISPLAYS: in the Maggot
   // King's crush punish getDisplayHitChance rolls against the reduced defence
   // (the first hit's chance), where getHitChance keeps the full one.
-  const accuracy = combo.bossPhase
-    ? new PlayerVsNPCCalc(player, monster, { loadoutName: 'test' }).getDisplayHitChance()
-    : r.accuracy;
+  // The accuracy the wiki calc DISPLAYS (getDisplayHitChance): the Maggot
+  // King's crush punish shows the reduced first-hit chance, a Brimstone ring
+  // its blended chance.
+  const accuracy = new PlayerVsNPCCalc(player, monster, { loadoutName: 'test' }).getDisplayHitChance();
   return {
     id: combo.id,
     ok: true,

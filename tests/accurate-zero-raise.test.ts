@@ -131,8 +131,10 @@ describe("calculateDps — single hit", () => {
     expect(r.dps).toBeCloseTo(1 / SECONDS, 12);
   });
 
-  it("Berserker's ×6/5 rescales the roll, so the raise uses the pre-scale max", () => {
-    // Melee: the raise is 1/(M0+1) on the roll before ×6/5, not 1/(M+1) after it.
+  it("Berserker's ×6/5 scales each rolled hit, then the accurate 0 is raised", () => {
+    // Melee: every roll r over 0..M0 lands trunc(r × 6/5), then an accurate 0
+    // becomes 1 (exact per hitsplat since 2026-11-13; the mean of the scaled
+    // rolls sits under trunc(M0 × 6/5) / 2).
     const melee: DpsScenario = {
       style: "melee",
       attackStyle: "aggressive",
@@ -148,7 +150,9 @@ describe("calculateDps — single hit", () => {
     const neck = calculateDps({ ...melee, berserkerObsidian: true });
     const m0 = plain.maxHit;
     expect(neck.maxHit).toBe(Math.trunc((m0 * 6) / 5));
-    expect(neck.dps).toBeCloseTo((neck.accuracy * (neck.maxHit / 2 + 1 / (m0 + 1))) / SECONDS, 12);
+    let sum = 0;
+    for (let r = 0; r <= m0; r++) sum += Math.max(Math.trunc((r * 6) / 5), 1);
+    expect(neck.dps).toBeCloseTo((neck.accuracy * (sum / (m0 + 1))) / SECONDS, 12);
   });
 
   it("the fang's trimmed roll has no 0 once M ≥ 7, on any style", () => {

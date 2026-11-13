@@ -16,6 +16,15 @@ export const IMBUED_SLAYER_HELM_IDS: ReadonlySet<number> = new Set(
   ITEM_CATALOG.filter((i) => IMBUED_SLAYER_HEAD.test(i.name)).map((i) => i.id),
 );
 
+/**
+ * Every black mask / slayer helmet, imbued or not. The plain ones carry the
+ * on-task bonus in MELEE only (x7/6, upstream isWearingBlackMask); ranged and
+ * magic need the imbue.
+ */
+export const SLAYER_HEAD_IDS: ReadonlySet<number> = new Set(
+  ITEM_CATALOG.filter((i) => /(slayer helmet|black mask)/i.test(i.name) && i.slot === "head").map((i) => i.id),
+);
+
 /** True iff any equipped item is an imbued black mask / slayer helmet. */
 export function hasImbuedSlayerHelm(itemIds: ReadonlySet<number>): boolean {
   for (const id of itemIds) {

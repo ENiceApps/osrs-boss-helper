@@ -94,7 +94,8 @@ describe("optimize/scenario — validation rejects malformed loadouts", () => {
     });
     expect(result.valid).toBe(false);
     if (result.valid) return;
-    expect(result.reasons.some((r) => r.includes("fires bolts") || r.includes("is a arrow"))).toBe(true);
+    // Wiki calc ammo table: the DHCB does not fire dragon arrows.
+    expect(result.reasons.some((r) => r.includes("can't fire"))).toBe(true);
   });
 
   it("equip requirement failure → invalid", () => {
@@ -139,7 +140,8 @@ describe("optimize/scenario — Eclipse atlatl uses melee strength for ranged da
   // max hit scales off the MELEE strength bonus, not ranged strength.
   // Gear: Ava's assembler (22109, rangedStr 2), Berserker ring (6737, str 4),
   // Amulet of torture (19553, str 10).
-  const ATLATL_LOADOUT = [29000, 22109, 6737, 19553];
+  const ATLATL_DARTS = 28991; // the atlatl needs Atlatl darts; they carry no stats
+  const ATLATL_LOADOUT = [29000, ATLATL_DARTS, 22109, 6737, 19553];
 
   it("strengthBonus is the summed melee str (54), not the ranged str (2)", () => {
     const result = scoreScenario({

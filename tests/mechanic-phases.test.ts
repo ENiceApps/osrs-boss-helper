@@ -140,16 +140,29 @@ describe("wgloop phase bosses", () => {
     const king = MONSTER_BY_SLUG["maggot-king"];
     const std = applyPhase(king, mech("maggot-king", "standard"));
     const punish = applyPhase(king, mech("maggot-king", "melee-punish"));
-    const meleeStd = computeSetDps(setFor("melee"), std, SKILLS_AT_99);
-    const meleePunish = computeSetDps(setFor("melee"), punish, SKILLS_AT_99);
-    expect(meleePunish.maxHit).toBe(Math.trunc((meleeStd.maxHit * 3) / 2));
+    // Wiki calc isMaggotKingMeleePunish: crush attacks only.
+    const crush = { ...setFor("melee"), attackType: "crush" as const };
+    const crushStd = computeSetDps(crush, std, SKILLS_AT_99);
+    const crushPunish = computeSetDps(crush, punish, SKILLS_AT_99);
+    expect(crushPunish.maxHit).toBe(Math.trunc((crushStd.maxHit * 3) / 2));
+    for (const attackType of ["slash", "stab"] as const) {
+      const set = { ...setFor("melee"), attackType };
+      const a = computeSetDps(set, std, SKILLS_AT_99);
+      const b = computeSetDps(set, punish, SKILLS_AT_99);
+      expect(b.maxHit).toBe(a.maxHit);
+      expect(b.accuracy).toBe(a.accuracy);
+      expect(b.dps).toBe(a.dps);
+    }
     const rangedStd = computeSetDps(setFor("ranged"), std, SKILLS_AT_99);
     const rangedPunish = computeSetDps(setFor("ranged"), punish, SKILLS_AT_99);
     expect(rangedPunish.maxHit).toBe(rangedStd.maxHit);
   });
 });
 
-// The Maggot King's melee punish, locked to wgloop @ 89c3e25 for every
+// The Maggot King's melee punish, locked to wgloop @ 89c3e25 (rows
+// mk-punish-zombie-axe-slash, -scythe-slash, -torags-hammers re-locked against
+// wiki calc HEAD 74958b1 on 2026-11-13: punish is crush-only, and Torag's
+// second half rolls at normal accuracy) for every
 // maggotKingPunishCombos() combo (npm run oracle -- --only=mk-). Crush rolls
 // against trunc(def × 15/100) (accuracy is the wiki calc's DISPLAYED first-hit
 // chance), the first hitsplat is ×3/2: per roll on a single hit, on the first
@@ -157,13 +170,13 @@ describe("wgloop phase bosses", () => {
 describe("Maggot King melee punish vs wgloop", () => {
   const WGLOOP: Record<string, { maxHit: number; accuracy: number; dps: number }> = {
     "mk-punish-zombie-axe-crush": { maxHit: 70, accuracy: 0.9289691278514148, dps: 10.844424332765476 },
-    "mk-punish-zombie-axe-slash": { maxHit: 70, accuracy: 0.3786212328966946, dps: 4.419877031245441 },
+    "mk-punish-zombie-axe-slash": { maxHit: 47, accuracy: 0.3786212328966946, dps: 2.968495638474779 },
     "mk-punish-dharoks-crush": { maxHit: 66, accuracy: 0.9289691278514148, dps: 7.249891341697551 },
     "mk-punish-bludgeon": { maxHit: 63, accuracy: 0.933167832987998, dps: 12.161925730318384 },
-    "mk-punish-scythe-slash": { maxHit: 90, accuracy: 0.41538057589637367, dps: 6.252159110311378 },
+    "mk-punish-scythe-slash": { maxHit: 40, accuracy: 0.41538057589637367, dps: 4.868664429297066 },
     "mk-punish-scythe-crush": { maxHit: 90, accuracy: 0.8964378748409766, dps: 10.797303429151455 },
     "mk-punish-dual-macuahuitl": { maxHit: 52, accuracy: 0.9388874986594216, dps: 8.521287495533388 },
-    "mk-punish-torags-hammers": { maxHit: 50, accuracy: 0.9270597772752486, dps: 7.750181763222214 },
+    "mk-punish-torags-hammers": { maxHit: 50, accuracy: 0.9270597772752486, dps: 6.366599569553404 },
     "mk-punish-twisted-bow": { maxHit: 59, accuracy: 0.45189551498954716, dps: 4.446149761369379 },
     "mk-standard-zombie-axe-crush": { maxHit: 47, accuracy: 0.5266755308098225, dps: 4.129282460307568 },
   };
@@ -192,6 +205,25 @@ describe("Maggot King melee punish vs wgloop", () => {
       expect(r.dps.dps).toBeCloseTo(want.dps, 9);
     });
   }
+
+  it("slash punish rows score exactly as the Standard phase", () => {
+    const king = MONSTER_BY_SLUG["maggot-king"];
+    for (const id of ["mk-punish-zombie-axe-slash", "mk-punish-scythe-slash"]) {
+      const combo = combos.find((c) => c.id === id)!;
+      const run = (phase: string) => {
+        const r = scoreScenario({
+          itemIds: combo.itemIds,
+          target: applyPhase(king, mech(combo.bossSlug, phase)),
+          skills: SKILLS_AT_99,
+          attackStyle: { attackType: combo.attackType, choice: combo.choice },
+          onTask: false,
+        });
+        if (!r.valid) throw new Error(r.reasons.join("; "));
+        return r.dps;
+      };
+      expect(run(combo.bossPhase!.mechanicId), id).toEqual(run("standard"));
+    }
+  });
 
   it("Dharok's at 1 HP out-damages the zombie axe once crush ignores the defence", () => {
     const king = applyPhase(MONSTER_BY_SLUG["maggot-king"], mech("maggot-king", "melee-punish"));

@@ -68,6 +68,15 @@ describe("The Fractured Archive bosses", () => {
     expect(bork.defenceBonuses.crush).toBe(10);
     const stunned = bork.phases?.find((p) => p.version === "Stunned");
     expect(stunned?.defenceBonuses.flatArmour).toBeUndefined();
+    // Live wiki (2026-11-13): HP 1650; Smorks health bands scale armour and magic resistance.
+    expect(bork.hp).toBe(1650);
+    expect(bork.phases?.map((p) => p.version)).toEqual([
+      "Base", "Smorks 75% - 50%", "Smorks 50% - 25%", "Smorks 25% - 0%", "Stunned",
+    ]);
+    expect(bork.phases?.map((p) => p.defenceBonuses.flatArmour ?? 0)).toEqual([8, 10, 12, 14, 0]);
+    expect(bork.phases?.map((p) => p.defenceBonuses.magicResistance ?? 0)).toEqual([0, 2, 4, 6, 0]);
+    expect([stunned?.defenceBonuses.stab, stunned?.defenceBonuses.slash, stunned?.defenceBonuses.crush])
+      .toEqual([40, 30, -90]);
   });
 
   it("the Archive Guardian opens Flying and offers a Grounded phase melee can reach", () => {
@@ -79,7 +88,10 @@ describe("The Fractured Archive bosses", () => {
     expect(guardian.hp).toBe(550);
     expect(grounded?.hp).toBe(1100);
     expect(grounded?.attributes).not.toContain("flying");
-    expect(grounded?.weakness).toEqual({ element: "fire", severity: 40 });
+    expect(grounded?.weakness).toEqual({ element: "fire", severity: 80 });
+    expect(guardian.weakness).toEqual({ element: "fire", severity: 80 });
+    expect(grounded?.defenceBonuses.magic).toBe(50);
+    expect(guardian.defenceBonuses.rangedLight).toBe(55);
     expect(grounded?.defenceBonuses.slash).toBe(90);
     expect(grounded?.defenceBonuses.rangedStandard).toBe(115);
     expect(grounded?.defenceBonuses.rangedLight).toBe(50);
@@ -147,13 +159,17 @@ describe("The Fractured Archive bosses", () => {
       expect(categoryForMonster(slug)).toBe("tfa");
     }
     expect(MONSTER_BY_SLUG["undead-binder"].defenceLevel).toBe(225);
+    expect(MONSTER_BY_SLUG["undead-binder"].attributes).toContain("undead");
+    expect(MONSTER_BY_SLUG["undead-binder"].defenceBonuses.rangedHeavy).toBe(20);
+    expect(MONSTER_BY_SLUG["xarth"].defenceBonuses.stab).toBe(60);
+    expect(MONSTER_BY_SLUG["xarth"].hp).toBe(2450);
     expect(MONSTER_BY_SLUG["undead-binder"].weakness).toEqual({ element: "fire", severity: 80 });
     expect(MONSTER_BY_SLUG["jelly-dreadnoth"].attributes).toContain("demon");
     expect(MONSTER_BY_SLUG["jelly-dreadnoth"].defenceBonuses.rangedHeavy).toBe(-50);
     // Corpse: Normal first, Doused as a stat phase with negative melee defence.
     const corpse = MONSTER_BY_SLUG["corpse-xarth"];
     expect(corpse.version).toBe("Normal");
-    expect(corpse.attributes).toContain("undead");
+    expect(corpse.attributes).toEqual([]); // live wiki: Corpse (Xarth) is not undead
     expect(corpse.phases?.map((p) => p.version)).toEqual(["Normal", "Doused"]);
     expect(corpse.phases?.[1].defenceBonuses.crush).toBe(-20);
     expect(corpse.phases?.[1].weakness).toEqual({ element: "fire", severity: 100 });

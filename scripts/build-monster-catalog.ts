@@ -41,6 +41,8 @@ interface DefenceBonuses {
   rangedLight: number;
   /** Upstream `defensive.flat_armour`; emitted only when non-zero (see defenceBonusesOf). */
   flatArmour?: number;
+  /** Upstream `defensive.magic_resistance`; emitted only when non-zero. */
+  magicResistance?: number;
 }
 
 /** One selectable phase/form of a monster — the combat-relevant stat block of
@@ -158,7 +160,7 @@ function pickPrimaryVersion(name: string, candidates: VendorMonster[]): VendorMo
 // ---------------------------------------------------------------------------
 const STAT_OVERRIDES: Record<
   string,
-  Partial<{ def: number; magic: number; defensive: Partial<VendorMonster["defensive"]> }>
+  Partial<{ def: number; magic: number; size: number; defensive: Partial<VendorMonster["defensive"]> }>
 > = {
   // Weirdgloop exports def=0 for all Vardorvis versions: his Defence scales
   // linearly with his HP, from the full-HP value down to 145/181/130 at 0 HP
@@ -175,6 +177,22 @@ const STAT_OVERRIDES: Record<
   // dump still carries 60.
   // https://oldschool.runescape.wiki/w/Update:The_Fractured_Archive_-_Out_Today
   "Nex|": { defensive: { crush: 35 } },
+
+  // The Nightmare's totems: -100 on the stab / slash / crush / magic defence
+  // bonuses (the wiki infobox and the wiki calc; the vendored dump has 0), so
+  // nearly every attack lands. Checked against the live wiki 2026-11-13.
+  // https://oldschool.runescape.wiki/w/Totem_(The_Nightmare)
+  "Totem (The Nightmare)|": { defensive: { stab: -100, slash: -100, crush: -100, magic: -100 } },
+  "Totem (Phosani's Nightmare)|": { defensive: { stab: -100, slash: -100, crush: -100, magic: -100 } },
+
+  // Feral Vampyre, level 64 (Meiyerditch): Defence 30 on the wiki, 60 in the dump.
+  // https://oldschool.runescape.wiki/w/Feral_Vampyre
+  "Feral Vampyre|Level 64 (Juvenile/Juvinate)": { def: 30 },
+
+  // Calvar'ion's hellhounds are 2x2 (the dump has size 0), which decides the
+  // Scythe's hit count and the Obligator's size bonus.
+  "Skeleton Hellhound (Calvar'ion)|": { size: 2 },
+  "Greater Skeleton Hellhound (Calvar'ion)|": { size: 2 },
 };
 
 // Fold in hand-authored monsters (brand-new releases not yet in the vendored
@@ -195,6 +213,7 @@ const monsters = [...vendorMonsters, ...supplemental].map((m) => {
   if (!patch) return m;
   return {
     ...m,
+    ...(patch.size != null ? { size: patch.size } : {}),
     skills: { ...m.skills, ...(patch.def != null ? { def: patch.def } : {}) },
     defensive: { ...m.defensive, ...(patch.defensive ?? {}) },
   };
@@ -250,6 +269,7 @@ function defenceBonusesOf(m: VendorMonster): DefenceBonuses {
     rangedStandard: m.defensive.standard,
     rangedLight: m.defensive.light,
     ...(flat !== 0 ? { flatArmour: flat } : {}),
+    ...((m.defensive.magic_resistance ?? 0) !== 0 ? { magicResistance: m.defensive.magic_resistance } : {}),
   };
 }
 
@@ -431,6 +451,12 @@ lines.push(`   * accurate melee/ranged hitsplat, floored at 0 — negative value
 lines.push(`   * damage (Gargoyle -2). Omitted when 0.`);
 lines.push(`   */`);
 lines.push(`  flatArmour?: number;`);
+lines.push(`  /**`);
+lines.push(`   * Magic resistance (upstream \`defensive.magic_resistance\`): subtracted from`);
+lines.push(`   * every accurate MAGIC hitsplat, floored at 0 (Bork as the Smorks weaken).`);
+lines.push(`   * Omitted when 0.`);
+lines.push(`   */`);
+lines.push(`  magicResistance?: number;`);
 lines.push(`}`);
 lines.push(``);
 lines.push(`/** One selectable phase/form of a monster. Spread over the parent entry`);

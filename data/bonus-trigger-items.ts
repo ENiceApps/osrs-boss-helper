@@ -54,7 +54,8 @@ export const BONUS_TRIGGER_VARIANTS: Record<BonusTriggerKey, readonly number[]> 
   SALVE_AMULET_E: [10588],
   SALVE_AMULET: [4081],
   SALVE_AMULET_I: [12017, 25250, 26763], // + Soul Wars, Emir's Arena imbues
-  ARCLIGHT: [19675], // Charged only — Inactive (30305) has no demonbane
+  // Charged and Inactive alike: the wiki calc matches the name "Arclight".
+  ARCLIGHT: [19675, 30305],
   EMBERLIGHT: [29589],
   // Silverlight Normal + Dyed and Darklight all share the +60% tier (wgloop
   // lists all three in the same wearing() check).

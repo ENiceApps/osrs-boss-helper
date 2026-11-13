@@ -5,11 +5,28 @@ export function npcDefenceRoll(defenceLevel: number, defenceBonus: number): numb
   return (defenceLevel + 9) * (defenceBonus + 64);
 }
 
+function standardRoll(attack: number, defence: number): number {
+  if (attack > defence) return 1 - (defence + 2) / (2 * (attack + 1));
+  return attack / (2 * (defence + 1));
+}
+
+/**
+ * Chance one accuracy roll beats one defence roll. A roll can be NEGATIVE: a
+ * defence bonus under -64 (the Nightmare's totems at -100, a stunned Bork)
+ * makes the defence roll negative, and the game then rolls it the other way
+ * round. Mirrors upstream BaseCalc.getNormalAccuracyRoll: a negative roll is
+ * pulled 2 towards zero, a non-negative attack against a negative defence
+ * misses only 1 time in (|def| + 1)(atk + 1), and two negative rolls swap.
+ */
 export function hitChance(attackRoll: number, defenceRoll: number): number {
-  if (attackRoll > defenceRoll) {
-    return 1 - (defenceRoll + 2) / (2 * (attackRoll + 1));
-  }
-  return attackRoll / (2 * (defenceRoll + 1));
+  let a = attackRoll;
+  let d = defenceRoll;
+  if (a < 0) a = Math.min(0, a + 2);
+  if (d < 0) d = Math.min(0, d + 2);
+  if (a >= 0 && d >= 0) return standardRoll(a, d);
+  if (a >= 0) return 1 - 1 / (-d + 1) / (a + 1);
+  if (d >= 0) return 0;
+  return standardRoll(-d, -a);
 }
 
 /**
@@ -29,8 +46,19 @@ export function hitChance(attackRoll: number, defenceRoll: number): number {
  * accuracy term does. https://oldschool.runescape.wiki/w/Osmumten's_fang
  */
 export function fangHitChance(attackRoll: number, defenceRoll: number): number {
-  const a = attackRoll;
-  const d = defenceRoll;
+  let a = attackRoll;
+  let d = defenceRoll;
+  // Negative rolls: as hitChance (upstream getFangAccuracyRoll).
+  if (a < 0) a = Math.min(0, a + 2);
+  if (d < 0) d = Math.min(0, d + 2);
+  if (a >= 0 && d < 0) return 1 - 1 / (-d + 1) / (a + 1);
+  if (a < 0 && d >= 0) return 0;
+  if (a < 0 && d < 0) {
+    const [x, y] = [-d, -a];
+    return x < y
+      ? (x * (y * 6 - 2 * x + 5)) / 6 / (y + 1) / (y + 1)
+      : 1 - ((y + 2) * (2 * y + 3)) / 6 / (y + 1) / (x + 1);
+  }
   if (a >= d) {
     return 1 - ((d + 2) * (2 * d + 3)) / (6 * (a + 1) * (a + 1));
   }

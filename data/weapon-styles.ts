@@ -83,7 +83,8 @@ export const WEAPON_STYLES: Record<string, WeaponStyleOption[]> = {
     // Osmumten's fang, rapiers, daggers.
     { name: "Stab", attackType: "stab", choice: "accurate", defensive: false },
     { name: "Lunge", attackType: "stab", choice: "aggressive", defensive: false },
-    { name: "Slash", attackType: "slash", choice: "controlled", defensive: false },
+    // Slash is Aggressive in game (and upstream), not Controlled.
+    { name: "Slash", attackType: "slash", choice: "aggressive", defensive: false },
     { name: "Block", attackType: "stab", choice: "defensive", defensive: true },
   ],
   Whip: [

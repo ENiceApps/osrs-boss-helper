@@ -24,6 +24,7 @@
 //   https://oldschool.runescape.wiki/w/Update:Summer_Sweep-Up_Gear_%26_PvM_Changes
 //   https://oldschool.runescape.wiki/w/Obsidian_armour
 
+import { canonicalItemId } from "@/data/items/aliases";
 import type { CombatStyle, WeaponAttackType } from "@/types/osrs";
 import type { LoadoutSlotKey } from "@/types/loadout";
 
@@ -114,6 +115,8 @@ interface ArmorSetDefinition {
    * truncated at the DPS engine). Inquisitor's armour since 2026-07-22.
    */
   perPieceDenominator?: number;
+  /** Per-piece sets whose damage scales off another denominator (crystal: 40, accuracy 20). */
+  perPieceDamageDenominator?: number;
   /**
    * Optional: only fires when the weapon's attack type matches one of these.
    * E.g. Inquisitor's armour boosts crush attacks only.
@@ -172,18 +175,25 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     id: "crystal-armour",
     name: "Crystal armour",
     style: "ranged",
+    // Recolours and inactive pieces are aliases of these (data/items/aliases.ts).
     pieces: [
-      { slot: "head", itemIds: [23971, 23973] }, // Crystal helm (active / inactive)
-      { slot: "body", itemIds: [23975, 23977] }, // Crystal body
-      { slot: "legs", itemIds: [23979, 23981] }, // Crystal legs
+      { slot: "head", itemIds: [23971, 23973], weight: 1 }, // Crystal helm (active / inactive)
+      { slot: "body", itemIds: [23975, 23977], weight: 3 }, // Crystal body
+      { slot: "legs", itemIds: [23979, 23981], weight: 2 }, // Crystal legs
     ],
-    // Full set: +30% accuracy, +15% damage — but ONLY for the crystal bow and
-    // the regular Bow of Faerdhinen. The corrupted Bow of Faerdhinen (c) (25867)
-    // does NOT benefit (it's used with regular ranged gear) and is excluded.
-    // Per-piece scaling (helm 5/2.5%, body 15/7.5%, legs 10/5%) isn't modeled —
-    // all-or-nothing, matching every other set here.
+    // Per piece, with a crystal bow or ANY Bow of Faerdhinen (the corrupted
+    // (c) bows included): accuracy x(20 + n)/20 and damage x(40 + n)/40,
+    // n = helm 1 + legs 2 + body 3. The full set is +30% / +15%. Upstream
+    // getPlayerMaxRangedAttackRoll / getPlayerMaxRangedHit; the damage factor
+    // lands right after the base max hit, before the slayer helm.
     bonus: { accuracyFactor: [13, 10], damageFactor: [23, 20] },
-    requiredWeaponIds: [23983, 25862, 25865], // Crystal bow, Bow of Faerdhinen
+    perPieceDenominator: 20,
+    perPieceDamageDenominator: 40,
+    requiredWeaponIds: [
+      23983, // Crystal bow
+      25862, 25865, // Bow of Faerdhinen (inactive / charged)
+      25867, 25884, 25886, 25888, 25890, 25892, 25894, 25896, 33021, // Bow of Faerdhinen (c) + recolours
+    ],
   },
 
   // ============ Magic ============
@@ -307,30 +317,9 @@ export const ARMOR_SETS: readonly ArmorSetDefinition[] = [
     // MAX_HIT_OBSIDIAN).
     bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10], additiveFromBase: true }, // +10% / +10%
   },
-  {
-    id: "obsidian-ranged",
-    name: "Obsidian armour (Ranged)",
-    style: "ranged",
-    requiredWeaponIds: [6522], // Toktz-xil-ul (obsidian rings, thrown)
-    pieces: [
-      { slot: "head", itemIds: [21298] },
-      { slot: "body", itemIds: [21301] },
-      { slot: "legs", itemIds: [21304] },
-    ],
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
-  },
-  {
-    id: "obsidian-magic",
-    name: "Obsidian armour (Magic)",
-    style: "magic",
-    requiredWeaponIds: [6526], // Toktz-mej-tal (obsidian staff)
-    pieces: [
-      { slot: "head", itemIds: [21298] },
-      { slot: "body", itemIds: [21301] },
-      { slot: "legs", itemIds: [21304] },
-    ],
-    bonus: { accuracyFactor: [11, 10], damageFactor: [11, 10] },
-  },
+  // Obsidian armour boosts MELEE only: upstream reads it in the melee attack
+  // roll and max hit alone (isWearingObsidian has no ranged / magic use), so
+  // the Toktz-xil-ul and Toktz-mej-tal get nothing from it.
 ];
 
 /**
@@ -364,7 +353,9 @@ export function detectArmorSetBonus(
       );
       if (n === 0) continue;
       const factor: readonly [number, number] = [set.perPieceDenominator + n, set.perPieceDenominator];
-      return { id: set.id, name: set.name, ...set.bonus, accuracyFactor: factor, damageFactor: factor };
+      const dmgDen = set.perPieceDamageDenominator ?? set.perPieceDenominator;
+      const damageFactor: readonly [number, number] = [dmgDen + n, dmgDen];
+      return { id: set.id, name: set.name, ...set.bonus, accuracyFactor: factor, damageFactor };
     }
     const allPresent = set.pieces.every((p) =>
       p.itemIds.some((id) => itemIds.has(id)),
@@ -393,12 +384,25 @@ export function detectArmorSetBonus(
  * weapons may not be predictable from item-slot alone). The optimizer's
  * per-(weapon, style) loop does that filter when iterating.
  */
+/**
+ * The bank item that fills a set slot: a listed id, or a variant whose
+ * canonical item is listed (an ornamented void top, a recoloured crystal helm).
+ */
+function ownedPieceId(pieceIds: readonly number[], bankIds: ReadonlySet<number>): number | undefined {
+  const direct = pieceIds.find((id) => bankIds.has(id));
+  if (direct !== undefined) return direct;
+  for (const id of bankIds) {
+    if (pieceIds.includes(canonicalItemId(id))) return id;
+  }
+  return undefined;
+}
+
 export function availableArmorSetsInBank(
   bankIds: ReadonlySet<number>,
 ): readonly ArmorSetDefinition[] {
-  const inBank = (p: SetSlotRequirement) => p.itemIds.some((id) => bankIds.has(id));
+  const inBank = (p: SetSlotRequirement) => ownedPieceId(p.itemIds, bankIds) !== undefined;
   return ARMOR_SETS.flatMap((set): ArmorSetDefinition[] => {
-    if (set.requiredWeaponIds && !set.requiredWeaponIds.some((id) => bankIds.has(id))) return [];
+    if (set.requiredWeaponIds && ownedPieceId(set.requiredWeaponIds, bankIds) === undefined) return [];
     if (set.perPieceDenominator === undefined) {
       return set.pieces.every(inBank) ? [set] : [];
     }
@@ -422,7 +426,7 @@ export function piecesToEquipForSet(
   bankIds: ReadonlySet<number>,
 ): Array<{ slot: LoadoutSlotKey; itemId: number }> {
   return setDef.pieces.map((p) => {
-    const id = p.itemIds.find((id) => bankIds.has(id));
+    const id = ownedPieceId(p.itemIds, bankIds);
     if (id === undefined) {
       throw new Error(`Set ${setDef.id} slot ${p.slot}: no matching item in bank`);
     }

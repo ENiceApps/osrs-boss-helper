@@ -32,6 +32,18 @@ export interface CanonicalCombo {
    * King's crush punish shows the reduced first-hit chance there.
    */
   bossPhase?: { mechanicId: string; wikiPhase: string };
+  /**
+   * A stat phase (MonsterCatalogEntry.phases[].version) on our side; the combo's
+   * bossWikiId / bossVersion then name that phase's own wiki monster.
+   */
+  bossStatPhase?: string;
+  /** A combat boost potion, by lib/dps/boost.ts id; `wgBoosts` are the same boosts as level deltas for wgloop. */
+  boost?: "super-combat" | "ranging" | "saturated-heart";
+  wgBoosts?: { atk?: number; str?: number; ranged?: number; magic?: number };
+  /** Mark of Darkness active (demonbane spells). */
+  markOfDarkness?: boolean;
+  /** wgloop-only phase input (a stat-phase combo still needs the monster's default mechanic phase pinned upstream). */
+  wgPhase?: string;
   bossSlug: string;
   attackType: WeaponAttackType;
   choice: AttackStyleChoice;

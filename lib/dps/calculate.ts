@@ -51,6 +51,7 @@ import type { DamageCap } from "./damage-cap";
 import { hasNpcHitTransforms, npcHitMax, npcHitMean, type NpcHitTransforms } from "./npc-transforms";
 import type { StyleDamageScale } from "@/data/monsters/style-damage-scale";
 import { twinflameDamage, twinflameSecondHit } from "./twinflame";
+import { summariseAttack, type NpcTransform } from "./dist-pipeline";
 import { applyTwistedBow, twistedBowMagic } from "./twisted-bow";
 import {
   DEFAULT_DEMONBANE_VULNERABILITY,
@@ -367,6 +368,100 @@ export interface DpsScenario {
    */
   targetImmune?: boolean;
   /**
+   * The loadout cannot attack at all: a weapon that needs ammo with none it
+   * can fire. Upstream zeroes both the attack roll and the max hit
+   * (isAmmoInvalid), so accuracy, max hit and DPS are all 0.
+   */
+  attackInvalid?: boolean;
+
+  // ── Rarer mechanics, scored through the exact hit distribution
+  // (lib/dps/dist-pipeline.ts) rather than a closed-form mean. ──
+  /** Every attack kills outright: one guaranteed hitsplat of this much (Scurrius's giant rats). */
+  oneHitDamage?: number;
+  /** An accurate hit kills outright (demonbane vs the Respiratory system). */
+  accurateKillDamage?: number;
+  /** Gadderhammer vs a shade: 95% of hits ×5/4, 5% ×2. */
+  gadderhammer?: boolean;
+  /** Verac's set: 25% of attacks ignore defence and roll 1..max+1. */
+  veracs?: boolean;
+  /** Karil's set + Amulet of the damned: 25% of accurate hits add a hitsplat of half the damage. */
+  karils?: boolean;
+  /** Ahrim's set + Amulet of the damned: 1 hit in 4 deals ×13/10. */
+  ahrims?: boolean;
+  /** The weapon one-shots through an Araxyte's shell: a guaranteed max hit. */
+  guaranteedMaxEarly?: boolean;
+  /** The monster always takes the largest hit the attack can deal (Judge of Yama, ejected Warden cores). */
+  alwaysMax?: boolean;
+  /** Per-hitsplat damage scales applied in order after Dharok's / Berserker (vampyrebane). */
+  damageScales?: readonly (readonly [number, number])[];
+  /** The damage roll starts at half the max hit (the Respiratory system). */
+  minHitHalfMax?: boolean;
+  /**
+   * A Mad Angel reaction buff: the first hit always lands and is then floored
+   * at half the attack's max ("cleave") or set to its max ("lightning").
+   * Later hitsplats of a multi-hit weapon keep their normal accuracy.
+   */
+  madAngel?: "cleave" | "lightning";
+  /**
+   * More of the target's per-hitsplat transforms, applied after the damage cap
+   * and style scale and before the phase damage factor: the Fragment of
+   * Seren's and Verzik P1's limiters, Tekton / Olm / totem magic scales, the
+   * zogres' ÷4, a tier-2 vampyre's limit, the Hueycoatl's tail.
+   */
+  extraNpcTransforms?: readonly NpcTransform[];
+  /** Transforms after the phase damage factor (Ocellus's explosions). */
+  lateNpcTransforms?: readonly NpcTransform[];
+  /** Magic only: subtracted from every accurate hitsplat (Bork's Smork phases). */
+  targetMagicResistance?: number;
+  /** Flat max-hit bonus added after the weapon banes (Colossal blade, ratbane). */
+  flatMaxHitBonus?: number;
+  /** Final max-hit factor [n, d] (Yama's Glyphic Attenuation). */
+  finalMaxHitFactor?: readonly [number, number];
+  /** Magic only: Brimstone ring, 25% of casts roll against 9/10 of the defence roll. */
+  brimstoneRing?: boolean;
+  /** Osmumten's fang inside the Tombs of Amascut: hit chance 1 − (1 − p)². */
+  fangToa?: boolean;
+  /** Magic only: the hit after the damage % and black mask is halved, minimum 2 (Dawnbringer). */
+  dawnbringer?: boolean;
+  /** Final accuracy override (Scurrius's giant rats, Dawnbringer vs Verzik P1). */
+  accuracyOverride?: number;
+  /**
+   * Melee: added to the effective Strength level after the prayer, before the
+   * stance bonus: the Soulreaper axe's trunc(Strength x 6% x stacks), which
+   * does not multiply with the prayer.
+   */
+  strengthLevelBonus?: number;
+  /** Ranged: the visible level the DAMAGE roll scales off instead of Ranged (Strength, for the Eclipse atlatl / Hunter's spear). */
+  rangedDamageLevel?: number;
+  /** The max hit is exactly this, whatever the gear (Ogre bows, Holy water). */
+  fixedMaxHit?: number;
+  /** Amulet of avarice vs a Revenant: x24/20 accuracy and damage in the Salve / black mask slot (+20% for magic). */
+  avarice?: boolean;
+  /** Extra attack-roll factors after the weapon banes (vampyrebane, Efaritay's aid). */
+  extraAccuracyFactors?: readonly (readonly [number, number])[];
+  /** Magic: extra percent on the attack roll, summed with the Salve / smoke staff percents (Efaritay's aid). */
+  magicAccuracyPctBonus?: number;
+  /**
+   * A P2 Warden: attacks always land, and the attack roll instead sets the
+   * damage: delta = max(0, roll - trunc(defence roll / 3)), a modifier of
+   * 15-40% lerped over 0..42000, and the hit rolls from modifier% to
+   * (modifier + 20)% of the max hit. A Twisted bow's accuracy scaling applies
+   * twice there.
+   */
+  p2Warden?: boolean;
+  /**
+   * Ranged, Strength-scaled thrown weapons (Eclipse atlatl, Hunter's spear):
+   * the DAMAGE side of the Salve / black mask slot follows the melee rules
+   * (a plain Salve or Salve (e) works, and any black mask gives x7/6 on task)
+   * while accuracy keeps the ranged ones. When set, the max hit takes this
+   * factor in that slot instead of the ranged Salve / mask factor.
+   */
+  slotDamageFactor?: readonly [number, number];
+  /** Accurate hits of 0 stay 0 (the wiki calc's treatment of Magic Dart). */
+  noAccurateZeroRaise?: boolean;
+  /** The interval between attacks, when the phase fixes it (Ocellus's explosions with the speed-up). */
+  expectedSpeedOverride?: number;
+  /**
    * Raised minimum hit as [numerator, denominator] of the final max hit (Mad
    * Angel reaction buffs: dodged Sweep = [1,2], perfect Smite flick = [1,1]).
    * The hit still ROLLS uniformly over 0..max and is then floored to
@@ -485,7 +580,16 @@ function spellBaseMaxHit(scenario: DpsScenario): number {
   return base + flat;
 }
 
+// Route EVERY attack through the hit distribution (the oracle sets this to
+// cross-check the closed forms against the distribution model, and to read the
+// wiki-convention max hit off every loadout).
+let FORCE_DISTRIBUTION = false;
+export function forceDistributionEngine(on: boolean): void {
+  FORCE_DISTRIBUTION = on;
+}
+
 export function calculateDps(scenario: DpsScenario): DpsResult {
+  if (scenario.attackInvalid) return { dps: 0, maxHit: 0, accuracy: 0 };
   const sb = styleBonuses(scenario.style, scenario.attackStyle);
   // A weapon with no recorded speed (e.g. holiday/cosmetic items wrongly in the
   // weapon slot) must NOT be treated as a 1-tick attack — that 4× inflates DPS
@@ -548,7 +652,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         sb.strength,
       );
       attackRoll = meleeAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
-      maxHit = meleeMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
+      maxHit = meleeMaxHit(
+        applyEffLvlDmg(effStr + (scenario.strengthLevelBonus ?? 0)),
+        scenario.strengthBonus,
+      );
       baseRoll = attackRoll;
       baseMax = maxHit;
       break;
@@ -560,7 +667,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         sb.attack,
       );
       const effStr = effectiveLevel(
-        scenario.skills.ranged,
+        scenario.rangedDamageLevel ?? scenario.skills.ranged,
         scenario.prayers.rangedStrengthMultiplier,
         sb.strength,
       );
@@ -598,8 +705,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       // Twinflame is ×130/100, not trunc(trunc(×6/5)×11/10).
       // https://oldschool.runescape.wiki/w/Twinflame_staff
       const smokePct = scenario.smokeStaffStandard ? 10 : 0;
-      const flatPct = salveMagicPct(cbFlags) + smokePct;
-      if (flatPct !== 0) attackRoll = Math.trunc((attackRoll * (100 + flatPct)) / 100);
+      // An Amulet of avarice vs a Revenant takes the Salve's place: +20%.
+      const flatPct = (scenario.avarice ? 20 : salveMagicPct(cbFlags)) + smokePct;
+      const rollPct = flatPct + (scenario.magicAccuracyPctBonus ?? 0);
+      if (rollPct !== 0) attackRoll = Math.trunc((attackRoll * (100 + rollPct)) / 100);
 
       const base = spellBaseMaxHit(scenario);
       baseMax = base;
@@ -650,7 +759,12 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // and places the mask below.
   const scorchingBowVsDemon =
     scenario.style === "ranged" && cbFlags?.demonbaneScorchingBow === true;
-  if (salve) {
+  const maxHitBeforeSlot = maxHit;
+  if (scenario.avarice && scenario.style !== "magic") {
+    // Amulet of avarice vs a Revenant: first in the slot, ahead of the Salve.
+    attackRoll = Math.trunc((attackRoll * 24) / 20);
+    maxHit = Math.trunc((maxHit * 24) / 20);
+  } else if (salve) {
     attackRoll = applyFactors(attackRoll, [salve]);
     maxHit = applyFactors(maxHit, [salve]);
   } else if (scenario.slayerOnTask && scenario.style !== "magic") {
@@ -675,12 +789,23 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     maxHit = Math.trunc((maxHit * dmgN) / d);
   }
 
+  if (scenario.slotDamageFactor && scenario.style === "ranged" && !scenario.avarice) {
+    maxHit = Math.trunc(
+      (maxHitBeforeSlot * scenario.slotDamageFactor[0]) / scenario.slotDamageFactor[1],
+    );
+  }
+
   // Magic black mask: ×23/20 — on damage right after the magic damage % (before
   // dragonbane), on accuracy after dragonbane (below), as wgloop orders it. A
   // Salve (i)/(ei) takes its slot, same as melee/ranged.
   const magicMask =
-    scenario.style === "magic" && scenario.slayerOnTask === true && salveMagicPct(cbFlags) === 0;
+    scenario.style === "magic" &&
+    scenario.slayerOnTask === true &&
+    salveMagicPct(cbFlags) === 0 &&
+    !scenario.avarice;
   if (magicMask) maxHit = Math.trunc((maxHit * 23) / 20);
+  // Dawnbringer: half of that, minimum 2, before the dragonbane factor.
+  if (scenario.style === "magic" && scenario.dawnbringer) maxHit = Math.max(2, Math.trunc(maxHit / 2));
 
   // Obsidian armour + TzHaar weapon: + trunc(base/10), from the PRE-multiplier
   // base, added after the Salve (wgloop PLAYER_ACCURACY_OBSIDIAN /
@@ -716,6 +841,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   } else {
     attackRoll = applyFactors(attackRoll, mult.accuracy);
   }
+  for (const [n, d] of scenario.extraAccuracyFactors ?? []) attackRoll = Math.trunc((attackRoll * n) / d);
   maxHit = applyFactors(maxHit, mult.damage);
 
   // A weapon's size bonus (the Obligator's +20% / +40% vs 2x2 / 3x3+): a
@@ -734,6 +860,10 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // handling here.
     maxHit = maxHit + Math.trunc((maxHit * scaleDemonbanePct(30, demonbaneVuln)) / 100);
   }
+
+  // Flat max-hit bonuses that follow the weapon banes: the Colossal blade's
+  // + min(2 x size, 10) and ratbane's +10.
+  if (scenario.flatMaxHitBonus) maxHit += scenario.flatMaxHitBonus;
 
   // Inquisitor's armour: after every target bonus, as wgloop applies it.
   if (setBonus?.afterTargetBonuses) {
@@ -788,6 +918,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       scenario.targetIsXerician === true,
     );
     attackRoll = applyTwistedBow(attackRoll, magic, "accuracy");
+    // The accuracy scaling applies twice at the P2 Wardens (since 2023-06-21).
+    if (scenario.p2Warden) attackRoll = applyTwistedBow(attackRoll, magic, "accuracy");
     maxHit = applyTwistedBow(maxHit, magic, "damage");
   }
 
@@ -814,6 +946,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       maxHit = Math.trunc((maxHit * 11) / 10);
     }
   }
+
+  // Ogre bows and Holy water ignore every gear bonus: their max hit is fixed.
+  if (scenario.fixedMaxHit !== undefined) maxHit = scenario.fixedMaxHit;
 
   // The max of the damage roll itself (wgloop's getMinAndMax). Everything below
   // rescales the rolled hitsplat in upstream's distribution, so the
@@ -969,14 +1104,31 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     attackRoll = Math.trunc((attackRoll * n) / d);
   }
 
-  const rollHitChance = (def: number): number =>
-    scenario.targetAlwaysHit
-      ? 1
-      : scenario.fangEquipped
-        ? fangHitChance(attackRoll, def)
-        : scenario.conflictionGauntlets
-          ? conflictionHitChance(attackRoll, def)
-          : hitChance(attackRoll, def);
+  const baseHitChance = (def: number): number =>
+    scenario.accuracyOverride !== undefined
+      ? scenario.accuracyOverride
+      : scenario.targetAlwaysHit
+        ? 1
+        : scenario.fangEquipped
+          ? scenario.fangToa
+            ? 1 - (1 - hitChance(attackRoll, def)) ** 2
+            : fangHitChance(attackRoll, def)
+          : scenario.conflictionGauntlets
+            ? conflictionHitChance(attackRoll, def)
+            : hitChance(attackRoll, def);
+  // Brimstone ring: a quarter of magic attacks roll against 9/10 of the
+  // defence roll (a plain roll, as upstream's display takes it).
+  const rollHitChance = (def: number): number => {
+    const base = baseHitChance(def);
+    if (
+      !(scenario.brimstoneRing && scenario.style === "magic") ||
+      scenario.accuracyOverride !== undefined ||
+      scenario.targetAlwaysHit
+    ) {
+      return base;
+    }
+    return 0.75 * base + 0.25 * hitChance(attackRoll, Math.trunc((def * 9) / 10));
+  };
   // `accuracy` is the first hitsplat's (and a single hit's) chance to land;
   // `laterHitAccuracy` the rest of a multi-hit weapon's — they differ only in
   // the Maggot King's crush punish (see firstHitDefenceRollFactor), where
@@ -986,8 +1138,8 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     punishProfile !== undefined &&
     isSplitProfile(punishProfile) &&
     !punishProfile.some((h) => h.requiresPrevious);
-  const laterHitAccuracy =
-    firstHitDefenceRoll === defenceRoll || twoHitWeapon ? accuracy : rollHitChance(defenceRoll);
+  void twoHitWeapon;
+  const laterHitAccuracy = firstHitDefenceRoll === defenceRoll ? accuracy : rollHitChance(defenceRoll);
 
   // Blood moon "Bloodrager" set effect: the Dual macuahuitl's two sequential
   // hits each have a 33% chance to accelerate the next attack by one tick. The
@@ -997,11 +1149,111 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // resolved here rather than in the up-front styleBonuses speed adjust.
   // Otherwise the unshielded TD's bonus lands every attack a tick sooner, as
   // upstream's getExpectedAttackSpeed checks Bloodrager first.
-  const bloodragerSpeed = scenario.bloodrager
-    ? Math.max(1, effectiveAttackSpeed - 0.33 * accuracy * (1 + 0.67 * accuracy))
+  const bloodragerSpeed = scenario.expectedSpeedOverride !== undefined
+    ? scenario.expectedSpeedOverride
+    : scenario.bloodrager
+    ? Math.max(1, effectiveAttackSpeed - (accuracy / 3 + (accuracy * accuracy * 2) / 9))
     : scenario.speedScaledHitBonus
       ? Math.max(1, effectiveAttackSpeed - 1)
       : effectiveAttackSpeed;
+
+  // The rarer mechanics run through the exact hit distribution.
+  const distMode =
+    FORCE_DISTRIBUTION ||
+    scenario.oneHitDamage !== undefined ||
+    scenario.accurateKillDamage !== undefined ||
+    scenario.gadderhammer === true ||
+    scenario.veracs === true ||
+    scenario.karils === true ||
+    scenario.ahrims === true ||
+    scenario.guaranteedMaxEarly === true ||
+    scenario.alwaysMax === true ||
+    (scenario.damageScales?.length ?? 0) > 0 ||
+    scenario.minHitHalfMax === true ||
+    scenario.madAngel !== undefined ||
+    // Per-hitsplat scales whose mean is not the scaled max's: the Berserker
+    // necklace's x6/5 and Mark of Darkness.
+    berserker ||
+    (scenario.style === "magic" && (scenario.demonbaneSpellDamagePct ?? 0) > 0) ||
+    scenario.p2Warden === true ||
+    scenario.finalMaxHitFactor !== undefined ||
+    (scenario.extraNpcTransforms?.length ?? 0) > 0 ||
+    (scenario.lateNpcTransforms?.length ?? 0) > 0 ||
+    (scenario.style === "magic" && (scenario.targetMagicResistance ?? 0) !== 0);
+  if (distMode) {
+    if (scenario.targetImmune) return { dps: 0, maxHit: 0, accuracy, wikiMaxHit: 0 };
+    // Upstream's getMinAndMax tail: the fang's trim, the P2 Wardens' damage
+    // modifier (it replaces both bounds), the Respiratory system's raised
+    // minimum, then Yama's Glyphic Attenuation.
+    const trim = scenario.fangHitTrim ? Math.trunc((rollMax * 3) / 20) : 0;
+    let distMax = rollMax - trim;
+    let distMin = trim;
+    // (Ranged and magic only: upstream's melee max hit has no Warden step.)
+    if (scenario.p2Warden && scenario.style !== "melee") {
+      const delta = Math.max(attackRoll - Math.trunc(defenceRoll / 3), 0);
+      const modifier = Math.max(Math.min(15 + Math.trunc(((40 - 15) * delta) / 42_000), 40), 15);
+      distMin = Math.trunc((distMax * modifier) / 100);
+      distMax = Math.trunc((distMax * (modifier + 20)) / 100);
+    }
+    if (scenario.minHitHalfMax) distMin += Math.trunc(distMax / 2);
+    if (scenario.finalMaxHitFactor) {
+      distMax = Math.trunc((distMax * scenario.finalMaxHitFactor[0]) / scenario.finalMaxHitFactor[1]);
+    }
+    const transforms: NpcTransform[] = [];
+    const cap = scenario.targetDamageCap;
+    if (cap) {
+      transforms.push({ kind: "cappedReroll", limit: cap.limit, rollMax: cap.rerollMax - cap.rerollMin, offset: cap.rerollMin });
+    }
+    const styleScale = scenario.targetStyleDamageScale;
+    if (styleScale) transforms.push({ kind: "multiply", factor: styleScale.factor, minimum: styleScale.minimum });
+    transforms.push(...(scenario.extraNpcTransforms ?? []));
+    if (phaseFactor) transforms.push({ kind: "multiply", factor: phaseFactor, minimum: scenario.targetDamageMinimum });
+    transforms.push(...(scenario.lateNpcTransforms ?? []));
+    const flat = scenario.style === "magic" ? (scenario.targetMagicResistance ?? 0) : (scenario.targetFlatArmour ?? 0);
+    if (flat !== 0) transforms.push({ kind: "flatAdd", addend: -flat, accurateOnly: true });
+    const summary = summariseAttack({
+      style: scenario.style,
+      accuracy,
+      laterAccuracy: laterHitAccuracy,
+      minHit: distMin,
+      maxHit: distMax,
+      oneHitDamage: scenario.oneHitDamage,
+      accurateKillDamage: scenario.accurateKillDamage,
+      hitProfile: scenario.hitProfile,
+      damageRolls: scenario.damageRolls,
+      gadderhammer: scenario.gadderhammer,
+      veracs: scenario.veracs,
+      karils: scenario.karils,
+      guaranteedMaxEarly: scenario.guaranteedMaxEarly,
+      kerisTriple: scenario.kalphiteTripleProc,
+      guardianFactor,
+      sanguinesti: scenario.sanguinestiProc,
+      markOfDarkness:
+        scenario.style === "magic" && scenario.demonbaneSpellDamagePct
+          ? { pct: scenario.demonbaneSpellDamagePct, vulnerability: demonbaneVuln }
+          : undefined,
+      ahrims: scenario.ahrims,
+      accurateFlatBonus: speedBonus,
+      dharokFactor,
+      berserker,
+      firstHitFactor: scenario.firstHitDamageFactor,
+      damageScales: scenario.damageScales,
+      boltProc: scenario.style === "ranged" ? scenario.boltProc : undefined,
+      seekingArrows: scenario.seekingArrows,
+      twinflame: scenario.style === "magic" && scenario.twinflameDoubleCast,
+      corpHalved: scenario.corpDamageHalved,
+      alwaysMax: scenario.alwaysMax,
+      madAngel: scenario.madAngel,
+      noAccurateZeroRaise: scenario.noAccurateZeroRaise,
+      npcTransforms: transforms,
+    });
+    return {
+      dps: summary.expected / (bloodragerSpeed * 0.6),
+      maxHit: summary.largestHit,
+      accuracy,
+      wikiMaxHit: summary.attackMax,
+    };
+  }
 
   // Flat armour shifts every accurate melee/ranged hitsplat, after everything
   // above (wgloop's last NPC transform). A 0 max hit stays 0: upstream returns
@@ -1228,7 +1480,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
   // The unshielded TD's flat bonus (> 0) already lifted every landed hitsplat
   // off 0, so only a diamond / onyx proc's fresh roll, which it never reached,
   // is left to raise.
-  if (rollMax > 0 && !twinflame && !bestOfRolls) {
+  if (rollMax > 0 && !twinflame && !bestOfRolls && !scenario.noAccurateZeroRaise) {
     const floor = scenario.seekingArrows ? 3 : 1;
     let raised = 0;
     if (boltProc) {

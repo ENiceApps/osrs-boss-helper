@@ -212,6 +212,13 @@ export interface DpsResult {
   maxHit: number;
   accuracy: number;
   /**
+   * The max hit as the wiki DPS calculator shows it: everything one attack can
+   * deal, all hitsplats and procs included (a Scythe's three swings summed, a
+   * ruby bolt's proc, the fang's trimmed roll). Set when the loadout was scored
+   * through the hit distribution (lib/dps/dist-pipeline.ts).
+   */
+  wikiMaxHit?: number;
+  /**
    * Set when the target's flat armour shifted this loadout's hits (melee /
    * ranged vs a non-zero `flatArmour` target): the armour, and the max hit
    * before it. `maxHit` already includes the shift; display helpers that

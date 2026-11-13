@@ -115,6 +115,11 @@ export interface LoadoutSet {
     magicDamagePct?: number;
     /** Sum of prayer bonuses across all equipped items. */
     prayerBonus: number;
+    /**
+     * Every summed offensive bonus, for rules that compare them (an Araxyte's
+     * shell, the Hueycoatl's tail). Optional: sets built before it existed.
+     */
+    offensive?: { stab: number; slash: number; crush: number; magic: number; ranged: number };
   };
   attackSpeedTicks: number;
   /**

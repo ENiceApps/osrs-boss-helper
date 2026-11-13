@@ -16,6 +16,12 @@ export interface MonsterDefenceBonuses {
    * damage (Gargoyle -2). Omitted when 0.
    */
   flatArmour?: number;
+  /**
+   * Magic resistance (upstream `defensive.magic_resistance`): subtracted from
+   * every accurate MAGIC hitsplat, floored at 0 (Bork as the Smorks weaken).
+   * Omitted when 0.
+   */
+  magicResistance?: number;
 }
 
 /** One selectable phase/form of a monster. Spread over the parent entry
@@ -1379,7 +1385,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "magic": 130,
       "rangedHeavy": 50,
       "rangedStandard": 120,
-      "rangedLight": 75
+      "rangedLight": 55
     },
     "attributes": [
       "flying"
@@ -1408,7 +1414,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "magic": 130,
           "rangedHeavy": 50,
           "rangedStandard": 120,
-          "rangedLight": 75
+          "rangedLight": 55
         },
         "attributes": [
           "flying"
@@ -1433,7 +1439,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "stab": 120,
           "slash": 90,
           "crush": 20,
-          "magic": 130,
+          "magic": 50,
           "rangedHeavy": 50,
           "rangedStandard": 115,
           "rangedLight": 50
@@ -1441,7 +1447,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "attributes": [],
         "weakness": {
           "element": "fire",
-          "severity": 40
+          "severity": 80
         },
         "image": "Archive Guardian.png",
         "size": 5,
@@ -4287,7 +4293,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "name": "Bork",
     "version": "Base",
     "combatLevel": 871,
-    "hp": 1500,
+    "hp": 1650,
     "defenceLevel": 300,
     "magicLevel": 90,
     "defenceBonuses": {
@@ -4314,7 +4320,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "version": "Base",
         "wikiId": 16640,
         "combatLevel": 871,
-        "hp": 1500,
+        "hp": 1650,
         "defenceLevel": 300,
         "magicLevel": 90,
         "defenceBonuses": {
@@ -4337,16 +4343,97 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "maxHitText": ""
       },
       {
-        "version": "Stunned",
+        "version": "Smorks 75% - 50%",
         "wikiId": 16640,
         "combatLevel": 871,
-        "hp": 1500,
+        "hp": 1650,
         "defenceLevel": 300,
         "magicLevel": 90,
         "defenceBonuses": {
           "stab": 140,
           "slash": 130,
           "crush": 10,
+          "magic": 300,
+          "rangedHeavy": 5,
+          "rangedStandard": 50,
+          "rangedLight": 80,
+          "flatArmour": 10,
+          "magicResistance": 2
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Bork.png",
+        "size": 4,
+        "maxHitText": ""
+      },
+      {
+        "version": "Smorks 50% - 25%",
+        "wikiId": 16640,
+        "combatLevel": 871,
+        "hp": 1650,
+        "defenceLevel": 300,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 140,
+          "slash": 130,
+          "crush": 10,
+          "magic": 300,
+          "rangedHeavy": 5,
+          "rangedStandard": 50,
+          "rangedLight": 80,
+          "flatArmour": 12,
+          "magicResistance": 4
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Bork.png",
+        "size": 4,
+        "maxHitText": ""
+      },
+      {
+        "version": "Smorks 25% - 0%",
+        "wikiId": 16640,
+        "combatLevel": 871,
+        "hp": 1650,
+        "defenceLevel": 300,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 140,
+          "slash": 130,
+          "crush": 10,
+          "magic": 300,
+          "rangedHeavy": 5,
+          "rangedStandard": 50,
+          "rangedLight": 80,
+          "flatArmour": 14,
+          "magicResistance": 6
+        },
+        "attributes": [],
+        "weakness": {
+          "element": "earth",
+          "severity": 40
+        },
+        "image": "Bork.png",
+        "size": 4,
+        "maxHitText": ""
+      },
+      {
+        "version": "Stunned",
+        "wikiId": 16640,
+        "combatLevel": 871,
+        "hp": 1650,
+        "defenceLevel": 300,
+        "magicLevel": 90,
+        "defenceBonuses": {
+          "stab": 40,
+          "slash": 30,
+          "crush": -90,
           "magic": 300,
           "rangedHeavy": 5,
           "rangedStandard": 50,
@@ -5995,9 +6082,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "rangedStandard": 80,
       "rangedLight": -20
     },
-    "attributes": [
-      "undead"
-    ],
+    "attributes": [],
     "weakness": {
       "element": "water",
       "severity": 40
@@ -6023,9 +6108,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "rangedStandard": 80,
           "rangedLight": -20
         },
-        "attributes": [
-          "undead"
-        ],
+        "attributes": [],
         "weakness": {
           "element": "water",
           "severity": 40
@@ -6050,9 +6133,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
           "rangedStandard": 80,
           "rangedLight": -20
         },
-        "attributes": [
-          "undead"
-        ],
+        "attributes": [],
         "weakness": {
           "element": "fire",
           "severity": 100
@@ -10307,7 +10388,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "wikiId": 3707,
         "combatLevel": 64,
         "hp": 80,
-        "defenceLevel": 60,
+        "defenceLevel": 30,
         "magicLevel": 1,
         "defenceBonuses": {
           "stab": 0,
@@ -13123,7 +13204,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "severity": 40
     },
     "image": "Greater Skeleton Hellhound (Calvar'ion).png",
-    "size": 0,
+    "size": 2,
     "maxHitText": "18",
     "isSlayerMonster": true
   },
@@ -26125,7 +26206,7 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "severity": 30
     },
     "image": "Skeleton Hellhound (Calvar'ion).png",
-    "size": 0,
+    "size": 2,
     "maxHitText": "16",
     "isSlayerMonster": true
   },
@@ -29326,10 +29407,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "defenceLevel": 0,
     "magicLevel": 1,
     "defenceBonuses": {
-      "stab": 0,
-      "slash": 0,
-      "crush": 0,
-      "magic": 0,
+      "stab": -100,
+      "slash": -100,
+      "crush": -100,
+      "magic": -100,
       "rangedHeavy": 0,
       "rangedStandard": 0,
       "rangedLight": 0
@@ -29352,10 +29433,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceLevel": 0,
         "magicLevel": 1,
         "defenceBonuses": {
-          "stab": 0,
-          "slash": 0,
-          "crush": 0,
-          "magic": 0,
+          "stab": -100,
+          "slash": -100,
+          "crush": -100,
+          "magic": -100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
           "rangedLight": 0
@@ -29377,10 +29458,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceLevel": 0,
         "magicLevel": 1,
         "defenceBonuses": {
-          "stab": 0,
-          "slash": 0,
-          "crush": 0,
-          "magic": 0,
+          "stab": -100,
+          "slash": -100,
+          "crush": -100,
+          "magic": -100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
           "rangedLight": 0
@@ -29403,10 +29484,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "defenceLevel": 0,
     "magicLevel": 1,
     "defenceBonuses": {
-      "stab": 0,
-      "slash": 0,
-      "crush": 0,
-      "magic": 0,
+      "stab": -100,
+      "slash": -100,
+      "crush": -100,
+      "magic": -100,
       "rangedHeavy": 0,
       "rangedStandard": 0,
       "rangedLight": 0
@@ -29429,10 +29510,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceLevel": 0,
         "magicLevel": 1,
         "defenceBonuses": {
-          "stab": 0,
-          "slash": 0,
-          "crush": 0,
-          "magic": 0,
+          "stab": -100,
+          "slash": -100,
+          "crush": -100,
+          "magic": -100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
           "rangedLight": 0
@@ -29454,10 +29535,10 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
         "defenceLevel": 0,
         "magicLevel": 1,
         "defenceBonuses": {
-          "stab": 0,
-          "slash": 0,
-          "crush": 0,
-          "magic": 0,
+          "stab": -100,
+          "slash": -100,
+          "crush": -100,
+          "magic": -100,
           "rangedHeavy": 0,
           "rangedStandard": 0,
           "rangedLight": 0
@@ -30387,11 +30468,13 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
       "slash": 15,
       "crush": 10,
       "magic": -20,
-      "rangedHeavy": 0,
+      "rangedHeavy": 20,
       "rangedStandard": 90,
       "rangedLight": 30
     },
-    "attributes": [],
+    "attributes": [
+      "undead"
+    ],
     "weakness": {
       "element": "fire",
       "severity": 80
@@ -33118,12 +33201,12 @@ export const MONSTER_CATALOG: MonsterCatalogEntry[] = [
     "name": "Xarth",
     "version": "",
     "combatLevel": 912,
-    "hp": 2600,
+    "hp": 2450,
     "defenceLevel": 170,
     "magicLevel": 350,
     "magicAttackBonus": 250,
     "defenceBonuses": {
-      "stab": 115,
+      "stab": 60,
       "slash": 105,
       "crush": 20,
       "magic": 205,
