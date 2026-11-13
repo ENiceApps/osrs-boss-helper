@@ -209,3 +209,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-11-13 16:01 UTC · pushed by ENiceApps
 
 - 1d02626 fix(dps): match the wiki DPS calc across every item x monster family
+
+## 2026-11-13 18:13 UTC · pushed by ENiceApps
+
+- 865e494 feat(results): show max hit the way the wiki calc does
