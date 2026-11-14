@@ -222,3 +222,27 @@ describe("magic: prayers, levels and staff-locked spells", () => {
     expect(autoPickSpell(id("Kodai wand"), [], "magic", 99, graardor).autoSpellName).not.toBe("Iban Blast");
   });
 });
+
+// Ranged sweep (2026-11-13): every ranged weapon x ammo, every Ranged level,
+// every ranged prayer, vs the wiki calc at 74958b1.
+describe("ranged: low-level prayers and the Tonalztics order", () => {
+  it("a +5% prayer gives at least one damage level at 20 and below", () => {
+    // Sharp Eye / Burst of Strength at level 10: 10 + 1, not trunc(10.5) = 10.
+    expect(effectiveLevel(10, 1.05, 0, 0, 8, true)).toBe(19);
+    expect(effectiveLevel(10, 1.05, 0, 0, 8)).toBe(18); // accuracy keeps the plain 5%
+    expect(effectiveLevel(40, 1.05, 0, 0, 8, true)).toBe(50);
+  });
+  it("Tonalztics of Ralos vs a P2 Warden: the quarter comes off before the Warden modifier", () => {
+    const id = (n: string) => ITEM_CATALOG.find((i) => i.name.toLowerCase() === n.toLowerCase() && i.version !== "Uncharged")!.id;
+    const base = MONSTER_BY_SLUG["elidinis-warden"];
+    const phase = phaseOptionsFor(base).find((o) => o.id === "s:Active");
+    const r = scoreScenario({
+      itemIds: [id("Tonalztics of ralos"), 11826, 19547, 21898, 11828, 11830, 26235, 13237, 11771],
+      target: applyPhase(base, phase),
+      skills: SKILLS_AT_99,
+      attackStyle: { attackType: "ranged", choice: "rapid" },
+    });
+    if (!r.valid) throw new Error(r.reasons.join("; "));
+    expect(r.dps.wikiMaxHit).toBe(20);
+  });
+});

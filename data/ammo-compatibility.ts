@@ -13,6 +13,9 @@
 // Coverage is intentionally narrow — just enough to validate our current and
 // near-future presets. Extend as new weapons / ammo show up in source presets.
 
+import { ITEM_CATALOG } from "@/data/items/catalog";
+import { ammoApplicability, weaponNeedsAmmo } from "@/data/items/ammo-applicability";
+
 export type AmmoClass =
   | "bolt"
   | "arrow"
@@ -249,7 +252,8 @@ export const AMMO_TYPES: Record<string, AmmoSpec> = {
   "Mithril dart": { class: "dart", tier: 4 },
   "Adamant dart": { class: "dart", tier: 5 },
   "Rune dart": { class: "dart", tier: 6 },
-  "Amethyst dart": { class: "dart", tier: 6 },
+  // Above rune (the Rosewood blowpipe's cap, "up to rune darts"), below dragon.
+  "Amethyst dart": { class: "dart", tier: 6.5 },
   "Dragon dart": { class: "dart", tier: 7 },
 
   // Bolt racks — for Karil's crossbow only.
@@ -360,6 +364,17 @@ export function checkAmmoCompat(weaponName: string, ammoName: string): AmmoCompa
   return { ok: true };
 }
 
+
+let ID_BY_NAME: Map<string, number> | undefined;
+/** Catalog name -> an item id with that name (versions share the table row). */
+function idByName(): Map<string, number> {
+  if (!ID_BY_NAME) {
+    ID_BY_NAME = new Map();
+    for (const it of ITEM_CATALOG) if (!ID_BY_NAME.has(it.name)) ID_BY_NAME.set(it.name, it.id);
+  }
+  return ID_BY_NAME;
+}
+
 /**
  * Like `checkAmmoCompat` but uses `weaponCategory` as a fallback when the
  * weapon name isn't registered in WEAPON_AMMO. Handles the large number of
@@ -377,6 +392,16 @@ export function checkAmmoCompatWithCategory(
   weaponCategory: string,
   ammoName: string,
 ): AmmoCompatResult {
+  // A weapon the wiki calc's table says needs ammo: that table decides, so the
+  // pickers can never choose ammo the engine then scores as invalid (Dragon
+  // arrows under a Magic longbow) or skip ammo it accepts.
+  const weaponId = idByName().get(weaponName);
+  const ammoId = idByName().get(ammoName);
+  if (weaponId !== undefined && ammoId !== undefined && weaponNeedsAmmo(weaponId)) {
+    return ammoApplicability(weaponId, ammoId) === "included"
+      ? { ok: true }
+      : { ok: false, reason: `"${weaponName}" can't fire "${ammoName}".` };
+  }
   // If the weapon is explicitly registered, use the full name-based check.
   if (weaponName in WEAPON_AMMO) {
     return checkAmmoCompat(weaponName, ammoName);

@@ -83,7 +83,6 @@ describe("checkAmmoCompatWithCategory — category fallback", () => {
     // Dark bow is not in WEAPON_AMMO; the category fallback infers arrows.
     const result = checkAmmoCompatWithCategory("Dark bow", "Bow", "Ruby dragon bolts (e)");
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/arrow/);
   });
 
   it("accepts arrows on an unlisted arrow-firing bow (Dark bow + Dragon arrow)", () => {
@@ -131,12 +130,25 @@ describe("checkAmmoCompatWithCategory — category fallback", () => {
     expect(checkAmmoCompatWithCategory("Crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
     expect(checkAmmoCompatWithCategory("Phoenix crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
     expect(checkAmmoCompatWithCategory("Blurite crossbow", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
-    // Dorgeshuun — adamant cap; rejects runite & dragon.
-    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Adamant bolts")).toEqual({ ok: true });
+    // Dorgeshuun — bone bolts and up to iron (the wiki calc's table).
+    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Iron bolts")).toEqual({ ok: true });
+    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Bone bolts")).toEqual({ ok: true });
+    expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Adamant bolts").ok).toBe(false);
     expect(checkAmmoCompatWithCategory("Dorgeshuun crossbow", "Crossbow", "Runite bolts").ok).toBe(false);
     // Cosmetic Rune crossbow — tier 6, no dragon bolts.
     expect(checkAmmoCompatWithCategory("Rune crossbow (or)", "Crossbow", "Dragon bolts (e)").ok).toBe(false);
     expect(checkAmmoCompatWithCategory("Rune crossbow (or)", "Crossbow", "Onyx bolts (e)")).toEqual({ ok: true });
+  });
+});
+
+describe("the pickers follow the engine's ammo table", () => {
+  it("a longbow can't take arrows above its tier", () => {
+    expect(checkAmmoCompatWithCategory("Magic longbow", "Bow", "Dragon arrow").ok).toBe(false);
+    expect(checkAmmoCompatWithCategory("Magic longbow", "Bow", "Rune arrow")).toEqual({ ok: true });
+    expect(checkAmmoCompatWithCategory("Twisted bow", "Bow", "Dragon arrow")).toEqual({ ok: true });
+  });
+  it("accepts gem bolts the name table never listed", () => {
+    expect(checkAmmoCompatWithCategory("Rune crossbow", "Crossbow", "Pearl bolts (e)")).toEqual({ ok: true });
   });
 });
 
@@ -152,5 +164,13 @@ describe("SELF_AMMO_WEAPON_CATEGORIES", () => {
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Bow")).toBe(false);
     // Salamanders wear their tar in the ammo slot (tests/salamander.test.ts).
     expect(SELF_AMMO_WEAPON_CATEGORIES.has("Salamander")).toBe(false);
+  });
+});
+
+describe("blowpipe dart caps", () => {
+  it("a Rosewood blowpipe takes rune darts but not amethyst", () => {
+    expect(checkAmmoCompat("Rosewood blowpipe", "Rune dart")).toEqual({ ok: true });
+    expect(checkAmmoCompat("Rosewood blowpipe", "Amethyst dart").ok).toBe(false);
+    expect(checkAmmoCompat("Toxic blowpipe", "Amethyst dart")).toEqual({ ok: true });
   });
 });

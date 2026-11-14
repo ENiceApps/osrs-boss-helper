@@ -655,6 +655,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         scenario.skills.strength,
         scenario.prayers.strengthMultiplier,
         sb.strength,
+        0,
+        8,
+        true,
       );
       attackRoll = meleeAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = meleeMaxHit(
@@ -675,6 +678,9 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
         scenario.rangedDamageLevel ?? scenario.skills.ranged,
         scenario.prayers.rangedStrengthMultiplier,
         sb.strength,
+        0,
+        8,
+        true,
       );
       attackRoll = rangedAttackRoll(applyEffLvlAcc(effAtk), scenario.attackBonus);
       maxHit = rangedMaxHit(applyEffLvlDmg(effStr), scenario.strengthBonus);
@@ -1194,7 +1200,17 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
     // modifier (it replaces both bounds), the Respiratory system's raised
     // minimum, then Yama's Glyphic Attenuation.
     const trim = scenario.fangHitTrim ? Math.trunc((rollMax * 3) / 20) : 0;
-    let distMax = rollMax - trim;
+    // Tonalztics of Ralos: upstream takes the quarter off inside the ranged
+    // max hit, BEFORE the Warden modifier and the Respiratory system's raised
+    // minimum, so both work from the reduced max (P2 Warden: 2 x 10, not 11).
+    const tonalztics =
+      scenario.hitProfile !== undefined &&
+      scenario.hitProfile.length > 0 &&
+      scenario.hitProfile.every((h) => h.roundUp === true && h.maxFraction === 0.75);
+    const distProfile = tonalztics
+      ? scenario.hitProfile!.map(() => ({ maxFraction: 1 }))
+      : scenario.hitProfile;
+    let distMax = (tonalztics ? rollMax - Math.trunc(rollMax / 4) : rollMax) - trim;
     let distMin = trim;
     // (Ranged and magic only: upstream's melee max hit has no Warden step.)
     if (scenario.p2Warden && scenario.style !== "melee") {
@@ -1227,7 +1243,7 @@ export function calculateDps(scenario: DpsScenario): DpsResult {
       maxHit: distMax,
       oneHitDamage: scenario.oneHitDamage,
       accurateKillDamage: scenario.accurateKillDamage,
-      hitProfile: scenario.hitProfile,
+      hitProfile: distProfile,
       damageRolls: scenario.damageRolls,
       gadderhammer: scenario.gadderhammer,
       veracs: scenario.veracs,

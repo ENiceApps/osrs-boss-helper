@@ -8,7 +8,7 @@
 // blessing in the ammo slot regardless of which variant the player owns.
 //
 // `maxDartTier` uses the same tier ladder as AMMO_TYPES in
-// data/ammo-compatibility.ts (rune/amethyst = 6, dragon = 7). The Hunter's
+// data/ammo-compatibility.ts (rune = 6, amethyst = 6.5, dragon = 7). The Hunter's
 // Guild blowpipes are tier-capped in-game; the Toxic line takes any dart.
 //
 // Source: wgloop equipment.json vendor data; dart caps from the wiki item

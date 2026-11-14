@@ -150,6 +150,22 @@ Not modelled on our side (wiki calc toggles, all off by default there): the
 Charge spell with a god cape, sunfire runes, and the Leagues elemental
 fragments.
 
+### Ranged in depth (2026-11-13)
+
+Five ranged families (`--family=ranged-ammo,ranged-levels,ranged-prayers,ranged-gear,ranged-monsters`,
+about 230,000 combos) plus `low-prayers` (8,500: every prayer of all three
+styles at levels 1-74 in gear with no requirements): every ranged weapon with
+every ammo the wiki table lets it fire and every dart in each blowpipe, every
+weapon and every enchanted bolt at every Ranged level and under a ranging
+potion, every ranged prayer, every worn item under 26 kinds of ranged weapon,
+and every monster and phase vs each kind.
+
+Result at upstream 74958b1: all match in both modes bar the known rows
+(Gryphon, a Strange Creature form, the Nightmare totems' ruby procs).
+
+Not offered on our side: Overload, Smelling salts and Super ranging as boosts
+(the wiki calc has them as potions).
+
 ## Multiplier-order combos
 
 `orderingCombos()` in `combos.ts` pins the ORDER multipliers apply in — every

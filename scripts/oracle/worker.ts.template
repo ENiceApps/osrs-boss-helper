@@ -140,8 +140,11 @@ function prayerFor(attackType: AttackType): Prayer {
 }
 
 /** Our data/prayers.ts ids -> the wiki calc's prayers ("none" = no prayer). */
-const PRAYER_BY_ID: Record<string, Prayer | null> = {
+const PRAYER_BY_ID: Record<string, Prayer | Prayer[] | null> = {
   none: null,
+  'burst-clarity': [Prayer.BURST_OF_STRENGTH, Prayer.CLARITY_OF_THOUGHT],
+  'superhuman-improved': [Prayer.SUPERHUMAN_STRENGTH, Prayer.IMPROVED_REFLEXES],
+  'ultimate-incredible': [Prayer.ULTIMATE_STRENGTH, Prayer.INCREDIBLE_REFLEXES],
   augury: Prayer.AUGURY,
   'mystic-vigour': Prayer.MYSTIC_VIGOUR,
   'mystic-might': Prayer.MYSTIC_MIGHT,
@@ -160,7 +163,7 @@ function prayersFor(combo: Combo): Prayer[] {
   if (combo.prayerId === undefined) return [prayerFor(combo.attackType)];
   if (!(combo.prayerId in PRAYER_BY_ID)) throw new Error(`worker: unknown prayer ${combo.prayerId}`);
   const p = PRAYER_BY_ID[combo.prayerId];
-  return p === null ? [] : [p];
+  return p === null ? [] : Array.isArray(p) ? p : [p];
 }
 
 function skillsFor(combo: Combo): Record<string, number> | undefined {

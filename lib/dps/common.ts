@@ -188,6 +188,12 @@ export function effectiveLevel(
   styleBonus: number,
   voidBonus = 0,
   baseOffset = 8,
+  /**
+   * Damage levels only: a +5% prayer (Burst of Strength, Sharp Eye) always
+   * gives at least +1 level, which matters at 20 and below where 5% rounds
+   * to nothing (upstream: "force 1 level gain").
+   */
+  fivePercentGivesOne = false,
 ): number {
   // Style-specific constant: +8 for melee/ranged, +9 for magic, as upstream
   // osrs-dps-calc does (getPlayerMaxMagicAttackRoll). The wiki's magic formula
@@ -196,6 +202,10 @@ export function effectiveLevel(
   // ranged/melee callsites unchanged.
   // Whole-percent integer maths, as upstream's trunc(level x 115 / 100): the
   // float product 100 x 1.15 is 114.99999999999999.
-  const prayed = Math.trunc((visibleLevel * Math.round(prayerMultiplier * 100)) / 100);
+  const pct = Math.round(prayerMultiplier * 100);
+  const prayed =
+    fivePercentGivesOne && pct === 105 && visibleLevel <= 20
+      ? visibleLevel + 1
+      : Math.trunc((visibleLevel * pct) / 100);
   return prayed + styleBonus + baseOffset + voidBonus;
 }

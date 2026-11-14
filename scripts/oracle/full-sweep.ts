@@ -25,6 +25,7 @@ import { MECHANIC_PHASES } from "@/data/bosses/mechanic-phases";
 import { isWildernessBoss } from "@/data/monsters/wilderness";
 import { ARMOR_SETS } from "@/data/armor-sets";
 import { BOLT_EFFECT_BY_ITEM_ID } from "@/data/items/bolt-procs";
+import { ammoIdsFor } from "@/data/items/ammo-applicability";
 import { ALL_SPELLS, spellMaxHit, type SpellEntry } from "@/data/spells/catalog";
 import { scoreScenario } from "@/lib/optimize/scenario";
 import { SKILLS_AT_99 } from "@/lib/recommend";
@@ -858,22 +859,6 @@ function magicPrayersFamily(): CanonicalCombo[] {
       }
     }
   }
-  // The ranged prayers, Deadeye included, at a few Ranged levels.
-  const rapid: Style = { attackType: "ranged", choice: "rapid" };
-  for (const p of ["none", "sharp-eye", "hawk-eye", "eagle-eye", "deadeye", "rigour"]) {
-    for (const [wpn, ammo] of [["Twisted bow", "Dragon arrow"], ["Armadyl crossbow", "Runite bolts"], ["Toxic blowpipe", ""]]) {
-      const w = BY_ID.get(item(wpn)!)!;
-      const k = kitFor(w, rapid);
-      const kit: Kit = { itemIds: equip(k.itemIds, ammo ? ids(ammo) : []), internalAmmoId: k.internalAmmoId };
-      for (const t of targets) {
-        for (let level = 80; level <= 99; level++) {
-          const c = withPrayer(combo(`rp|${w.id}|${t.slug}|R${level}`, t, kit, rapid), p);
-          if (level !== 99) c.skills = { ranged: level };
-          out.push(c);
-        }
-      }
-    }
-  }
   return out;
 }
 
@@ -982,7 +967,278 @@ function magicMonstersFamily(): CanonicalCombo[] {
   return out;
 }
 
+// ── Ranged in depth ──
+// Every ranged weapon with every ammo it fires, every Ranged level, every
+// ranged prayer, every worn item under each kind of ranged weapon, and every
+// monster vs each kind.
+
+const RAPID: Style = { attackType: "ranged", choice: "rapid" };
+const RANGED_PRAYERS = ["none", "sharp-eye", "hawk-eye", "eagle-eye", "deadeye", "rigour"];
+const rangedWeapons = (): ItemCatalogEntry[] =>
+  ITEM_CATALOG.filter((w) => isWeapon(w) && !ownershipVariant(w) && stylesOf(w).some((o) => o.attackType === "ranged"));
+const rangedStyles = (w: ItemCatalogEntry): Style[] => stylesOf(w).filter((o) => o.attackType === "ranged");
+const reqRanged = (itemIds: number[]): number =>
+  Math.max(1, ...itemIds.map((i) => BY_ID.get(i)?.requirements?.ranged ?? 1));
+const withRanged = (c: CanonicalCombo, ranged: number): CanonicalCombo => {
+  c.id = `${c.id}|R${ranged}`;
+  if (ranged !== 99) c.skills = { ranged };
+  return c;
+};
+const rangingPotion = (c: CanonicalCombo): CanonicalCombo => {
+  c.id = `${c.id}|potion`;
+  c.boost = "ranging";
+  c.wgBoosts = { ranged: applyCombatBoost(SKILLS_AT_99, RANGING_POTION).ranged - 99 };
+  return c;
+};
+/** A kit that scores on our side (ammo the weapon fires), or undefined. */
+function rangedKit(w: ItemCatalogEntry, st: Style, ammo?: number, dart?: number): Kit | undefined {
+  const kit: Kit = { itemIds: equip(RANGED_SHELL, ammo === undefined ? [w.id] : [w.id, ammo]), internalAmmoId: dart };
+  const r = score(kit.itemIds, st, { internalAmmoId: dart });
+  return r.valid ? kit : undefined;
+}
+
+/** Every ranged weapon with every ammo it fires (and every dart in each pipe). */
+function rangedAmmoFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const targets = ["general-graardor", "vorkath", "abyssal-demon", "zulrah"]
+    .map(monster).filter((m): m is MonsterCatalogEntry => Boolean(m));
+  const fiery = MONSTER_CATALOG.find((m) => m.wikiId !== 0 && m.attributes.includes("fiery") && !m.attributes.includes("dragon"));
+  if (fiery) targets.push(fiery);
+  for (const w of rangedWeapons()) {
+    const styles = rangedStyles(w);
+    if (INTERNAL_AMMO_WEAPONS.has(w.id)) {
+      for (const d of DART_CANDIDATES) {
+        for (const st of styles) {
+          const kit = rangedKit(w, st, undefined, d);
+          if (!kit) continue;
+          for (const t of targets.slice(0, 2)) out.push(combo(`ra|${w.id}|dart${d}|${st.choice}|${t.slug}`, t, kit, st));
+        }
+      }
+      continue;
+    }
+    const ammo = [...ammoIdsFor(w.id)];
+    if (ammo.length === 0) {
+      // Thrown weapons, chinchompas, crystal bows: no ammo slot involved.
+      for (const st of styles) {
+        const kit = rangedKit(w, st);
+        if (!kit) continue;
+        for (const t of targets) out.push(combo(`ra|${w.id}|-|${st.choice}|${t.slug}`, t, kit, st));
+      }
+      continue;
+    }
+    for (const a of ammo) {
+      const proc = BOLT_EFFECT_BY_ITEM_ID.has(a);
+      for (const st of styles) {
+        // Every stance for the first ammo and for enchanted bolts; rapid for the rest.
+        if (st.choice !== "rapid" && a !== ammo[0] && !proc) continue;
+        const kit = rangedKit(w, st, a);
+        if (!kit) continue;
+        for (const t of proc ? targets : targets.slice(0, 2)) {
+          out.push(combo(`ra|${w.id}|${a}|${st.choice}|${t.slug}`, t, kit, st));
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Every ranged weapon at every Ranged level; enchanted bolts at every level too. */
+function rangedLevelsFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const targets = [GRAARDOR, MONSTER_BY_SLUG["vorkath"]];
+  const shellReq = reqRanged(RANGED_SHELL);
+  const levelsFor = (w: ItemCatalogEntry, st: Style, ammo?: number, dart?: number, tag = ""): void => {
+    const full = rangedKit(w, st, ammo, dart);
+    if (!full) return;
+    const bareIds = ammo === undefined ? [w.id] : [w.id, ammo];
+    const low = reqRanged(bareIds);
+    for (let level = low; level <= 99; level++) {
+      const kit: Kit = level >= shellReq ? full : { itemIds: bareIds, internalAmmoId: dart };
+      for (const t of targets) {
+        out.push(withRanged(combo(`rl|${w.id}|${ammo ?? dart ?? "-"}|${st.choice}${tag}|${t.slug}`, t, kit, st), level));
+      }
+    }
+    for (const t of targets) {
+      out.push(rangingPotion(combo(`rl|${w.id}|${ammo ?? dart ?? "-"}|${st.choice}${tag}|${t.slug}`, t, full, st)));
+    }
+  };
+  for (const w of rangedWeapons()) {
+    const k = kitFor(w, RAPID);
+    const ammo = k.itemIds.find((i) => BY_ID.get(i)?.slot === "ammo");
+    for (const st of rangedStyles(w)) {
+      if (st.choice === "longrange") continue;
+      levelsFor(w, st, ammo, k.internalAmmoId);
+    }
+  }
+  // Enchanted bolts: several procs scale with the visible Ranged level.
+  for (const xbow of ids("Armadyl crossbow", "Zaryte crossbow", "Rune crossbow", "Dragon hunter crossbow")) {
+    const w = BY_ID.get(xbow)!;
+    for (const a of ammoIdsFor(xbow)) {
+      if (!BOLT_EFFECT_BY_ITEM_ID.has(a)) continue;
+      levelsFor(w, RAPID, a, undefined, "|bolt");
+    }
+  }
+  return out;
+}
+
+interface RangedBase { key: string; weapon: string; ammo?: string; dart?: string; extras?: string[]; target: string; task?: boolean; style?: Style }
+const RANGED_BASES: RangedBase[] = [
+  { key: "tbow", weapon: "Twisted bow", ammo: "Dragon arrow", target: "general-graardor" },
+  { key: "blowpipe", weapon: "Toxic blowpipe", dart: "Dragon dart", target: "abyssal-demon" },
+  { key: "zcb-ruby", weapon: "Zaryte crossbow", ammo: "Ruby dragon bolts (e)", target: "vorkath" },
+  { key: "acb-diamond", weapon: "Armadyl crossbow", ammo: "Diamond bolts (e)", target: "general-graardor" },
+  { key: "rcb-onyx", weapon: "Rune crossbow", ammo: "Onyx bolts (e)", target: "abyssal-demon" },
+  { key: "dcb-dragonstone", weapon: "Dragon crossbow", ammo: "Dragonstone bolts (e)", target: "general-graardor" },
+  { key: "acb-opal", weapon: "Armadyl crossbow", ammo: "Opal dragon bolts (e)", target: "abyssal-demon" },
+  { key: "dhcb", weapon: "Dragon hunter crossbow", ammo: "Dragon bolts", target: "vorkath" },
+  { key: "bowfa", weapon: "Bow of faerdhinen (c)", target: "general-graardor" },
+  { key: "crystal-bow", weapon: "Crystal bow", target: "abyssal-demon" },
+  { key: "darkbow", weapon: "Dark bow", ammo: "Dragon arrow", target: "general-graardor" },
+  { key: "msb", weapon: "Magic shortbow (i)", ammo: "Amethyst arrow", target: "abyssal-demon", style: { attackType: "ranged", choice: "accurate" } },
+  { key: "venator", weapon: "Venator bow", ammo: "Amethyst arrow", target: "general-graardor" },
+  { key: "scorching", weapon: "Scorching bow", ammo: "Dragon arrow", target: "abyssal-demon" },
+  { key: "craws", weapon: "Craw's bow", target: "vetion" },
+  { key: "webweaver", weapon: "Webweaver bow", target: "callisto" },
+  { key: "chin", weapon: "Black chinchompa", target: "abyssal-demon" },
+  { key: "atlatl", weapon: "Eclipse atlatl", ammo: "Atlatl dart", target: "general-graardor" },
+  { key: "tonalztics", weapon: "Tonalztics of ralos", target: "abyssal-demon" },
+  { key: "ballista", weapon: "Heavy ballista", ammo: "Dragon javelin", target: "general-graardor" },
+  { key: "karils", weapon: "Karil's crossbow", ammo: "Bolt rack", target: "abyssal-demon" },
+  { key: "knife", weapon: "Dragon knife", target: "general-graardor", style: { attackType: "ranged", choice: "longrange" } },
+  { key: "sunlight", weapon: "Hunters' sunlight crossbow", ammo: "Sunlight antler bolts", target: "abyssal-demon" },
+  { key: "salamander", weapon: "Black salamander", ammo: "Harralander tar", target: "general-graardor" },
+  { key: "seeking", weapon: "Twisted bow", ammo: "Seeking dragon arrow", target: "abyssal-demon" },
+  { key: "task-tbow", weapon: "Twisted bow", ammo: "Dragon arrow", target: "abyssal-demon", task: true },
+];
+function rangedBaseKit(b: RangedBase): { w: ItemCatalogEntry; kit: Kit; st: Style } | undefined {
+  const wid = item(b.weapon);
+  const w = wid === undefined ? undefined : BY_ID.get(wid);
+  if (!w) return undefined;
+  const st = b.style ?? RAPID;
+  const adds = [w.id, ...(b.ammo ? ids(b.ammo) : []), ...ids(...(b.extras ?? []))];
+  const kit: Kit = { itemIds: equip(RANGED_SHELL, adds), internalAmmoId: b.dart ? item(b.dart) : undefined };
+  if (!score(kit.itemIds, st, { internalAmmoId: kit.internalAmmoId }).valid) {
+    warnings.push(`ranged base does not score: ${b.key}`);
+    return undefined;
+  }
+  return { w, kit, st };
+}
+
+/** Every ranged prayer across weapons, Ranged levels and a ranging potion. */
+function rangedPrayersFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const targets = ["general-graardor", "abyssal-demon", "vorkath", "zulrah", "corporeal-beast"]
+    .map(monster).filter((m): m is MonsterCatalogEntry => Boolean(m));
+  for (const b of RANGED_BASES) {
+    if (b.task) continue;
+    const base = rangedBaseKit(b);
+    if (!base) continue;
+    const low = Math.max(reqRanged(base.kit.itemIds), 75);
+    for (const p of RANGED_PRAYERS) {
+      for (const t of targets) {
+        for (let level = low; level <= 99; level++) {
+          out.push(withPrayer(withRanged(combo(`rp|${b.key}|${t.slug}`, t, base.kit, base.st), level), p));
+        }
+        out.push(rangingPotion(withPrayer(combo(`rp|${b.key}|${t.slug}`, t, base.kit, base.st), p)));
+      }
+    }
+  }
+  return out;
+}
+
+/** Every worn (non-weapon, non-ammo) item under each kind of ranged weapon. */
+function rangedGearFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  for (const b of RANGED_BASES) {
+    const base = rangedBaseKit(b);
+    const t = monster(b.target);
+    if (!base || !t) continue;
+    for (const it of ITEM_CATALOG) {
+      if (isWeapon(it) || it.slot === "ammo") continue;
+      if (it.slot === "shield" && (base.w.slot === "2h" || base.w.isTwoHanded)) continue;
+      const kit: Kit = { itemIds: equip(base.kit.itemIds, [it.id]), internalAmmoId: base.kit.internalAmmoId };
+      out.push(combo(`rg|${b.key}|${it.id}`, t, kit, base.st, { onTask: b.task }));
+      if ((it.slot === "head" || it.slot === "neck") && !b.task && t.isSlayerMonster) {
+        out.push(combo(`rg|${b.key}|${it.id}|task`, t, kit, base.st, { onTask: true }));
+      }
+    }
+  }
+  return out;
+}
+
+/** Every monster and phase vs each kind of ranged weapon. */
+function rangedMonstersFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const refs = RANGED_BASES.map((b) => ({ b, base: rangedBaseKit(b) }))
+    .filter((x): x is { b: RangedBase; base: NonNullable<ReturnType<typeof rangedBaseKit>> } => Boolean(x.base));
+  for (const m of MONSTER_CATALOG) {
+    if (m.wikiId === 0) continue;
+    for (const { b, base } of refs) {
+      if (b.task && !m.isSlayerMonster) continue;
+      const mk = (id: string, e: Parameters<typeof combo>[4] = {}): CanonicalCombo =>
+        combo(id, m, base.kit, base.st, { onTask: b.task, ...e });
+      out.push(mk(`rm|${m.slug}|${b.key}`));
+      for (const p of (MECHANIC_PHASES[m.slug] ?? []).slice(1)) {
+        if (!p.wikiPhase) continue;
+        const c = mk(`rm|${m.slug}|${b.key}|m:${p.id}`);
+        c.bossPhase = { mechanicId: p.id, wikiPhase: p.wikiPhase };
+        out.push(c);
+      }
+      for (const p of m.phases ?? []) {
+        if (p.wikiId === m.wikiId && p.version === m.version) continue;
+        // A phase carries its own slayer flag (Awakened bosses are not on task).
+        if (b.task && p.isSlayerMonster === false) continue;
+        out.push(mk(`rm|${m.slug}|${b.key}|s:${p.version}`, { statPhase: { version: p.version, wikiId: p.wikiId } }));
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Low levels, every prayer, all three styles in gear with no requirements: a
+ * +5% prayer gives +1 damage level at 20 and below, and prayer rounding shows
+ * most where levels are small.
+ */
+function lowLevelPrayersFamily(): CanonicalCombo[] {
+  const out: CanonicalCombo[] = [];
+  const targets = [GRAARDOR, MONSTER_BY_SLUG["abyssal-demon"]];
+  const push = (tag: string, kit: Kit, st: Style, prayers: string[], skill: (l: number) => CanonicalCombo["skills"], spell?: SpellEntry): void => {
+    for (const p of prayers) {
+      for (let level = spell ? Math.max(1, spell.minLevel) : 1; level <= 74; level++) {
+        for (const t of targets) {
+          const c = combo(`lp|${tag}|${t.slug}|L${level}`, t, kit, st, spell ? { spell: spellAt(spell, level) } : {});
+          c.skills = skill(level);
+          out.push(withPrayer(c, p));
+        }
+      }
+    }
+  };
+  const rangedOnly = (l: number): CanonicalCombo["skills"] => ({ ranged: l });
+  push("shortbow", { itemIds: ids("Shortbow", "Bronze arrow") }, RAPID, RANGED_PRAYERS, rangedOnly);
+  push("shortbow-acc", { itemIds: ids("Shortbow", "Bronze arrow") }, { attackType: "ranged", choice: "accurate" }, RANGED_PRAYERS, rangedOnly);
+  push("knife", { itemIds: ids("Bronze knife") }, RAPID, RANGED_PRAYERS, rangedOnly);
+  push("crossbow", { itemIds: ids("Crossbow", "Bronze bolts") }, RAPID, RANGED_PRAYERS, rangedOnly);
+  const meleePrayers = ["none", "burst-clarity", "superhuman-improved", "ultimate-incredible", "chivalry", "piety"];
+  const both = (l: number): CanonicalCombo["skills"] => ({ attack: l, strength: l });
+  push("sword", { itemIds: ids("Bronze sword") }, { attackType: "stab", choice: "aggressive" }, meleePrayers, both);
+  push("sword-acc", { itemIds: ids("Bronze sword") }, { attackType: "stab", choice: "accurate" }, meleePrayers, both);
+  push("scimitar", { itemIds: ids("Bronze scimitar") }, { attackType: "slash", choice: "aggressive" }, meleePrayers, both);
+  const magicOnly = (l: number): CanonicalCombo["skills"] => ({ magic: l });
+  for (const name of ["Wind Strike", "Fire Strike", "Fire Bolt", "Fire Blast"]) {
+    const s = ALL_SPELLS.find((x) => x.name === name)!;
+    push(`cast-${name}`, { itemIds: ids("Staff of fire") }, AUTOCAST, MAGIC_PRAYERS, magicOnly, s);
+  }
+  return out;
+}
+
 const FAMILIES: Record<string, () => CanonicalCombo[]> = {
+  "low-prayers": lowLevelPrayersFamily,
+  "ranged-ammo": rangedAmmoFamily,
+  "ranged-levels": rangedLevelsFamily,
+  "ranged-prayers": rangedPrayersFamily,
+  "ranged-gear": rangedGearFamily,
+  "ranged-monsters": rangedMonstersFamily,
   "magic-staves": magicStavesFamily,
   "magic-levels": magicLevelsFamily,
   "magic-prayers": magicPrayersFamily,
