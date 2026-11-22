@@ -225,3 +225,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-11-14 00:20 UTC · pushed by ENiceApps
 
 - d932fae fix(ranged): match the wiki calc across ammo, levels and prayers
+
+## 2026-11-22 19:13 UTC · pushed by ENiceApps
+
+- fbf0880 feat(results): combat XP per hour with an attack style picker, Gemstone Crab guide
