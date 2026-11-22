@@ -229,3 +229,7 @@ routine works out what is new from the commits each patch-notes/vX.Y.Z.md covers
 ## 2026-11-22 19:13 UTC · pushed by ENiceApps
 
 - fbf0880 feat(results): combat XP per hour with an attack style picker, Gemstone Crab guide
+
+## 2026-11-22 19:31 UTC · pushed by ENiceApps
+
+- b1f7be3 docs: add the design persona and the design mirror rule
