@@ -10,3 +10,19 @@ A graphify knowledge-graph of this project exists in `graphify-out/`. **Before**
 
 **Keep the graph fresh:** it goes stale as code changes. After adding/removing/renaming files or modules, rebuild it before relying on it:
 `python graphify-out/_build.py` (AST-only pipeline; skips vendored `.json` data dumps). The graphify CLI lives at `C:\Users\enune\AppData\Roaming\Python\Python314\Scripts\graphify.exe`. Outputs: `graphify-out/{graph.html, graph.json, GRAPH_REPORT.md}` (gitignored).
+
+# Design mirror: check decisions against the persona
+
+`docs/persona.md` describes Tomas, the one player this app is designed for.
+Read it before any UI, copy, feature or roadmap decision. Engine, data and
+tooling work does not need it.
+
+- **Before building:** say in a line or two how the change serves Tomas. If it
+  does not, tell ENice before writing code.
+- **When choosing** between defaults, layouts, wording or how much to show:
+  pick what Tomas would want, using the mirror questions in the file.
+- **After a visible UI change:** have a fresh subagent read only
+  `docs/persona.md`, walk the page as Tomas and report where he gets lost.
+- **The persona is a hypothesis.** Real feedback and analytics win. Update the
+  file and its changelog when they contradict it; ENice approves changes to
+  who the persona is.
