@@ -1595,6 +1595,57 @@ const VAMPYRE_SNAIL: MechanicRequirement[] = [
   },
 ];
 
+// ---------------- Gemstone Crab ----------------
+// Tlati Rainforest training crab (Varlamore: The Final Dawn, 23 July 2025).
+// Source: https://oldschool.runescape.wiki/w/Gemstone_Crab (+ /Strategies).
+const GEMSTONE_CRAB: MechanicRequirement[] = [
+  {
+    id: "gemstone-crab-timer",
+    label: "Its health bar is a timer, not health",
+    description:
+      "You can't kill the Gemstone Crab. Its health bar drains by itself over about 10 minutes, then it burrows and comes up at another of the three mine sites in the Tlati Rainforest. The 50,000 HP shown here is a stand-in for that, so ignore the kill time and kills per hour. You need Children of the Sun done to reach Varlamore.",
+    remediation:
+      "When it burrows, take the cave at the site you are on. It leads straight to wherever the crab went, so there is no need to hop worlds.",
+  },
+  {
+    id: "gemstone-crab-xp",
+    label: "Train on it: only your damage matters",
+    description:
+      "It has 1 Defence and no defence bonuses, so you nearly always hit and accuracy gear does nothing for you. Stack strength, ranged strength or magic damage. It gives 12.5% less XP per hit (3.5 XP per damage, not 4), and since it never dies no damage is lost to overkill. Melee is the best style here and magic is the weakest.",
+    remediation:
+      "Pick your attack style in the Combat XP panel under the results to see the XP per hour each skill gets with your setup.",
+  },
+  {
+    id: "gemstone-crab-shell",
+    label: "Mine the shell for 3 uncut gems",
+    description:
+      "When the crab burrows it leaves a shell for 90 seconds. The 16 players who dealt the most damage can mine it for 3 uncut gems (mostly opal, jade and red topaz, with a 1/500 dragonstone on each roll). Any pickaxe works at Mining level 1. Logging out while or after it burrows loses you the shell.",
+    satisfiedBy: {
+      anyOf: [[
+        id(1265), id(1267), id(1269), id(12297), id(1273), id(1271), id(1275), // Bronze to Rune
+        id(11920), id(20014), id(23276), // Dragon, 3rd age, Gilded
+        id(23680), id(23682), id(13243), id(13244), // Crystal, Infernal
+      ]],
+    },
+    remediation: "Keep any pickaxe in your inventory and stay logged in until you have mined the shell.",
+  },
+  {
+    id: "gemstone-crab-damage",
+    label: "It barely hits, but it can still kill you",
+    description:
+      "The crab hits for 1 at most, and only players it is facing. That is still enough to finish off a Dharok's setup sitting at 1 HP. You can stand under it, and the centre tile of its 5x5 body can't be hit from any side. When it burrows, everyone under it is pushed out.",
+    remediation:
+      "On low HP (Dharok's, or ruby bolts that cost you 10% of your current HP) keep a few hitpoints spare or stand on the centre tile.",
+  },
+  {
+    id: "gemstone-crab-rules",
+    label: "What doesn't work here",
+    description:
+      "You can't set up a Dwarf multicannon near it, and thralls can be summoned but won't attack it. It is immune to poison and venom. It does not count as a crab for Slayer, so a Slayer helmet or Black mask adds nothing. Ruby bolts (e) treat it as a 300 HP target: the proc deals 60 damage, or 66 with a Zaryte crossbow.",
+    remediation: "Leave the cannon, thralls and Slayer helmet behind and wear your best damage gear instead.",
+  },
+];
+
 export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   vorkath: VORKATH,
   "king-black-dragon": KBD,
@@ -1646,6 +1697,8 @@ export const MECHANICS_BY_SLUG: Record<string, MechanicRequirement[]> = {
   "mad-angel": MAD_ANGEL,
   // Vampyrium
   "vampyre-snail": VAMPYRE_SNAIL,
+  // Varlamore training crab
+  "gemstone-crab": GEMSTONE_CRAB,
 };
 
 /**

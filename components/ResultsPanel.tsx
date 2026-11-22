@@ -22,8 +22,21 @@ import type { TargetActiveBonuses } from "@/lib/loadout";
 import type { LoadoutSet, LoadoutSlotKey } from "@/types/loadout";
 import type { DpsResult, MappingEntry } from "@/types/osrs";
 
+import { CombatXpPanel } from "@/components/CombatXpPanel";
+import type { WeaponStyleOption } from "@/data/weapon-styles";
+
 interface Props {
   bossName: string;
+  /**
+   * Combat XP calculator: the worn weapon's attack styles, the one the DPS is
+   * computed at, and the monster's XP multiplier. Omit to hide the section.
+   */
+  combatXp?: {
+    options: WeaponStyleOption[];
+    active: WeaponStyleOption;
+    onPick?: (option: WeaponStyleOption) => void;
+    xpMultiplier?: number;
+  };
   bossHp: number;
   /** The active loadout and its DPS (reflects manual slot edits). */
   set?: LoadoutSet;
@@ -266,6 +279,7 @@ export function ResultsPanel({
   onTripChange,
   brewPriceGp,
   loading = false,
+  combatXp,
 }: Props) {
   const [showDrops, setShowDrops] = useState(false);
   const [showTrip, setShowTrip] = useState(false);
@@ -433,6 +447,19 @@ export function ResultsPanel({
         </div>
         );
       })()}
+
+      {set && dps && combatXp && (
+        <CombatXpPanel
+          bossName={bossName}
+          dps={dps.dps}
+          style={set.style}
+          options={combatXp.options}
+          active={combatXp.active}
+          onPick={combatXp.onPick}
+          xpMultiplier={combatXp.xpMultiplier}
+          uptime={trip.uptime}
+        />
+      )}
 
       {set && dps && (
         <div className="text-caption">

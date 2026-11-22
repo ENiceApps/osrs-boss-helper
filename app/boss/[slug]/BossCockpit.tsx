@@ -67,6 +67,8 @@ import { ITEM_CATALOG, type ItemCatalogEntry } from "@/data/items/catalog";
 import { SPELLS_BY_NAME, type SpellEntry } from "@/data/spells/catalog";
 import type { LoadoutSlotKey } from "@/types/loadout";
 import type { BankContents, CombatStyle, ItemId } from "@/types/osrs";
+import { WEAPON_STYLES, combatStyleFor, type WeaponStyleOption } from "@/data/weapon-styles";
+import { xpMultiplierFor } from "@/data/monsters/xp-multiplier";
 
 // Comparison-tab ids: the budget-mode best, or the best build per style.
 type LoadoutTabId = "best" | CombatStyle;
@@ -215,6 +217,12 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Manually chosen combat spell (magic loadouts). null = auto-pick by optimizer.
   const [spellOverride, setSpellOverride] = useState<SpellEntry | null>(null);
   const [spellPickerOpen, setSpellPickerOpen] = useState(false);
+  // Attack style picked in the Combat XP panel (Chop / Slash / Block ...).
+  // null = the optimizer's style. Tied to the weapon it was picked for, so a
+  // weapon swap or a tab change drops it without an effect.
+  const [styleOverride, setStyleOverride] = useState<
+    { weaponId: number | undefined; option: WeaponStyleOption } | null
+  >(null);
   // Dart loaded in a blowpipe. undefined = whatever the editor resolves (the
   // optimizer's pick, or the best dart when a pipe is swapped in by hand);
   // an item = the player's pick; null = pipe deliberately left empty.
@@ -539,11 +547,26 @@ export function BossCockpit({ slug }: { slug: string }) {
   // Effective loadout = base + any per-slot overrides the user has applied
   // via the gear picker. Used for the equipment grid, DPS recompute, and
   // mechanic active-bonuses calc. If no overrides, this is identical to base.
+  // The picked attack style, while the weapon it was picked for is still worn.
+  const wornWeaponId = baseSet
+    ? "weapon" in overrides
+      ? overrides.weapon?.id
+      : baseSet.slots.weapon?.itemId
+    : undefined;
+  const appliedStyle =
+    baseSet && styleOverride && styleOverride.weaponId === wornWeaponId ? styleOverride.option : null;
+
   const selectedSet = useMemo(() => {
     if (!baseSet) return undefined;
-    if (!hasOverrides(baseSet, overrides, spellOverride, dartOverride)) return baseSet;
-    return applyOverrides(baseSet, overrides, spellOverride, skills.magic, dartOverride, monster);
-  }, [baseSet, overrides, spellOverride, dartOverride, skills.magic, monster]);
+    if (!appliedStyle && !hasOverrides(baseSet, overrides, spellOverride, dartOverride)) return baseSet;
+    // A picked style rides in on the base: applyOverrides keeps the base's
+    // (attack type, choice) while the weapon can use it, and re-sums the gear
+    // for that attack type.
+    const base = appliedStyle
+      ? { ...baseSet, attackType: appliedStyle.attackType, attackStyleChoice: appliedStyle.choice }
+      : baseSet;
+    return applyOverrides(base, overrides, spellOverride, skills.magic, dartOverride, monster);
+  }, [baseSet, appliedStyle, overrides, spellOverride, dartOverride, skills.magic, monster]);
 
   const overridesActive = baseSet ? hasOverrides(baseSet, overrides, spellOverride, dartOverride) : false;
   // The dart isn't a slot, so the "N slots changed" banner counts it separately.
@@ -662,6 +685,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     setOverrides({});
     setSpellOverride(null);
     setDartOverride(undefined);
+    setStyleOverride(null);
   }
   // Each tab is its own starting point — carrying slot edits across tabs
   // would silently mix setups, so switching discards them.
@@ -670,6 +694,7 @@ export function BossCockpit({ slug }: { slug: string }) {
     setOverrides({});
     setSpellOverride(null);
     setDartOverride(undefined);
+    setStyleOverride(null);
   }
   // Apply one slot pick as a manual override — shared by the item picker and
   // the tooltip's next-best-option rows.
@@ -741,6 +766,7 @@ export function BossCockpit({ slug }: { slug: string }) {
   // or when the Soulreaper / Dharok toggles diverge from the optimizer's state.
   const needsDpsRecompute =
     overridesActive ||
+    appliedStyle !== null ||
     (soulreaperMaxStacks && soulreaperEquipped) ||
     // A non-default prayer pick diverges from the optimizer's baked-in best
     // prayer, so the hero number must be recomputed with the chosen one.
@@ -766,6 +792,32 @@ export function BossCockpit({ slug }: { slug: string }) {
     const wikiMaxHit = wikiMaxHitForSet(...args);
     return wikiMaxHit === undefined ? dps : { ...dps, wikiMaxHit };
   }, [selectedSet, needsDpsRecompute, activeScenario, monster, skills, boostResolver, effectiveOnTask, soulreaperMaxStacks, dharokCurrentHp, prayerIds, rubyProcEnabled, markOfDarkness]);
+
+  // Combat XP panel: the worn weapon's attack styles within the loadout's
+  // combat style (a staff's Bash is a different setup from its Spell), and
+  // the one the displayed DPS is computed at.
+  const combatXp = useMemo(() => {
+    if (!selectedSet) return undefined;
+    const options = (WEAPON_STYLES[selectedSet.weaponCategory ?? ""] ?? []).filter(
+      (o) => combatStyleFor(o.attackType) === selectedSet.style,
+    );
+    const matches = (o: WeaponStyleOption) =>
+      o.attackType === selectedSet.attackType && o.choice === selectedSet.attackStyleChoice;
+    const active =
+      (appliedStyle && options.find((o) => o.name === appliedStyle.name && matches(o))) ||
+      options.find(matches);
+    if (!active) return undefined;
+    return { options, active, xpMultiplier: xpMultiplierFor(monster.slug) };
+  }, [selectedSet, appliedStyle, monster.slug]);
+  function pickAttackStyle(option: WeaponStyleOption) {
+    // Back on the optimizer's own style with its own weapon = no override.
+    const isBaseStyle =
+      !!baseSet &&
+      !("weapon" in overrides) &&
+      option.attackType === baseSet.attackType &&
+      option.choice === baseSet.attackStyleChoice;
+    setStyleOverride(isBaseStyle ? null : { weaponId: wornWeaponId, option });
+  }
 
   // The prayer option backing the displayed DPS — drives the results-rail prayer
   // row, the picker's current selection, and the supply-cost drain effect.
@@ -1305,7 +1357,8 @@ export function BossCockpit({ slug }: { slug: string }) {
             activeBonuses={selectedActiveBonuses}
             demonbaneVulnerability={demonbaneVulnerabilityFor(monster)}
             result={activeTab === "best" ? budgetResult : (styleResults?.[activeTab] ?? null)}
-            edited={overridesActive}
+            edited={overridesActive || appliedStyle !== null}
+            combatXp={combatXp ? { ...combatXp, onPick: pickAttackStyle } : undefined}
             boltProcFlag={boltProcFlag}
             mapping={mapping}
             prayerLevel={skills.prayer ?? 99}
